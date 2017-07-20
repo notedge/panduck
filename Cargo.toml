@@ -1,8 +1,9 @@
 [workspace]
+edition = "2021"
 resolver = "2"
-members = ["projects/*"]
+members = ["projects/crates/*"]
 default-members = [
-    "projects/panduck-markdown",
+	"projects/crates/panduck-core"
 ]
 
 [profile.release]

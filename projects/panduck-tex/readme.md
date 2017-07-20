@@ -42,19 +42,19 @@ gaia-types = { path = "../gaia-types" }
 ### 基本类型使用
 
 ```rust
-use panduck_core::{PanduckProgram, PanduckFunction, PanduckInstruction, PanduckConstant, PanduckType};
+use gaia_types::{GaiaProgram, GaiaFunction, GaiaInstruction, GaiaConstant, GaiaType};
 
 // 创建一个简单的程序
-let program = PanduckProgram {
+let program = GaiaProgram {
 name: "hello_world".to_string(),
-functions: vec![PanduckFunction {
+functions: vec![GaiaFunction {
     name: "main".to_string(),
     parameters: vec![],
-    return_type: Some(PanduckType::Int32),
+    return_type: Some(GaiaType::Int32),
     locals: vec![],
     instructions: vec![
-        PanduckInstruction::LoadConstant(PanduckConstant::Int32(42)),
-        PanduckInstruction::Return,
+        GaiaInstruction::LoadConstant(GaiaConstant::Int32(42)),
+        GaiaInstruction::Return,
     ],
 }],
 constants: vec![],
@@ -68,25 +68,25 @@ println!("程序 JSON: {}", json);
 ### 错误处理
 
 ```rust
-use panduck_core::{PanduckError, SourceLocation, Result};
+use gaia_types::{GaiaError, SourceLocation, Result};
 
 // 创建语法错误
 fn parse_source(source: &str) -> Result<()> {
     if source.is_empty() {
         let location = SourceLocation::default();
-        return Err(PanduckError::syntax_error("空源代码", location));
+        return Err(GaiaError::syntax_error("空源代码", location));
     }
     Ok(())
 }
 
 // 使用诊断信息收集器
-use panduck_core::PanduckDiagnostics;
+use gaia_types::GaiaDiagnostics;
 
-fn compile_with_diagnostics(program: &PanduckProgram) -> PanduckDiagnostics<Vec<u8>> {
-    let mut diagnostics = PanduckDiagnostics::success(vec![]);
+fn compile_with_diagnostics(program: &GaiaProgram) -> GaiaDiagnostics<Vec<u8>> {
+    let mut diagnostics = GaiaDiagnostics::success(vec![]);
 
     // 添加警告信息
-    diagnostics.add_warning(PanduckError::custom_error("优化建议: 可以简化指令序列"));
+    diagnostics.add_warning(GaiaError::custom_error("优化建议: 可以简化指令序列"));
 
     diagnostics
 }
@@ -96,33 +96,33 @@ fn compile_with_diagnostics(program: &PanduckProgram) -> PanduckDiagnostics<Vec<
 
 ### 主要类型
 
-#### PanduckProgram
+#### GaiaProgram
 
 表示完整的程序结构，包含函数列表和全局常量。
 
 ```rust
-pub struct PanduckProgram {
+pub struct GaiaProgram {
     pub name: String,
-    pub functions: Vec<PanduckFunction>,
-    pub constants: Vec<(String, PanduckConstant)>,
+    pub functions: Vec<GaiaFunction>,
+    pub constants: Vec<(String, GaiaConstant)>,
 }
 ```
 
-#### PanduckFunction
+#### GaiaFunction
 
 表示函数定义，包含参数、返回类型、局部变量和指令序列。
 
 ```rust
-pub struct PanduckFunction {
+pub struct GaiaFunction {
     pub name: String,
-    pub parameters: Vec<PanduckType>,
-    pub return_type: Option<PanduckType>,
-    pub locals: Vec<PanduckType>,
-    pub instructions: Vec<PanduckInstruction>,
+    pub parameters: Vec<GaiaType>,
+    pub return_type: Option<GaiaType>,
+    pub locals: Vec<GaiaType>,
+    pub instructions: Vec<GaiaInstruction>,
 }
 ```
 
-#### PanduckInstruction
+#### GaiaInstruction
 
 统一指令集枚举，支持多种操作类型：
 
@@ -133,7 +133,7 @@ pub struct PanduckFunction {
 - **内存操作**: `LoadAddress`, `LoadIndirect`, `StoreIndirect`
 - **类型转换**: `Convert`, `Box`, `Unbox`
 
-#### PanduckType
+#### GaiaType
 
 类型系统枚举，支持基本类型和复合类型：
 
@@ -143,18 +143,18 @@ pub struct PanduckFunction {
 
 ### 错误处理系统
 
-#### PanduckError
+#### GaiaError
 
 主要的错误类型，包装具体的错误种类。
 
 ```rust
-pub struct PanduckError {
+pub struct GaiaError {
     level: Level,
-    kind: Box<PanduckErrorKind>,
+    kind: Box<GaiaErrorKind>,
 }
 ```
 
-#### PanduckErrorKind
+#### GaiaErrorKind
 
 错误种类枚举，定义所有可能的错误类型：
 
@@ -166,14 +166,14 @@ pub struct PanduckError {
 - `NotImplemented` - 功能未实现错误
 - `CustomError` - 自定义错误
 
-#### PanduckDiagnostics
+#### GaiaDiagnostics
 
 诊断信息收集器，支持错误恢复和警告收集。
 
 ```rust
-pub struct PanduckDiagnostics<T> {
-    pub result: Result<T, PanduckError>,
-    pub diagnostics: Vec<PanduckError>,
+pub struct GaiaDiagnostics<T> {
+    pub result: Result<T, GaiaError>,
+    pub diagnostics: Vec<GaiaError>,
 }
 ```
 
@@ -191,20 +191,20 @@ pub struct PanduckDiagnostics<T> {
 
 ### 添加新的指令
 
-1. 在 `PanduckInstruction` 枚举中添加新的指令变体
+1. 在 `GaiaInstruction` 枚举中添加新的指令变体
 2. 为指令实现必要的 trait（Debug, Clone, PartialEq, Serialize, Deserialize）
 3. 更新相关的后端编译器以支持新指令
 
 ### 扩展错误类型
 
-1. 在 `PanduckErrorKind` 枚举中添加新的错误变体
-2. 在 `PanduckError` 结构体中添加对应的构造函数
+1. 在 `GaiaErrorKind` 枚举中添加新的错误变体
+2. 在 `GaiaError` 结构体中添加对应的构造函数
 3. 在 `display.rs` 中实现错误显示逻辑
 
 ### 运行测试
 
 ```bash
-cd panduck-markdown
+cd gaia-types
 cargo test
 ```
 

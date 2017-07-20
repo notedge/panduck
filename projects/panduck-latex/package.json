@@ -1,8 +1,0 @@
-{
-    "private": true,
-    "scripts": {
-        "u": "cargo upgrade --allow-prerelease",
-        "c": "cd tests && bash compile.sh",
-        "p": "cargo publish --allow-dirty"
-    }
-}

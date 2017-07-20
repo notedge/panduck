@@ -1,5 +1,5 @@
 [package]
-name = "panduck-markdown"
+name = "panduck-rst"
 version = "0.1.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "Conversion tool by rust, inspired by pandoc"
