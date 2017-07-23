@@ -1,0 +1,10 @@
+# Local path overlay for workspace crates.
+# Committed `Cargo.toml` uses git `branch = "dev"` so CI and fresh clones resolve from remote.
+# This patch keeps sibling `projects/crates/*` on disk during local development.
+
+[patch."https://github.com/notedge/panduck.git"]
+panduck-core = { path = "projects/crates/panduck-core" }
+panduck-markdown = { path = "projects/crates/panduck-markdown" }
+panduck-org = { path = "projects/crates/panduck-org" }
+panduck-rst = { path = "projects/crates/panduck-rst" }
+panduck-tex = { path = "projects/crates/panduck-tex" }

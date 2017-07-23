@@ -13,7 +13,7 @@ edition = "2024"
 exclude = ["package.json", "tests/**"]
 
 [dependencies]
-panduck-core = { path = "../panduck-core", version = "0.2.0" }
+panduck-core = { workspace = true }
 url = { version = "2.5.7", features = ["serde"] }
 source-map = "0.15.0"
 byteorder = "1.5.0"

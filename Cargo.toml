@@ -1,15 +1,19 @@
-[workspace]
-edition = "2021"
-resolver = "2"
-members = ["projects/crates/*"]
-default-members = [
-	"projects/crates/panduck-core"
-]
-
-[profile.release]
-lto = true
-opt-level = "s"
-
-[workspace.metadata.release]
-push = false
-tag = false
+[workspace]
+edition = "2021"
+resolver = "2"
+members = ["projects/crates/*"]
+default-members = [
+	"projects/crates/panduck-core"
+]
+
+[workspace.dependencies]
+# Git `branch = "dev"` for CI and published consumers. Local path overlay: `.cargo/config.toml`.
+panduck-core = { git = "https://github.com/notedge/panduck.git", branch = "dev", package = "panduck-core" }
+
+[profile.release]
+lto = true
+opt-level = "s"
+
+[workspace.metadata.release]
+push = false
+tag = false
