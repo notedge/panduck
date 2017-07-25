@@ -9,3 +9,4 @@ panduck-org = { path = "projects/crates/panduck-org" }
 panduck-rst = { path = "projects/crates/panduck-rst" }
 panduck-tex = { path = "projects/crates/panduck-tex" }
 panduck-napi = { path = "projects/crates/panduck-napi" }
+panduck-wasm = { path = "projects/crates/panduck-wasm" }
