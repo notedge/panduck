@@ -6,14 +6,14 @@ description = "Conversion tool by rust, inspired by pandoc"
 categories = ["rust-patterns"]
 homepage = "https://github.com/oovm/panduck"
 repository = "https://github.com/oovm/panduck"
-documentation = "https://docs.rs/panduck-core"
+documentation = "https://docs.rs/panduck-types"
 readme = "readme.md"
 license = "MPL-2.0"
 edition = "2024"
 exclude = ["package.json", "tests/**"]
 
 [dependencies]
-panduck-core = { workspace = true }
+panduck-types = { workspace = true }
 url = { version = "2.5.7", features = ["serde"] }
 source-map = "0.15.0"
 byteorder = "1.5.0"

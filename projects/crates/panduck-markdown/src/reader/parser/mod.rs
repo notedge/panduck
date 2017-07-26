@@ -1,12 +1,12 @@
 #![doc = include_str!("readme.md")]
 
 use crate::ast::MarkdownRoot;
-use panduck_core::PanduckDiagnostics;
+use panduck_types::PanduckDiagnostics;
 
 use crate::reader::{MarkdownReadConfig, MarkdownTokenType};
 
 pub struct MarkdownParser<'input> {
-    pub(crate) state: panduck_core::parser::ParserState<'input, MarkdownTokenType>,
+    pub(crate) state: panduck_types::parser::ParserState<'input, MarkdownTokenType>,
     pub(crate) config: &'input MarkdownReadConfig,
 }
 

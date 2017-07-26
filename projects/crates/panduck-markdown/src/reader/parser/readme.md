@@ -30,8 +30,8 @@
 ### 基本语法分析
 
 ```rust
-use panduck_core::parser::{Parser, SyntaxTree};
-use panduck_core::lexer::Lexer;
+use panduck_types::parser::{Parser, SyntaxTree};
+use panduck_types::lexer::Lexer;
 
 let source = "(module (func (export \"add\") (param i32 i32) (result i32) local.get 0 local.get 1 i32.add))";
 let lexer = Lexer::new(source);
@@ -45,7 +45,7 @@ println!("Parsed AST: {:?}", ast);
 ### 错误处理
 
 ```rust
-use panduck_core::parser::ParseError;
+use panduck_types::parser::ParseError;
 
 match parser.parse() {
     Ok(ast) => println!("Parse successful: {:?}", ast),
@@ -62,7 +62,7 @@ match parser.parse() {
 ### AST 遍历
 
 ```rust
-use panduck_core::parser::{AstVisitor, ModuleNode};
+use panduck_types::parser::{AstVisitor, ModuleNode};
 
 struct MyVisitor;
 impl AstVisitor for MyVisitor {

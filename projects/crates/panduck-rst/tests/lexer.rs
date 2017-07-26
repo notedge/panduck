@@ -1,5 +1,5 @@
 use panduck_rst::lexer::{tokenize, RstToken, RstTokenType};
-use panduck_core::helpers::SourceText;
+use panduck_types::helpers::SourceText;
 
 #[test]
 fn test_heading_lexer() {

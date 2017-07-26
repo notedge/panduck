@@ -20,7 +20,7 @@
 ### BinaryAssembler 使用
 
 ```rust
-use panduck_core::BinaryAssembler;
+use panduck_types::BinaryAssembler;
 use byteorder::LittleEndian;
 
 let mut assembler = BinaryAssembler::new(Vec::new());
@@ -36,7 +36,7 @@ let result = assembler.finish();
 ### TextWriter 使用
 
 ```rust
-use panduck_core::TextWriter;
+use panduck_types::TextWriter;
 
 let mut writer = TextWriter::new(Vec::new());
 

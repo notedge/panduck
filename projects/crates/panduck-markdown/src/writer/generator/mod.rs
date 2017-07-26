@@ -5,7 +5,7 @@ use crate::ast::{
     MarkdownParagraph, MarkdownRoot, MarkdownText,
 };
 use crate::writer::MarkdownWriteConfig;
-use panduck_core::{PanduckDiagnostics, PanduckError, TextWriter};
+use panduck_types::{PanduckDiagnostics, PanduckError, TextWriter};
 use std::fmt::Write;
 // Add this import
 

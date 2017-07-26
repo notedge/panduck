@@ -3,8 +3,8 @@
 use crate::ast::{MarkdownBlock, MarkdownBlockCode, MarkdownHeading, MarkdownInline, MarkdownList, MarkdownListItem, MarkdownParagraph, MarkdownRoot};
 use crate::lexer::{MarkdownToken, MarkdownTokenType};
 use crate::MarkdownReadConfig;
-use panduck_core::helpers::SourceText;
-use panduck_core::PanduckDiagnostics;
+use panduck_types::helpers::SourceText;
+use panduck_types::PanduckDiagnostics;
 
 #[derive(Copy, Clone, Debug)]
 pub struct MarkdownReader {

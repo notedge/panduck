@@ -1,7 +1,7 @@
 use panduck_markdown::parser::MarkdownReader;
 use panduck_markdown::lexer::MarkdownReader as LexerReader;
 use panduck_markdown::MarkdownReadConfig;
-use panduck_core::helpers::SourceText;
+use panduck_types::helpers::SourceText;
 use panduck_markdown::ast::{MarkdownBlock, MarkdownHeading, MarkdownInline, MarkdownParagraph, MarkdownBlockCode, MarkdownList, MarkdownListItem};
 
 fn parse_markdown_to_ast(input: &str) -> Vec<MarkdownBlock> {

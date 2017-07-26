@@ -1,5 +1,5 @@
 use panduck_markdown::lexer::{MarkdownReader, MarkdownTokenType};
-use panduck_core::helpers::SourceText;
+use panduck_types::helpers::SourceText;
 
 #[test]
 fn test_lex_heading() {

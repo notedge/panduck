@@ -5,8 +5,8 @@ mod token_type;
 pub use self::token_type::{MarkdownToken, MarkdownTokenType};
 pub use crate::ast::MarkdownRoot;
 use crate::reader::lexer::MarkdownLexer;
-use panduck_core::helpers::{check_path, SourceText};
-use panduck_core::{PanduckDiagnostics, PanduckError};
+use panduck_types::helpers::{check_path, SourceText};
+use panduck_types::{PanduckDiagnostics, PanduckError};
 use std::io::{read_to_string, Read};
 use std::path::Path;
 use url::Url;
@@ -58,7 +58,7 @@ impl<'input, R: Read> MarkdownReader<'input, R> {
         };
         let source = SourceText::new(text, url);
         let mut lexer = MarkdownLexer {
-            state: panduck_core::lexer::LexerState::new(&source),
+            state: panduck_types::lexer::LexerState::new(&source),
             config: &self.config,
         };
         let PanduckDiagnostics {
@@ -76,7 +76,7 @@ impl<'input, R: Read> MarkdownReader<'input, R> {
             }
         };
         let mut parser = crate::reader::parser::MarkdownParser {
-            state: panduck_core::parser::ParserState::new(&source, tokens),
+            state: panduck_types::parser::ParserState::new(&source, tokens),
             config: &self.config,
         };
         let PanduckDiagnostics {

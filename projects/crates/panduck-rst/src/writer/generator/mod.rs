@@ -1,6 +1,6 @@
 use crate::ast::{RstBlock, RstBlockCode, RstHeading, RstInline, RstList, RstListItem, RstParagraph, RstRoot};
-use panduck_core::generator::{Generator, GeneratorConfig};
-use panduck_core::PanduckDiagnostics;
+use panduck_types::generator::{Generator, GeneratorConfig};
+use panduck_types::PanduckDiagnostics;
 
 pub struct RstGeneratorConfig;
 

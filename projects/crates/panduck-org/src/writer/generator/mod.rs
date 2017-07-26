@@ -2,7 +2,7 @@
 
 use crate::ast::{OrgBlock, OrgBlockCode, OrgHeading, OrgInline, OrgList, OrgParagraph, OrgRoot};
 use crate::writer::OrgWriteConfig;
-use panduck_core::{PanduckDiagnostics, PanduckError, TextWriter};
+use panduck_types::{PanduckDiagnostics, PanduckError, TextWriter};
 use panduck_markdown::ast::MarkdownInline;
 use panduck_markdown::writer::{MarkdownWriter, MarkdownWriteConfig};
 use std::fmt::Write;

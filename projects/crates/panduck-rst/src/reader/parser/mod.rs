@@ -1,9 +1,9 @@
-use panduck_core::helpers::SourceText;
-use panduck_core::PanduckDiagnostics;
+use panduck_types::helpers::SourceText;
+use panduck_types::PanduckDiagnostics;
 
 use crate::ast::{RstBlock, RstBlockCode, RstHeading, RstInline, RstList, RstListItem, RstParagraph, RstRoot};
 use crate::reader::token_type::{RstToken, RstTokenType};
-use panduck_core::parser::{Parser, ParserConfig};
+use panduck_types::parser::{Parser, ParserConfig};
 
 pub struct RstParserConfig;
 

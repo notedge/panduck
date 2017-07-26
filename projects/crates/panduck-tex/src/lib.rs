@@ -19,8 +19,8 @@ pub use crate::ast::MarkdownRoot;
 pub use crate::lexer::{LexerState, MarkdownToken, MarkdownTokenType};
 pub use crate::parser::MarkdownReader;
 pub use crate::generator::MarkdownWriter;
-use panduck_core::helpers::SourceText;
-use panduck_core::PanduckDiagnostics;
+use panduck_types::helpers::SourceText;
+use panduck_types::PanduckDiagnostics;
 
 #[derive(Copy, Clone, Debug)]
 pub struct MarkdownReadConfig {

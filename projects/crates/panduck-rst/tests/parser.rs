@@ -1,6 +1,6 @@
 use panduck_rst::lexer::tokenize;
 use panduck_rst::parser::parse;
-use panduck_core::helpers::SourceText;
+use panduck_types::helpers::SourceText;
 use panduck_rst::ast::{RstRoot, RstBlock, RstHeading, RstInline};
 
 #[test]

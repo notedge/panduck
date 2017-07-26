@@ -2,11 +2,11 @@
 
 use crate::reader::token_type::MarkdownTokenType;
 use crate::reader::{MarkdownReadConfig, MarkdownToken};
-use panduck_core::PanduckDiagnostics;
+use panduck_types::PanduckDiagnostics;
 
 #[derive(Debug)]
 pub struct MarkdownLexer<'input> {
-    pub(crate) state: panduck_core::lexer::LexerState<'input, MarkdownTokenType>,
+    pub(crate) state: panduck_types::lexer::LexerState<'input, MarkdownTokenType>,
     pub(crate) config: &'input MarkdownReadConfig,
 }
 impl<'input> MarkdownLexer<'input> {

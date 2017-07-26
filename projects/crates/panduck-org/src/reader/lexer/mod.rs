@@ -2,11 +2,11 @@
 
 use crate::reader::token_type::OrgTokenType;
 use crate::reader::{OrgReadConfig, OrgToken};
-use panduck_core::PanduckDiagnostics;
+use panduck_types::PanduckDiagnostics;
 
 #[derive(Debug)]
 pub struct OrgLexer<'input> {
-    pub(crate) state: panduck_core::lexer::LexerState<'input, OrgTokenType>,
+    pub(crate) state: panduck_types::lexer::LexerState<'input, OrgTokenType>,
     pub(crate) config: &'input OrgReadConfig,
 }
 

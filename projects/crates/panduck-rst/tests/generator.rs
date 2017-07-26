@@ -1,7 +1,7 @@
 use panduck_rst::lexer::tokenize;
 use panduck_rst::parser::parse;
 use panduck_rst::generator::generate;
-use panduck_core::helpers::SourceText;
+use panduck_types::helpers::SourceText;
 
 #[test]
 fn test_heading_generator() {

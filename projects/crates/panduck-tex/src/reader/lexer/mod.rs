@@ -1,15 +1,15 @@
 #![doc = include_str!("readme.md")]
 
 use crate::{MarkdownReadConfig, MarkdownReader};
-use panduck_core::helpers::SourceText;
+use panduck_types::helpers::SourceText;
 
 mod token_type;
 pub use self::token_type::{MarkdownToken, MarkdownTokenType};
-use panduck_core::PanduckDiagnostics;
+use panduck_types::PanduckDiagnostics;
 
 #[derive(Debug)]
 pub struct LexerState<'input> {
-    state: panduck_core::lexer::LexerState<'input, MarkdownTokenType>,
+    state: panduck_types::lexer::LexerState<'input, MarkdownTokenType>,
     config: &'input MarkdownReadConfig,
 }
 
@@ -145,7 +145,7 @@ impl<'input> LexerState<'input> {
 impl MarkdownReader {
     pub fn tokenize(&self, input: &SourceText) -> PanduckDiagnostics<Vec<MarkdownToken>> {
         let mut state = LexerState {
-            state: panduck_core::lexer::LexerState::new(input),
+            state: panduck_types::lexer::LexerState::new(input),
             config: &self.config,
         };
 

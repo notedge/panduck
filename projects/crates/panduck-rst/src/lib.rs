@@ -20,8 +20,8 @@ pub use crate::reader::token_type::{RstToken, RstTokenType};
 pub use crate::reader::parser::ParserState;
 pub use crate::reader::parser::parse;
 pub use crate::writer::generator::RstWriter;
-use panduck_core::helpers::SourceText;
-use panduck_core::PanduckDiagnostics;
+use panduck_types::helpers::SourceText;
+use panduck_types::PanduckDiagnostics;
 
 #[derive(Copy, Clone, Debug)]
 pub struct RstReadConfig {

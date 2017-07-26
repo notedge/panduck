@@ -1,12 +1,12 @@
 #![doc = include_str!("readme.md")]
 
 use crate::ast::OrgRoot;
-use panduck_core::PanduckDiagnostics;
+use panduck_types::PanduckDiagnostics;
 
 use crate::reader::{OrgReadConfig, OrgTokenType};
 
 pub struct OrgParser<'input> {
-    pub(crate) state: panduck_core::parser::ParserState<'input, OrgTokenType>,
+    pub(crate) state: panduck_types::parser::ParserState<'input, OrgTokenType>,
     pub(crate) config: &'input OrgReadConfig,
 }
 

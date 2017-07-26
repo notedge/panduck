@@ -1,5 +1,5 @@
-use panduck_core::lexer::TokenType;
-use panduck_core::reader::Token;
+use panduck_types::lexer::TokenType;
+use panduck_types::reader::Token;
 
 pub type MarkdownToken = Token<MarkdownTokenType>;
 

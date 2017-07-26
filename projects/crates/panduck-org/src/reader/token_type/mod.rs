@@ -3,8 +3,8 @@
 //! This is a placeholder readme for the panduck-org project.
 #![doc = include_str!("../../../readme.md")]
 
-use panduck_core::lexer::TokenType;
-use panduck_core::reader::Token;
+use panduck_types::lexer::TokenType;
+use panduck_types::reader::Token;
 
 pub type OrgToken = Token<OrgTokenType>;
 

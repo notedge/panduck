@@ -1,10 +1,10 @@
-use panduck_core::helpers::SourceText;
+use panduck_types::helpers::SourceText;
 
 
-use panduck_core::PanduckDiagnostics;
+use panduck_types::PanduckDiagnostics;
 
 pub use crate::reader::token_type::{RstToken, RstTokenType};
-use panduck_core::reader::{Reader, ReadConfig};
+use panduck_types::reader::{Reader, ReadConfig};
 
 pub struct RstReadConfig;
 
