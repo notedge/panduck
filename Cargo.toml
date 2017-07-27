@@ -3,15 +3,18 @@ edition = "2021"
 resolver = "2"
 members = ["projects/crates/*"]
 default-members = [
-	"projects/crates/panduck-core",
+	"projects/crates/panduck-types",
 	"projects/crates/panduck-napi",
 ]
 
 [workspace.dependencies]
-# Git `branch = "dev"` for CI and published consumers. Local path overlay: `.cargo/config.toml`.
-panduck-core = { git = "https://github.com/notedge/panduck.git", branch = "dev", package = "panduck-core" }
-panduck-napi = { git = "https://github.com/notedge/panduck.git", branch = "dev", package = "panduck-napi" }
-panduck-wasm = { git = "https://github.com/notedge/panduck.git", branch = "dev", package = "panduck-wasm" }
+panduck-types = { path = "projects/crates/panduck-types" }
+panduck-markdown = { path = "projects/crates/panduck-markdown" }
+panduck-org = { path = "projects/crates/panduck-org" }
+panduck-rst = { path = "projects/crates/panduck-rst" }
+panduck-tex = { path = "projects/crates/panduck-tex" }
+panduck-napi = { path = "projects/crates/panduck-napi" }
+panduck-wasm = { path = "projects/crates/panduck-wasm" }
 
 [profile.release]
 lto = true

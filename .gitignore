@@ -12,4 +12,14 @@ time-travel.sh
 # Rust
 target/
 Cargo.lock
+.cargo/config.toml
+
+# Node
+node_modules/
+projects/packages/panduck-unknown-wasm32/pkg/
+projects/packages/homepage/dist/
+projects/packages/homepage/public/
+projects/crates/panduck-napi/index.d.ts
+projects/crates/panduck-napi/index.js
+projects/crates/panduck-napi/*.node
 
