@@ -1,12 +1,18 @@
 {
     "private": true,
+    "packageManager": "pnpm@9.15.0",
     "scripts": {
-        "u": "git pull && cargo upgrade --allow-prerelease --workspace",
-        "notedown": "cargo upgrade --workspace notedown_ast",
-        "p": "cargo release --execute",
+        "build": "cargo build --release",
+        "build:napi": "node scripts/build-napi.mjs",
+        "build:wasm": "wasm-pack build projects/crates/panduck-wasm --target web --out-dir ../../projects/packages/panduck-unknown-wasm32/pkg --release",
         "test": "cargo test --release",
-        "fmt": "cargo fmt --all",
-        "push": "wee test && git push",
-        "reset": "git reset Head~ --soft"
+        "typecheck": "pnpm --filter @notedge/panduck typecheck",
+        "homepage:dev": "pnpm --filter @notedge/homepage dev",
+        "homepage:build": "pnpm --filter @notedge/homepage build",
+        "homepage:check": "pnpm --filter @notedge/homepage check"
+    },
+    "devDependencies": {
+        "@notedge/panduck": "workspace:*",
+        "@napi-rs/cli": "^2.18.4"
     }
 }

@@ -1,0 +1,398 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: ^2.18.4
+        version: 2.18.4
+      '@notedge/panduck':
+        specifier: workspace:*
+        version: link:projects/packages/panduck
+
+  projects/packages/homepage:
+    dependencies:
+      '@notedge/panduck':
+        specifier: workspace:*
+        version: link:../panduck
+      '@vmz/core':
+        specifier: 0.2.7
+        version: 0.2.7
+      '@vmz/ui':
+        specifier: 0.2.7
+        version: 0.2.7
+    devDependencies:
+      '@vmz/vmz':
+        specifier: 0.2.7
+        version: 0.2.7(typescript@5.9.3)
+
+  projects/packages/panduck:
+    optionalDependencies:
+      '@notedge/panduck-darwin-arm64':
+        specifier: workspace:*
+        version: link:../panduck-darwin-arm64
+      '@notedge/panduck-darwin-x64':
+        specifier: workspace:*
+        version: link:../panduck-darwin-x64
+      '@notedge/panduck-linux-arm64':
+        specifier: workspace:*
+        version: link:../panduck-linux-arm64
+      '@notedge/panduck-linux-x64':
+        specifier: workspace:*
+        version: link:../panduck-linux-x64
+      '@notedge/panduck-unknown-wasm32':
+        specifier: workspace:*
+        version: link:../panduck-unknown-wasm32
+      '@notedge/panduck-win32-x64':
+        specifier: workspace:*
+        version: link:../panduck-win32-x64
+    devDependencies:
+      '@types/node':
+        specifier: ^22.13.10
+        version: 22.20.4
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+
+  projects/packages/panduck-darwin-arm64: {}
+
+  projects/packages/panduck-darwin-x64: {}
+
+  projects/packages/panduck-linux-arm64: {}
+
+  projects/packages/panduck-linux-x64: {}
+
+  projects/packages/panduck-unknown-wasm32: {}
+
+  projects/packages/panduck-win32-x64: {}
+
+packages:
+
+  '@napi-rs/cli@2.18.4':
+    resolution: {integrity: sha512-SgJeA4df9DE2iAEpr3M2H0OKl/yjtg1BnRI5/JyowS71tUWhrfSu2LT0V3vlHET+g1hBVlrO60PmEXwUEKp8Mg==}
+    engines: {node: '>= 10'}
+    hasBin: true
+
+  '@types/node@22.20.4':
+    resolution: {integrity: sha512-zJRE40jpHtKqE/C4fgHrAKQLJuSpzEnP9ff9Y7YtoR3Wd2pwqzlekDeEuUQXjRd+QCYnVnNwuJYmhdk9XV8gvA==}
+
+  '@vmz/commander@0.2.7':
+    resolution: {integrity: sha512-n2PYCSJCQqAfgYSpgY5vTs7hNH2/8cboZOXe1IlMuiEkUePHoKh6eoKAuXqfii6i8e70yn7m3x9MfADFk2NL9A==}
+    engines: {node: '>=20'}
+
+  '@vmz/core@0.2.7':
+    resolution: {integrity: sha512-9CPoyXR4e3s9EWN9CnV9PMnwbsZMew3JNGwz6t63Yu/JgL4Yf4LvF7M8EZTWcwDW4K0CiHHLlctXw/32E766kg==}
+
+  '@vmz/diagnostic@0.2.7':
+    resolution: {integrity: sha512-pJVdePLpwwlNbgZ/0kYR+VuOmy5E/KF+sKJUAUW2TFivKAz/EnJ3d+hLAx/tQBIaU8NawS1POMQ9S6JOhwzzBA==}
+    engines: {node: '>=20'}
+
+  '@vmz/plugin@0.2.7':
+    resolution: {integrity: sha512-gzaMeY9dAfyehKgNUZSNPGGscUkgiEYz5L69iz3wId4RYE5q+zXUWgHWKfSk8lDRQiJKc8mm75AT3Yn7fNtoWA==}
+
+  '@vmz/protocol@0.2.7':
+    resolution: {integrity: sha512-wvpmGmOo9h9wdQX6fI2dU0vgP7kZM3NZpzv8B1s+h3Agd1vtgNODe3c+KLR2L8wSrBebi1ppjeU8tuQOVuDe7Q==}
+    engines: {node: '>=20'}
+
+  '@vmz/ui@0.2.7':
+    resolution: {integrity: sha512-wPZBzoPMfrlirdmOHcZm+cugmbXazh+aU/Wo8QdYLgkQOblM9s0XTjtaFr2drwYj87+Gf0p8/aiHP/JtKFuKAg==}
+    peerDependencies:
+      '@vmz/ui-icons': 0.2.7
+    peerDependenciesMeta:
+      '@vmz/ui-icons':
+        optional: true
+
+  '@vmz/vmz-darwin-arm64@0.2.7':
+    resolution: {integrity: sha512-G0qoPKaaqVNM1kIihBEBHTFqihzwEec1RNpyT4glouOT7zUj3W8zd+Z+XofaNZf6MVi/Knqy2fbOOLe+kjlrYA==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@vmz/vmz-darwin-x64@0.2.7':
+    resolution: {integrity: sha512-nAe745Wzf6US5gGjufxmqErN2AP+qDa3eXnqeUCLOesVONj6D5nWbrq3crbWQ6w9mfNkW0lzAAk3FM+265TiHQ==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@vmz/vmz-linux-arm64@0.2.7':
+    resolution: {integrity: sha512-VoXylmbKeAdCI5QrO6Z3jsRNu5syU6Yk8axZWuUcTSl95ZAreLMw6NxOzbQfckyRtajtitqC/FQMhKYMuL7VVA==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@vmz/vmz-linux-x64@0.2.7':
+    resolution: {integrity: sha512-bcH1SgVjHe6u1TmJsU9WEcaEGpe+E37grdDsD+pJ9BigZhNYoLKRKx8sY2+4pqwOuGJlwKSTjLTedoP63594JQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@vmz/vmz-win32-arm64@0.2.7':
+    resolution: {integrity: sha512-VMmfrAIgEvBh7sgx4FH6h10Aijdh/NfJ3mEYPK7LsqzFN1hqwSHnwNdz/AVG/K4CbL29/I4q7orGx0r6GZC/Xw==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@vmz/vmz-win32-x64@0.2.7':
+    resolution: {integrity: sha512-VFVP33kTQaUyEQ/Z/YJBdjkENGMmZQsCkuSB+g/SowLhTTJbgZkU27RVF6HBJ2gabZp3V90FY0E3qrKN5V06ZQ==}
+    cpu: [x64]
+    os: [win32]
+
+  '@vmz/vmz@0.2.7':
+    resolution: {integrity: sha512-bxVFuAYbMfE1F+ftYC2bg66jlof7UIkYqDTnQpFIIwhLxlAPcP0F0OuIbILaovmZCsWgo1rNmdw4wIFEJb+KDA==}
+    hasBin: true
+    peerDependencies:
+      '@vmz/plugin-markdown-it': 0.2.7
+      '@vmz/test': 0.2.7
+      typescript: ^5.8.3
+    peerDependenciesMeta:
+      '@vmz/plugin-markdown-it':
+        optional: true
+      '@vmz/test':
+        optional: true
+      typescript:
+        optional: true
+
+  boolbase@2.0.0:
+    resolution: {integrity: sha512-DkVaaQHymRhpYEYo9x1oo7Q7B0Y6KJUsjm3c9eTyFDby4MHLBTwZ6ZDWBel5zrYxj1WsZgC5oLpiz+93MluXeA==}
+    engines: {node: '>=20.19.0'}
+
+  css-select@7.0.0:
+    resolution: {integrity: sha512-snmjEVXy+1LnwXdxhYvTMj1d9tOh4HxkA1YmoayVBeeyR2C14Pum7fcxJIm4SswYspVy866eYNwlH6xC3/VH5g==}
+    engines: {node: '>=20.19.0'}
+
+  css-what@8.0.0:
+    resolution: {integrity: sha512-DH0Bqq3DNp5tdOReuNyAA+Ev4Y2GS5FMbZpeTLP6C4CDi0h5nL0BmUPChXw3o/qbHLDWHl49sbNqQVY7bMSDdw==}
+    engines: {node: '>=20.19.0'}
+
+  cssom@0.5.0:
+    resolution: {integrity: sha512-iKuQcq+NdHqlAcwUY0o/HL69XQrUaQdMjmStJ8JFmUaiiQErlhrmuigkg/CU4E2J0IyUKUrMAgl36TvN67MqTw==}
+
+  dom-serializer@2.0.0:
+    resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
+
+  dom-serializer@3.1.1:
+    resolution: {integrity: sha512-4MEa38/QexBob6gFNwu+EGdWvhJ1OKuNwdYY3Y3NyeWDQfnGeDYQUDfIRzWu5B5gsv03so2Uxd28YC6zrsx3Lw==}
+    engines: {node: '>=20.19.0'}
+
+  domelementtype@2.3.0:
+    resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
+
+  domelementtype@3.0.0:
+    resolution: {integrity: sha512-umCQid3jKbDmVjx8jGaW7uUykm4DEUeyV21hPxNMo2nV955DhUThwqyOIDtreepP31hl84X7G5U9ZfsWvIB3Pg==}
+    engines: {node: '>=20.19.0'}
+
+  domhandler@5.0.3:
+    resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
+    engines: {node: '>= 4'}
+
+  domhandler@6.0.1:
+    resolution: {integrity: sha512-gYzvtM72ZtxQO0T048kd6HWSbbGCNOUwcnfQ01cqIJ4X2IYKFFHZ5mKvrQETcFXxsRObZulDaKmy//R7TPtsBg==}
+    engines: {node: '>=20.19.0'}
+
+  domutils@3.2.2:
+    resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
+
+  domutils@4.0.2:
+    resolution: {integrity: sha512-qI4JLRKnSzqFqr7hAlS5xQDusBCjKSEG4t4+7aNrIQMHBcsC2TGEhuyABJdYkgSewL57PNLYEiibY2iPKhKpaA==}
+    engines: {node: '>=20.19.0'}
+
+  entities@4.5.0:
+    resolution: {integrity: sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==}
+    engines: {node: '>=0.12'}
+
+  entities@7.0.1:
+    resolution: {integrity: sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA==}
+    engines: {node: '>=0.12'}
+
+  entities@8.1.0:
+    resolution: {integrity: sha512-kxL7msIffSuh9aaFAMD7rxAIuTRMAHMeBtgHW2yUdWw732ZNh4MehkF2gdjvtdmikkaIP9bFDDJOPlsvm7avrA==}
+    engines: {node: '>=20.19.0'}
+
+  html-escaper@3.0.3:
+    resolution: {integrity: sha512-RuMffC89BOWQoY0WKGpIhn5gX3iI54O6nRA0yC124NYVtzjmFWBIiFd8M0x+ZdX0P9R4lADg1mgP8C7PxGOWuQ==}
+
+  htmlparser2@10.1.0:
+    resolution: {integrity: sha512-VTZkM9GWRAtEpveh7MSF6SjjrpNVNNVJfFup7xTY3UpFtm67foy9HDVXneLtFVt4pMz5kZtgNcvCniNFb1hlEQ==}
+
+  jiti@2.7.0:
+    resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
+    hasBin: true
+
+  linkedom@0.18.13:
+    resolution: {integrity: sha512-ES/o9qotMpzpN2MHs+Iq/JcVoOj8Fa5wiQYrTdFpvAnwXL0g66XHHUc9WUMk6nAlBtGsFQ24ne+SYnvnaQ2FSw==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      canvas: '>= 2'
+    peerDependenciesMeta:
+      canvas:
+        optional: true
+
+  nth-check@3.0.1:
+    resolution: {integrity: sha512-GX0gsdbGVCgnRgbeGaubfjpBXyYRWOOCVeYh08bSQvDZqxz5ndXs1OTfAt/h36G1xvI94YIspsI0sVFqAV9+RQ==}
+    engines: {node: '>=20.19.0'}
+
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+  uhyphen@0.2.0:
+    resolution: {integrity: sha512-qz3o9CHXmJJPGBdqzab7qAYuW8kQGKNEuoHFYrBwV6hWIMcpAmxDLXojcHfFr9US1Pe6zUswEIJIbLI610fuqA==}
+
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
+
+snapshots:
+
+  '@napi-rs/cli@2.18.4': {}
+
+  '@types/node@22.20.4':
+    dependencies:
+      undici-types: 6.21.0
+
+  '@vmz/commander@0.2.7': {}
+
+  '@vmz/core@0.2.7':
+    dependencies:
+      linkedom: 0.18.13
+    optionalDependencies:
+      '@vmz/vmz-darwin-arm64': 0.2.7
+      '@vmz/vmz-darwin-x64': 0.2.7
+      '@vmz/vmz-linux-arm64': 0.2.7
+      '@vmz/vmz-linux-x64': 0.2.7
+      '@vmz/vmz-win32-arm64': 0.2.7
+      '@vmz/vmz-win32-x64': 0.2.7
+    transitivePeerDependencies:
+      - canvas
+
+  '@vmz/diagnostic@0.2.7': {}
+
+  '@vmz/plugin@0.2.7':
+    dependencies:
+      '@vmz/protocol': 0.2.7
+
+  '@vmz/protocol@0.2.7': {}
+
+  '@vmz/ui@0.2.7': {}
+
+  '@vmz/vmz-darwin-arm64@0.2.7':
+    optional: true
+
+  '@vmz/vmz-darwin-x64@0.2.7':
+    optional: true
+
+  '@vmz/vmz-linux-arm64@0.2.7':
+    optional: true
+
+  '@vmz/vmz-linux-x64@0.2.7':
+    optional: true
+
+  '@vmz/vmz-win32-arm64@0.2.7':
+    optional: true
+
+  '@vmz/vmz-win32-x64@0.2.7':
+    optional: true
+
+  '@vmz/vmz@0.2.7(typescript@5.9.3)':
+    dependencies:
+      '@vmz/commander': 0.2.7
+      '@vmz/core': 0.2.7
+      '@vmz/diagnostic': 0.2.7
+      '@vmz/plugin': 0.2.7
+      '@vmz/protocol': 0.2.7
+      jiti: 2.7.0
+    optionalDependencies:
+      '@vmz/vmz-darwin-arm64': 0.2.7
+      '@vmz/vmz-darwin-x64': 0.2.7
+      '@vmz/vmz-linux-arm64': 0.2.7
+      '@vmz/vmz-linux-x64': 0.2.7
+      '@vmz/vmz-win32-arm64': 0.2.7
+      '@vmz/vmz-win32-x64': 0.2.7
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - canvas
+
+  boolbase@2.0.0: {}
+
+  css-select@7.0.0:
+    dependencies:
+      boolbase: 2.0.0
+      css-what: 8.0.0
+      domhandler: 6.0.1
+      domutils: 4.0.2
+      nth-check: 3.0.1
+
+  css-what@8.0.0: {}
+
+  cssom@0.5.0: {}
+
+  dom-serializer@2.0.0:
+    dependencies:
+      domelementtype: 2.3.0
+      domhandler: 5.0.3
+      entities: 4.5.0
+
+  dom-serializer@3.1.1:
+    dependencies:
+      domelementtype: 3.0.0
+      domhandler: 6.0.1
+      entities: 8.1.0
+
+  domelementtype@2.3.0: {}
+
+  domelementtype@3.0.0: {}
+
+  domhandler@5.0.3:
+    dependencies:
+      domelementtype: 2.3.0
+
+  domhandler@6.0.1:
+    dependencies:
+      domelementtype: 3.0.0
+
+  domutils@3.2.2:
+    dependencies:
+      dom-serializer: 2.0.0
+      domelementtype: 2.3.0
+      domhandler: 5.0.3
+
+  domutils@4.0.2:
+    dependencies:
+      dom-serializer: 3.1.1
+      domelementtype: 3.0.0
+      domhandler: 6.0.1
+
+  entities@4.5.0: {}
+
+  entities@7.0.1: {}
+
+  entities@8.1.0: {}
+
+  html-escaper@3.0.3: {}
+
+  htmlparser2@10.1.0:
+    dependencies:
+      domelementtype: 2.3.0
+      domhandler: 5.0.3
+      domutils: 3.2.2
+      entities: 7.0.1
+
+  jiti@2.7.0: {}
+
+  linkedom@0.18.13:
+    dependencies:
+      css-select: 7.0.0
+      cssom: 0.5.0
+      html-escaper: 3.0.3
+      htmlparser2: 10.1.0
+      uhyphen: 0.2.0
+
+  nth-check@3.0.1:
+    dependencies:
+      boolbase: 2.0.0
+
+  typescript@5.9.3: {}
+
+  uhyphen@0.2.0: {}
+
+  undici-types@6.21.0: {}
