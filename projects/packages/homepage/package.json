@@ -1,0 +1,24 @@
+{
+    "name": "@notedge/homepage",
+    "version": "0.2.0",
+    "private": true,
+    "type": "module",
+    "description": "Panduck marketing homepage (VMZ static site with @notedge/panduck probe)",
+    "scripts": {
+        "check": "vmz check .",
+        "predev": "node ../../../scripts/stage-homepage-wasm.mjs",
+        "prebuild": "node ../../../scripts/stage-homepage-wasm.mjs",
+        "build": "vmz build --release --profile static .",
+        "dev": "vmz dev .",
+        "preview": "vmz serve --profile static .",
+        "test:panduck": "node ./tests/panduck-probe.mjs"
+    },
+    "dependencies": {
+        "@notedge/panduck": "workspace:*",
+        "@vmz/core": "0.2.7",
+        "@vmz/ui": "0.2.7"
+    },
+    "devDependencies": {
+        "@vmz/vmz": "0.2.7"
+    }
+}

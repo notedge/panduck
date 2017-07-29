@@ -1,0 +1,20 @@
+{
+    "entries": [
+        {
+            "key": { "path": ["motion", "control", "duration"] },
+            "value": "120ms"
+        },
+        {
+            "key": { "path": ["motion", "control", "easing"] },
+            "value": "linear"
+        },
+        {
+            "key": { "path": ["motion", "overlay", "duration"] },
+            "value": "180ms"
+        },
+        {
+            "key": { "path": ["motion", "overlay", "easing"] },
+            "value": "cubic-bezier(0.2, 0, 0, 1)"
+        }
+    ]
+}

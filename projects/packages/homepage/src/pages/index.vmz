@@ -1,0 +1,151 @@
+<template>
+  <div class="panduck-home">
+    <header class="panduck-site-header">
+      <Link class="panduck-site-header__brand" href="/"><strong>Panduck</strong></Link>
+      <nav class="panduck-site-header__nav" aria-label="Primary">
+        <Link href="/">Home</Link>
+        <Link href="/formats">Formats</Link>
+      </nav>
+    </header>
+    <main>
+      <section class="panduck-home__hero" aria-labelledby="panduck-hero-title">
+        <Badge tone="brand">Document conversion · Rust core</Badge>
+        <h1 id="panduck-hero-title">Convert documents with typed adapters.</h1>
+        <p class="panduck-home__lede">
+          Panduck bridges markup formats through shared Rust types, with Node-API and WebAssembly bindings for tools and browsers.
+        </p>
+        <div class="panduck-home__actions">
+          <Link href="/formats"><Button type="button" variant="primary">Probe bindings</Button></Link>
+        </div>
+      </section>
+
+      <section class="panduck-home__grid" aria-label="Binding snapshot">
+        <Card title="Live probe" description="Browser WASM when staged, otherwise host bindings.">
+          <dl class="panduck-home__probe">
+            <div><dt>version</dt><dd>{{ panduckVersion }}</dd></div>
+            <div><dt>backend</dt><dd>{{ panduckBackend }}</dd></div>
+            <div><dt>formats</dt><dd>{{ panduckFormats }}</dd></div>
+            <div><dt>markdown</dt><dd>{{ panduckMarkdown }}</dd></div>
+          </dl>
+        </Card>
+        <Card title="Install" description="TypeScript facade over platform packages.">
+          <CodeBlock
+            :code="installSample"
+            caption="shell"
+            copy-label="Copy"
+            @copy="() => this.copyInstall()"
+          />
+        </Card>
+      </section>
+    </main>
+  </div>
+</template>
+
+<style>
+  .panduck-site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--vmz-line-default, #e2e8f0);
+  }
+  .panduck-site-header__brand {
+    font-size: 1.15rem;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    color: var(--vmz-text-ink, #0f172a);
+  }
+  .panduck-site-header__nav {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .panduck-home {
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 0 1.25rem 3rem;
+  }
+  .panduck-home__hero {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 1.5rem 0 2rem;
+  }
+  .panduck-home__hero h1 {
+    margin: 0;
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    line-height: 1.15;
+  }
+  .panduck-home__lede {
+    margin: 0;
+    max-width: 40rem;
+    color: var(--vmz-text-steel, #475569);
+    line-height: 1.55;
+  }
+  .panduck-home__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+  .panduck-home__grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .panduck-home__probe {
+    margin: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .panduck-home__probe div {
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    gap: 0.5rem;
+    font-family: var(--vmz-font-mono, ui-monospace, monospace);
+    font-size: 0.85rem;
+  }
+  .panduck-home__probe dt {
+    color: var(--vmz-text-steel, #475569);
+  }
+  .panduck-home__probe dd {
+    margin: 0;
+  }
+  @media (min-width: 720px) {
+    .panduck-home__grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+</style>
+
+<script client>
+import { probePanduck } from '../lib/panduck-probe.ts';
+
+export default class IndexPage {
+    installSample = 'pnpm add @notedge/panduck@0.2.0';
+    panduckVersion = '…';
+    panduckBackend = '…';
+    panduckFormats = '…';
+    panduckMarkdown = '…';
+
+    async onMount() {
+        const probe = await probePanduck();
+        this.panduckVersion = probe.version;
+        this.panduckBackend = probe.backend;
+        this.panduckFormats = probe.formats.join(', ');
+        this.panduckMarkdown = probe.markdownOk ? 'ok' : 'fail';
+    }
+
+    async copyInstall() {
+        const text = String(this.installSample || '');
+        if (!text || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) return;
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch {
+            /* ignore */
+        }
+    }
+}
+</script>
