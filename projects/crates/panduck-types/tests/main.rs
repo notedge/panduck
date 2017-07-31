@@ -1,3 +1,6 @@
 mod lexer;
-mod parser;
-mod generator;
+
+#[test]
+fn ready() {
+    println!("it works!")
+}
