@@ -16,6 +16,12 @@ panduck-tex = { path = "projects/crates/panduck-tex" }
 panduck-napi = { path = "projects/crates/panduck-napi" }
 panduck-wasm = { path = "projects/crates/panduck-wasm" }
 
+# CI resolves git `branch = "dev"`. Local path overlay: `.cargo/config.toml` (gitignored).
+oak-core = { git = "https://github.com/yggdrasil-language/oaks.git", branch = "dev", package = "oak-core" }
+oak-navigation = { git = "https://github.com/yggdrasil-language/oaks.git", branch = "dev", package = "oak-navigation" }
+oak-markdown = { git = "https://github.com/yggdrasil-language/oaks.git", branch = "dev", package = "oak-markdown", default-features = false, features = ["serde"] }
+oak-rst = { git = "https://github.com/yggdrasil-language/oaks.git", branch = "dev", package = "oak-rst", default-features = false, features = ["serde"] }
+
 [profile.release]
 lto = true
 opt-level = "s"

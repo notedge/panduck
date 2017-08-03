@@ -13,3 +13,9 @@ pub mod ast;
 pub mod reader;
 pub mod writer;
 
+/// Oak Markdown lexer/parser surface for this adapter.
+pub mod oak {
+    pub use oak_markdown::{
+        MarkdownLanguage, MarkdownLexer, MarkdownParser, MarkdownRoot, MarkdownTokenType,
+    };
+}

@@ -1,5 +1,11 @@
-# Copy to `config.toml` (gitignored) when acorn.rs is a sibling of this repo.
+# Copy to `config.toml` (gitignored) when sibling repos exist.
 [patch."https://github.com/yggdrasil-language/acorn.rs.git"]
 acorn-diagnostic = { path = "../acorn.rs/projects/acorn-diagnostic" }
 acorn-core = { path = "../acorn.rs/projects/acorn-core" }
 acorn-source = { path = "../acorn.rs/projects/acorn-source" }
+
+[patch."https://github.com/yggdrasil-language/oaks.git"]
+oak-core = { path = "../oaks/projects/oak-core" }
+oak-navigation = { path = "../oaks/projects/oak-navigation" }
+oak-markdown = { path = "../oaks/examples/oak-markdown" }
+oak-rst = { path = "../oaks/examples/oak-rst" }

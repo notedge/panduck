@@ -23,6 +23,11 @@ pub use crate::writer::generator::RstWriter;
 use panduck_types::helpers::SourceText;
 use panduck_types::PanduckDiagnostics;
 
+/// Oak reStructuredText lexer/parser surface for this adapter.
+pub mod oak {
+    pub use oak_rst::{RstLanguage, RstLexer, RstParser, RstRoot};
+}
+
 #[derive(Copy, Clone, Debug)]
 pub struct RstReadConfig {
     pub support_math: bool,
