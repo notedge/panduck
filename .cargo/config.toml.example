@@ -9,3 +9,6 @@ oak-core = { path = "../oaks/projects/oak-core" }
 oak-navigation = { path = "../oaks/projects/oak-navigation" }
 oak-markdown = { path = "../oaks/examples/oak-markdown" }
 oak-rst = { path = "../oaks/examples/oak-rst" }
+
+[patch."https://github.com/notedge/notedown.git"]
+notedown-ir = { path = "../notedown/projects/crates/notedown-ir" }

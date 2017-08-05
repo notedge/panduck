@@ -1,7 +1,6 @@
 #![doc = include_str!("readme.md")]
 
 pub use self::token::Token;
-use crate::PanduckError;
 use byteorder::{ByteOrder, ReadBytesExt};
 use std::{
     io::{Read, Seek, SeekFrom},
@@ -60,7 +59,7 @@ impl<R, E> BinaryReader<R, E> {
     ///
     /// # Returns
     /// 返回操作结果
-    pub fn set_position(&mut self, position: u64) -> Result<u64, PanduckError>
+    pub fn set_position(&mut self, position: u64) -> crate::Result<u64>
     where
         R: Seek,
     {

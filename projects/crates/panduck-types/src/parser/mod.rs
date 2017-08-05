@@ -2,22 +2,16 @@
 
 use crate::helpers::SourceText;
 use crate::reader::Token;
-use crate::PanduckError;
-use std::fmt::Debug;
 
+/// Parser state for transitional Panduck-owned text adapters.
 #[derive(Debug)]
 pub struct ParserState<'input, T> {
-    source: &'input SourceText,
-    tokens: Vec<Token<T>>,
-    diagnostics: Vec<PanduckError>,
+    pub source: &'input SourceText,
+    pub tokens: Vec<Token<T>>,
 }
 
 impl<'input, T> ParserState<'input, T> {
     pub fn new(source: &'input SourceText, tokens: Vec<Token<T>>) -> Self {
-        Self {
-            source,
-            tokens,
-            diagnostics: vec![],
-        }
+        Self { source, tokens }
     }
 }

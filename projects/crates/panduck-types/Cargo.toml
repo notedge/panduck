@@ -9,16 +9,18 @@ repository = "https://github.com/oovm/panduck"
 documentation = "https://docs.rs/panduck-types"
 readme = "readme.md"
 license = "MPL-2.0"
-edition = "2024"
+edition = "2021"
 exclude = ["package.json", "tests/**"]
 
+[lib]
+doctest = false
+
 [dependencies]
+notedown-ir = { workspace = true }
 url = { version = "2.5.7", features = ["serde"] }
 source-map = "0.15.0"
 byteorder = "1.5.0"
-tracing = "0.1.40"
 serde = { version = "1.0", features = ["derive"] }
-lsp-types = { version = "0.94.0" }
 
 [dev-dependencies]
 

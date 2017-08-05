@@ -1,4 +1,3 @@
-#![feature(try_trait_v2)]
 #![deny(missing_debug_implementations, missing_copy_implementations)]
 #![warn(missing_docs, rustdoc::missing_crate_level_docs)]
 #![doc = include_str!("../readme.md")]
@@ -9,11 +8,10 @@
     html_favicon_url = "https://raw.githubusercontent.com/oovm/shape-rs/dev/projects/images/Trapezohedron.svg"
 )]
 
-//! # Panduck Core
-//! 
-//! `panduck-types` is the core type definition library within the Panduck project, providing a unified type system, error handling, and serialization capabilities required for cross-platform assemblers.
-//! 
-//! Refer to the [README.md](../readme.md) for more information.
+//! Panduck conversion contracts and binary helpers.
+//!
+//! Document semantics live in [`notedown_ir::DocumentGraph`] (`notedown-ir`), not in this crate.
+//! Adapter failures use [`AdapterError`]. Syntax and container diagnostics stay in Oak and Acorn.
 
 mod errors;
 pub mod generator;
@@ -24,8 +22,11 @@ pub mod reader;
 pub mod writer;
 
 pub use crate::{
-    errors::{PanduckErrorKind, PanduckDiagnostics, PanduckError, Result},
+    errors::{AdapterError, Result},
     generator::TextWriter,
     reader::BinaryReader,
     writer::BinaryWriter,
 };
+
+/// Notedown document semantic IR — Panduck reader/writer hub type.
+pub use notedown_ir;
