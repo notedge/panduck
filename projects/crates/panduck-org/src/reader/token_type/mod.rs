@@ -3,12 +3,11 @@
 //! This is a placeholder readme for the panduck-org project.
 #![doc = include_str!("../../../readme.md")]
 
-use panduck_types::lexer::TokenType;
 use panduck_types::reader::Token;
 
 pub type OrgToken = Token<OrgTokenType>;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum OrgTokenType {
     // Org specific tokens
     Heading(usize), // Level from 1 to n
@@ -38,18 +37,6 @@ pub enum OrgTokenType {
     Newline,
     Whitespace,
     EndOfFile,
-}
-
-impl TokenType for OrgTokenType {
-    const END_OF_STREAM: Self = OrgTokenType::EndOfFile;
-
-    fn is_whitespace(&self) -> bool {
-        matches!(self, OrgTokenType::Whitespace)
-    }
-
-    fn is_ignored(&self) -> bool {
-        false
-    }
 }
 
 impl ToString for OrgTokenType {

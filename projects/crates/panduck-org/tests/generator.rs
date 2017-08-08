@@ -1,21 +1,15 @@
-use crate::writer::generator::generate;
-use crate::ast::{OrgRoot, OrgBlock, OrgHeading, OrgInline};
+use panduck_org::ast::OrgRoot;
+use panduck_org::writer::OrgWriteConfig;
+use panduck_types::AdapterError;
 
 #[test]
-fn test_generate_empty_org() {
-    let org = OrgRoot { blocks: Vec::new() };
-    let expected = "";
-    assert_eq!(generate(&org), expected);
-}
-
-#[test]
-fn test_generate_heading() {
-    let mut org = OrgRoot { blocks: Vec::new() };
-    let heading = OrgHeading {
-        level: 1,
-        content: vec![OrgInline::Text("Title".to_string())],
-    };
-    org.blocks.push(OrgBlock::Heading(heading));
-    let expected = "* Title\n";
-    assert_eq!(generate(&org), expected);
+fn org_writer_is_not_implemented() {
+    let err = OrgWriteConfig::default()
+        .writer(String::new())
+        .generate(&OrgRoot { blocks: vec![] })
+        .unwrap_err();
+    assert!(matches!(
+        err,
+        AdapterError::NotImplemented { feature } if feature == "org writer"
+    ));
 }

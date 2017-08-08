@@ -12,8 +12,12 @@ license = "MPL-2.0"
 edition = "2024"
 exclude = ["package.json", "tests/**"]
 
+[lib]
+doctest = false
+
 [dependencies]
 panduck-types = { workspace = true }
+notedown-ir = { workspace = true }
 oak-markdown = { workspace = true }
 url = { version = "2.5.7", features = ["serde"] }
 source-map = "0.15.0"

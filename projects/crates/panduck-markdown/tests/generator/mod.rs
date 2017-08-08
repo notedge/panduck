@@ -1,4 +1,4 @@
-use panduck_types::PanduckError;
+use panduck_types::AdapterError;
 use panduck_markdown::ast::{
     MarkdownBlock, MarkdownBlockCode, MarkdownBold, MarkdownHeading, MarkdownImage, MarkdownInline,
     MarkdownItalic, MarkdownLink, MarkdownList, MarkdownListItem, MarkdownParagraph, MarkdownRoot,
@@ -7,7 +7,7 @@ use panduck_markdown::ast::{
 use panduck_markdown::writer::MarkdownWriteConfig;
 
 #[test]
-fn test_markdown_generation() -> Result<(), PanduckError> {
+fn test_markdown_generation() -> Result<(), AdapterError> {
     let ast = MarkdownRoot {
         blocks: vec![
             MarkdownBlock::Heading(MarkdownHeading {
@@ -65,14 +65,14 @@ fn test_markdown_generation() -> Result<(), PanduckError> {
 
     let mut buffer = String::new();
     let config = MarkdownWriteConfig::default();
-    let _ = config.writer(&mut buffer).generate(&ast).result?;
+    let _ = config.writer(&mut buffer).generate(&ast)?;
 
     assert_eq!(buffer, include_str!("generated1.md"));
     Ok(())
 }
 
 #[test]
-fn test_markdown_generator() -> Result<(), PanduckError> {
+fn test_markdown_generator() -> Result<(), AdapterError> {
     let ast = MarkdownRoot {
         blocks: vec![
             MarkdownBlock::Heading(MarkdownHeading {
@@ -133,7 +133,7 @@ fn test_markdown_generator() -> Result<(), PanduckError> {
 
     let mut output = String::new();
     let config = MarkdownWriteConfig::default();
-    let _ = config.writer(&mut output).generate(&ast).result?;
+    let _ = config.writer(&mut output).generate(&ast)?;
 
     assert_eq!(output, include_str!("generated2.md"));
     Ok(())

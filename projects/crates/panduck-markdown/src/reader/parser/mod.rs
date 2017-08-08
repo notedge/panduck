@@ -1,9 +1,8 @@
 #![doc = include_str!("readme.md")]
 
 use crate::ast::MarkdownRoot;
-use panduck_types::PanduckDiagnostics;
-
 use crate::reader::{MarkdownReadConfig, MarkdownTokenType};
+use panduck_types::{AdapterError, Result};
 
 pub struct MarkdownParser<'input> {
     pub(crate) state: panduck_types::parser::ParserState<'input, MarkdownTokenType>,
@@ -11,7 +10,7 @@ pub struct MarkdownParser<'input> {
 }
 
 impl<'input> MarkdownParser<'input> {
-    pub fn parse(&mut self) -> PanduckDiagnostics<MarkdownRoot> {
-        todo!()
+    pub fn parse(&mut self) -> Result<MarkdownRoot> {
+        Err(AdapterError::not_implemented("markdown parser"))
     }
 }

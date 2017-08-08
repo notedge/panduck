@@ -5,9 +5,8 @@ use crate::ast::{
     MarkdownParagraph, MarkdownRoot, MarkdownText,
 };
 use crate::writer::MarkdownWriteConfig;
-use panduck_types::{PanduckDiagnostics, PanduckError, TextWriter};
+use panduck_types::{Result, TextWriter};
 use std::fmt::Write;
-// Add this import
 
 #[derive(Debug)]
 pub struct MarkdownWriter<'input, W> {
@@ -25,21 +24,14 @@ impl MarkdownWriteConfig {
 }
 
 impl<'input, W: Write> MarkdownWriter<'input, W> {
-    pub fn generate(mut self, ast: &MarkdownRoot) -> PanduckDiagnostics<W> {
-        let mut errors = Vec::new();
+    pub fn generate(mut self, ast: &MarkdownRoot) -> Result<W> {
         for block in &ast.blocks {
-            match self.write_block(block) {
-                Ok(o) => {}
-                Err(e) => errors.push(e),
-            }
+            self.write_block(block)?;
         }
-        PanduckDiagnostics {
-            result: Ok(self.writer.finish()),
-            diagnostics: errors,
-        }
+        Ok(self.writer.finish())
     }
 
-    fn write_block(&mut self, block: &MarkdownBlock) -> Result<(), PanduckError> {
+    fn write_block(&mut self, block: &MarkdownBlock) -> Result<()> {
         match block {
             MarkdownBlock::Heading(heading) => self.write_heading(heading),
             MarkdownBlock::Paragraph(paragraph) => self.write_paragraph(paragraph),
@@ -48,7 +40,7 @@ impl<'input, W: Write> MarkdownWriter<'input, W> {
         }
     }
 
-    fn write_heading(&mut self, heading: &MarkdownHeading) -> Result<(), PanduckError> {
+    fn write_heading(&mut self, heading: &MarkdownHeading) -> Result<()> {
         for _ in 0..heading.level {
             self.writer.write("#")?;
         }
@@ -59,13 +51,13 @@ impl<'input, W: Write> MarkdownWriter<'input, W> {
         Ok(())
     }
 
-    fn write_paragraph(&mut self, paragraph: &MarkdownParagraph) -> Result<(), PanduckError> {
+    fn write_paragraph(&mut self, paragraph: &MarkdownParagraph) -> Result<()> {
         self.write_inlines(&paragraph.content)?;
         self.writer.write_line("")?;
         self.writer.write_line("")?;
         Ok(())
     }
-    fn write_block_code(&mut self, block_code: &MarkdownBlockCode) -> Result<(), PanduckError> {
+    fn write_block_code(&mut self, block_code: &MarkdownBlockCode) -> Result<()> {
         self.writer.write("```")?;
         self.writer.write_line(&block_code.language)?;
         self.writer.write_line(&block_code.content)?;
@@ -74,7 +66,7 @@ impl<'input, W: Write> MarkdownWriter<'input, W> {
         Ok(())
     }
 
-    fn write_list(&mut self, list: &MarkdownList) -> Result<(), PanduckError> {
+    fn write_list(&mut self, list: &MarkdownList) -> Result<()> {
         self.writer.write_line("")?;
         match list {
             MarkdownList::Unordered(items) => {
@@ -98,7 +90,7 @@ impl<'input, W: Write> MarkdownWriter<'input, W> {
         Ok(())
     }
 
-    fn write_inlines(&mut self, inlines: &[MarkdownInline]) -> Result<(), PanduckError> {
+    fn write_inlines(&mut self, inlines: &[MarkdownInline]) -> Result<()> {
         for inline in inlines {
             match inline {
                 MarkdownInline::Text(MarkdownText { text: text }) => self.writer.write(&text)?,

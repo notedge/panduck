@@ -1,4 +1,3 @@
-#![feature(try_trait_v2)]
 #![deny(missing_debug_implementations, missing_copy_implementations)]
 #![warn(missing_docs, rustdoc::missing_crate_level_docs)]
 #![doc = include_str!("../readme.md")]
@@ -17,5 +16,12 @@ pub mod writer;
 pub mod oak {
     pub use oak_markdown::{
         MarkdownLanguage, MarkdownLexer, MarkdownParser, MarkdownRoot, MarkdownTokenType,
+    };
+}
+
+/// Notedown document IR produced by Panduck readers.
+pub mod ir {
+    pub use notedown_ir::{
+        Block, DocumentGraph, DocumentMetadata, IdAllocator, Inline, LossMarker, SemanticStatus,
     };
 }

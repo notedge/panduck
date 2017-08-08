@@ -6,7 +6,7 @@ pub use self::token_type::{MarkdownToken, MarkdownTokenType};
 pub use crate::ast::MarkdownRoot;
 use crate::reader::lexer::MarkdownLexer;
 use panduck_types::helpers::{check_path, SourceText};
-use panduck_types::{PanduckDiagnostics, PanduckError};
+use panduck_types::{AdapterError, Result};
 use std::io::{read_to_string, Read};
 use std::path::Path;
 use url::Url;
@@ -29,70 +29,30 @@ impl MarkdownReadConfig {
             config: self,
         }
     }
-    pub fn read_str(&self, text: &str, url: Option<Url>) -> PanduckDiagnostics<MarkdownRoot> {
+
+    pub fn read_str(&self, text: &str, url: Option<Url>) -> Result<MarkdownRoot> {
         self.reader(text.as_bytes()).read(url)
     }
 
-    pub fn read_path(&self, path: impl AsRef<Path>) -> PanduckDiagnostics<MarkdownRoot> {
-        match check_path(path) {
-            Ok((file, url)) => self.reader(file).read(Some(url)),
-            Err(e) => PanduckDiagnostics {
-                result: Err(e),
-                diagnostics: vec![],
-            },
-        }
+    pub fn read_path(&self, path: impl AsRef<Path>) -> Result<MarkdownRoot> {
+        let (file, url) = check_path(path)?;
+        self.reader(file).read(Some(url))
     }
 }
 
 impl<'input, R: Read> MarkdownReader<'input, R> {
-    pub fn read(mut self, url: Option<Url>) -> PanduckDiagnostics<MarkdownRoot> {
-        let mut errors = vec![];
-        let text = match read_to_string(&mut self.reader) {
-            Ok(text) => text,
-            Err(e) => {
-                return PanduckDiagnostics {
-                    result: Err(PanduckError::from(e)),
-                    diagnostics: errors,
-                };
-            }
-        };
+    pub fn read(mut self, url: Option<Url>) -> Result<MarkdownRoot> {
+        let text = read_to_string(&mut self.reader).map_err(AdapterError::from)?;
         let source = SourceText::new(text, url);
         let mut lexer = MarkdownLexer {
             state: panduck_types::lexer::LexerState::new(&source),
             config: &self.config,
         };
-        let PanduckDiagnostics {
-            result,
-            mut diagnostics,
-        } = lexer.tokenizer();
-        errors.append(&mut diagnostics);
-        let tokens = match result {
-            Ok(tokens) => tokens,
-            Err(e) => {
-                return PanduckDiagnostics {
-                    result: Err(e),
-                    diagnostics: errors,
-                };
-            }
-        };
+        let tokens = lexer.tokenize()?;
         let mut parser = crate::reader::parser::MarkdownParser {
             state: panduck_types::parser::ParserState::new(&source, tokens),
             config: &self.config,
         };
-        let PanduckDiagnostics {
-            result,
-            mut diagnostics,
-        } = parser.parse();
-        errors.append(&mut diagnostics);
-        match result {
-            Ok(tokens) => PanduckDiagnostics {
-                result: Ok(tokens),
-                diagnostics: errors,
-            },
-            Err(e) => PanduckDiagnostics {
-                result: Err(e),
-                diagnostics: errors,
-            },
-        }
+        parser.parse()
     }
 }
