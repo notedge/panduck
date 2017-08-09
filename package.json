@@ -9,9 +9,13 @@
         "typecheck": "pnpm --filter @notedge/panduck typecheck",
         "homepage:dev": "pnpm --filter @notedge/homepage dev",
         "homepage:build": "pnpm --filter @notedge/homepage build",
-        "homepage:check": "pnpm --filter @notedge/homepage check"
+        "homepage:check": "pnpm --filter @notedge/homepage check",
+        "placeholder": "nifty publish --placeholder --dry-run",
+        "placeholder:publish": "nifty publish --placeholder",
+        "placeholder:trust": "nifty trust"
     },
     "devDependencies": {
+        "@doki-land/nifty": "^0.0.12",
         "@notedge/panduck": "workspace:*",
         "@napi-rs/cli": "^2.18.4"
     }
