@@ -19,7 +19,7 @@ const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 const userArgs = process.argv.slice(2);
 
 if (userArgs.includes('--help') || userArgs.includes('-h')) {
-    console.log(`@notedge/panduck-skills — install Panduck agent skills
+    console.log(`@notedge/panduck-skills — install Panduck user agent skills
 
 Usage:
   npx @notedge/panduck-skills

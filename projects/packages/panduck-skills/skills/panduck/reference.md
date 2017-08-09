@@ -1,65 +1,76 @@
-# Panduck agent reference
+# Panduck user reference
 
-## notedown-ir object families
+## npm packages
 
-Minimum semantic objects (independent of any parser AST):
+| Package | Role |
+|---------|------|
+| `@notedge/panduck` | TypeScript loader and shared types |
+| `@notedge/panduck/node` | Node-API entry (`loadPanduckNode`) |
+| `@notedge/panduck/wasm` | WebAssembly entry (`loadPanduckWasm`) |
+| `@notedge/panduck-<platform>` | Prebuilt native binary for your OS/CPU |
+| `@notedge/panduck-unknown-wasm32` | WASM artifacts for browser builds |
+| `@notedge/panduck-skills` | Agent skill installer (this package) |
 
-- Document metadata: title, language, authors, tags.
-- Blocks: section, paragraph, list, table, quote, code, math, opaque (with status).
-- Inlines: text runs, emphasis, code, links, math, references.
-- Relations: contains, references, bidirectional, cites, embeds, backlink (indexed, not injected into target body).
-- Assets: image, audio, video, font, attachment, generated view — with `AssetId`, optional content identity, media type, status.
-- Sources: `SourceRef` per node — XML range, package member, PDF object, text span, synthetic, manual; precision via `SemanticStatus`.
+## `PanduckBindings` (current surface)
 
-## Asset three-layer identity
-
-```text
-AssetId        stable document-level identity
-AssetSource    package member / PDF object / external URI
-AssetView      decoded, thumbnail, or target-specific rendition
+```ts
+type PanduckBindings = {
+    panduckVersion: () => string;
+    supportedFormats: () => string[];
+    isSupportedFormat: (name: string) => boolean;
+};
 ```
 
-Writers remap paths and relationships per target format. Do not collapse source, normalized content, and output path into one string.
+Future releases may add `read`, `write`, or `convert` helpers. Agents should read the installed package types (`src/types.ts`) rather than assuming methods that are not exported.
 
-## DOCX path (reference)
+## WASM options
 
-```text
-DOCX bytes
-  → Acorn ZIP / OPC
-  → member Decoded view
-  → Oak XML AST
-  → WordprocessingML adapter
-  → notedown-ir::DocumentGraph
-  → Panduck writer (HTML, EPUB, …)
+```ts
+import { loadPanduckWasm } from "@notedge/panduck/wasm";
+
+await loadPanduckWasm({
+    url: "/assets/panduck_wasm_bg.wasm", // optional override
+});
 ```
 
-`oak-xml` owns XML syntax. Namespace, mixed content, and whitespace need explicit adapter logic — not string search.
+Use when there is no native `.node` binary (browser, unsupported arch, or sandboxed deploy).
 
-## EPUB / HTML / PDF notes
+## Format cheat sheet (user expectations)
 
-- **HTML**: Oak HTML AST → adapter → IR; preserve link targets and media as relations + assets.
-- **EPUB**: Acorn container + multiple Oak XML/HTML members → IR with package-level asset table.
-- **PDF**: layout is observational; inferred reading order stays `Inferred` / `Partial`; math must not downgrade to code blocks.
+What users usually want vs what needs extra care:
 
-## Local development patch template
+| From → To | Usually works | Often lossy or manual follow-up |
+|-----------|---------------|--------------------------------|
+| Markdown → HTML | Headings, lists, links, fenced code | Custom HTML, attributes, MDX |
+| RST → HTML / MD | Sections, literals, simple roles | Domain directives, custom roles |
+| Org → HTML | Outline, blocks, basic markup | Agenda, citations, Babel blocks |
+| LaTeX → other | Plain text fragments | Full math + macro-heavy TeX |
+| Word / PDF → text | — | Layout, styles, reading order (check roadmap) |
 
-Committed: `panduck/.cargo/config.toml.example`
+Tell the user which row applies before running a long batch.
 
-```toml
-[patch."https://github.com/yggdrasil-language/oaks.git"]
-oak-markdown = { path = "../oaks/examples/oak-markdown" }
+## Semantic loss (plain language)
 
-[patch."https://github.com/notedge/notedown.git"]
-notedown-ir = { path = "../notedown/projects/crates/notedown-ir" }
+When describing results to users, use:
+
+- **Preserved** — heading level, link URL, code block language, image reference
+- **Inferred** — table alignment guessed, PDF column order reconstructed
+- **Unsupported** — feature has no target equivalent (e.g. custom Word style → plain paragraph)
+- **Dropped** — element omitted from output; must be called out, never silent
+
+## Minimal probe script
+
+Useful to verify install before a batch job:
+
+```ts
+import { loadPanduckNode } from "@notedge/panduck/node";
+
+const p = loadPanduckNode();
+console.log("version", p.panduckVersion());
+console.log("formats", p.supportedFormats().join(", "));
 ```
 
-Copy to `.cargo/config.toml` (gitignored) when sibling repos exist.
+## Links
 
-## Useful entry files
-
-| Path | Purpose |
-|------|---------|
-| `projects/crates/panduck-types/src/lib.rs` | Contracts + `notedown_ir` re-export |
-| `projects/crates/panduck-markdown/src/lib.rs` | `oak::`, `ir::` modules |
-| `projects/packages/panduck/src/index.ts` | TS product entry |
-| `notedown/projects/crates/notedown-ir/src/graph.rs` | `DocumentGraph` API |
+- Repository: https://github.com/oovm/panduck
+- Product loader: `@notedge/panduck` on npm (when published)

@@ -3,7 +3,7 @@
     "version": "0.2.0",
     "private": true,
     "type": "module",
-    "description": "Agent skills for Panduck document conversion. Install with npx @notedge/panduck-skills.",
+    "description": "Agent skills for Panduck users — document conversion with @notedge/panduck. Install with npx @notedge/panduck-skills.",
     "repository": {
         "type": "git",
         "url": "https://github.com/oovm/panduck.git",
@@ -12,12 +12,12 @@
     "homepage": "https://github.com/oovm/panduck/tree/dev/projects/packages/panduck-skills",
     "keywords": [
         "panduck",
-        "notedown",
         "document-conversion",
+        "markdown",
+        "restructuredtext",
         "agent-skills",
         "skills",
-        "cursor",
-        "notedown-ir"
+        "cursor"
     ],
     "license": "MPL-2.0",
     "bin": {

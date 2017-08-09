@@ -1,16 +1,14 @@
 # @notedge/panduck-skills
 
-Agent skills for [Panduck](https://github.com/oovm/panduck) document conversion.
+Agent skills for **people who use Panduck** to convert documents — not for contributors hacking the Rust repo.
 
-Install once. The skill teaches agents the Acorn / Oak / Notedown IR / Panduck boundaries, crate layout, and conversion workflow so prompts can focus on the document task.
+Install once so coding agents know how to install `@notedge/panduck`, pick formats, write conversion scripts, and explain partial or failed conversions in plain language.
 
 ## Install
 
 ```bash
 npx @notedge/panduck-skills
 ```
-
-Forward flags to the skills CLI:
 
 ```bash
 npx @notedge/panduck-skills -g
@@ -20,23 +18,22 @@ npx @notedge/panduck-skills -a cursor -y
 ## Example prompts
 
 ```text
-Convert this Markdown file to HTML with Panduck. Report any semantic loss from notedown-ir coverage.
+Convert this folder of Markdown files to HTML with Panduck. List anything that did not round-trip.
 ```
 
 ```text
-Add a Panduck reader: oak-markdown → notedown-ir. Do not add a Panduck-owned document AST.
+Write a Node script using @notedge/panduck that checks which formats are available on this machine.
 ```
 
 ```text
-Wire a DOCX import path: Acorn OPC → Oak XML → adapter → notedown-ir.
+I need RST → Markdown for my docs site. Set up Panduck and handle images in a subfolder.
 ```
 
 ## What the skill covers
 
-- Four-system boundary: Acorn, Oak, Notedown IR, Panduck
-- `notedown-ir::DocumentGraph` as the semantic hub
-- Per-crate roles (`panduck-types`, `panduck-markdown`, …)
-- Diagnostics and loss reporting by layer
-- Monorepo dependency and local patch conventions
+- Installing and loading `@notedge/panduck` (Node native vs WASM)
+- Supported format names and honest limits of the current API
+- Batch conversion, CI, and troubleshooting platform packages
+- Explaining semantic loss to end users without internal jargon
 
-See `skills/panduck/SKILL.md` for the full agent contract.
+See `skills/panduck/SKILL.md` for the full agent guide.

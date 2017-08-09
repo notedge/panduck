@@ -1,146 +1,150 @@
 ---
 name: panduck
-description: Work on Panduck document conversion. Treat notedown-ir DocumentGraph as the semantic core. Readers consume Oak or Acorn views and lower to notedown-ir; writers consume notedown-ir only. Respect Acorn, Oak, and notedown-ir diagnostics layers. Use thin panduck_types::AdapterError for fatal adapter failures only. Do not invent Panduck-owned document ASTs or restore Gaia-style diagnostics containers.
+description: Help users convert documents with Panduck (@notedge/panduck). Install Node or WASM bindings, pick source and target formats, run conversions in scripts or apps, and explain partial results or semantic loss in plain language. Load when the user mentions Panduck, document conversion, Markdown, reStructuredText, Org, LaTeX, DOCX, EPUB, or HTML export.
 ---
 
-# Panduck for agents
+# Panduck for users
 
 ## One sentence
 
-**Panduck = format conversion adapters around `notedown-ir::DocumentGraph`, not a fourth document AST.**
+**Panduck converts documents between formats while surfacing what was preserved, inferred, or lost — not a silent copy-paste.**
 
-## Four-system boundary
+## When to use this skill
 
-```text
-Acorn     binary layout, containers, random access, compression, provenance
-Oak       text syntax CST / typed AST (markdown, rst, xml, notedown markup, …)
-Notedown  notedown-ir — semantic graph, relations, assets, source, coverage
-Panduck   readers (into IR), writers (from IR), filters, CLI / N-API orchestration
+The user has a **document job**, not a Rust monorepo task. Typical goals:
+
+- Convert a file or folder from format A to format B
+- Batch-convert exports (notes, docs, wikis, manuscripts)
+- Wire Panduck into Node, TypeScript, or a static site
+- Compare outputs and understand missing footnotes, math, images, or styles
+- Fix install errors for `@notedge/panduck` platform packages
+
+Do **not** default to internal crate names, IR types, or contributor workflows unless the user explicitly asks to hack on the Panduck repository.
+
+## Install
+
+**npm package:** `@notedge/panduck`
+
+```bash
+npm install @notedge/panduck
+# or
+pnpm add @notedge/panduck
 ```
 
-These are not interchangeable ASTs. Every hop needs an explicit contract and loss record.
+Native speed on Node uses an optional platform package (`@notedge/panduck-win32-x64`, `@notedge/panduck-darwin-arm64`, …) pulled in automatically when supported.
 
-## Conversion hub
+**Browser / edge:** use the WASM entry (`@notedge/panduck/wasm`) when you cannot load a `.node` binary.
 
-```text
-source bytes or text
-  → Acorn (if binary package) or direct text
-  → Oak lexer/parser (if textual)
-  → format adapter (WordprocessingML, HTML, … when needed)
-  → notedown-ir::DocumentGraph
-  → Panduck writer
-  → target bytes or text
+**This skill package** (teaches agents how to help Panduck users):
+
+```bash
+npx @notedge/panduck-skills
+npx @notedge/panduck-skills -a cursor -y
 ```
 
-Rules:
+## Quick start (Node)
 
-1. **Readers** construct `DocumentGraph` directly. No temporary Notedown markup text. No `notedown_ast` / HIR as the hub.
-2. **Writers** read `DocumentGraph` and target policy only. No parser AST parameters.
-3. **`panduck-types`** holds conversion contracts, thin adapter errors, binary helpers. It re-exports `notedown_ir` but does **not** own block/inline semantics.
-4. Legacy `ast/` modules under `panduck-markdown` / `panduck-rst` are transitional. New work lowers Oak → `notedown-ir`, not into Panduck AST.
+```ts
+import { loadPanduckNode } from "@notedge/panduck/node";
 
-## Crate map
+const panduck = loadPanduckNode();
+console.log(panduck.panduckVersion());
+console.log(panduck.supportedFormats());
+console.log(panduck.isSupportedFormat("markdown"));
+```
 
-| Crate / package | Role |
-|-----------------|------|
-| `notedown-ir` | `DocumentGraph`, `Block`, `Inline`, `Relation`, `Asset`, `SourceRef`, `LossMarker`, `CoverageReport` |
-| `panduck-types` | Shared contracts, adapter I/O helpers, `pub use notedown_ir` |
-| `panduck-markdown` | Markdown reader/writer; `oak::` re-exports `oak-markdown`; `ir::` re-exports notedown-ir |
-| `panduck-rst` | RST reader/writer; `oak::` re-exports `oak-rst`; `ir::` re-exports notedown-ir |
-| `panduck-org`, `panduck-tex`, … | Other format adapters (same IR hub) |
-| `panduck-napi` / `panduck-wasm` | Native bindings |
-| `@notedge/panduck` | TypeScript / Node-API / WASM product surface |
+Build native artifacts from source only when the user is developing Panduck itself: `pnpm run build:napi` at the repo root.
 
-Forbidden names: `panduck-core` (use `panduck-types`).
+## Supported formats (today)
 
-## Diagnostics and loss (by layer)
+Bindings currently advertise these adapter names:
 
-Do **not** reintroduce `PanduckDiagnostics`, `PanduckError`, or Gaia leftovers (`Architecture`, `CompilationTarget`, `InvalidInstruction`, …).
+| Format | Name passed to `isSupportedFormat` |
+|--------|-------------------------------------|
+| Markdown | `markdown` |
+| reStructuredText | `rst` |
+| Org mode | `org` |
+| LaTeX | `tex` |
 
-| Failure | Owner |
-|---------|--------|
-| Container / ZIP / OPC / partial read | Acorn diagnostic |
-| Text syntax / XML well-formedness | Oak diagnostic |
-| Semantic gap, unresolved ref, inferred layout | `notedown-ir` `SemanticStatus`, `LossMarker`, `coverage` |
-| Writer cannot represent a construct | IR `LossMarker` + optional `AdapterError::adapter` |
-| I/O, config, unsupported target format | `panduck_types::AdapterError` (`Result<T>`) |
+Roadmap formats (DOCX, EPUB, HTML, PDF, Notedown) may appear in docs or issues before they are callable from npm. **Always call `supportedFormats()`** and tell the user honestly if a path is not available yet.
 
-**Success with loss is normal.** A written file does not mean semantics were preserved. Always surface `graph.coverage` and explicit loss markers when returning results to users or tests.
+## How to help the user
 
-## Dependency conventions (panduck monorepo)
+### 1. Clarify the job
 
-- **Internal crates**: `path` in root `Cargo.toml` `[workspace.dependencies]`.
-- **External siblings** (`oaks`, `acorn.rs`, `notedown`): `git` + `branch = "dev"` in committed `Cargo.toml`.
-- **Local overlay**: copy `.cargo/config.toml.example` → `.cargo/config.toml` (gitignored) to patch sibling paths.
-- Do **not** patch internal `panduck-*` crates via `.cargo/config.toml`.
-- Oak crates may require **nightly** (`rust-toolchain.toml`).
+Ask only what affects the conversion:
 
-## Agent workflow
+- Source path(s) or pasted content
+- Desired output format and encoding (UTF-8, LF line endings)
+- Must-keep features: footnotes, citations, math, tables, images, internal links
+- One-off file vs batch / watch folder / CI step
+- Runtime: Node script, server, or browser
 
-### Before editing
+### 2. Pick the binding
 
-1. Identify which boundary you touch: Acorn, Oak, adapter, IR, or writer.
-2. Read the relevant adapter crate and `notedown-ir` types you will populate.
-3. If the DXO workspace is available, read design truth in `规划设计/acorn/13-Oak-Notedown-Panduck边界.md` and `规划设计/notedown/00-文档语义IR独立合同.md`. Do not cite those internal paths in committed Rust comments.
+| Environment | Import |
+|-------------|--------|
+| Node / Bun / server | `@notedge/panduck/node` → `loadPanduckNode()` |
+| Cached singleton | `loadPanduckNative()` from `@notedge/panduck` |
+| Browser / WASM | `@notedge/panduck/wasm` → `loadPanduckWasm()` |
 
-### Implementing a reader
+### 3. Run conversion
 
-1. Parse with `oak-*` (or decode with `acorn-*` then Oak).
-2. Walk typed AST; map to `Block`, `Inline`, `Relation`, `Asset`, `SourceRef`.
-3. Allocate stable ids via `IdAllocator` / `DocumentGraph` APIs.
-4. Record provenance and `SemanticStatus` (resolved, inferred, partial, unsupported, lossy).
-5. Return `DocumentGraph` (and adapter-level `Result` for fatal failures only).
+Use the **public API** exposed on `PanduckBindings`. If a convert/read/write helper is not on the binding yet:
 
-### Implementing a writer
+- Say so clearly
+- Offer a practical workaround (e.g. export to an intermediate format the user already has)
+- Do not invent hidden Rust APIs or tell the user to patch `Cargo.toml`
 
-1. Declare capability: footnotes, bidirectional links, assets, math, styles, pagination.
-2. Traverse IR; emit target format.
-3. For unsupported nodes, append `LossMarker` rather than silently dropping.
-4. Never require Notedown text or Oak AST at write time.
+When conversion APIs exist, prefer them over shelling out to random third-party CLIs unless the user asks for a specific tool.
 
-### Tests
+### 4. Report results honestly
 
-- Prefer integration tests that round-trip or compare IR snapshots.
-- Assert coverage / loss when exercising partial formats (PDF infer, DOCX style gaps).
-- Do not add tests that only check legacy Panduck AST shapes.
+Users care about **outcomes**, not internal IR names.
 
-## npm / bindings
+Always mention when relevant:
 
-- Product package: `@notedge/panduck` (`projects/packages/panduck`).
-- Platform optional deps: `@notedge/panduck-<platform>`, `@notedge/panduck-unknown-wasm32`.
-- Homepage probe site: `@notedge/homepage` (VMZ).
+- **Full success** — structure and media match expectations
+- **Partial** — file was written but some constructs were dropped, flattened, or guessed (e.g. complex tables, custom styles, PDF reading order)
+- **Failed** — unsupported format, corrupt input, or missing platform binary
 
-## Repository hygiene
+If the API returns coverage or loss metadata, summarize it in a short bullet list. If not, diff headings, link targets, and image references against the source.
 
-- No `docs/` directory in the panduck implementation repo.
-- No parallel root `AGENTS.md` — this skill is the agent entry for Panduck.
-- Design decisions belong in the external `规划设计/` tree when working inside the DXO workspace, not only in chat.
-- Git commits: gitmoji subject, UTF-8 via Python + `git commit -F` on Windows, no internal milestone codes in messages.
-
-## Default user prompts
-
-Users state the document goal. They do not need to repeat architecture rules.
+## Example user prompts
 
 ```text
-Convert this Markdown to HTML with Panduck and list any semantic loss.
+Convert notes/*.md to static HTML with Panduck. Keep footnotes and flag anything that did not round-trip.
 ```
 
 ```text
-Implement oak-markdown → notedown-ir lowering in panduck-markdown.
+I installed @notedge/panduck on Windows and get "Unsupported platform". What should I install?
 ```
 
 ```text
-Add a writer from notedown-ir to static HTML with footnotes and asset links.
+Batch convert these .rst files to Markdown for my wiki. Use a Node script I can run in CI.
 ```
 
-## Boundaries (never do)
+```text
+Does Panduck support DOCX yet? If not, what is the closest path from Word to Markdown?
+```
 
-- Do not add a Panduck-owned document AST as the long-term model.
-- Do not stringify through Notedown markup as an IR interchange format.
-- Do not fold Oak syntax errors into Panduck Gaia diagnostics.
-- Do not invent APIs absent from `notedown-ir` or the target adapter contract.
-- Do not use `git add -A` or recursive delete without explicit user authorization (SEV-0).
+## Troubleshooting
+
+| Symptom | What to check |
+|---------|----------------|
+| `Unsupported platform for Panduck native bindings` | OS/arch not in optional platform packages; try WASM or another machine |
+| Empty or stub output | Format may be listed but conversion not fully implemented — verify with a minimal sample |
+| Missing images | Relative asset paths; copy `media/` alongside output or rewrite URLs in post-processing |
+| Math looks wrong | Source dialect ( `$...$` vs `$$...$$`, RST roles) may not map 1:1 — show source and output snippet |
+
+## Agent discipline
+
+- **User-first language** — "your Markdown file", "the HTML export", not `panduck-markdown` or `DocumentGraph`.
+- **Check the binding** — `supportedFormats()` before promising a format.
+- **No fake APIs** — only document methods on `PanduckBindings` and published package exports.
+- **Preserve user files** — copy or write to a new path unless they ask to overwrite.
+- **Batch safety** — dry-run on one file, then scale; log per-file status.
 
 ## More detail
 
-See [reference.md](reference.md) for IR object families and asset identity rules.
+See [reference.md](reference.md) for binding fields, WASM options, and a format capability cheat sheet.
