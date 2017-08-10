@@ -4,16 +4,29 @@
     "description": "Panduck document conversion bindings (Node-API + TypeScript)",
     "type": "module",
     "license": "MPL-2.0",
+    "bin": {
+        "panduck": "./bin/panduck.mjs"
+    },
     "exports": {
         ".": "./src/index.ts",
         "./node": "./src/node/index.ts",
-        "./wasm": "./src/wasm/index.ts"
+        "./wasm": "./src/wasm/index.ts",
+        "./cli": "./src/cli/index.ts"
     },
     "files": [
+        "bin",
+        "locales",
         "src"
     ],
+    "engines": {
+        "node": ">=20"
+    },
     "scripts": {
         "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@vmz/commander": "^0.2.0",
+        "jiti": "^2.4.2"
     },
     "optionalDependencies": {
         "@notedge/panduck-darwin-arm64": "workspace:*",

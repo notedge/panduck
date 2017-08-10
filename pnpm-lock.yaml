@@ -35,6 +35,13 @@ importers:
         version: 0.2.7(typescript@5.9.3)
 
   projects/packages/panduck:
+    dependencies:
+      '@vmz/commander':
+        specifier: ^0.2.0
+        version: 0.2.7
+      jiti:
+        specifier: ^2.4.2
+        version: 2.7.0
     optionalDependencies:
       '@notedge/panduck-darwin-arm64':
         specifier: workspace:*
