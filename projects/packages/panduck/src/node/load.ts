@@ -6,6 +6,13 @@ type NativeBinding = {
     panduckVersion: () => string;
     supportedFormats: () => string[];
     isSupportedFormat: (name: string) => boolean;
+    supportsConversion?: (from: string, to: string) => boolean;
+    supportedConversions?: () => string[];
+    convertDocument?: (from: string, to: string, inputPath: string) => {
+        exitCode: number;
+        markdown?: string;
+        reportJson: string;
+    };
 };
 
 const PLATFORM_PACKAGES: Record<string, string> = {
@@ -29,5 +36,21 @@ export function loadPanduckNode(): PanduckBindings {
         panduckVersion: () => binding.panduckVersion(),
         supportedFormats: () => binding.supportedFormats(),
         isSupportedFormat: (name) => binding.isSupportedFormat(name),
+        supportsConversion: binding.supportsConversion
+            ? (from, to) => binding.supportsConversion!(from, to)
+            : undefined,
+        supportedConversions: binding.supportedConversions
+            ? () => binding.supportedConversions!()
+            : undefined,
+        convertDocument: binding.convertDocument
+            ? (from, to, inputPath) => {
+                  const response = binding.convertDocument!(from, to, inputPath);
+                  return {
+                      exitCode: response.exitCode,
+                      markdown: response.markdown,
+                      reportJson: response.reportJson,
+                  };
+              }
+            : undefined,
     };
 }

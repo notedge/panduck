@@ -1,7 +1,10 @@
 use std::fmt::Write;
 
 mod generator;
+mod ir;
+
 pub use self::generator::MarkdownWriter;
+pub use self::ir::write_document_markdown;
 
 /// 二进制写入器，用于从实现了 WriteBytesExt trait 的类型中写入数据
 ///

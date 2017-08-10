@@ -22,6 +22,7 @@ import {
 } from "../options.js";
 import { createReport } from "../report.js";
 import { isStdoutPath } from "../paths.js";
+import { emitPipelineResult, hasPipeline, runConversionPipeline } from "../pipeline.js";
 
 export function registerConvertCommand(cli: Cli): void {
     cli.command("convert", "cli.cmd.convert")
@@ -163,13 +164,15 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             return ExitCode.InputUnsupported;
         }
 
-        if (source && !isOperationReady(source, "read")) {
+        const routeReady = hasPipeline(ctx.bindings, resolved.from, resolved.to);
+
+        if (resolved.from === "doc") {
             const report = buildBlockedReport(
                 ctx,
                 "convert",
                 inputPath,
                 resolved,
-                `source format ${source.format} is not ready for read`,
+                "legacy .doc import requires OLE reader support; convert to .docx first",
                 ExitCode.InputUnsupported,
                 shared,
             );
@@ -177,18 +180,34 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             return ExitCode.InputUnsupported;
         }
 
-        if (!isOperationReady(target, "write")) {
-            const report = buildBlockedReport(
-                ctx,
-                "convert",
-                inputPath,
-                resolved,
-                `target format ${target.format} is not ready for write`,
-                ExitCode.InputUnsupported,
-                shared,
-            );
-            emitReport(report, shared.diagnostics, shared.json);
-            return ExitCode.InputUnsupported;
+        if (!routeReady) {
+            if (source && !isOperationReady(source, "read")) {
+                const report = buildBlockedReport(
+                    ctx,
+                    "convert",
+                    inputPath,
+                    resolved,
+                    `source format ${source.format} is not ready for read`,
+                    ExitCode.InputUnsupported,
+                    shared,
+                );
+                emitReport(report, shared.diagnostics, shared.json);
+                return ExitCode.InputUnsupported;
+            }
+
+            if (!isOperationReady(target, "write")) {
+                const report = buildBlockedReport(
+                    ctx,
+                    "convert",
+                    inputPath,
+                    resolved,
+                    `target format ${target.format} is not ready for write`,
+                    ExitCode.InputUnsupported,
+                    shared,
+                );
+                emitReport(report, shared.diagnostics, shared.json);
+                return ExitCode.InputUnsupported;
+            }
         }
 
         if (dryRun) {
@@ -210,6 +229,34 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             });
             emitReport(report, shared.diagnostics, shared.json);
             return ExitCode.Success;
+        }
+
+        if (routeReady && ctx.bindings) {
+            try {
+                const result = await runConversionPipeline({
+                    ctx,
+                    bindings: ctx.bindings,
+                    inputPath,
+                    outputPath,
+                    resolved,
+                    shared,
+                    toolVersion: ctx.toolVersion,
+                });
+                return emitPipelineResult(result, shared);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                const report = buildBlockedReport(
+                    ctx,
+                    "convert",
+                    inputPath,
+                    resolved,
+                    message,
+                    ExitCode.IrOrWriterFailure,
+                    shared,
+                );
+                emitReport(report, shared.diagnostics, shared.json);
+                return ExitCode.IrOrWriterFailure;
+            }
         }
 
         const report = createReport({
@@ -237,10 +284,6 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
             statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.IrOrWriterFailure },
         });
-
-        if (reportPath) {
-            // Report path is accepted by the contract; emission happens through diagnostics/json for now.
-        }
 
         emitReport(report, shared.diagnostics, shared.json);
         return ExitCode.IrOrWriterFailure;

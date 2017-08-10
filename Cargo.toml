@@ -4,11 +4,15 @@ resolver = "2"
 members = ["projects/crates/*"]
 default-members = [
 	"projects/crates/panduck-types",
+	"projects/crates/panduck-convert",
+	"projects/crates/panduck-docx",
 	"projects/crates/panduck-napi",
 ]
 
 [workspace.dependencies]
 panduck-types = { path = "projects/crates/panduck-types" }
+panduck-convert = { path = "projects/crates/panduck-convert" }
+panduck-docx = { path = "projects/crates/panduck-docx" }
 panduck-markdown = { path = "projects/crates/panduck-markdown" }
 panduck-org = { path = "projects/crates/panduck-org" }
 panduck-rst = { path = "projects/crates/panduck-rst" }

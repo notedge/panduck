@@ -8,6 +8,8 @@ time-travel.sh
 .vs/
 .idea/
 *.iml
+*.log
+*.txt
 
 # Rust
 target/
@@ -16,10 +18,11 @@ Cargo.lock
 
 # Node
 node_modules/
+dist/
 projects/packages/panduck-unknown-wasm32/pkg/
 projects/packages/homepage/dist/
 projects/packages/homepage/public/
 projects/crates/panduck-napi/index.d.ts
 projects/crates/panduck-napi/index.js
-projects/crates/panduck-napi/*.node
-
+*.wasm
+*.node

@@ -83,7 +83,7 @@ function containerFormat(
 /** Static capability registry aligned with the Panduck Living CLI matrix. */
 export function baseFormatRegistry(): FormatRecord[] {
     return [
-        textFormat("markdown", "partial", "partial", ["paragraph", "heading", "code_block", "link"], ["table", "footnote"]),
+        textFormat("markdown", "partial", "ready", ["paragraph", "heading", "code_block", "link"], ["table", "footnote"]),
         textFormat("notedown", "planned", "planned", ["paragraph", "block", "inline"], ["macro"]),
         textFormat("org", "partial", "partial", ["headline", "paragraph"], ["drawer", "babel"]),
         textFormat("rst", "partial", "partial", ["paragraph", "directive"], ["table"]),
@@ -92,8 +92,8 @@ export function baseFormatRegistry(): FormatRecord[] {
         containerFormat(
             "docx",
             ["zip", "opc"],
-            "planned",
-            "planned",
+            "partial",
+            "unavailable",
             ["oak-xml"],
             ["paragraph", "style", "image", "hyperlink"],
             ["tracked_changes", "comment"],

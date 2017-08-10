@@ -32,6 +32,7 @@ export function createContext(): CliContext {
     };
 }
 
+/** Resolved source/target format ids for a CLI invocation. */
 export type ResolvedFormats = {
     from?: string;
     to?: string;
