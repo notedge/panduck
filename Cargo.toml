@@ -13,7 +13,6 @@ default-members = [
 panduck-types = { path = "projects/crates/panduck-types" }
 panduck-convert = { path = "projects/crates/panduck-convert" }
 panduck-docx = { path = "projects/crates/panduck-docx" }
-panduck-markdown = { path = "projects/crates/panduck-markdown" }
 panduck-org = { path = "projects/crates/panduck-org" }
 panduck-rst = { path = "projects/crates/panduck-rst" }
 panduck-tex = { path = "projects/crates/panduck-tex" }

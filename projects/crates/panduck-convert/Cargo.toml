@@ -9,7 +9,6 @@ publish = false
 
 [dependencies]
 panduck-docx = { path = "../panduck-docx" }
-panduck-markdown = { path = "../panduck-markdown" }
 panduck-types = { workspace = true }
 notedown-ir = { workspace = true }
 serde = { version = "1.0", features = ["derive"] }

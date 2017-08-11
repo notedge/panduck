@@ -18,4 +18,4 @@ panduck-types = { workspace = true }
 quick-xml = "0.37.5"
 
 [dev-dependencies]
-panduck-markdown = { path = "../panduck-markdown" }
+panduck-convert = { path = "../panduck-convert" }

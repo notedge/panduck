@@ -49,7 +49,8 @@ fn write_block(out: &mut String, block: &Block) -> Result<()> {
         Block::List { ordered, items } => {
             for (index, item) in items.iter().enumerate() {
                 if *ordered {
-                    write!(out, "{}. ", index + 1).map_err(|error| AdapterError::adapter("markdown", error.to_string()))?;
+                    write!(out, "{}. ", index + 1)
+                        .map_err(|error| AdapterError::adapter("markdown", error.to_string()))?;
                 } else {
                     out.push_str("- ");
                 }

@@ -1,5 +1,5 @@
 use panduck_docx::read_docx_bytes;
-use panduck_markdown::write_document_markdown;
+use panduck_convert::write_document_markdown;
 
 fn stored_zip(path: &str, payload: &[u8]) -> Vec<u8> {
     let name = path.as_bytes();

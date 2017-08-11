@@ -1,14 +1,17 @@
 #![warn(missing_docs)]
 //! Panduck conversion routes over `notedown-ir::DocumentGraph`.
 
+mod writers;
+
 use std::fs;
 use std::path::Path;
 
 use notedown_ir::DocumentGraph;
 use panduck_docx::read_docx_bytes;
-use panduck_markdown::write_document_markdown;
 use panduck_types::{AdapterError, Result};
 use serde::Serialize;
+
+pub use writers::write_document_markdown;
 
 /// Supported conversion route.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
