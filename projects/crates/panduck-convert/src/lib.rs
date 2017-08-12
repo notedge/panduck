@@ -1,6 +1,7 @@
 #![warn(missing_docs)]
 //! Panduck conversion routes over `notedown-ir::DocumentGraph`.
 
+mod readers;
 mod writers;
 
 use std::fs;
@@ -11,6 +12,7 @@ use panduck_docx::read_docx_bytes;
 use panduck_types::{AdapterError, Result};
 use serde::Serialize;
 
+pub use readers::{read_markdown, read_markdown_bytes};
 pub use writers::write_document_markdown;
 
 /// Supported conversion route.
@@ -20,10 +22,16 @@ pub struct Route {
     pub to: &'static str,
 }
 
-const ROUTES: &[Route] = &[Route {
-    from: "docx",
-    to: "markdown",
-}];
+const ROUTES: &[Route] = &[
+    Route {
+        from: "docx",
+        to: "markdown",
+    },
+    Route {
+        from: "markdown",
+        to: "markdown",
+    },
+];
 
 /// Returns whether Panduck can run this conversion today.
 pub fn supports_route(from: &str, to: &str) -> bool {
@@ -94,6 +102,12 @@ pub fn convert_file(from: &str, to: &str, input: impl AsRef<Path>) -> Result<Con
 fn read_source(from: &str, label: &str, bytes: Vec<u8>) -> Result<DocumentGraph> {
     match from {
         "docx" => read_docx_bytes(label, bytes),
+        "markdown" => {
+            let text = String::from_utf8(bytes).map_err(|error| {
+                AdapterError::invalid_input(format!("markdown input is not valid UTF-8: {error}"))
+            })?;
+            read_markdown_bytes(label, text)
+        }
         other => Err(AdapterError::unsupported_format(other, "read")),
     }
 }

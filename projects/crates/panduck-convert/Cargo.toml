@@ -8,6 +8,8 @@ edition = "2021"
 publish = false
 
 [dependencies]
+oak-core = { workspace = true }
+oak-markdown = { workspace = true }
 panduck-docx = { path = "../panduck-docx" }
 panduck-types = { workspace = true }
 notedown-ir = { workspace = true }
