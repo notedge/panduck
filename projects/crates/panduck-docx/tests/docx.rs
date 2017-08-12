@@ -67,10 +67,31 @@ fn minimal_docx_zip() -> Vec<u8> {
     stored_zip("word/document.xml", document_xml)
 }
 
+fn docx_zip(document_xml: &[u8]) -> Vec<u8> {
+    stored_zip("word/document.xml", document_xml)
+}
+
 #[test]
 fn docx_to_markdown_round_trip() {
     let graph = read_docx_bytes("sample.docx", minimal_docx_zip()).expect("read docx");
     let markdown = write_document_markdown(&graph).expect("write markdown");
     assert!(markdown.contains("Hello DOCX"));
     assert!(markdown.contains("# Title"));
+}
+
+#[test]
+fn docx_imports_run_bold_and_italic() {
+    let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:r><w:rPr><w:b/></w:rPr><w:t>Bold</w:t></w:r>
+      <w:r><w:rPr><w:i/></w:rPr><w:t> italic</w:t></w:r>
+    </w:p>
+  </w:body>
+</w:document>"#;
+    let graph = read_docx_bytes("styled.docx", docx_zip(document_xml)).expect("read docx");
+    let markdown = write_document_markdown(&graph).expect("write markdown");
+    assert!(markdown.contains("**Bold**"));
+    assert!(markdown.contains("* italic*"));
 }

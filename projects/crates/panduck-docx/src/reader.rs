@@ -41,7 +41,7 @@ pub fn read_docx_bytes(label: impl Into<String>, bytes: Vec<u8>) -> Result<Docum
     parse_document_xml(&xml, &mut graph)?;
     graph.push_loss(LossMarker {
         code: "reader.docx.partial_coverage".into(),
-        message: "DOCX import currently maps paragraphs and heading styles only".into(),
+        message: "DOCX import currently maps paragraphs, heading styles, and run bold/italic".into(),
         status: SemanticStatus::Partial,
     });
     Ok(graph)
