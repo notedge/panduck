@@ -69,6 +69,30 @@ fn write_block(out: &mut String, block: &Block) -> Result<()> {
     Ok(())
 }
 
+fn write_markdown_link(out: &mut String, children: &[Inline]) -> Result<()> {
+    if children.len() >= 2 {
+        let display = inline_plain_text(&children[0]);
+        let url = inline_plain_text(&children[1]);
+        out.push('[');
+        out.push_str(&display);
+        out.push_str("](");
+        out.push_str(&url);
+        out.push(')');
+        return Ok(());
+    }
+    write_inlines(out, children)
+}
+
+fn inline_plain_text(inline: &Inline) -> String {
+    match inline {
+        Inline::Text { text } => text.clone(),
+        Inline::InlineCode { text } => text.clone(),
+        Inline::Styled { children, .. } => children.iter().map(inline_plain_text).collect(),
+        Inline::InlineMath { content, .. } => content.clone(),
+        Inline::Reference { display, .. } => display.clone(),
+    }
+}
+
 fn write_inlines(out: &mut String, inlines: &[Inline]) -> Result<()> {
     for inline in inlines {
         write_inline(out, inline)?;
@@ -87,6 +111,9 @@ fn write_inline(out: &mut String, inline: &Inline) -> Result<()> {
             out.push('`');
         }
         Inline::Styled { style, children } => {
+            if style == "link" {
+                return write_markdown_link(out, children);
+            }
             let wrapper = match style.as_str() {
                 "bold" | "strong" => ("**", "**"),
                 "italic" | "emphasis" => ("*", "*"),

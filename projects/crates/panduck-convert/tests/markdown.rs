@@ -11,6 +11,16 @@ fn markdown_reader_lowers_heading_and_paragraph() {
 }
 
 #[test]
+fn markdown_reader_lowers_inline_styles_and_links() {
+    let source = "Hello **bold** and *italic* with [link](https://example.com).\n";
+    let graph = read_markdown_bytes("inline.md", source.to_string()).expect("read markdown");
+    let markdown = write_document_markdown(&graph).expect("write markdown");
+    assert!(markdown.contains("**bold**"));
+    assert!(markdown.contains("*italic*"));
+    assert!(markdown.contains("[link](https://example.com)"));
+}
+
+#[test]
 fn markdown_to_markdown_route() {
     let source = b"# Route\n\nBody.\n".to_vec();
     let output = convert_bytes("markdown", "markdown", "route.md", source).expect("convert");
