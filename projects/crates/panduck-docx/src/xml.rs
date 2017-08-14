@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use notedown_ir::{Block, DocumentGraph, DocumentId, Inline, LossMarker, SemanticStatus};
 use panduck_types::{AdapterError, Result};
 use quick_xml::events::Event;
@@ -5,7 +7,11 @@ use quick_xml::name::LocalName;
 use quick_xml::Reader;
 
 /// Parses `word/document.xml` body content into a flat `DocumentGraph`.
-pub fn parse_document_xml(xml: &[u8], graph: &mut DocumentGraph) -> Result<()> {
+pub fn parse_document_xml(
+    xml: &[u8],
+    rels: &HashMap<String, String>,
+    graph: &mut DocumentGraph,
+) -> Result<()> {
     let mut reader = Reader::from_reader(xml);
     reader.config_mut().trim_text(false);
 
@@ -13,6 +19,7 @@ pub fn parse_document_xml(xml: &[u8], graph: &mut DocumentGraph) -> Result<()> {
     let mut in_body = false;
     let mut in_paragraph = false;
     let mut paragraph = ParagraphState::default();
+    let mut hyperlink: Option<HyperlinkState> = None;
     let mut in_run = false;
     let mut run = RunState::default();
     let mut in_p_pr = false;
@@ -31,6 +38,11 @@ pub fn parse_document_xml(xml: &[u8], graph: &mut DocumentGraph) -> Result<()> {
                     in_p_pr = true;
                 } else if in_p_pr && is_local(local, b"pStyle") {
                     paragraph.style = style_attribute(&tag);
+                } else if in_paragraph && is_local(local, b"hyperlink") {
+                    hyperlink = Some(HyperlinkState {
+                        rel_id: relationship_id(&tag),
+                        inlines: Vec::new(),
+                    });
                 } else if in_paragraph && is_local(local, b"r") {
                     in_run = true;
                     run = RunState::default();
@@ -61,9 +73,17 @@ pub fn parse_document_xml(xml: &[u8], graph: &mut DocumentGraph) -> Result<()> {
                 } else if is_local(local, b"rPr") {
                     in_r_pr = false;
                 } else if is_local(local, b"r") && in_run {
-                    paragraph.push_run(&run);
+                    if let Some(link) = hyperlink.as_mut() {
+                        link.push_run(&run);
+                    } else {
+                        paragraph.push_run(&run);
+                    }
                     in_run = false;
                     run = RunState::default();
+                } else if is_local(local, b"hyperlink") {
+                    if let Some(link) = hyperlink.take() {
+                        paragraph.push_hyperlink(&link, rels, graph);
+                    }
                 } else if is_local(local, b"p") && in_paragraph {
                     push_paragraph(graph, &paragraph);
                     in_paragraph = false;
@@ -113,12 +133,63 @@ impl ParagraphState {
             return;
         }
         let inline = run.inline();
-        if let Some(last) = self.inlines.last_mut() {
-            if merge_text_inline(last, &inline) {
-                return;
-            }
+        push_inline(&mut self.inlines, inline);
+    }
+
+    fn push_hyperlink(
+        &mut self,
+        link: &HyperlinkState,
+        rels: &HashMap<String, String>,
+        graph: &mut DocumentGraph,
+    ) {
+        let display = link
+            .inlines
+            .iter()
+            .map(inline_plain_text)
+            .collect::<String>();
+        if display.is_empty() {
+            return;
         }
-        self.inlines.push(inline);
+        let url = link.rel_id.as_ref().and_then(|id| rels.get(id));
+        if let Some(url) = url {
+            push_inline(
+                &mut self.inlines,
+                Inline::Styled {
+                    style: "link".into(),
+                    children: vec![
+                        Inline::Text { text: display },
+                        Inline::Text { text: url.clone() },
+                    ],
+                },
+            );
+            return;
+        }
+        graph.push_loss(LossMarker {
+            code: "reader.docx.unresolved_hyperlink".into(),
+            message: format!(
+                "hyperlink relationship {:?} could not be resolved",
+                link.rel_id
+            ),
+            status: SemanticStatus::Unresolved,
+        });
+        for inline in &link.inlines {
+            push_inline(&mut self.inlines, inline.clone());
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+struct HyperlinkState {
+    rel_id: Option<String>,
+    inlines: Vec<Inline>,
+}
+
+impl HyperlinkState {
+    fn push_run(&mut self, run: &RunState) {
+        if run.text.is_empty() {
+            return;
+        }
+        push_inline(&mut self.inlines, run.inline());
     }
 }
 
@@ -159,6 +230,15 @@ impl RunState {
     }
 }
 
+fn push_inline(inlines: &mut Vec<Inline>, inline: Inline) {
+    if let Some(last) = inlines.last_mut() {
+        if merge_text_inline(last, &inline) {
+            return;
+        }
+    }
+    inlines.push(inline);
+}
+
 fn merge_text_inline(existing: &mut Inline, incoming: &Inline) -> bool {
     match (existing, incoming) {
         (Inline::Text { text: left }, Inline::Text { text: right }) => {
@@ -177,6 +257,14 @@ fn style_attribute(tag: &quick_xml::events::BytesStart) -> Option<String> {
     tag.attributes()
         .filter_map(|attr| attr.ok())
         .find(|attr| attr.key.local_name().as_ref() == b"val")
+        .and_then(|attr| attr.unescape_value().ok())
+        .map(|value| value.into_owned())
+}
+
+fn relationship_id(tag: &quick_xml::events::BytesStart) -> Option<String> {
+    tag.attributes()
+        .filter_map(|attr| attr.ok())
+        .find(|attr| attr.key.local_name().as_ref() == b"id")
         .and_then(|attr| attr.unescape_value().ok())
         .map(|value| value.into_owned())
 }

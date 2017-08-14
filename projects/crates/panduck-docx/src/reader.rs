@@ -6,6 +6,7 @@ use acorn_docx::OpcPackage;
 use notedown_ir::{DocumentGraph, LossMarker, SemanticStatus};
 use panduck_types::{AdapterError, Result};
 
+use crate::rels::read_document_relationships;
 use crate::xml::{new_graph, parse_document_xml};
 
 const DOCUMENT_XML: &str = "word/document.xml";
@@ -37,11 +38,12 @@ pub fn read_docx_bytes(label: impl Into<String>, bytes: Vec<u8>) -> Result<Docum
         .read_part(DOCUMENT_XML, &budget)
         .map_err(map_opc_error)?;
 
+    let rels = read_document_relationships(&package, &budget)?;
     let mut graph = new_graph(&label);
-    parse_document_xml(&xml, &mut graph)?;
+    parse_document_xml(&xml, &rels, &mut graph)?;
     graph.push_loss(LossMarker {
         code: "reader.docx.partial_coverage".into(),
-        message: "DOCX import currently maps paragraphs, heading styles, and run bold/italic".into(),
+        message: "DOCX import currently maps paragraphs, heading styles, run bold/italic, and hyperlinks".into(),
         status: SemanticStatus::Partial,
     });
     Ok(graph)
