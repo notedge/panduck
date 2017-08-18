@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use notedown_ir::{Block, DocumentGraph, DocumentId, Inline, LossMarker, SemanticStatus};
+use notedown_ir::{
+    Asset, AssetId, AssetKind, Block, DocumentGraph, DocumentId, Inline, LossMarker, SemanticStatus,
+};
 use panduck_types::{AdapterError, Result};
 use quick_xml::events::Event;
 use quick_xml::name::LocalName;
@@ -56,6 +58,12 @@ pub fn parse_document_xml(
                     run.text.push('\t');
                 } else if in_run && is_local(local, b"br") {
                     run.text.push('\n');
+                } else if in_paragraph && is_local(local, b"docPr") {
+                    paragraph.pending_image_alt = description_attribute(&tag);
+                } else if in_paragraph && is_local(local, b"blip") {
+                    if let Some(rel_id) = embed_relationship_id(&tag) {
+                        paragraph.push_image(&rel_id, rels, graph);
+                    }
                 }
             }
             Event::Text(text) if in_run => {
@@ -102,6 +110,12 @@ pub fn parse_document_xml(
                     run.text.push('\t');
                 } else if in_run && is_local(local, b"br") {
                     run.text.push('\n');
+                } else if in_paragraph && is_local(local, b"docPr") {
+                    paragraph.pending_image_alt = description_attribute(&tag);
+                } else if in_paragraph && is_local(local, b"blip") {
+                    if let Some(rel_id) = embed_relationship_id(&tag) {
+                        paragraph.push_image(&rel_id, rels, graph);
+                    }
                 }
             }
             Event::Eof => break,
@@ -125,6 +139,7 @@ pub fn parse_document_xml(
 struct ParagraphState {
     style: Option<String>,
     inlines: Vec<Inline>,
+    pending_image_alt: Option<String>,
 }
 
 impl ParagraphState {
@@ -175,6 +190,44 @@ impl ParagraphState {
         for inline in &link.inlines {
             push_inline(&mut self.inlines, inline.clone());
         }
+    }
+
+    fn push_image(
+        &mut self,
+        rel_id: &str,
+        rels: &HashMap<String, String>,
+        graph: &mut DocumentGraph,
+    ) {
+        let alt = self.pending_image_alt.clone().unwrap_or_default();
+        self.pending_image_alt = None;
+        let target = rels.get(rel_id);
+        if let Some(target) = target {
+            let asset_id = AssetId(graph.assets.len() as u64 + 1);
+            graph.push_asset(Asset {
+                id: asset_id,
+                kind: AssetKind::Image,
+                content_identity: None,
+                source: Some(target.clone()),
+                media_type: media_type_for(target),
+                status: SemanticStatus::Resolved,
+            });
+            push_inline(
+                &mut self.inlines,
+                Inline::Styled {
+                    style: "image".into(),
+                    children: vec![
+                        Inline::Text { text: alt },
+                        Inline::Text { text: target.clone() },
+                    ],
+                },
+            );
+            return;
+        }
+        graph.push_loss(LossMarker {
+            code: "reader.docx.unresolved_image".into(),
+            message: format!("image relationship {rel_id} could not be resolved"),
+            status: SemanticStatus::Unresolved,
+        });
     }
 }
 
@@ -262,11 +315,35 @@ fn style_attribute(tag: &quick_xml::events::BytesStart) -> Option<String> {
 }
 
 fn relationship_id(tag: &quick_xml::events::BytesStart) -> Option<String> {
+    attribute_value(tag, b"id")
+}
+
+fn embed_relationship_id(tag: &quick_xml::events::BytesStart) -> Option<String> {
+    attribute_value(tag, b"embed")
+}
+
+fn description_attribute(tag: &quick_xml::events::BytesStart) -> Option<String> {
+    attribute_value(tag, b"descr")
+}
+
+fn attribute_value(tag: &quick_xml::events::BytesStart, local: &[u8]) -> Option<String> {
     tag.attributes()
         .filter_map(|attr| attr.ok())
-        .find(|attr| attr.key.local_name().as_ref() == b"id")
+        .find(|attr| attr.key.local_name().as_ref() == local)
         .and_then(|attr| attr.unescape_value().ok())
         .map(|value| value.into_owned())
+}
+
+fn media_type_for(path: &str) -> Option<String> {
+    let extension = path.rsplit('.').next()?.to_ascii_lowercase();
+    match extension.as_str() {
+        "png" => Some("image/png".into()),
+        "jpg" | "jpeg" => Some("image/jpeg".into()),
+        "gif" => Some("image/gif".into()),
+        "webp" => Some("image/webp".into()),
+        "svg" => Some("image/svg+xml".into()),
+        _ => None,
+    }
 }
 
 fn bool_attribute(tag: &quick_xml::events::BytesStart, default: bool) -> bool {

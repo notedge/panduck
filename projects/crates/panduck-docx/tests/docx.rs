@@ -131,3 +131,44 @@ fn docx_imports_hyperlinks_from_relationships() {
     let markdown = write_document_markdown(&graph).expect("write markdown");
     assert!(markdown.contains("[Example](https://example.com)"));
 }
+
+#[test]
+fn docx_imports_embedded_images() {
+    let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+  <w:body>
+    <w:p>
+      <w:r>
+        <w:drawing>
+          <wp:inline>
+            <wp:docPr descr="Logo"/>
+            <a:graphic>
+              <a:graphicData>
+                <a:blip r:embed="rId2"/>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>"#;
+    let rels_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId2"
+    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
+    Target="media/logo.png"/>
+</Relationships>"#;
+    let zip = stored_zip(&[
+        ("word/document.xml", document_xml),
+        ("word/_rels/document.xml.rels", rels_xml),
+        ("media/logo.png", b"\x89PNG\r\n"),
+    ]);
+    let graph = read_docx_bytes("image.docx", zip).expect("read docx");
+    assert_eq!(graph.assets.len(), 1);
+    let markdown = write_document_markdown(&graph).expect("write markdown");
+    assert!(markdown.contains("![Logo](media/logo.png)"));
+}

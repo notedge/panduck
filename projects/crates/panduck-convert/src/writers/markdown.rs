@@ -69,6 +69,20 @@ fn write_block(out: &mut String, block: &Block) -> Result<()> {
     Ok(())
 }
 
+fn write_markdown_image(out: &mut String, children: &[Inline]) -> Result<()> {
+    if children.len() >= 2 {
+        let alt = inline_plain_text(&children[0]);
+        let url = inline_plain_text(&children[1]);
+        out.push_str("![");
+        out.push_str(&alt);
+        out.push_str("](");
+        out.push_str(&url);
+        out.push(')');
+        return Ok(());
+    }
+    write_inlines(out, children)
+}
+
 fn write_markdown_link(out: &mut String, children: &[Inline]) -> Result<()> {
     if children.len() >= 2 {
         let display = inline_plain_text(&children[0]);
@@ -113,6 +127,9 @@ fn write_inline(out: &mut String, inline: &Inline) -> Result<()> {
         Inline::Styled { style, children } => {
             if style == "link" {
                 return write_markdown_link(out, children);
+            }
+            if style == "image" {
+                return write_markdown_image(out, children);
             }
             let wrapper = match style.as_str() {
                 "bold" | "strong" => ("**", "**"),
