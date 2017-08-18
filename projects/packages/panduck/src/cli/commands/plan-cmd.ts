@@ -11,6 +11,7 @@ import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { findFormat, isOperationReady } from "../format-registry.js";
 import { CliOptionError, readSharedOptions, readString } from "../options.js";
+import { hasPipeline } from "../pipeline.js";
 import { createReport } from "../report.js";
 
 export function registerPlanCommand(cli: Cli): void {
@@ -94,68 +95,72 @@ async function runPlan(options: ParsedOptions): Promise<number> {
             return ExitCode.InputUnsupported;
         }
 
-        if (source && !isOperationReady(source, "read")) {
-            const report = createReport({
-                operation: "plan",
-                toolVersion: ctx.toolVersion,
-                status: "blocked",
-                inputs: [{ path: inputPath, format: source.format }],
-                detection: { format: source.format, confidence: "hint", hints: resolved.hints },
-                pipeline: {
-                    reader: source.format,
-                    writer: target.format,
-                    stages: ["detect", "read", "ir", "write", "publish"],
-                    blocked_reason: `reader state is ${source.reader.state}`,
-                },
-                coverage: target.coverage,
-                diagnostics: [
-                    {
-                        owner: "panduck",
-                        severity: "error",
-                        message: `source format ${source.format} is not ready for read`,
-                        code: "panduck.reader.not_ready",
-                    },
-                ],
-                determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
-                statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.InputUnsupported },
-            });
-            emitReport(report, shared.diagnostics, shared.json);
-            return ExitCode.InputUnsupported;
-        }
+        const routeReady = hasPipeline(ctx.bindings, resolved.from, resolved.to);
 
-        if (!isOperationReady(target, "write")) {
-            const report = createReport({
-                operation: "plan",
-                toolVersion: ctx.toolVersion,
-                status: "blocked",
-                inputs: [{ path: inputPath, format: resolved.from }],
-                detection: { format: resolved.from, confidence: "hint", hints: resolved.hints },
-                pipeline: {
-                    reader: source?.format,
-                    writer: target.format,
-                    stages: ["detect", "read", "ir", "write", "publish"],
-                    blocked_reason: `writer state is ${target.writer.state}`,
-                },
-                coverage: target.coverage,
-                diagnostics: [
-                    {
-                        owner: "panduck",
-                        severity: "error",
-                        message: `target format ${target.format} is not ready for write`,
-                        code: "panduck.writer.not_ready",
+        if (!routeReady) {
+            if (source && !isOperationReady(source, "read")) {
+                const report = createReport({
+                    operation: "plan",
+                    toolVersion: ctx.toolVersion,
+                    status: "blocked",
+                    inputs: [{ path: inputPath, format: source.format }],
+                    detection: { format: source.format, confidence: "hint", hints: resolved.hints },
+                    pipeline: {
+                        reader: source.format,
+                        writer: target.format,
+                        stages: ["detect", "read", "ir", "write", "publish"],
+                        blocked_reason: `reader state is ${source.reader.state}`,
                     },
-                ],
-                determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
-                statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.InputUnsupported },
-            });
-            emitReport(report, shared.diagnostics, shared.json);
-            return ExitCode.InputUnsupported;
+                    coverage: target.coverage,
+                    diagnostics: [
+                        {
+                            owner: "panduck",
+                            severity: "error",
+                            message: `source format ${source.format} is not ready for read`,
+                            code: "panduck.reader.not_ready",
+                        },
+                    ],
+                    determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
+                    statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.InputUnsupported },
+                });
+                emitReport(report, shared.diagnostics, shared.json);
+                return ExitCode.InputUnsupported;
+            }
+
+            if (!isOperationReady(target, "write")) {
+                const report = createReport({
+                    operation: "plan",
+                    toolVersion: ctx.toolVersion,
+                    status: "blocked",
+                    inputs: [{ path: inputPath, format: resolved.from }],
+                    detection: { format: resolved.from, confidence: "hint", hints: resolved.hints },
+                    pipeline: {
+                        reader: source?.format,
+                        writer: target.format,
+                        stages: ["detect", "read", "ir", "write", "publish"],
+                        blocked_reason: `writer state is ${target.writer.state}`,
+                    },
+                    coverage: target.coverage,
+                    diagnostics: [
+                        {
+                            owner: "panduck",
+                            severity: "error",
+                            message: `target format ${target.format} is not ready for write`,
+                            code: "panduck.writer.not_ready",
+                        },
+                    ],
+                    determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
+                    statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.InputUnsupported },
+                });
+                emitReport(report, shared.diagnostics, shared.json);
+                return ExitCode.InputUnsupported;
+            }
         }
 
         const report = createReport({
             operation: "plan",
             toolVersion: ctx.toolVersion,
-            status: "success",
+            status: routeReady ? "success" : "success_with_loss",
             inputs: [{ path: inputPath, format: resolved.from }],
             detection: { format: resolved.from, confidence: resolved.from ? "hint" : undefined, hints: resolved.hints },
             pipeline: {
@@ -163,7 +168,7 @@ async function runPlan(options: ParsedOptions): Promise<number> {
                 writer: target.format,
                 stages: ["detect", "read", "ir", "write", "publish"],
             },
-            coverage: target.coverage,
+            coverage: source?.coverage ?? target.coverage,
             budgets: shared.budgets,
             determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
             statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.Success },
