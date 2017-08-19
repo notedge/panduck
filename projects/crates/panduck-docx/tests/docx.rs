@@ -1,4 +1,4 @@
-use panduck_docx::read_docx_bytes;
+use panduck_docx::{inspect_docx_index_bytes, read_docx_bytes};
 use panduck_convert::write_document_markdown;
 
 fn stored_zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
@@ -171,4 +171,14 @@ fn docx_imports_embedded_images() {
     assert_eq!(graph.assets.len(), 1);
     let markdown = write_document_markdown(&graph).expect("write markdown");
     assert!(markdown.contains("![Logo](media/logo.png)"));
+}
+
+#[test]
+fn docx_inspect_lists_package_parts() {
+    let zip = minimal_docx_zip();
+    let index = inspect_docx_index_bytes("sample.docx", zip).expect("inspect docx");
+    assert_eq!(index.format, "docx");
+    assert_eq!(index.outer, "zip");
+    assert_eq!(index.inner, "opc");
+    assert!(index.parts.iter().any(|part| part == "word/document.xml"));
 }
