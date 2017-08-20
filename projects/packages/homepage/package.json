@@ -11,7 +11,7 @@
         "build": "vmz build --release --profile static .",
         "dev": "vmz dev .",
         "preview": "vmz serve --profile static .",
-        "test:panduck": "node ./tests/panduck-probe.mjs"
+        "test:panduck": "pnpm --filter @notedge/panduck test:e2e"
     },
     "dependencies": {
         "@notedge/panduck": "workspace:*",
