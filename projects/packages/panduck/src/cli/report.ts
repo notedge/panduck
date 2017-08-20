@@ -33,6 +33,7 @@ export type PanduckReport = {
         stages?: string[];
         blocked_reason?: string;
     };
+    parts?: string[];
     coverage?: {
         state: CapabilityState;
         read?: number;
@@ -71,6 +72,7 @@ export function createReport(input: {
     inputs: PanduckReport["inputs"];
     detection?: PanduckReport["detection"];
     pipeline?: PanduckReport["pipeline"];
+    parts?: PanduckReport["parts"];
     coverage?: PanduckReport["coverage"];
     losses?: PanduckReport["losses"];
     diagnostics?: PanduckReport["diagnostics"];
@@ -87,6 +89,7 @@ export function createReport(input: {
         inputs: input.inputs,
         detection: input.detection,
         pipeline: input.pipeline,
+        parts: input.parts,
         coverage: input.coverage,
         losses: input.losses ?? [],
         diagnostics: input.diagnostics ?? [],

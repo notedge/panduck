@@ -67,6 +67,53 @@ async function runInspect(options: ParsedOptions): Promise<number> {
         }
 
         const size = isStdinPath(inputPath) ? null : (await stat(inputPath)).size;
+
+        if (stage === "index" && resolved.from === "docx" && ctx.bindings?.inspectIndex) {
+            try {
+                const index = ctx.bindings.inspectIndex(inputPath);
+                const report = createReport({
+                    operation: "inspect",
+                    toolVersion: ctx.toolVersion,
+                    status: "success",
+                    inputs: [{ path: inputPath, format: index.format }],
+                    detection: {
+                        format: index.format,
+                        outer: index.outer,
+                        inner: index.inner,
+                        confidence: "verified",
+                        hints: resolved.hints,
+                    },
+                    pipeline: { stages: ["index"] },
+                    parts: index.parts,
+                    budgets: shared.budgets,
+                    determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
+                    statusPolicy: {
+                        loss: shared.loss,
+                        strict: shared.strict,
+                        exit_code: ExitCode.Success,
+                    },
+                });
+                if (size !== null) {
+                    report.budgets = { ...report.budgets, input_bytes: size };
+                }
+                emitReport(report, shared.diagnostics, shared.json);
+                return ExitCode.Success;
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                const report = buildBlockedReport(
+                    ctx,
+                    "inspect",
+                    inputPath,
+                    resolved,
+                    message,
+                    ExitCode.IrOrWriterFailure,
+                    shared,
+                );
+                emitReport(report, shared.diagnostics, shared.json);
+                return ExitCode.IrOrWriterFailure;
+            }
+        }
+
         const report = createReport({
             operation: "inspect",
             toolVersion: ctx.toolVersion,

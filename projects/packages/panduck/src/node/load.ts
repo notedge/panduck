@@ -13,6 +13,13 @@ type NativeBinding = {
         markdown?: string;
         reportJson: string;
     };
+    inspectIndex?: (inputPath: string) => {
+        format: string;
+        outer: string;
+        inner: string;
+        parts: string[];
+        reportJson: string;
+    };
 };
 
 const PLATFORM_PACKAGES: Record<string, string> = {
@@ -48,6 +55,18 @@ export function loadPanduckNode(): PanduckBindings {
                   return {
                       exitCode: response.exitCode,
                       markdown: response.markdown,
+                      reportJson: response.reportJson,
+                  };
+              }
+            : undefined,
+        inspectIndex: binding.inspectIndex
+            ? (inputPath) => {
+                  const response = binding.inspectIndex!(inputPath);
+                  return {
+                      format: response.format,
+                      outer: response.outer,
+                      inner: response.inner,
+                      parts: response.parts,
                       reportJson: response.reportJson,
                   };
               }

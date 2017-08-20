@@ -4,6 +4,14 @@ export type ConvertResponse = {
     reportJson: string;
 };
 
+export type InspectIndexResponse = {
+    format: string;
+    outer: string;
+    inner: string;
+    parts: string[];
+    reportJson: string;
+};
+
 /** Shared Panduck binding surface for Node-API and WebAssembly backends. */
 export type PanduckBindings = {
     panduckVersion: () => string;
@@ -12,6 +20,7 @@ export type PanduckBindings = {
     supportsConversion?: (from: string, to: string) => boolean;
     supportedConversions?: () => string[];
     convertDocument?: (from: string, to: string, inputPath: string) => ConvertResponse;
+    inspectIndex?: (inputPath: string) => InspectIndexResponse;
 };
 
 export type PanduckWasmOptions = {

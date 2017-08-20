@@ -95,7 +95,7 @@ export function baseFormatRegistry(): FormatRecord[] {
             "partial",
             "unavailable",
             ["oak-xml"],
-            ["paragraph", "heading", "style", "hyperlink", "bold", "italic"],
+            ["paragraph", "heading", "style", "hyperlink", "image", "bold", "italic"],
             ["tracked_changes", "comment"],
         ),
         containerFormat(
