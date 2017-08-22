@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
 use notedown_ir::{
-    Asset, AssetId, AssetKind, Block, DocumentGraph, DocumentId, Inline, LossMarker, SemanticStatus,
+    Asset, AssetId, AssetKind, Block, DocumentGraph, DocumentId, Inline, ListItem, LossMarker,
+    SemanticStatus,
 };
 use panduck_types::{AdapterError, Result};
 use quick_xml::events::Event;
@@ -26,6 +27,7 @@ pub fn parse_document_xml(
     let mut run = RunState::default();
     let mut in_p_pr = false;
     let mut in_r_pr = false;
+    let mut body = BodyState::default();
 
     while let Ok(event) = reader.read_event_into(&mut buf) {
         match event {
@@ -40,6 +42,8 @@ pub fn parse_document_xml(
                     in_p_pr = true;
                 } else if in_p_pr && is_local(local, b"pStyle") {
                     paragraph.style = style_attribute(&tag);
+                } else if in_p_pr && is_local(local, b"numPr") {
+                    paragraph.is_list_item = true;
                 } else if in_paragraph && is_local(local, b"hyperlink") {
                     hyperlink = Some(HyperlinkState {
                         rel_id: relationship_id(&tag),
@@ -75,6 +79,7 @@ pub fn parse_document_xml(
             Event::End(tag) => {
                 let local = tag.local_name();
                 if is_local(local, b"body") {
+                    flush_pending_list(graph, &mut body);
                     in_body = false;
                 } else if is_local(local, b"pPr") {
                     in_p_pr = false;
@@ -93,7 +98,7 @@ pub fn parse_document_xml(
                         paragraph.push_hyperlink(&link, rels, graph);
                     }
                 } else if is_local(local, b"p") && in_paragraph {
-                    push_paragraph(graph, &paragraph);
+                    finish_paragraph(graph, &mut body, &paragraph);
                     in_paragraph = false;
                     paragraph = ParagraphState::default();
                 }
@@ -102,6 +107,8 @@ pub fn parse_document_xml(
                 let local = tag.local_name();
                 if in_p_pr && is_local(local, b"pStyle") {
                     paragraph.style = style_attribute(&tag);
+                } else if in_p_pr && is_local(local, b"numPr") {
+                    paragraph.is_list_item = true;
                 } else if in_r_pr && is_local(local, b"b") {
                     run.bold = true;
                 } else if in_r_pr && is_local(local, b"i") {
@@ -124,6 +131,8 @@ pub fn parse_document_xml(
         buf.clear();
     }
 
+    flush_pending_list(graph, &mut body);
+
     if graph.blocks.is_empty() {
         graph.push_loss(LossMarker {
             code: "reader.docx.empty_body".into(),
@@ -140,6 +149,23 @@ struct ParagraphState {
     style: Option<String>,
     inlines: Vec<Inline>,
     pending_image_alt: Option<String>,
+    is_list_item: bool,
+}
+
+#[derive(Debug, Default)]
+struct BodyState {
+    pending_list: Option<PendingListState>,
+}
+
+#[derive(Debug)]
+struct PendingListState {
+    items: Vec<ListItem>,
+}
+
+impl Default for PendingListState {
+    fn default() -> Self {
+        Self { items: Vec::new() }
+    }
 }
 
 impl ParagraphState {
@@ -358,7 +384,51 @@ fn bool_attribute(tag: &quick_xml::events::BytesStart, default: bool) -> bool {
         .unwrap_or(default)
 }
 
-fn push_paragraph(graph: &mut DocumentGraph, paragraph: &ParagraphState) {
+fn finish_paragraph(
+    graph: &mut DocumentGraph,
+    body: &mut BodyState,
+    paragraph: &ParagraphState,
+) {
+    if paragraph.is_list_item {
+        if let Some(content) = paragraph_inlines(paragraph) {
+            let item = ListItem {
+                content,
+                children: Vec::new(),
+            };
+            match &mut body.pending_list {
+                Some(list) => list.items.push(item),
+                None => {
+                    body.pending_list = Some(PendingListState {
+                        items: vec![item],
+                    });
+                }
+            }
+        }
+        return;
+    }
+    flush_pending_list(graph, body);
+    push_paragraph(graph, paragraph);
+}
+
+fn flush_pending_list(graph: &mut DocumentGraph, body: &mut BodyState) {
+    let Some(list) = body.pending_list.take() else {
+        return;
+    };
+    if list.items.is_empty() {
+        return;
+    }
+    graph.push_loss(LossMarker {
+        code: "reader.docx.numbering_unresolved".into(),
+        message: "list marker style inferred without word/numbering.xml".into(),
+        status: SemanticStatus::Partial,
+    });
+    graph.push_block(Block::List {
+        ordered: false,
+        items: list.items,
+    });
+}
+
+fn paragraph_inlines(paragraph: &ParagraphState) -> Option<Vec<Inline>> {
     let trimmed = paragraph
         .inlines
         .iter()
@@ -367,12 +437,18 @@ fn push_paragraph(graph: &mut DocumentGraph, paragraph: &ParagraphState) {
         .trim()
         .to_string();
     if trimmed.is_empty() {
-        return;
+        return None;
     }
-    let inlines = if paragraph.inlines.is_empty() {
-        vec![Inline::Text { text: trimmed }]
+    if paragraph.inlines.is_empty() {
+        Some(vec![Inline::Text { text: trimmed }])
     } else {
-        paragraph.inlines.clone()
+        Some(paragraph.inlines.clone())
+    }
+}
+
+fn push_paragraph(graph: &mut DocumentGraph, paragraph: &ParagraphState) {
+    let Some(inlines) = paragraph_inlines(paragraph) else {
+        return;
     };
     if let Some(level) = heading_level(&paragraph.style) {
         graph.push_block(Block::Section {

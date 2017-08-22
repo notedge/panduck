@@ -174,6 +174,27 @@ fn docx_imports_embedded_images() {
 }
 
 #[test]
+fn docx_imports_numbered_paragraphs_as_list() {
+    let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+      <w:r><w:t>One</w:t></w:r>
+    </w:p>
+    <w:p>
+      <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+      <w:r><w:t>Two</w:t></w:r>
+    </w:p>
+  </w:body>
+</w:document>"#;
+    let graph = read_docx_bytes("list.docx", docx_zip(document_xml)).expect("read docx");
+    let markdown = write_document_markdown(&graph).expect("write markdown");
+    assert!(markdown.contains("- One"));
+    assert!(markdown.contains("- Two"));
+}
+
+#[test]
 fn docx_inspect_lists_package_parts() {
     let zip = minimal_docx_zip();
     let index = inspect_docx_index_bytes("sample.docx", zip).expect("inspect docx");
