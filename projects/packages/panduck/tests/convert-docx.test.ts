@@ -9,6 +9,7 @@ import {
     hyperlinkRelsXml,
     imageDocumentXml,
     imageRelsXml,
+    listDocumentXml,
     minimalDocumentXml,
 } from "./fixtures/docx-xml.js";
 import { runPanduck } from "./helpers/cli.js";
@@ -57,4 +58,10 @@ test("convert docx embedded images to markdown images", async () => {
         { path: "media/logo.png", payload: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a]) },
     ]);
     assert.match(markdown, /!\[Logo\]\(media\/logo\.png\)/);
+});
+
+test("convert docx numbered paragraphs to markdown lists", async () => {
+    const markdown = await convertDocx([{ path: "word/document.xml", payload: listDocumentXml }]);
+    assert.match(markdown, /^- One/m);
+    assert.match(markdown, /^- Two/m);
 });

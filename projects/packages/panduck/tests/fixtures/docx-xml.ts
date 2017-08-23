@@ -57,3 +57,17 @@ export const imageRelsXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8" st
     Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
     Target="media/logo.png"/>
 </Relationships>`, "utf8");
+
+export const listDocumentXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+      <w:r><w:t>One</w:t></w:r>
+    </w:p>
+    <w:p>
+      <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+      <w:r><w:t>Two</w:t></w:r>
+    </w:p>
+  </w:body>
+</w:document>`, "utf8");
