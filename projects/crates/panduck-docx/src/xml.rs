@@ -4,6 +4,7 @@ use notedown_ir::{
     Asset, AssetId, AssetKind, Block, DocumentGraph, DocumentId, Inline, ListItem, LossMarker,
     SemanticStatus,
 };
+use crate::numbering::NumberingCatalog;
 use panduck_types::{AdapterError, Result};
 use quick_xml::events::Event;
 use quick_xml::name::LocalName;
@@ -13,6 +14,7 @@ use quick_xml::Reader;
 pub fn parse_document_xml(
     xml: &[u8],
     rels: &HashMap<String, String>,
+    numbering: &NumberingCatalog,
     graph: &mut DocumentGraph,
 ) -> Result<()> {
     let mut reader = Reader::from_reader(xml);
@@ -26,6 +28,7 @@ pub fn parse_document_xml(
     let mut in_run = false;
     let mut run = RunState::default();
     let mut in_p_pr = false;
+    let mut in_num_pr = false;
     let mut in_r_pr = false;
     let mut body = BodyState::default();
 
@@ -44,6 +47,11 @@ pub fn parse_document_xml(
                     paragraph.style = style_attribute(&tag);
                 } else if in_p_pr && is_local(local, b"numPr") {
                     paragraph.is_list_item = true;
+                    in_num_pr = true;
+                } else if in_num_pr && is_local(local, b"numId") {
+                    paragraph.num_id = u32_attribute(&tag, b"val");
+                } else if in_num_pr && is_local(local, b"ilvl") {
+                    paragraph.ilvl = u32_attribute(&tag, b"val");
                 } else if in_paragraph && is_local(local, b"hyperlink") {
                     hyperlink = Some(HyperlinkState {
                         rel_id: relationship_id(&tag),
@@ -79,10 +87,13 @@ pub fn parse_document_xml(
             Event::End(tag) => {
                 let local = tag.local_name();
                 if is_local(local, b"body") {
-                    flush_pending_list(graph, &mut body);
+                    flush_pending_list(graph, &mut body, numbering);
                     in_body = false;
                 } else if is_local(local, b"pPr") {
                     in_p_pr = false;
+                    in_num_pr = false;
+                } else if is_local(local, b"numPr") {
+                    in_num_pr = false;
                 } else if is_local(local, b"rPr") {
                     in_r_pr = false;
                 } else if is_local(local, b"r") && in_run {
@@ -98,7 +109,7 @@ pub fn parse_document_xml(
                         paragraph.push_hyperlink(&link, rels, graph);
                     }
                 } else if is_local(local, b"p") && in_paragraph {
-                    finish_paragraph(graph, &mut body, &paragraph);
+                    finish_paragraph(graph, &mut body, &paragraph, numbering);
                     in_paragraph = false;
                     paragraph = ParagraphState::default();
                 }
@@ -109,6 +120,11 @@ pub fn parse_document_xml(
                     paragraph.style = style_attribute(&tag);
                 } else if in_p_pr && is_local(local, b"numPr") {
                     paragraph.is_list_item = true;
+                    in_num_pr = true;
+                } else if in_num_pr && is_local(local, b"numId") {
+                    paragraph.num_id = u32_attribute(&tag, b"val");
+                } else if in_num_pr && is_local(local, b"ilvl") {
+                    paragraph.ilvl = u32_attribute(&tag, b"val");
                 } else if in_r_pr && is_local(local, b"b") {
                     run.bold = true;
                 } else if in_r_pr && is_local(local, b"i") {
@@ -131,7 +147,7 @@ pub fn parse_document_xml(
         buf.clear();
     }
 
-    flush_pending_list(graph, &mut body);
+    flush_pending_list(graph, &mut body, numbering);
 
     if graph.blocks.is_empty() {
         graph.push_loss(LossMarker {
@@ -150,6 +166,8 @@ struct ParagraphState {
     inlines: Vec<Inline>,
     pending_image_alt: Option<String>,
     is_list_item: bool,
+    num_id: Option<u32>,
+    ilvl: Option<u32>,
 }
 
 #[derive(Debug, Default)]
@@ -159,12 +177,18 @@ struct BodyState {
 
 #[derive(Debug)]
 struct PendingListState {
+    num_id: Option<u32>,
+    ordered: Option<bool>,
     items: Vec<ListItem>,
 }
 
 impl Default for PendingListState {
     fn default() -> Self {
-        Self { items: Vec::new() }
+        Self {
+            num_id: None,
+            ordered: None,
+            items: Vec::new(),
+        }
     }
 }
 
@@ -388,6 +412,7 @@ fn finish_paragraph(
     graph: &mut DocumentGraph,
     body: &mut BodyState,
     paragraph: &ParagraphState,
+    numbering: &NumberingCatalog,
 ) {
     if paragraph.is_list_item {
         if let Some(content) = paragraph_inlines(paragraph) {
@@ -395,10 +420,21 @@ fn finish_paragraph(
                 content,
                 children: Vec::new(),
             };
+            let ordered = list_marker_ordered(paragraph, numbering);
             match &mut body.pending_list {
-                Some(list) => list.items.push(item),
+                Some(list) if list.num_id == paragraph.num_id => list.items.push(item),
+                Some(_) => {
+                    flush_pending_list(graph, body, numbering);
+                    body.pending_list = Some(PendingListState {
+                        num_id: paragraph.num_id,
+                        ordered,
+                        items: vec![item],
+                    });
+                }
                 None => {
                     body.pending_list = Some(PendingListState {
+                        num_id: paragraph.num_id,
+                        ordered,
                         items: vec![item],
                     });
                 }
@@ -406,26 +442,51 @@ fn finish_paragraph(
         }
         return;
     }
-    flush_pending_list(graph, body);
+    flush_pending_list(graph, body, numbering);
     push_paragraph(graph, paragraph);
 }
 
-fn flush_pending_list(graph: &mut DocumentGraph, body: &mut BodyState) {
+fn list_marker_ordered(paragraph: &ParagraphState, numbering: &NumberingCatalog) -> Option<bool> {
+    match (paragraph.num_id, paragraph.ilvl) {
+        (Some(num_id), ilvl) => numbering.is_ordered(num_id, ilvl.unwrap_or(0)),
+        _ => None,
+    }
+}
+
+fn flush_pending_list(
+    graph: &mut DocumentGraph,
+    body: &mut BodyState,
+    numbering: &NumberingCatalog,
+) {
     let Some(list) = body.pending_list.take() else {
         return;
     };
     if list.items.is_empty() {
         return;
     }
-    graph.push_loss(LossMarker {
-        code: "reader.docx.numbering_unresolved".into(),
-        message: "list marker style inferred without word/numbering.xml".into(),
-        status: SemanticStatus::Partial,
-    });
+    let resolved = list
+        .ordered
+        .or_else(|| list.num_id.and_then(|num_id| numbering.is_ordered(num_id, 0)));
+    let ordered = resolved.unwrap_or(false);
+    if resolved.is_none() {
+        graph.push_loss(LossMarker {
+            code: "reader.docx.numbering_unresolved".into(),
+            message: "list marker style inferred without word/numbering.xml".into(),
+            status: SemanticStatus::Partial,
+        });
+    }
     graph.push_block(Block::List {
-        ordered: false,
+        ordered,
         items: list.items,
     });
+}
+
+fn u32_attribute(tag: &quick_xml::events::BytesStart, local: &[u8]) -> Option<u32> {
+    tag.attributes()
+        .filter_map(|attr| attr.ok())
+        .find(|attr| attr.key.local_name().as_ref() == local)
+        .and_then(|attr| attr.unescape_value().ok())
+        .and_then(|value| value.parse().ok())
 }
 
 fn paragraph_inlines(paragraph: &ParagraphState) -> Option<Vec<Inline>> {

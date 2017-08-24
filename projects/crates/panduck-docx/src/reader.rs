@@ -6,10 +6,12 @@ use acorn_docx::OpcPackage;
 use notedown_ir::{DocumentGraph, LossMarker, SemanticStatus};
 use panduck_types::{AdapterError, Result};
 
+use crate::numbering::{parse_numbering_xml_lossy, NumberingCatalog};
 use crate::rels::read_document_relationships;
 use crate::xml::{new_graph, parse_document_xml};
 
 const DOCUMENT_XML: &str = "word/document.xml";
+const NUMBERING_XML: &str = "word/numbering.xml";
 
 /// Reads a DOCX file from disk into `DocumentGraph`.
 pub fn read_docx(path: impl AsRef<Path>) -> Result<DocumentGraph> {
@@ -39,11 +41,12 @@ pub fn read_docx_bytes(label: impl Into<String>, bytes: Vec<u8>) -> Result<Docum
         .map_err(map_opc_error)?;
 
     let rels = read_document_relationships(&package, &budget)?;
+    let numbering = read_numbering_catalog(&package, &budget);
     let mut graph = new_graph(&label);
-    parse_document_xml(&xml, &rels, &mut graph)?;
+    parse_document_xml(&xml, &rels, &numbering, &mut graph)?;
     graph.push_loss(LossMarker {
         code: "reader.docx.partial_coverage".into(),
-        message: "DOCX import currently maps paragraphs, heading styles, lists, run bold/italic, hyperlinks, and embedded images".into(),
+        message: "DOCX import currently maps paragraphs, heading styles, lists with numbering.xml marker resolution, run bold/italic, hyperlinks, and embedded images".into(),
         status: SemanticStatus::Partial,
     });
     Ok(graph)
@@ -55,6 +58,17 @@ fn looks_like_zip(bytes: &[u8]) -> bool {
 
 fn looks_like_ole(bytes: &[u8]) -> bool {
     bytes.starts_with(&[0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1])
+}
+
+fn read_numbering_catalog(
+    package: &OpcPackage,
+    budget: &ParseBudget,
+) -> NumberingCatalog {
+    package
+        .read_part(NUMBERING_XML, budget)
+        .ok()
+        .map(|xml| parse_numbering_xml_lossy(&xml))
+        .unwrap_or_default()
 }
 
 fn map_opc_error(error: acorn_docx::OpcError) -> AdapterError {

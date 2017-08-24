@@ -2,6 +2,7 @@
 //! DOCX import into `notedown-ir::DocumentGraph`.
 
 mod inspect;
+mod numbering;
 mod reader;
 mod rels;
 mod xml;

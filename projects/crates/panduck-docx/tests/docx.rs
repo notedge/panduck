@@ -173,6 +173,50 @@ fn docx_imports_embedded_images() {
     assert!(markdown.contains("![Logo](media/logo.png)"));
 }
 
+const DECIMAL_NUMBERING_XML: &[u8] = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:abstractNum w:abstractNumId="0">
+    <w:lvl w:ilvl="0">
+      <w:numFmt w:val="decimal"/>
+    </w:lvl>
+  </w:abstractNum>
+  <w:num w:numId="1">
+    <w:abstractNumId w:val="0"/>
+  </w:num>
+</w:numbering>"#;
+
+#[test]
+fn docx_imports_ordered_lists_from_numbering_xml() {
+    let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+      <w:r><w:t>One</w:t></w:r>
+    </w:p>
+    <w:p>
+      <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+      <w:r><w:t>Two</w:t></w:r>
+    </w:p>
+  </w:body>
+</w:document>"#;
+    let zip = stored_zip(&[
+        ("word/document.xml", document_xml),
+        ("word/numbering.xml", DECIMAL_NUMBERING_XML),
+    ]);
+    let graph = read_docx_bytes("ol.docx", zip).expect("read docx");
+    let markdown = write_document_markdown(&graph).expect("write markdown");
+    assert!(markdown.contains("1. One"));
+    assert!(markdown.contains("2. Two"));
+    assert!(
+        !graph
+            .coverage
+            .loss
+            .iter()
+            .any(|loss| loss.code == "reader.docx.numbering_unresolved")
+    );
+}
+
 #[test]
 fn docx_imports_numbered_paragraphs_as_list() {
     let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
