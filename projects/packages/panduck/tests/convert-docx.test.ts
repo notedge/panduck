@@ -9,6 +9,7 @@ import {
     hyperlinkRelsXml,
     imageDocumentXml,
     imageRelsXml,
+    decimalNumberingXml,
     listDocumentXml,
     minimalDocumentXml,
 } from "./fixtures/docx-xml.js";
@@ -64,4 +65,13 @@ test("convert docx numbered paragraphs to markdown lists", async () => {
     const markdown = await convertDocx([{ path: "word/document.xml", payload: listDocumentXml }]);
     assert.match(markdown, /^- One/m);
     assert.match(markdown, /^- Two/m);
+});
+
+test("convert docx ordered lists when numbering.xml is present", async () => {
+    const markdown = await convertDocx([
+        { path: "word/document.xml", payload: listDocumentXml },
+        { path: "word/numbering.xml", payload: decimalNumberingXml },
+    ]);
+    assert.match(markdown, /^1\. One/m);
+    assert.match(markdown, /^2\. Two/m);
 });
