@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use notedown_ir::{
     Asset, AssetId, AssetKind, Block, DocumentGraph, DocumentId, Inline, ListItem, LossMarker,
-    SemanticStatus,
+    SemanticStatus, TableRow,
 };
 use crate::numbering::NumberingCatalog;
 use panduck_types::{AdapterError, Result};
@@ -31,6 +31,9 @@ pub fn parse_document_xml(
     let mut in_num_pr = false;
     let mut in_r_pr = false;
     let mut body = BodyState::default();
+    let mut in_table = false;
+    let mut in_cell = false;
+    let mut table = None::<TableState>;
 
     while let Ok(event) = reader.read_event_into(&mut buf) {
         match event {
@@ -38,6 +41,19 @@ pub fn parse_document_xml(
                 let local = tag.local_name();
                 if is_local(local, b"body") {
                     in_body = true;
+                } else if in_body && is_local(local, b"tbl") {
+                    flush_pending_list(graph, &mut body, numbering);
+                    in_table = true;
+                    table = Some(TableState::default());
+                } else if in_table && is_local(local, b"tr") {
+                    if let Some(table) = table.as_mut() {
+                        table.current_row = Vec::new();
+                    }
+                } else if in_table && is_local(local, b"tc") {
+                    in_cell = true;
+                    if let Some(table) = table.as_mut() {
+                        table.current_cell = Vec::new();
+                    }
                 } else if in_body && is_local(local, b"p") {
                     in_paragraph = true;
                     paragraph = ParagraphState::default();
@@ -109,9 +125,34 @@ pub fn parse_document_xml(
                         paragraph.push_hyperlink(&link, rels, graph);
                     }
                 } else if is_local(local, b"p") && in_paragraph {
-                    finish_paragraph(graph, &mut body, &paragraph, numbering);
+                    if in_cell {
+                        if let Some(table) = table.as_mut() {
+                            append_cell_paragraph(&mut table.current_cell, &paragraph);
+                        }
+                    } else if !in_table {
+                        finish_paragraph(graph, &mut body, &paragraph, numbering);
+                    }
                     in_paragraph = false;
                     paragraph = ParagraphState::default();
+                } else if in_table && is_local(local, b"tc") {
+                    if let Some(table) = table.as_mut() {
+                        table.current_row.push(table.current_cell.clone());
+                        table.current_cell.clear();
+                    }
+                    in_cell = false;
+                } else if in_table && is_local(local, b"tr") {
+                    if let Some(table) = table.as_mut() {
+                        if !table.current_row.is_empty() {
+                            table.rows.push(table.current_row.clone());
+                        }
+                        table.current_row.clear();
+                    }
+                } else if in_table && is_local(local, b"tbl") {
+                    if let Some(table_state) = table.take() {
+                        push_table_block(graph, table_state);
+                    }
+                    in_table = false;
+                    in_cell = false;
                 }
             }
             Event::Empty(tag) => {
@@ -173,6 +214,13 @@ struct ParagraphState {
 #[derive(Debug, Default)]
 struct BodyState {
     pending_list: Option<PendingListState>,
+}
+
+#[derive(Debug, Default)]
+struct TableState {
+    rows: Vec<Vec<Vec<Inline>>>,
+    current_row: Vec<Vec<Inline>>,
+    current_cell: Vec<Inline>,
 }
 
 #[derive(Debug)]
@@ -505,6 +553,27 @@ fn paragraph_inlines(paragraph: &ParagraphState) -> Option<Vec<Inline>> {
     } else {
         Some(paragraph.inlines.clone())
     }
+}
+
+fn append_cell_paragraph(cell: &mut Vec<Inline>, paragraph: &ParagraphState) {
+    if let Some(content) = paragraph_inlines(paragraph) {
+        if !cell.is_empty() {
+            cell.push(Inline::Text { text: "\n".into() });
+        }
+        cell.extend(content);
+    }
+}
+
+fn push_table_block(graph: &mut DocumentGraph, table: TableState) {
+    if table.rows.is_empty() {
+        return;
+    }
+    let rows = table
+        .rows
+        .into_iter()
+        .map(|cells| TableRow { cells })
+        .collect();
+    graph.push_block(Block::Table { rows });
 }
 
 fn push_paragraph(graph: &mut DocumentGraph, paragraph: &ParagraphState) {
