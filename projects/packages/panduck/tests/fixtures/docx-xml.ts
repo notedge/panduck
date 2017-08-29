@@ -83,3 +83,19 @@ export const listDocumentXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8"
     </w:p>
   </w:body>
 </w:document>`, "utf8");
+
+export const tableDocumentXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:tbl>
+      <w:tr>
+        <w:tc><w:p><w:r><w:t>H1</w:t></w:r></w:p></w:tc>
+        <w:tc><w:p><w:r><w:t>H2</w:t></w:r></w:p></w:tc>
+      </w:tr>
+      <w:tr>
+        <w:tc><w:p><w:r><w:t>A</w:t></w:r></w:p></w:tc>
+        <w:tc><w:p><w:r><w:t>B</w:t></w:r></w:p></w:tc>
+      </w:tr>
+    </w:tbl>
+  </w:body>
+</w:document>`, "utf8");

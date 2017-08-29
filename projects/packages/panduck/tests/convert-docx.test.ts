@@ -12,6 +12,7 @@ import {
     decimalNumberingXml,
     listDocumentXml,
     minimalDocumentXml,
+    tableDocumentXml,
 } from "./fixtures/docx-xml.js";
 import { runPanduck } from "./helpers/cli.js";
 import { storedZip } from "./helpers/stored-zip.js";
@@ -74,4 +75,11 @@ test("convert docx ordered lists when numbering.xml is present", async () => {
     ]);
     assert.match(markdown, /^1\. One/m);
     assert.match(markdown, /^2\. Two/m);
+});
+
+test("convert docx tables to GFM markdown", async () => {
+    const markdown = await convertDocx([{ path: "word/document.xml", payload: tableDocumentXml }]);
+    assert.match(markdown, /\| H1 \| H2 \|/);
+    assert.match(markdown, /\| --- \| --- \|/);
+    assert.match(markdown, /\| A \| B \|/);
 });

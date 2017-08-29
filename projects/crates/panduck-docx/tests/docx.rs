@@ -239,6 +239,30 @@ fn docx_imports_numbered_paragraphs_as_list() {
 }
 
 #[test]
+fn docx_imports_tables_as_gfm_markdown() {
+    let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:tbl>
+      <w:tr>
+        <w:tc><w:p><w:r><w:t>H1</w:t></w:r></w:p></w:tc>
+        <w:tc><w:p><w:r><w:t>H2</w:t></w:r></w:p></w:tc>
+      </w:tr>
+      <w:tr>
+        <w:tc><w:p><w:r><w:t>A</w:t></w:r></w:p></w:tc>
+        <w:tc><w:p><w:r><w:t>B</w:t></w:r></w:p></w:tc>
+      </w:tr>
+    </w:tbl>
+  </w:body>
+</w:document>"#;
+    let graph = read_docx_bytes("table.docx", docx_zip(document_xml)).expect("read docx");
+    let markdown = write_document_markdown(&graph).expect("write markdown");
+    assert!(markdown.contains("| H1 | H2 |"));
+    assert!(markdown.contains("| --- | --- |"));
+    assert!(markdown.contains("| A | B |"));
+}
+
+#[test]
 fn docx_inspect_lists_package_parts() {
     let zip = minimal_docx_zip();
     let index = inspect_docx_index_bytes("sample.docx", zip).expect("inspect docx");
