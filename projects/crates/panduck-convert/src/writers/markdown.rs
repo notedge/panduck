@@ -1,6 +1,6 @@
 use std::fmt::Write as _;
 
-use notedown_ir::{Block, DocumentGraph, Inline};
+use notedown_ir::{Block, DocumentGraph, Inline, TableRow};
 use panduck_types::{AdapterError, Result};
 
 /// Serializes a `DocumentGraph` to GitHub-flavored Markdown text.
@@ -59,13 +59,51 @@ fn write_block(out: &mut String, block: &Block) -> Result<()> {
             }
             out.push('\n');
         }
-        Block::Table { .. } | Block::Math { .. } | Block::Opaque { .. } => {
+        Block::Table { rows } => {
+            write_table(out, rows)?;
+            out.push('\n');
+        }
+        Block::Math { .. } | Block::Opaque { .. } => {
             return Err(AdapterError::unsupported_format(
                 "markdown",
                 "block type is not supported by the IR markdown writer yet",
             ));
         }
     }
+    Ok(())
+}
+
+fn write_table(out: &mut String, rows: &[TableRow]) -> Result<()> {
+    if rows.is_empty() {
+        return Ok(());
+    }
+    for (index, row) in rows.iter().enumerate() {
+        out.push('|');
+        for cell in &row.cells {
+            out.push(' ');
+            write_table_cell(out, cell)?;
+            out.push_str(" |");
+        }
+        out.push('\n');
+        if index == 0 {
+            out.push('|');
+            for _ in &row.cells {
+                out.push_str(" --- |");
+            }
+            out.push('\n');
+        }
+    }
+    Ok(())
+}
+
+fn write_table_cell(out: &mut String, inlines: &[Inline]) -> Result<()> {
+    let text = inlines
+        .iter()
+        .map(inline_plain_text)
+        .collect::<String>()
+        .replace('|', "\\|")
+        .replace('\n', " ");
+    out.push_str(&text);
     Ok(())
 }
 
