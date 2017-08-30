@@ -1,4 +1,4 @@
-use panduck_docx::{inspect_docx_index_bytes, read_docx_bytes};
+use panduck_docx::{inspect_docx_decode_bytes, inspect_docx_index_bytes, read_docx_bytes};
 use panduck_convert::write_document_markdown;
 
 fn stored_zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
@@ -260,6 +260,25 @@ fn docx_imports_tables_as_gfm_markdown() {
     assert!(markdown.contains("| H1 | H2 |"));
     assert!(markdown.contains("| --- | --- |"));
     assert!(markdown.contains("| A | B |"));
+}
+
+#[test]
+fn docx_inspect_decodes_package_parts() {
+    let zip = minimal_docx_zip();
+    let decode = inspect_docx_decode_bytes("sample.docx", zip, None).expect("decode docx");
+    assert_eq!(decode.format, "docx");
+    assert_eq!(decode.parts.len(), 1);
+    assert_eq!(decode.parts[0].path, "word/document.xml");
+    assert!(decode.parts[0].decoded_size > 0);
+}
+
+#[test]
+fn docx_inspect_decodes_single_part_filter() {
+    let zip = minimal_docx_zip();
+    let decode =
+        inspect_docx_decode_bytes("sample.docx", zip, Some("word/document.xml")).expect("decode");
+    assert_eq!(decode.parts.len(), 1);
+    assert_eq!(decode.parts[0].path, "word/document.xml");
 }
 
 #[test]

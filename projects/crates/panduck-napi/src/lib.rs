@@ -3,7 +3,7 @@
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use panduck_convert::{convert_file, supported_routes, supports_route};
-use panduck_docx::inspect_docx_index;
+use panduck_docx::{inspect_docx_decode, inspect_docx_index};
 use panduck_types::AdapterError;
 
 const FORMATS: [&str; 5] = ["markdown", "org", "rst", "tex", "docx"];
@@ -23,6 +23,26 @@ pub struct InspectIndexResponse {
     pub outer: String,
     pub inner: String,
     pub parts: Vec<String>,
+    pub report_json: String,
+}
+
+/// One decoded OPC member in an inspect decode response.
+#[napi(object)]
+pub struct InspectDecodedPart {
+    pub path: String,
+    pub compression_method: u16,
+    pub compressed_size: u32,
+    pub uncompressed_size: u32,
+    pub decoded_size: u32,
+}
+
+/// N-API container decode response.
+#[napi(object)]
+pub struct InspectDecodeResponse {
+    pub format: String,
+    pub outer: String,
+    pub inner: String,
+    pub parts: Vec<InspectDecodedPart>,
     pub report_json: String,
 }
 
@@ -85,6 +105,52 @@ pub fn inspect_index(input_path: String) -> Result<InspectIndexResponse> {
         outer: index.outer,
         inner: index.inner,
         parts: index.parts,
+        report_json,
+    })
+}
+
+/// Decodes DOCX OPC members and returns per-part payload sizes.
+#[napi]
+pub fn inspect_decode(input_path: String, part_path: Option<String>) -> Result<InspectDecodeResponse> {
+    let filter = part_path.as_deref();
+    let decode = inspect_docx_decode(&input_path, filter).map_err(map_adapter_error)?;
+    let decoded_parts = decode
+        .parts
+        .iter()
+        .map(|part| InspectDecodedPart {
+            path: part.path.clone(),
+            compression_method: part.compression_method,
+            compressed_size: part.compressed_size.min(u32::MAX as u64) as u32,
+            uncompressed_size: part.uncompressed_size.min(u32::MAX as u64) as u32,
+            decoded_size: part.decoded_size.min(u32::MAX as u64) as u32,
+        })
+        .collect::<Vec<_>>();
+    let report_json = serde_json::json!({
+        "schema_version": "panduck.report/v1",
+        "operation": "inspect",
+        "status": "success",
+        "inputs": [{ "path": input_path, "format": decode.format }],
+        "detection": {
+            "outer": decode.outer,
+            "inner": decode.inner,
+            "format": decode.format,
+            "confidence": "verified",
+        },
+        "pipeline": { "stages": ["decode"] },
+        "decoded_parts": decode.parts.iter().map(|part| serde_json::json!({
+            "path": part.path,
+            "compression_method": part.compression_method,
+            "compressed_size": part.compressed_size,
+            "uncompressed_size": part.uncompressed_size,
+            "decoded_size": part.decoded_size,
+        })).collect::<Vec<_>>(),
+    })
+    .to_string();
+    Ok(InspectDecodeResponse {
+        format: decode.format,
+        outer: decode.outer,
+        inner: decode.inner,
+        parts: decoded_parts,
         report_json,
     })
 }
