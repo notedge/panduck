@@ -12,6 +12,22 @@ export type InspectIndexResponse = {
     reportJson: string;
 };
 
+export type InspectDecodedPart = {
+    path: string;
+    compressionMethod: number;
+    compressedSize: number;
+    uncompressedSize: number;
+    decodedSize: number;
+};
+
+export type InspectDecodeResponse = {
+    format: string;
+    outer: string;
+    inner: string;
+    parts: InspectDecodedPart[];
+    reportJson: string;
+};
+
 /** Shared Panduck binding surface for Node-API and WebAssembly backends. */
 export type PanduckBindings = {
     panduckVersion: () => string;
@@ -21,6 +37,7 @@ export type PanduckBindings = {
     supportedConversions?: () => string[];
     convertDocument?: (from: string, to: string, inputPath: string) => ConvertResponse;
     inspectIndex?: (inputPath: string) => InspectIndexResponse;
+    inspectDecode?: (inputPath: string, partPath?: string) => InspectDecodeResponse;
 };
 
 export type PanduckWasmOptions = {

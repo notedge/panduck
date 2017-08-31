@@ -34,6 +34,13 @@ export type PanduckReport = {
         blocked_reason?: string;
     };
     parts?: string[];
+    decoded_parts?: Array<{
+        path: string;
+        compression_method: number;
+        compressed_size: number;
+        uncompressed_size: number;
+        decoded_size: number;
+    }>;
     coverage?: {
         state: CapabilityState;
         read?: number;
@@ -73,6 +80,7 @@ export function createReport(input: {
     detection?: PanduckReport["detection"];
     pipeline?: PanduckReport["pipeline"];
     parts?: PanduckReport["parts"];
+    decodedParts?: PanduckReport["decoded_parts"];
     coverage?: PanduckReport["coverage"];
     losses?: PanduckReport["losses"];
     diagnostics?: PanduckReport["diagnostics"];
@@ -90,6 +98,7 @@ export function createReport(input: {
         detection: input.detection,
         pipeline: input.pipeline,
         parts: input.parts,
+        decoded_parts: input.decodedParts,
         coverage: input.coverage,
         losses: input.losses ?? [],
         diagnostics: input.diagnostics ?? [],

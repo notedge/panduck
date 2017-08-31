@@ -20,6 +20,19 @@ type NativeBinding = {
         parts: string[];
         reportJson: string;
     };
+    inspectDecode?: (inputPath: string, partPath?: string) => {
+        format: string;
+        outer: string;
+        inner: string;
+        parts: Array<{
+            path: string;
+            compressionMethod: number;
+            compressedSize: number;
+            uncompressedSize: number;
+            decodedSize: number;
+        }>;
+        reportJson: string;
+    };
 };
 
 const PLATFORM_PACKAGES: Record<string, string> = {
@@ -62,6 +75,18 @@ export function loadPanduckNode(): PanduckBindings {
         inspectIndex: binding.inspectIndex
             ? (inputPath) => {
                   const response = binding.inspectIndex!(inputPath);
+                  return {
+                      format: response.format,
+                      outer: response.outer,
+                      inner: response.inner,
+                      parts: response.parts,
+                      reportJson: response.reportJson,
+                  };
+              }
+            : undefined,
+        inspectDecode: binding.inspectDecode
+            ? (inputPath, partPath) => {
+                  const response = binding.inspectDecode!(inputPath, partPath);
                   return {
                       format: response.format,
                       outer: response.outer,
