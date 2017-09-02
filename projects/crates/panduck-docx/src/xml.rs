@@ -92,6 +92,8 @@ pub fn parse_document_xml(
                     if let Some(rel_id) = embed_relationship_id(&tag) {
                         paragraph.push_image(&rel_id, rels, graph);
                     }
+                } else if in_paragraph && is_local(local, b"footnoteReference") {
+                    push_footnote_reference(graph, &mut paragraph, &mut hyperlink, u32_attribute(&tag, b"id"));
                 }
             }
             Event::Text(text) if in_run => {
@@ -180,6 +182,8 @@ pub fn parse_document_xml(
                     if let Some(rel_id) = embed_relationship_id(&tag) {
                         paragraph.push_image(&rel_id, rels, graph);
                     }
+                } else if in_paragraph && is_local(local, b"footnoteReference") {
+                    push_footnote_reference(graph, &mut paragraph, &mut hyperlink, u32_attribute(&tag, b"id"));
                 }
             }
             Event::Eof => break,
@@ -379,6 +383,28 @@ impl RunState {
         }
         text
     }
+}
+
+fn push_footnote_reference(
+    graph: &mut DocumentGraph,
+    paragraph: &mut ParagraphState,
+    hyperlink: &mut Option<HyperlinkState>,
+    id: Option<u32>,
+) {
+    let label = id.map(|value| value.to_string()).unwrap_or_else(|| "?".to_string());
+    let inline = Inline::Text {
+        text: format!("[^{}]", label),
+    };
+    if let Some(link) = hyperlink.as_mut() {
+        push_inline(&mut link.inlines, inline);
+    } else {
+        push_inline(&mut paragraph.inlines, inline);
+    }
+    graph.push_loss(LossMarker {
+        code: "reader.docx.footnote_body".into(),
+        message: format!("footnote {label} body is not resolved yet"),
+        status: SemanticStatus::Unresolved,
+    });
 }
 
 fn push_inline(inlines: &mut Vec<Inline>, inline: Inline) {

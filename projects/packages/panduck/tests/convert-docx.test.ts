@@ -12,6 +12,7 @@ import {
     decimalNumberingXml,
     listDocumentXml,
     minimalDocumentXml,
+    footnoteDocumentXml,
     tableDocumentXml,
 } from "./fixtures/docx-xml.js";
 import { runPanduck } from "./helpers/cli.js";
@@ -75,6 +76,11 @@ test("convert docx ordered lists when numbering.xml is present", async () => {
     ]);
     assert.match(markdown, /^1\. One/m);
     assert.match(markdown, /^2\. Two/m);
+});
+
+test("convert docx footnote references to markdown markers", async () => {
+    const markdown = await convertDocx([{ path: "word/document.xml", payload: footnoteDocumentXml }]);
+    assert.match(markdown, /See\[\^1\] for details\./);
 });
 
 test("convert docx tables to GFM markdown", async () => {

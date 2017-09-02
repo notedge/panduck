@@ -84,6 +84,17 @@ export const listDocumentXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8"
   </w:body>
 </w:document>`, "utf8");
 
+export const footnoteDocumentXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:r><w:t>See</w:t></w:r>
+      <w:r><w:footnoteReference w:id="1"/></w:r>
+      <w:r><w:t> for details.</w:t></w:r>
+    </w:p>
+  </w:body>
+</w:document>`, "utf8");
+
 export const tableDocumentXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:body>

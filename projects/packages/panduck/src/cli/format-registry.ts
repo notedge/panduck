@@ -95,8 +95,8 @@ export function baseFormatRegistry(): FormatRecord[] {
             "partial",
             "unavailable",
             ["oak-xml"],
-            ["paragraph", "heading", "list", "table", "style", "hyperlink", "image", "bold", "italic"],
-            ["tracked_changes", "comment"],
+            ["paragraph", "heading", "list", "table", "style", "hyperlink", "image", "bold", "italic", "footnote_reference"],
+            ["tracked_changes", "comment", "footnote_body"],
         ),
         containerFormat(
             "epub",
