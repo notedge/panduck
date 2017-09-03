@@ -6,8 +6,24 @@ use panduck_types::{AdapterError, Result};
 /// Serializes a `DocumentGraph` to GitHub-flavored Markdown text.
 pub fn write_document_markdown(graph: &DocumentGraph) -> Result<String> {
     let mut output = String::new();
+    let mut footnotes = Vec::new();
     for node in &graph.blocks {
+        if let Block::Opaque {
+            kind,
+            payload_hint,
+            ..
+        } = &node.block
+        {
+            if kind == "footnote_definition" {
+                footnotes.push(payload_hint.as_str());
+                continue;
+            }
+        }
         write_block(&mut output, &node.block)?;
+    }
+    for footnote in footnotes {
+        output.push_str(footnote);
+        output.push_str("\n\n");
     }
     Ok(output)
 }
@@ -63,10 +79,16 @@ fn write_block(out: &mut String, block: &Block) -> Result<()> {
             write_table(out, rows)?;
             out.push('\n');
         }
-        Block::Math { .. } | Block::Opaque { .. } => {
+        Block::Math { .. } => {
             return Err(AdapterError::unsupported_format(
                 "markdown",
                 "block type is not supported by the IR markdown writer yet",
+            ));
+        }
+        Block::Opaque { kind, .. } => {
+            return Err(AdapterError::unsupported_format(
+                "markdown",
+                format!("opaque block kind `{kind}` is not supported by the IR markdown writer yet"),
             ));
         }
     }
