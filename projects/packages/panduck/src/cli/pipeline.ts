@@ -1,4 +1,5 @@
-import { mkdir, rename, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rename, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
 import { randomBytes } from "node:crypto";
 
@@ -27,6 +28,65 @@ export function hasPipeline(
     return bindings.supportsConversion(from, to);
 }
 
+export function inferCheckTarget(bindings: PanduckBindings, from: string): string | undefined {
+    const routes = bindings.supportedConversions?.() ?? [];
+    const targets = routes
+        .filter((route) => route.startsWith(`${from}:`))
+        .map((route) => route.slice(from.length + 1));
+    if (targets.length === 1) {
+        return targets[0];
+    }
+    if (targets.includes("markdown")) {
+        return "markdown";
+    }
+    return undefined;
+}
+
+export async function runCheckPipeline(input: {
+    ctx: CliContext;
+    bindings: PanduckBindings;
+    inputPath: string;
+    resolved: ResolvedFormats;
+    shared: SharedCliOptions;
+}): Promise<PipelineResult> {
+    const { bindings, inputPath, resolved, shared, ctx } = input;
+    const from = resolved.from;
+    const to = resolved.to;
+    if (!from || !to) {
+        throw new Error("check requires resolved from/to formats");
+    }
+
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-check-"));
+    const extension = to === "markdown" ? ".md" : `.${to}`;
+    const outputPath = join(workdir, `check${extension}`);
+
+    const result = await runConversionPipeline({
+        ctx,
+        bindings,
+        inputPath,
+        outputPath,
+        resolved: { ...resolved, to },
+        shared,
+        toolVersion: ctx.toolVersion,
+        operation: "check",
+        suppressStdout: true,
+        publishOutput: false,
+    });
+
+    return {
+        exitCode: result.exitCode,
+        report: {
+            ...result.report,
+            operation: "check",
+            outputs: [{ path: outputPath, published: false }],
+            pipeline: {
+                ...result.report.pipeline,
+                stages: ["read", "ir", "write", "validate"],
+            },
+        },
+    };
+}
+
 export async function runConversionPipeline(input: {
     ctx: CliContext;
     bindings: PanduckBindings;
@@ -35,8 +95,21 @@ export async function runConversionPipeline(input: {
     resolved: ResolvedFormats;
     shared: SharedCliOptions;
     toolVersion: string;
+    operation?: "convert" | "check";
+    suppressStdout?: boolean;
+    publishOutput?: boolean;
 }): Promise<PipelineResult> {
-    const { bindings, inputPath, outputPath, resolved, shared, ctx } = input;
+    const {
+        bindings,
+        inputPath,
+        outputPath,
+        resolved,
+        shared,
+        ctx,
+        operation = "convert",
+        suppressStdout = false,
+        publishOutput = true,
+    } = input;
     const from = resolved.from;
     const to = resolved.to;
     if (!from || !to) {
@@ -44,16 +117,16 @@ export async function runConversionPipeline(input: {
     }
 
     if (!bindings.convertDocument) {
-        return blocked(ctx, inputPath, resolved, shared, "native convertDocument binding is missing");
+        return blocked(ctx, operation, inputPath, resolved, shared, "native convertDocument binding is missing");
     }
 
     const response = bindings.convertDocument(from, to, inputPath);
     const markdown = response.markdown ?? "";
     const parsedReport = safeParseReport(response.reportJson);
 
-    if (outputPath && !isStdoutPath(outputPath)) {
+    if (publishOutput && outputPath && !isStdoutPath(outputPath)) {
         await publishText(outputPath, markdown);
-    } else if (isStdoutPath(outputPath) || !outputPath) {
+    } else if (!suppressStdout && (isStdoutPath(outputPath) || !outputPath)) {
         process.stdout.write(markdown);
     }
 
@@ -67,14 +140,20 @@ export async function runConversionPipeline(input: {
     }
 
     const report = createReport({
-        operation: "convert",
+        operation,
         toolVersion: ctx.toolVersion,
         status,
         inputs: [{ path: inputPath, format: from }],
         detection: { format: from, outer: "zip", inner: "opc", confidence: "verified", hints: resolved.hints },
-        pipeline: { reader: from, writer: to, stages: ["read", "ir", "write", "publish"] },
+        pipeline: {
+            reader: from,
+            writer: to,
+            stages: operation === "check" ? ["read", "ir", "write", "validate"] : ["read", "ir", "write", "publish"],
+        },
         losses: parsedReport?.losses as PanduckReport["losses"],
-        outputs: outputPath ? [{ path: outputPath, published: true }] : [{ path: "-", published: true }],
+        outputs: outputPath
+            ? [{ path: outputPath, published: publishOutput && !isStdoutPath(outputPath) }]
+            : [{ path: "-", published: !suppressStdout }],
         budgets: shared.budgets,
         determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
         statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: exitCode },
@@ -101,13 +180,14 @@ function safeParseReport(raw: string): Record<string, unknown> | null {
 
 function blocked(
     ctx: CliContext,
+    operation: "convert" | "check",
     inputPath: string,
     resolved: ResolvedFormats,
     shared: SharedCliOptions,
     reason: string,
 ): PipelineResult {
     const report = createReport({
-        operation: "convert",
+        operation,
         toolVersion: ctx.toolVersion,
         status: "blocked",
         inputs: [{ path: inputPath, format: resolved.from }],
