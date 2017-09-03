@@ -1,6 +1,7 @@
 #![warn(missing_docs)]
 //! DOCX import into `notedown-ir::DocumentGraph`.
 
+mod footnotes;
 mod inspect;
 mod numbering;
 mod reader;

@@ -1,9 +1,10 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use notedown_ir::{
     Asset, AssetId, AssetKind, Block, DocumentGraph, DocumentId, Inline, ListItem, LossMarker,
     SemanticStatus, TableRow,
 };
+use crate::footnotes::FootnoteCatalog;
 use crate::numbering::NumberingCatalog;
 use panduck_types::{AdapterError, Result};
 use quick_xml::events::Event;
@@ -15,8 +16,10 @@ pub fn parse_document_xml(
     xml: &[u8],
     rels: &HashMap<String, String>,
     numbering: &NumberingCatalog,
+    footnotes: &FootnoteCatalog,
     graph: &mut DocumentGraph,
-) -> Result<()> {
+) -> Result<HashSet<u32>> {
+    let mut referenced_footnotes = HashSet::new();
     let mut reader = Reader::from_reader(xml);
     reader.config_mut().trim_text(false);
 
@@ -93,7 +96,14 @@ pub fn parse_document_xml(
                         paragraph.push_image(&rel_id, rels, graph);
                     }
                 } else if in_paragraph && is_local(local, b"footnoteReference") {
-                    push_footnote_reference(graph, &mut paragraph, &mut hyperlink, u32_attribute(&tag, b"id"));
+                    push_footnote_reference(
+                        graph,
+                        &mut paragraph,
+                        &mut hyperlink,
+                        footnotes,
+                        &mut referenced_footnotes,
+                        u32_attribute(&tag, b"id"),
+                    );
                 }
             }
             Event::Text(text) if in_run => {
@@ -183,7 +193,14 @@ pub fn parse_document_xml(
                         paragraph.push_image(&rel_id, rels, graph);
                     }
                 } else if in_paragraph && is_local(local, b"footnoteReference") {
-                    push_footnote_reference(graph, &mut paragraph, &mut hyperlink, u32_attribute(&tag, b"id"));
+                    push_footnote_reference(
+                        graph,
+                        &mut paragraph,
+                        &mut hyperlink,
+                        footnotes,
+                        &mut referenced_footnotes,
+                        u32_attribute(&tag, b"id"),
+                    );
                 }
             }
             Event::Eof => break,
@@ -202,7 +219,7 @@ pub fn parse_document_xml(
         });
     }
 
-    Ok(())
+    Ok(referenced_footnotes)
 }
 
 #[derive(Debug, Default)]
@@ -389,6 +406,8 @@ fn push_footnote_reference(
     graph: &mut DocumentGraph,
     paragraph: &mut ParagraphState,
     hyperlink: &mut Option<HyperlinkState>,
+    footnotes: &FootnoteCatalog,
+    referenced: &mut HashSet<u32>,
     id: Option<u32>,
 ) {
     let label = id.map(|value| value.to_string()).unwrap_or_else(|| "?".to_string());
@@ -400,11 +419,22 @@ fn push_footnote_reference(
     } else {
         push_inline(&mut paragraph.inlines, inline);
     }
-    graph.push_loss(LossMarker {
-        code: "reader.docx.footnote_body".into(),
-        message: format!("footnote {label} body is not resolved yet"),
-        status: SemanticStatus::Unresolved,
-    });
+    if let Some(id) = id {
+        referenced.insert(id);
+        if !footnotes.contains_key(&id) {
+            graph.push_loss(LossMarker {
+                code: "reader.docx.footnote_body".into(),
+                message: format!("footnote {label} body is not resolved yet"),
+                status: SemanticStatus::Unresolved,
+            });
+        }
+    } else {
+        graph.push_loss(LossMarker {
+            code: "reader.docx.footnote_body".into(),
+            message: "footnote reference is missing an id".into(),
+            status: SemanticStatus::Unresolved,
+        });
+    }
 }
 
 fn push_inline(inlines: &mut Vec<Inline>, inline: Inline) {
