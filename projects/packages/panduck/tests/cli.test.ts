@@ -7,6 +7,7 @@ test("formats emits markdown capability json", () => {
     const formats = runPanduck(["formats", "markdown", "--json"]);
     assert.equal(formats.code, 0, formats.stderr);
     assert.match(formats.stdout, /"format": "markdown"/);
+    assert.match(formats.stdout, /"conversions":/);
 });
 
 test("plan blocks unsupported ready pipeline with report schema", () => {

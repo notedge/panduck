@@ -35,7 +35,11 @@ function runFormats(options: ParsedOptions): number {
     });
 
     if (shared.json || options.json === true) {
-        emitJson({ schema_version: "panduck.formats/v1", formats: payload });
+        emitJson({
+            schema_version: "panduck.formats/v1",
+            formats: payload,
+            conversions: ctx.bindings?.supportedConversions?.() ?? [],
+        });
         return 0;
     }
 
