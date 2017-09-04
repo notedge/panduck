@@ -79,6 +79,13 @@ fn docx_zip(document_xml: &[u8]) -> Vec<u8> {
     stored_zip(&[("word/document.xml", document_xml)])
 }
 
+fn docx_zip_with_footnotes(document_xml: &[u8], footnotes_xml: &[u8]) -> Vec<u8> {
+    stored_zip(&[
+        ("word/document.xml", document_xml),
+        ("word/footnotes.xml", footnotes_xml),
+    ])
+}
+
 #[test]
 fn docx_to_markdown_round_trip() {
     let graph = read_docx_bytes("sample.docx", minimal_docx_zip()).expect("read docx");
@@ -239,7 +246,7 @@ fn docx_imports_numbered_paragraphs_as_list() {
 }
 
 #[test]
-fn docx_imports_footnote_references_as_markdown_markers() {
+fn docx_imports_unresolved_footnote_references_with_loss() {
     let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:body>
@@ -255,6 +262,41 @@ fn docx_imports_footnote_references_as_markdown_markers() {
     assert!(markdown.contains("See[^1] for details."));
     assert!(
         graph
+            .coverage
+            .loss
+            .iter()
+            .any(|loss| loss.code == "reader.docx.footnote_body")
+    );
+}
+
+#[test]
+fn docx_imports_footnote_bodies_from_footnotes_xml() {
+    let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:r><w:t>See</w:t></w:r>
+      <w:r><w:footnoteReference w:id="1"/></w:r>
+      <w:r><w:t> for details.</w:t></w:r>
+    </w:p>
+  </w:body>
+</w:document>"#;
+    let footnotes_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:footnotes xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:footnote w:id="1">
+    <w:p><w:r><w:t>Footnote body.</w:t></w:r></w:p>
+  </w:footnote>
+</w:footnotes>"#;
+    let graph = read_docx_bytes(
+        "sample.docx",
+        docx_zip_with_footnotes(document_xml, footnotes_xml),
+    )
+    .expect("read docx");
+    let markdown = write_document_markdown(&graph).expect("write markdown");
+    assert!(markdown.contains("See[^1] for details."));
+    assert!(markdown.contains("[^1]: Footnote body."));
+    assert!(
+        !graph
             .coverage
             .loss
             .iter()

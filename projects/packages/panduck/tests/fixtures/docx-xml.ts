@@ -95,6 +95,13 @@ export const footnoteDocumentXml = Buffer.from(`<?xml version="1.0" encoding="UT
   </w:body>
 </w:document>`, "utf8");
 
+export const footnotesXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:footnotes xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:footnote w:id="1">
+    <w:p><w:r><w:t>Footnote body.</w:t></w:r></w:p>
+  </w:footnote>
+</w:footnotes>`, "utf8");
+
 export const tableDocumentXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:body>
