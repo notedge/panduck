@@ -1,19 +1,38 @@
 [package]
+
 name = "panduck-convert"
-version = "0.1.0"
-authors = ["Aster <192607617@qq.com>"]
+
 description = "Panduck conversion orchestration over notedown-ir"
-license = "MPL-2.0"
-edition = "2021"
+
 publish = false
 
+version.workspace = true
+
+authors.workspace = true
+
+license.workspace = true
+
+edition.workspace = true
+
+
+
 [dependencies]
+
 oak-core = { workspace = true }
+
 oak-markdown = { workspace = true }
-panduck-docx = { path = "../panduck-docx" }
+
+panduck-docx = { workspace = true }
+
 panduck-types = { workspace = true }
+
 notedown-ir = { workspace = true }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+
+serde = { workspace = true }
+
+serde_json = { workspace = true }
+
+
 
 [dev-dependencies]
+

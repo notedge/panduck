@@ -1,21 +1,42 @@
 [package]
+
 name = "panduck-docx"
-version = "0.1.0"
-authors = ["Aster <192607617@qq.com>"]
+
 description = "DOCX reader for Panduck via Acorn OPC and notedown-ir"
-license = "MPL-2.0"
-edition = "2021"
+
 publish = false
 
+version.workspace = true
+
+authors.workspace = true
+
+license.workspace = true
+
+edition.workspace = true
+
+
+
 [lib]
+
 doctest = false
 
+
+
 [dependencies]
+
 acorn-core = { path = "../../../../acorn.rs/projects/acorn-core" }
+
 acorn-docx = { path = "../../../../acorn.rs/examples/acorn-docx" }
+
 notedown-ir = { workspace = true }
+
 panduck-types = { workspace = true }
-quick-xml = "0.37.5"
+
+quick-xml = { workspace = true }
+
+
 
 [dev-dependencies]
-panduck-convert = { path = "../panduck-convert" }
+
+panduck-convert = { workspace = true }
+

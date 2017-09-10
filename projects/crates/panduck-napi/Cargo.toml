@@ -1,27 +1,54 @@
 [package]
+
 name = "panduck-napi"
+
 version = "0.2.0"
-authors = ["Aster <192607617@qq.com>"]
+
 description = "Node-API bindings for Panduck document conversion"
-license = "MPL-2.0"
-edition = "2021"
+
 readme = "readme.md"
+
 homepage = "https://github.com/notedge/panduck"
+
 repository = "https://github.com/notedge/panduck"
 
+authors.workspace = true
+
+license.workspace = true
+
+edition.workspace = true
+
+
+
 [lib]
+
 crate-type = ["cdylib", "rlib"]
 
+
+
 [dependencies]
-napi = { version = "2", default-features = false, features = ["napi4"] }
-napi-derive = "2"
+
+napi = { workspace = true }
+
+napi-derive = { workspace = true }
+
 panduck-convert = { workspace = true }
-panduck-docx = { path = "../panduck-docx" }
+
+panduck-docx = { workspace = true }
+
 panduck-types = { workspace = true }
-serde_json = "1.0"
+
+serde_json = { workspace = true }
+
+
 
 [build-dependencies]
+
 napi-build = "2"
 
+
+
 [package.metadata.napi]
+
 name = "panduck"
+

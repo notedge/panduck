@@ -2,10 +2,11 @@ use std::collections::{HashMap, HashSet};
 
 use notedown_ir::{
     Asset, AssetId, AssetKind, Block, DocumentGraph, DocumentId, Inline, ListItem, LossMarker,
-    SemanticStatus, TableRow,
+    SemanticStatus,
 };
 use crate::footnotes::FootnoteCatalog;
 use crate::numbering::NumberingCatalog;
+use crate::table::{append_cell_paragraph, push_table_block, TableState};
 use panduck_types::{AdapterError, Result};
 use quick_xml::events::Event;
 use quick_xml::name::LocalName;
@@ -139,7 +140,9 @@ pub fn parse_document_xml(
                 } else if is_local(local, b"p") && in_paragraph {
                     if in_cell {
                         if let Some(table) = table.as_mut() {
-                            append_cell_paragraph(&mut table.current_cell, &paragraph);
+                            if let Some(content) = paragraph_inlines(&paragraph) {
+                                append_cell_paragraph(&mut table.current_cell, &content);
+                            }
                         }
                     } else if !in_table {
                         finish_paragraph(graph, &mut body, &paragraph, numbering);
@@ -235,13 +238,6 @@ struct ParagraphState {
 #[derive(Debug, Default)]
 struct BodyState {
     pending_list: Option<PendingListState>,
-}
-
-#[derive(Debug, Default)]
-struct TableState {
-    rows: Vec<Vec<Vec<Inline>>>,
-    current_row: Vec<Vec<Inline>>,
-    current_cell: Vec<Inline>,
 }
 
 #[derive(Debug)]
@@ -609,27 +605,6 @@ fn paragraph_inlines(paragraph: &ParagraphState) -> Option<Vec<Inline>> {
     } else {
         Some(paragraph.inlines.clone())
     }
-}
-
-fn append_cell_paragraph(cell: &mut Vec<Inline>, paragraph: &ParagraphState) {
-    if let Some(content) = paragraph_inlines(paragraph) {
-        if !cell.is_empty() {
-            cell.push(Inline::Text { text: "\n".into() });
-        }
-        cell.extend(content);
-    }
-}
-
-fn push_table_block(graph: &mut DocumentGraph, table: TableState) {
-    if table.rows.is_empty() {
-        return;
-    }
-    let rows = table
-        .rows
-        .into_iter()
-        .map(|cells| TableRow { cells })
-        .collect();
-    graph.push_block(Block::Table { rows });
 }
 
 fn push_paragraph(graph: &mut DocumentGraph, paragraph: &ParagraphState) {

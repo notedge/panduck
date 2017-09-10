@@ -1,7 +1,12 @@
 [workspace]
-edition = "2021"
 resolver = "2"
 members = ["projects/crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Aster <192607617@qq.com>"]
+license = "MPL-2.0"
+edition = "2021"
 default-members = [
 	"projects/crates/panduck-types",
 	"projects/crates/panduck-convert",
@@ -25,6 +30,11 @@ oak-navigation = { git = "https://github.com/yggdrasil-language/oaks.git", branc
 oak-markdown = { git = "https://github.com/yggdrasil-language/oaks.git", branch = "dev", default-features = false, features = ["serde"] }
 oak-rst = { git = "https://github.com/yggdrasil-language/oaks.git", branch = "dev", default-features = false, features = ["serde"] }
 notedown-ir = { git = "https://github.com/notedge/notedown.git", branch = "dev" }
+quick-xml = "0.37.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+napi = { version = "2", default-features = false, features = ["napi4"] }
+napi-derive = "2"
 
 [profile.release]
 lto = true

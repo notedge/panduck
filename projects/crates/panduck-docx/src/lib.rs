@@ -1,11 +1,12 @@
 #![warn(missing_docs)]
-//! DOCX import into `notedown-ir::DocumentGraph`.
+#![doc = include_str!("../readme.md")]
 
 mod footnotes;
 mod inspect;
 mod numbering;
 mod reader;
 mod rels;
+mod table;
 mod xml;
 
 pub use inspect::{

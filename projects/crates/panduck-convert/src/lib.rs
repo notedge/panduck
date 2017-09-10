@@ -1,5 +1,5 @@
 #![warn(missing_docs)]
-//! Panduck conversion routes over `notedown-ir::DocumentGraph`.
+#![doc = include_str!("../readme.md")]
 
 mod readers;
 mod writers;
