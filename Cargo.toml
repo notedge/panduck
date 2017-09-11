@@ -16,6 +16,8 @@ default-members = [
 
 [workspace.dependencies]
 panduck-types = { path = "projects/crates/panduck-types" }
+panduck-diagnostic = { path = "projects/crates/panduck-diagnostic" }
+diagnostic = { git = "https://github.com/oovm/diagnostic-rs", branch = "dev", package = "diagnostic", default-features = false, features = ["std", "serde"] }
 panduck-convert = { path = "projects/crates/panduck-convert" }
 panduck-docx = { path = "projects/crates/panduck-docx" }
 panduck-org = { path = "projects/crates/panduck-org" }

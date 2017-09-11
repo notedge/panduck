@@ -1,0 +1,15 @@
+[package]
+name = "panduck-diagnostic"
+version.workspace = true
+authors.workspace = true
+description = "Panduck domain diagnostic codes on the shared diagnostic contract"
+license.workspace = true
+edition.workspace = true
+readme = "readme.md"
+
+[dependencies]
+diagnostic = { git = "https://github.com/oovm/diagnostic-rs", branch = "dev", package = "diagnostic", default-features = false, features = ["std", "serde"] }
+notedown-ir = { workspace = true }
+panduck-types = { workspace = true }
+
+[dev-dependencies]

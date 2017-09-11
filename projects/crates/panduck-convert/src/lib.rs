@@ -8,6 +8,7 @@ use std::fs;
 use std::path::Path;
 
 use notedown_ir::DocumentGraph;
+use panduck_diagnostic::{diagnostics_from_graph, DiagnosticEnvelope};
 use panduck_docx::read_docx_bytes;
 use panduck_types::{AdapterError, Result};
 use serde::Serialize;
@@ -72,13 +73,17 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>) -> Resul
     let graph = read_source(&from, label, bytes)?;
     let markdown = write_document_markdown(&graph)?;
     let loss_count = graph.coverage.loss.len();
+    let diagnostic_set = diagnostics_from_graph(&graph);
+    let diagnostic_envelope = DiagnosticEnvelope::from_set(&diagnostic_set);
     let report_json = serde_json::json!({
         "schema_version": "panduck.report/v1",
         "operation": "convert",
         "status": if graph.coverage.complete { "success" } else { "success_with_loss" },
         "inputs": [{ "path": label, "format": from }],
         "pipeline": { "reader": from, "writer": to, "stages": ["read", "ir", "write"] },
+        "coverage": graph.coverage,
         "losses": graph.coverage.loss,
+        "diagnostics": diagnostic_envelope,
         "outputs": [{ "format": to, "published": true }],
     })
     .to_string();
