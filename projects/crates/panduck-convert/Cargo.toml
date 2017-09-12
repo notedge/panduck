@@ -18,16 +18,13 @@ edition.workspace = true
 
 [dependencies]
 
-oak-core = { workspace = true }
-
-oak-markdown = { workspace = true }
-
 panduck-docx = { workspace = true }
 
 panduck-types = { workspace = true }
 panduck-diagnostic = { workspace = true }
 
 notedown-ir = { workspace = true }
+notedown-formats = { workspace = true }
 
 serde = { workspace = true }
 
