@@ -2,7 +2,7 @@
 
 name = "panduck-docx"
 
-description = "DOCX reader for Panduck via Acorn OPC and notedown-ir"
+description = "DOCX container inspect and Panduck-facing import facade"
 
 publish = false
 
@@ -28,15 +28,14 @@ acorn-core = { path = "../../../../acorn.rs/projects/acorn-core" }
 
 acorn-docx = { path = "../../../../acorn.rs/examples/acorn-docx" }
 
+notedown-formats = { workspace = true }
+
 notedown-ir = { workspace = true }
 
 panduck-types = { workspace = true }
-
-quick-xml = { workspace = true }
 
 
 
 [dev-dependencies]
 
 panduck-convert = { workspace = true }
-

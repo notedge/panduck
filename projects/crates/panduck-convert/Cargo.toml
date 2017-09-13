@@ -18,8 +18,6 @@ edition.workspace = true
 
 [dependencies]
 
-panduck-docx = { workspace = true }
-
 panduck-types = { workspace = true }
 panduck-diagnostic = { workspace = true }
 
