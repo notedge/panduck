@@ -96,9 +96,7 @@ pub fn from_loss_marker(marker: &LossMarker) -> Diagnostic {
         code,
         loss_severity(marker.status),
         DiagnosticOrigin::new("panduck", "semantic"),
-        Message::new("panduck.semantic.loss")
-            .with_fallback(marker.message.clone())
-            .with_arg("loss_code", MessageArg::Text(marker.code.clone())),
+        Message::new("panduck.semantic.loss").with_fallback(marker.message.clone()),
     )
 }
 

@@ -1,7 +1,7 @@
 use diagnostic::DiagnosticSeverity;
 use notedown_ir::{DocumentGraph, IdAllocator, LossMarker, SemanticStatus};
 use panduck_diagnostic::{
-    diagnostics_from_graph, from_adapter_error, from_loss_marker, DiagnosticCode,
+    diagnostics_from_graph, from_adapter_error, from_loss_marker, DiagnosticEnvelope,
 };
 use panduck_types::AdapterError;
 
@@ -41,4 +41,18 @@ fn graph_losses_collect_into_diagnostic_set() {
         set.diagnostics()[0].code().as_str(),
         "panduck.writer.unsupported-feature"
     );
+}
+
+#[test]
+fn diagnostic_envelope_serializes_to_json() {
+    let mut graph = DocumentGraph::new(IdAllocator::default().document_id());
+    graph.push_loss(LossMarker {
+        code: "import.epub.partial_coverage".to_string(),
+        message: "partial EPUB coverage".to_string(),
+        status: SemanticStatus::Partial,
+    });
+    let set = diagnostics_from_graph(&graph);
+    let envelope = DiagnosticEnvelope::from_set(&set);
+    let json = serde_json::to_string(&envelope).expect("serialize diagnostic envelope");
+    assert!(json.contains("import.epub.partial_coverage"));
 }

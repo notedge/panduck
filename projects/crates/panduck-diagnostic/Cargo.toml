@@ -13,3 +13,4 @@ notedown-ir = { workspace = true }
 panduck-types = { workspace = true }
 
 [dev-dependencies]
+serde_json = { workspace = true }
