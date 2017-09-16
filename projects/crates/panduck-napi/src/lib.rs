@@ -6,7 +6,7 @@ use panduck_convert::{convert_file, supported_routes, supports_route};
 use panduck_docx::{inspect_docx_decode, inspect_docx_index};
 use panduck_types::AdapterError;
 
-const FORMATS: [&str; 5] = ["markdown", "org", "rst", "tex", "docx"];
+const FORMATS: [&str; 6] = ["markdown", "org", "rst", "tex", "docx", "epub"];
 
 /// N-API conversion response.
 #[napi(object)]

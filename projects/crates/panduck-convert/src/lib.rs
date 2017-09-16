@@ -11,6 +11,7 @@ use std::path::Path;
 use notedown_ir::DocumentGraph;
 use panduck_diagnostic::{diagnostics_from_graph, DiagnosticEnvelope};
 use notedown_formats::import::docx::import_docx_bytes;
+use notedown_formats::import::epub::import_epub_bytes;
 use panduck_types::{AdapterError, Result};
 use serde::Serialize;
 
@@ -31,6 +32,10 @@ const ROUTES: &[Route] = &[
     },
     Route {
         from: "markdown",
+        to: "markdown",
+    },
+    Route {
+        from: "epub",
         to: "markdown",
     },
 ];
@@ -108,6 +113,7 @@ pub fn convert_file(from: &str, to: &str, input: impl AsRef<Path>) -> Result<Con
 fn read_source(from: &str, label: &str, bytes: Vec<u8>) -> Result<DocumentGraph> {
     match from {
         "docx" => import_docx_bytes(label, &bytes).map_err(crate::format_error::map_format_error),
+        "epub" => import_epub_bytes(label, &bytes).map_err(crate::format_error::map_format_error),
         "markdown" => {
             let text = String::from_utf8(bytes).map_err(|error| {
                 AdapterError::invalid_input(format!("markdown input is not valid UTF-8: {error}"))
