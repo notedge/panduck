@@ -16,7 +16,7 @@ use panduck_types::{AdapterError, Result};
 use serde::Serialize;
 
 pub use readers::{read_markdown, read_markdown_bytes};
-pub use writers::write_document_markdown;
+pub use writers::{write_document_docx, write_document_markdown};
 
 /// Supported conversion route.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -38,6 +38,10 @@ const ROUTES: &[Route] = &[
         from: "epub",
         to: "markdown",
     },
+    Route {
+        from: "markdown",
+        to: "docx",
+    },
 ];
 
 /// Returns whether Panduck can run this conversion today.
@@ -58,7 +62,11 @@ pub fn supported_routes() -> Vec<(String, String)> {
 /// Conversion output payload and report metadata.
 #[derive(Debug, Clone, Serialize)]
 pub struct ConvertOutput {
+    /// Text output for text targets such as `markdown`.
     pub markdown: String,
+    /// Binary output for container targets such as `docx`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub binary: Option<Vec<u8>>,
     pub report_json: String,
     pub loss_count: usize,
 }
@@ -77,7 +85,7 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>) -> Resul
     }
 
     let graph = read_source(&from, label, bytes)?;
-    let markdown = write_document_markdown(&graph)?;
+    let (markdown, binary) = write_target(&to, &graph)?;
     let loss_count = graph.coverage.loss.len();
     let diagnostic_set = diagnostics_from_graph(&graph);
     let diagnostic_envelope = DiagnosticEnvelope::from_set(&diagnostic_set);
@@ -96,6 +104,7 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>) -> Resul
 
     Ok(ConvertOutput {
         markdown,
+        binary,
         report_json,
         loss_count,
     })
@@ -121,5 +130,19 @@ fn read_source(from: &str, label: &str, bytes: Vec<u8>) -> Result<DocumentGraph>
             read_markdown_bytes(label, text)
         }
         other => Err(AdapterError::unsupported_format(other, "read")),
+    }
+}
+
+fn write_target(to: &str, graph: &DocumentGraph) -> Result<(String, Option<Vec<u8>>)> {
+    match to {
+        "markdown" => {
+            let markdown = write_document_markdown(graph)?;
+            Ok((markdown, None))
+        }
+        "docx" => {
+            let binary = write_document_docx(graph)?;
+            Ok((String::new(), Some(binary)))
+        }
+        other => Err(AdapterError::unsupported_format(other, "write")),
     }
 }
