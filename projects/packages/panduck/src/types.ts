@@ -1,6 +1,7 @@
 export type ConvertResponse = {
     exitCode: number;
     markdown?: string;
+    binary?: Uint8Array;
     reportJson: string;
 };
 

@@ -122,12 +122,21 @@ export async function runConversionPipeline(input: {
 
     const response = bindings.convertDocument(from, to, inputPath);
     const markdown = response.markdown ?? "";
+    const binary = response.binary;
     const parsedReport = safeParseReport(response.reportJson);
 
     if (publishOutput && outputPath && !isStdoutPath(outputPath)) {
-        await publishText(outputPath, markdown);
+        if (binary && binary.length > 0) {
+            await publishBinary(outputPath, binary);
+        } else {
+            await publishText(outputPath, markdown);
+        }
     } else if (!suppressStdout && (isStdoutPath(outputPath) || !outputPath)) {
-        process.stdout.write(markdown);
+        if (binary && binary.length > 0) {
+            process.stdout.write(binary);
+        } else {
+            process.stdout.write(markdown);
+        }
     }
 
     const lossCount = Array.isArray(parsedReport?.losses) ? parsedReport.losses.length : 0;
@@ -160,6 +169,14 @@ export async function runConversionPipeline(input: {
     });
 
     return { exitCode, report };
+}
+
+async function publishBinary(path: string, content: Uint8Array): Promise<void> {
+    const dir = dirname(path);
+    await mkdir(dir, { recursive: true });
+    const temp = join(dir, `.${basename(path)}.${randomBytes(4).toString("hex")}.tmp`);
+    await writeFile(temp, content);
+    await rename(temp, path);
 }
 
 async function publishText(path: string, content: string): Promise<void> {

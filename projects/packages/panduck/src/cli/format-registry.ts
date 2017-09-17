@@ -93,7 +93,7 @@ export function baseFormatRegistry(): FormatRecord[] {
             "docx",
             ["zip", "opc"],
             "partial",
-            "unavailable",
+            "partial",
             ["oak-xml"],
             ["paragraph", "heading", "list", "table", "style", "hyperlink", "image", "bold", "italic", "footnote_reference", "footnote_body"],
             ["tracked_changes", "comment"],

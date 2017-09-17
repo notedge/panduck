@@ -30,8 +30,12 @@ test("check wired docx route infers markdown target", async () => {
     assert.match(result.stdout, /"writer": "markdown"/);
 });
 
-test("check partial report for unwired route", () => {
-    const result = runPanduck(["check", "package.json", "--from", "markdown", "--format", "docx", "--json"]);
-    assert.equal(result.code, 0);
-    assert.match(result.stdout, /panduck\.check\.partial/);
+test("check wired markdown to docx route", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-check-md-docx-"));
+    const input = join(workdir, "sample.md");
+    await writeFile(input, "# Title\n\nHello world.\n", "utf8");
+
+    const result = runPanduck(["check", input, "--from", "markdown", "--format", "docx", "--json", "--diagnostics", "silent"]);
+    assert.equal(result.code, 0, result.stderr || result.stdout);
+    assert.match(result.stdout, /"writer": "docx"/);
 });

@@ -11,6 +11,7 @@ type NativeBinding = {
     convertDocument?: (from: string, to: string, inputPath: string) => {
         exitCode: number;
         markdown?: string;
+        binary?: Uint8Array;
         reportJson: string;
     };
     inspectIndex?: (inputPath: string) => {
@@ -68,6 +69,9 @@ export function loadPanduckNode(): PanduckBindings {
                   return {
                       exitCode: response.exitCode,
                       markdown: response.markdown,
+                      binary: response.binary
+                          ? new Uint8Array(response.binary)
+                          : undefined,
                       reportJson: response.reportJson,
                   };
               }

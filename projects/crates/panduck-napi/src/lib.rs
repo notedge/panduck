@@ -13,6 +13,7 @@ const FORMATS: [&str; 6] = ["markdown", "org", "rst", "tex", "docx", "epub"];
 pub struct ConvertResponse {
     pub exit_code: u32,
     pub markdown: Option<String>,
+    pub binary: Option<Buffer>,
     pub report_json: String,
 }
 
@@ -161,7 +162,12 @@ pub fn convert_document(from: String, to: String, input_path: String) -> Result<
     let output = convert_file(&from, &to, &input_path).map_err(map_adapter_error)?;
     Ok(ConvertResponse {
         exit_code: 0,
-        markdown: Some(output.markdown),
+        markdown: if output.markdown.is_empty() {
+            None
+        } else {
+            Some(output.markdown)
+        },
+        binary: output.binary.map(Buffer::from),
         report_json: output.report_json,
     })
 }
