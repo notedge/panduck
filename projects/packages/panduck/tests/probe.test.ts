@@ -16,8 +16,10 @@ test("panduck native bindings expose wired conversion routes", () => {
     assert.ok(binding.supportsConversion?.("docx", "markdown"));
     assert.ok(binding.supportsConversion?.("markdown", "markdown"));
     assert.ok(binding.supportsConversion?.("markdown", "docx"));
+    assert.ok(binding.supportsConversion?.("docx", "docx"));
     const routes = binding.supportedConversions?.() ?? [];
     assert.ok(routes.includes("docx:markdown"));
     assert.ok(routes.includes("markdown:markdown"));
     assert.ok(routes.includes("markdown:docx"));
+    assert.ok(routes.includes("docx:docx"));
 });

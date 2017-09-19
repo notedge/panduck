@@ -31,6 +31,10 @@ const ROUTES: &[Route] = &[
         to: "markdown",
     },
     Route {
+        from: "docx",
+        to: "docx",
+    },
+    Route {
         from: "markdown",
         to: "markdown",
     },
