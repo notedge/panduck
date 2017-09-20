@@ -10,7 +10,6 @@ edition = "2021"
 default-members = [
 	"projects/crates/panduck-types",
 	"projects/crates/panduck-convert",
-	"projects/crates/panduck-docx",
 	"projects/crates/panduck-napi",
 ]
 
@@ -19,11 +18,9 @@ panduck-types = { path = "projects/crates/panduck-types" }
 panduck-diagnostic = { path = "projects/crates/panduck-diagnostic" }
 diagnostic = { git = "https://github.com/oovm/diagnostic-rs", branch = "dev", package = "diagnostic", default-features = false, features = ["std", "serde"] }
 panduck-convert = { path = "projects/crates/panduck-convert" }
-panduck-docx = { path = "projects/crates/panduck-docx" }
-panduck-org = { path = "projects/crates/panduck-org" }
-panduck-rst = { path = "projects/crates/panduck-rst" }
-panduck-tex = { path = "projects/crates/panduck-tex" }
 panduck-napi = { path = "projects/crates/panduck-napi" }
+acorn-core = { git = "https://github.com/yggdrasil-language/acorn.rs.git", branch = "dev" }
+acorn-docx = { git = "https://github.com/yggdrasil-language/acorn.rs.git", branch = "dev", package = "acorn-docx" }
 panduck-wasm = { path = "projects/crates/panduck-wasm" }
 
 # CI resolves git `branch = "dev"`. Local path overlay: `.cargo/config.toml` (gitignored).

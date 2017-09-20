@@ -2,8 +2,9 @@
 
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use panduck_convert::{convert_file, supported_routes, supports_route};
-use panduck_docx::{inspect_docx_decode, inspect_docx_index};
+use panduck_convert::{
+    convert_file, inspect_docx_decode, inspect_docx_index, supported_routes, supports_route,
+};
 use panduck_types::AdapterError;
 
 const FORMATS: [&str; 6] = ["markdown", "org", "rst", "tex", "docx", "epub"];

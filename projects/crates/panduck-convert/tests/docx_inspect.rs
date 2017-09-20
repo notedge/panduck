@@ -1,5 +1,7 @@
-use panduck_docx::{inspect_docx_decode_bytes, inspect_docx_index_bytes, read_docx_bytes};
-use panduck_convert::write_document_markdown;
+use notedown_formats::import::docx::import_docx_bytes;
+use panduck_convert::{
+    inspect_docx_decode_bytes, inspect_docx_index_bytes, write_document_markdown,
+};
 
 fn stored_zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
     let mut archive = Vec::new();
@@ -72,8 +74,8 @@ fn minimal_docx_zip() -> Vec<u8> {
 }
 
 #[test]
-fn facade_read_docx_bytes_delegates_to_notedown_formats() {
-    let graph = read_docx_bytes("sample.docx", minimal_docx_zip()).expect("read docx");
+fn docx_import_via_notedown_formats() {
+    let graph = import_docx_bytes("sample.docx", &minimal_docx_zip()).expect("read docx");
     let markdown = write_document_markdown(&graph).expect("write markdown");
     assert!(markdown.contains("Hello DOCX"));
 }

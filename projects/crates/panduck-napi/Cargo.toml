@@ -34,8 +34,6 @@ napi-derive = { workspace = true }
 
 panduck-convert = { workspace = true }
 
-panduck-docx = { workspace = true }
-
 panduck-types = { workspace = true }
 
 serde_json = { workspace = true }

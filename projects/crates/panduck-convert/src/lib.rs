@@ -2,6 +2,7 @@
 #![doc = include_str!("../readme.md")]
 
 mod format_error;
+mod inspect;
 mod readers;
 mod writers;
 
@@ -15,6 +16,10 @@ use notedown_formats::import::epub::import_epub_bytes;
 use panduck_types::{AdapterError, Result};
 use serde::Serialize;
 
+pub use inspect::{
+    inspect_docx_decode, inspect_docx_decode_bytes, inspect_docx_index, inspect_docx_index_bytes,
+    DocxDecodedPart, DocxInspectDecode, DocxInspectIndex,
+};
 pub use readers::{read_markdown, read_markdown_bytes, read_notedown, read_notedown_bytes};
 pub use writers::{write_document_docx, write_document_markdown};
 

@@ -21,6 +21,9 @@ edition.workspace = true
 panduck-types = { workspace = true }
 panduck-diagnostic = { workspace = true }
 
+acorn-core = { workspace = true }
+acorn-docx = { workspace = true }
+
 notedown-ir = { workspace = true }
 notedown-formats = { workspace = true }
 
