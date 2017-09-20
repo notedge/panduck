@@ -1,4 +1,4 @@
-[workspace]
+﻿[workspace]
 resolver = "2"
 members = ["projects/crates/*"]
 
@@ -30,7 +30,6 @@ oak-markdown = { git = "https://github.com/yggdrasil-language/oaks.git", branch 
 oak-rst = { git = "https://github.com/yggdrasil-language/oaks.git", branch = "dev", default-features = false, features = ["serde"] }
 notedown-ir = { git = "https://github.com/notedge/notedown.git", branch = "dev" }
 notedown-formats = { git = "https://github.com/notedge/notedown.git", branch = "dev", package = "notedown-formats", default-features = true }
-quick-xml = "0.37.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 napi = { version = "2", default-features = false, features = ["napi4"] }
