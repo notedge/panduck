@@ -15,7 +15,7 @@ use notedown_formats::import::epub::import_epub_bytes;
 use panduck_types::{AdapterError, Result};
 use serde::Serialize;
 
-pub use readers::{read_markdown, read_markdown_bytes};
+pub use readers::{read_markdown, read_markdown_bytes, read_notedown, read_notedown_bytes};
 pub use writers::{write_document_docx, write_document_markdown};
 
 /// Supported conversion route.
@@ -36,6 +36,10 @@ const ROUTES: &[Route] = &[
     },
     Route {
         from: "markdown",
+        to: "markdown",
+    },
+    Route {
+        from: "notedown",
         to: "markdown",
     },
     Route {
@@ -132,6 +136,12 @@ fn read_source(from: &str, label: &str, bytes: Vec<u8>) -> Result<DocumentGraph>
                 AdapterError::invalid_input(format!("markdown input is not valid UTF-8: {error}"))
             })?;
             read_markdown_bytes(label, text)
+        }
+        "notedown" => {
+            let text = String::from_utf8(bytes).map_err(|error| {
+                AdapterError::invalid_input(format!("notedown input is not valid UTF-8: {error}"))
+            })?;
+            read_notedown_bytes(label, text)
         }
         other => Err(AdapterError::unsupported_format(other, "read")),
     }

@@ -84,7 +84,7 @@ function containerFormat(
 export function baseFormatRegistry(): FormatRecord[] {
     return [
         textFormat("markdown", "partial", "ready", ["paragraph", "heading", "code_block", "link"], ["table", "footnote"]),
-        textFormat("notedown", "planned", "planned", ["paragraph", "block", "inline"], ["macro"]),
+        textFormat("notedown", "partial", "planned", ["paragraph", "heading", "list", "link"], ["macro", "table"]),
         textFormat("org", "partial", "partial", ["headline", "paragraph"], ["drawer", "babel"]),
         textFormat("rst", "partial", "partial", ["paragraph", "directive"], ["table"]),
         textFormat("tex", "partial", "partial", ["paragraph", "command"], ["environment"]),
