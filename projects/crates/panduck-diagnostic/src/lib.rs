@@ -156,3 +156,38 @@ pub fn diagnostics_from_graph(graph: &DocumentGraph) -> DiagnosticSet {
     }
     set
 }
+
+#[cfg(feature = "console")]
+pub use diagnostic::diagnostic_to_event;
+
+/// Project a Panduck diagnostic into a console event.
+#[cfg(feature = "console")]
+pub fn to_console_event(diagnostic: &Diagnostic) -> console::ConsoleEvent {
+    diagnostic_to_event(diagnostic)
+}
+
+/// Project an adapter failure into a console event.
+#[cfg(feature = "console")]
+pub fn adapter_error_to_event(error: &AdapterError) -> console::ConsoleEvent {
+    diagnostic_to_event(&from_adapter_error(error))
+}
+
+/// Emit one unified diagnostic through the global console facade.
+#[cfg(feature = "console")]
+pub fn emit_diagnostic(diagnostic: &Diagnostic) {
+    console::emit(to_console_event(diagnostic));
+}
+
+/// Emit an adapter failure as a structured diagnostic console event.
+#[cfg(feature = "console")]
+pub fn emit_adapter_error(error: &AdapterError) {
+    console::emit(adapter_error_to_event(error));
+}
+
+/// Emit every diagnostic in a set through the global console facade.
+#[cfg(feature = "console")]
+pub fn emit_diagnostic_set(set: &DiagnosticSet) {
+    for diagnostic in set.diagnostics() {
+        emit_diagnostic(diagnostic);
+    }
+}

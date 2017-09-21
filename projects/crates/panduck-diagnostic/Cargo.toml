@@ -9,8 +9,18 @@ readme = "readme.md"
 
 [dependencies]
 diagnostic = { git = "https://github.com/oovm/diagnostic-rs", branch = "dev", package = "diagnostic", default-features = false, features = ["std", "serde"] }
+console = { workspace = true, optional = true }
 notedown-ir = { workspace = true }
 panduck-types = { workspace = true }
 
+[features]
+default = []
+console = ["dep:console", "diagnostic/console"]
+
 [dev-dependencies]
 serde_json = { workspace = true }
+serial_test = "3.2.0"
+
+[[test]]
+name = "console_emit"
+required-features = ["console"]
