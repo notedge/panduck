@@ -184,6 +184,19 @@ pub fn emit_adapter_error(error: &AdapterError) {
     console::emit(adapter_error_to_event(error));
 }
 
+/// Emit an adapter failure when the `console` feature is enabled.
+pub fn log_adapter_error(error: &AdapterError) {
+    #[cfg(feature = "console")]
+    emit_adapter_error(error);
+}
+
+/// Build a single-diagnostic envelope for failed adapter operations.
+pub fn envelope_from_adapter_error(error: &AdapterError) -> DiagnosticEnvelope {
+    let mut set = DiagnosticSet::new();
+    set.push(from_adapter_error(error));
+    DiagnosticEnvelope::from_set(&set)
+}
+
 /// Emit every diagnostic in a set through the global console facade.
 #[cfg(feature = "console")]
 pub fn emit_diagnostic_set(set: &DiagnosticSet) {
