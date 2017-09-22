@@ -1,5 +1,17 @@
 use notedown_formats::FormatError;
-use panduck_types::AdapterError;
+use panduck_types::{AdapterError, Result};
+
+pub(crate) fn fail<T>(error: AdapterError) -> Result<T> {
+    panduck_diagnostic::log_adapter_error(&error);
+    Err(error)
+}
+
+pub(crate) fn propagate<T>(result: Result<T>) -> Result<T> {
+    if let Err(error) = &result {
+        panduck_diagnostic::log_adapter_error(error);
+    }
+    result
+}
 
 pub(crate) fn map_format_error(error: FormatError) -> AdapterError {
     match error {

@@ -32,7 +32,7 @@ napi = { workspace = true }
 
 napi-derive = { workspace = true }
 
-panduck-convert = { workspace = true }
+panduck-convert = { workspace = true, features = ["console"] }
 
 panduck-types = { workspace = true }
 

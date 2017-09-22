@@ -5,6 +5,8 @@ use acorn_core::ParseBudget;
 use acorn_docx::OpcPackage;
 use panduck_types::{AdapterError, Result};
 
+use crate::format_error;
+
 /// Container index summary for DOCX packages.
 #[derive(Debug, Clone)]
 pub struct DocxInspectIndex {
@@ -48,10 +50,13 @@ pub fn inspect_docx_decode(
     part_filter: Option<&str>,
 ) -> Result<DocxInspectDecode> {
     let path = path.as_ref();
-    let bytes = fs::read(path).map_err(|source| {
-        AdapterError::io(source, Some(path.display().to_string()))
-    })?;
-    inspect_docx_decode_bytes(path.display().to_string(), bytes, part_filter)
+    let bytes = match fs::read(path) {
+        Ok(bytes) => bytes,
+        Err(source) => {
+            return format_error::fail(AdapterError::io(source, Some(path.display().to_string())));
+        }
+    };
+    format_error::propagate(inspect_docx_decode_bytes(path.display().to_string(), bytes, part_filter))
 }
 
 /// Decodes DOCX package members without projecting document semantics.
@@ -61,12 +66,12 @@ pub fn inspect_docx_decode_bytes(
     part_filter: Option<&str>,
 ) -> Result<DocxInspectDecode> {
     if looks_like_ole(&bytes) {
-        return Err(AdapterError::not_implemented(
+        return format_error::fail(AdapterError::not_implemented(
             "legacy .doc OLE inspect is not available yet",
         ));
     }
     if !looks_like_zip(&bytes) {
-        return Err(AdapterError::invalid_input("input is not a ZIP-based DOCX package"));
+        return format_error::fail(AdapterError::invalid_input("input is not a ZIP-based DOCX package"));
     }
 
     let label = label.into();
@@ -105,12 +110,12 @@ pub fn inspect_docx_decode_bytes(
 /// Indexes DOCX bytes without reading document semantics.
 pub fn inspect_docx_index_bytes(label: impl Into<String>, bytes: Vec<u8>) -> Result<DocxInspectIndex> {
     if looks_like_ole(&bytes) {
-        return Err(AdapterError::not_implemented(
+        return format_error::fail(AdapterError::not_implemented(
             "legacy .doc OLE inspect is not available yet",
         ));
     }
     if !looks_like_zip(&bytes) {
-        return Err(AdapterError::invalid_input("input is not a ZIP-based DOCX package"));
+        return format_error::fail(AdapterError::invalid_input("input is not a ZIP-based DOCX package"));
     }
 
     let label = label.into();

@@ -89,16 +89,16 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>) -> Resul
     let from = from.to_ascii_lowercase();
     let to = to.to_ascii_lowercase();
     if from == "doc" && to == "markdown" {
-        return Err(AdapterError::not_implemented(
+        return format_error::fail(AdapterError::not_implemented(
             "legacy .doc import requires OLE reader support; use .docx",
         ));
     }
     if !supports_route(&from, &to) {
-        return Err(AdapterError::unsupported_format(from, format!("convert to {to}")));
+        return format_error::fail(AdapterError::unsupported_format(from, format!("convert to {to}")));
     }
 
-    let graph = read_source(&from, label, bytes)?;
-    let (markdown, binary) = write_target(&to, &graph)?;
+    let graph = format_error::propagate(read_source(&from, label, bytes))?;
+    let (markdown, binary) = format_error::propagate(write_target(&to, &graph))?;
     let loss_count = graph.coverage.loss.len();
     let diagnostic_set = diagnostics_from_graph(&graph);
     let diagnostic_envelope = DiagnosticEnvelope::from_set(&diagnostic_set);
@@ -126,9 +126,12 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>) -> Resul
 /// Converts a file on disk.
 pub fn convert_file(from: &str, to: &str, input: impl AsRef<Path>) -> Result<ConvertOutput> {
     let input = input.as_ref();
-    let bytes = fs::read(input).map_err(|source| {
-        AdapterError::io(source, Some(input.display().to_string()))
-    })?;
+    let bytes = match fs::read(input) {
+        Ok(bytes) => bytes,
+        Err(source) => {
+            return format_error::fail(AdapterError::io(source, Some(input.display().to_string())));
+        }
+    };
     convert_bytes(from, to, &input.display().to_string(), bytes)
 }
 
@@ -137,18 +140,28 @@ fn read_source(from: &str, label: &str, bytes: Vec<u8>) -> Result<DocumentGraph>
         "docx" => import_docx_bytes(label, &bytes).map_err(crate::format_error::map_format_error),
         "epub" => import_epub_bytes(label, &bytes).map_err(crate::format_error::map_format_error),
         "markdown" => {
-            let text = String::from_utf8(bytes).map_err(|error| {
-                AdapterError::invalid_input(format!("markdown input is not valid UTF-8: {error}"))
-            })?;
+            let text = match String::from_utf8(bytes) {
+                Ok(text) => text,
+                Err(error) => {
+                    return format_error::fail(AdapterError::invalid_input(format!(
+                        "markdown input is not valid UTF-8: {error}"
+                    )));
+                }
+            };
             read_markdown_bytes(label, text)
         }
         "notedown" => {
-            let text = String::from_utf8(bytes).map_err(|error| {
-                AdapterError::invalid_input(format!("notedown input is not valid UTF-8: {error}"))
-            })?;
+            let text = match String::from_utf8(bytes) {
+                Ok(text) => text,
+                Err(error) => {
+                    return format_error::fail(AdapterError::invalid_input(format!(
+                        "notedown input is not valid UTF-8: {error}"
+                    )));
+                }
+            };
             read_notedown_bytes(label, text)
         }
-        other => Err(AdapterError::unsupported_format(other, "read")),
+        other => format_error::fail(AdapterError::unsupported_format(other, "read")),
     }
 }
 
@@ -162,6 +175,6 @@ fn write_target(to: &str, graph: &DocumentGraph) -> Result<(String, Option<Vec<u
             let binary = write_document_docx(graph)?;
             Ok((String::new(), Some(binary)))
         }
-        other => Err(AdapterError::unsupported_format(other, "write")),
+        other => format_error::fail(AdapterError::unsupported_format(other, "write")),
     }
 }
