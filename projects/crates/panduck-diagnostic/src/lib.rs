@@ -190,6 +190,12 @@ pub fn log_adapter_error(error: &AdapterError) {
     emit_adapter_error(error);
 }
 
+/// Emit every diagnostic in a set when the `console` feature is enabled.
+pub fn log_diagnostic_set(set: &DiagnosticSet) {
+    #[cfg(feature = "console")]
+    emit_diagnostic_set(set);
+}
+
 /// Build a single-diagnostic envelope for failed adapter operations.
 pub fn envelope_from_adapter_error(error: &AdapterError) -> DiagnosticEnvelope {
     let mut set = DiagnosticSet::new();
