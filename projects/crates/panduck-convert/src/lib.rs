@@ -101,6 +101,9 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>) -> Resul
     let (markdown, binary) = format_error::propagate(write_target(&to, &graph))?;
     let loss_count = graph.coverage.loss.len();
     let diagnostic_set = diagnostics_from_graph(&graph);
+    if loss_count > 0 {
+        panduck_diagnostic::log_diagnostic_set(&diagnostic_set);
+    }
     let diagnostic_envelope = DiagnosticEnvelope::from_set(&diagnostic_set);
     let report_json = serde_json::json!({
         "schema_version": "panduck.report/v1",
