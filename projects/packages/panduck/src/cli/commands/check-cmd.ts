@@ -11,6 +11,7 @@ import { ExitCode } from "../exit-codes.js";
 import { findFormat } from "../format-registry.js";
 import { CliOptionError, readSharedOptions, readString } from "../options.js";
 import { createReport } from "../report.js";
+import { configureConsoleBackend } from "../console-backend.js";
 import {
     emitPipelineResult,
     hasPipeline,
@@ -40,6 +41,7 @@ async function runCheck(options: ParsedOptions): Promise<number> {
         }
 
         const ctx = createContext();
+        configureConsoleBackend(ctx.bindings, shared.logFile);
         const resolved = resolveFormats(inputPath, undefined, {
             ...shared,
             to: outputFormat ?? shared.to,

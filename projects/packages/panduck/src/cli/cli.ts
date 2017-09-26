@@ -14,7 +14,8 @@ export function buildPanduckCli() {
     const localesRoot = join(dirname(fileURLToPath(import.meta.url)), "../../locales");
     const cli = createCli("panduck")
         .locales(localesRoot, { envKeys: ["PANDUCK_LOCALE", "LOCALE", "LANG", "LC_ALL"] })
-        .intro("cli.intro");
+        .intro("cli.intro")
+        .option("--log-file <file>", "cli.opt.log-file");
 
     registerConvertCommand(cli);
     registerPlanCommand(cli);

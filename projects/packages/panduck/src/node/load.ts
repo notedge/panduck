@@ -21,6 +21,7 @@ type NativeBinding = {
         parts: string[];
         reportJson: string;
     };
+    installConsoleLogFile?: (path: string) => void;
     inspectDecode?: (inputPath: string, partPath?: string) => {
         format: string;
         outer: string;
@@ -98,6 +99,11 @@ export function loadPanduckNode(): PanduckBindings {
                       parts: response.parts,
                       reportJson: response.reportJson,
                   };
+              }
+            : undefined,
+        installConsoleLogFile: binding.installConsoleLogFile
+            ? (path) => {
+                  binding.installConsoleLogFile!(path);
               }
             : undefined,
     };

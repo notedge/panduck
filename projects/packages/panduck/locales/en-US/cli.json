@@ -28,6 +28,7 @@
   "cli.opt.path": "Layout path inside a container (inspect)",
   "cli.opt.operation": "Filter formats by read or write operation",
   "cli.opt.json": "Emit machine-readable JSON on stdout",
+  "cli.opt.log-file": "Append structured console events to a JSON lines log file",
   "cli.err.same_path": "Input and output paths must not be the same: {path}",
   "cli.err.missing_to_stdout": "Writing to stdout requires an explicit --to format",
   "cli.err.missing_input": "Input path is required",

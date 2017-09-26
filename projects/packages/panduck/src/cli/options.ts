@@ -20,6 +20,7 @@ export type SharedCliOptions = {
     allowPartial: boolean;
     diagnostics: DiagnosticsMode;
     overwrite: boolean;
+    logFile?: string;
 };
 
 const LOSS_VALUES = new Set<LossPolicy>(["allow", "warn", "deny"]);
@@ -59,6 +60,7 @@ export function readSharedOptions(options: ParsedOptions): SharedCliOptions {
         allowPartial: readFlag(options, "allow-partial"),
         diagnostics,
         overwrite: readFlag(options, "overwrite"),
+        logFile: readString(options, "log-file"),
     };
 }
 

@@ -39,6 +39,7 @@ export type PanduckBindings = {
     convertDocument?: (from: string, to: string, inputPath: string) => ConvertResponse;
     inspectIndex?: (inputPath: string) => InspectIndexResponse;
     inspectDecode?: (inputPath: string, partPath?: string) => InspectDecodeResponse;
+    installConsoleLogFile?: (path: string) => void;
 };
 
 export type PanduckWasmOptions = {

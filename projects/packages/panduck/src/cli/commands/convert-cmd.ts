@@ -22,6 +22,7 @@ import {
 } from "../options.js";
 import { createReport } from "../report.js";
 import { isStdoutPath } from "../paths.js";
+import { configureConsoleBackend } from "../console-backend.js";
 import { emitPipelineResult, hasPipeline, runConversionPipeline } from "../pipeline.js";
 
 export function registerConvertCommand(cli: Cli): void {
@@ -80,6 +81,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
         }
 
         const ctx = createContext();
+        configureConsoleBackend(ctx.bindings, shared.logFile);
         const resolved = resolveFormats(inputPath, outputPath, shared);
 
         if (resolved.ambiguous) {

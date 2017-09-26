@@ -12,6 +12,7 @@ import { ExitCode } from "../exit-codes.js";
 import { findFormat, isOperationReady } from "../format-registry.js";
 import { CliOptionError, readSharedOptions, readString } from "../options.js";
 import { hasPipeline } from "../pipeline.js";
+import { configureConsoleBackend } from "../console-backend.js";
 import { createReport } from "../report.js";
 
 export function registerPlanCommand(cli: Cli): void {
@@ -33,6 +34,7 @@ async function runPlan(options: ParsedOptions): Promise<number> {
             return ExitCode.InvalidArgs;
         }
         const ctx = createContext();
+        configureConsoleBackend(ctx.bindings, shared.logFile);
         const resolved = resolveFormats(inputPath, undefined, shared);
 
         if (resolved.ambiguous) {

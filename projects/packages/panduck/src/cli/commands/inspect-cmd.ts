@@ -11,6 +11,7 @@ import {
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { CliOptionError, parseInspectStage, readSharedOptions, readString } from "../options.js";
+import { configureConsoleBackend } from "../console-backend.js";
 import { createReport } from "../report.js";
 import { isStdinPath } from "../paths.js";
 
@@ -34,6 +35,7 @@ async function runInspect(options: ParsedOptions): Promise<number> {
         const stage = parseInspectStage(readString(options, "stage"));
         const layoutPath = readString(options, "path");
         const ctx = createContext();
+        configureConsoleBackend(ctx.bindings, shared.logFile);
         const resolved = resolveFormats(inputPath, undefined, shared);
 
         if (resolved.ambiguous) {

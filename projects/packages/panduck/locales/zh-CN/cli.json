@@ -28,6 +28,7 @@
   "cli.opt.path": "容器内布局路径（inspect）",
   "cli.opt.operation": "按 read 或 write 过滤格式",
   "cli.opt.json": "在标准输出打印机器可读 JSON",
+  "cli.opt.log-file": "将结构化 console 事件追加写入 JSON lines 日志文件",
   "cli.err.same_path": "输入与输出路径不能相同：{path}",
   "cli.err.missing_to_stdout": "写入标准输出时必须显式指定 --to 格式",
   "cli.err.missing_input": "必须提供输入路径",
