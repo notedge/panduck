@@ -74,6 +74,12 @@ pub fn supports_conversion(from: String, to: String) -> bool {
     supports_route(&from, &to)
 }
 
+/// Install a JSON lines file sink as the global console facade.
+#[napi]
+pub fn install_console_log_file(path: String) -> Result<()> {
+    console::install_global_file_sink(&path).map_err(|error| Error::from_reason(error.to_string()))
+}
+
 /// Lists wired conversion routes as `from:to` strings.
 #[napi]
 pub fn supported_conversions() -> Vec<String> {
