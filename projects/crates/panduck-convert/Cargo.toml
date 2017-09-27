@@ -40,4 +40,10 @@ console = ["panduck-diagnostic/console"]
 
 
 [dev-dependencies]
+console = { workspace = true }
+serial_test = "3.2.0"
+
+[[test]]
+name = "console_failure"
+required-features = ["console"]
 
