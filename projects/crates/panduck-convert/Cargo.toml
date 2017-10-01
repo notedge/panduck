@@ -47,3 +47,7 @@ serial_test = "3.2.0"
 name = "console_failure"
 required-features = ["console"]
 
+[[test]]
+name = "console_success"
+required-features = ["console"]
+
