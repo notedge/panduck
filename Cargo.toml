@@ -16,8 +16,9 @@ default-members = [
 [workspace.dependencies]
 panduck-types = { path = "projects/crates/panduck-types" }
 panduck-diagnostic = { path = "projects/crates/panduck-diagnostic" }
-diagnostic = { git = "https://github.com/oovm/diagnostic-rs", branch = "dev", package = "diagnostic", default-features = false, features = ["std", "serde"] }
-console = { git = "https://github.com/oovm/diagnostic-rs", branch = "dev", package = "console" }
+diagnostic = { git = "https://github.com/oovm/rust-boost", branch = "dev", package = "diagnostic", default-features = false, features = ["std", "serde"] }
+logger = { git = "https://github.com/oovm/rust-boost", branch = "dev", package = "logger" }
+console = { git = "https://github.com/oovm/rust-boost", branch = "dev", package = "console" }
 panduck-convert = { path = "projects/crates/panduck-convert" }
 panduck-napi = { path = "projects/crates/panduck-napi" }
 acorn-core = { git = "https://github.com/yggdrasil-language/acorn.rs.git", branch = "dev" }

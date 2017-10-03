@@ -158,30 +158,45 @@ pub fn diagnostics_from_graph(graph: &DocumentGraph) -> DiagnosticSet {
 }
 
 #[cfg(feature = "console")]
-pub use diagnostic::diagnostic_to_event;
+pub use diagnostic::{
+    diagnostic_to_event, diagnostic_to_log_event, emit_diagnostic as emit_unified_diagnostic,
+    emit_diagnostic_log, emit_diagnostic_set,
+};
 
-/// Project a Panduck diagnostic into a console event.
+/// Project a Panduck diagnostic into a log event.
+#[cfg(feature = "console")]
+pub fn to_log_event(diagnostic: &Diagnostic) -> logger::LogEvent {
+    diagnostic_to_log_event(diagnostic)
+}
+
+/// Project a Panduck diagnostic into a console event alias.
 #[cfg(feature = "console")]
 pub fn to_console_event(diagnostic: &Diagnostic) -> console::ConsoleEvent {
     diagnostic_to_event(diagnostic)
 }
 
-/// Project an adapter failure into a console event.
+/// Project an adapter failure into a log event.
+#[cfg(feature = "console")]
+pub fn adapter_error_to_log_event(error: &AdapterError) -> logger::LogEvent {
+    diagnostic_to_log_event(&from_adapter_error(error))
+}
+
+/// Project an adapter failure into a console event alias.
 #[cfg(feature = "console")]
 pub fn adapter_error_to_event(error: &AdapterError) -> console::ConsoleEvent {
-    diagnostic_to_event(&from_adapter_error(error))
+    adapter_error_to_log_event(error)
 }
 
-/// Emit one unified diagnostic through the global console facade.
+/// Emit one unified diagnostic through the global logger facade.
 #[cfg(feature = "console")]
 pub fn emit_diagnostic(diagnostic: &Diagnostic) {
-    console::emit(to_console_event(diagnostic));
+    emit_unified_diagnostic(diagnostic);
 }
 
-/// Emit an adapter failure as a structured diagnostic console event.
+/// Emit an adapter failure as a structured diagnostic log event.
 #[cfg(feature = "console")]
 pub fn emit_adapter_error(error: &AdapterError) {
-    console::emit(adapter_error_to_event(error));
+    emit_unified_diagnostic(&from_adapter_error(error));
 }
 
 /// Emit an adapter failure when the `console` feature is enabled.
@@ -201,12 +216,4 @@ pub fn envelope_from_adapter_error(error: &AdapterError) -> DiagnosticEnvelope {
     let mut set = DiagnosticSet::new();
     set.push(from_adapter_error(error));
     DiagnosticEnvelope::from_set(&set)
-}
-
-/// Emit every diagnostic in a set through the global console facade.
-#[cfg(feature = "console")]
-pub fn emit_diagnostic_set(set: &DiagnosticSet) {
-    for diagnostic in set.diagnostics() {
-        emit_diagnostic(diagnostic);
-    }
 }
