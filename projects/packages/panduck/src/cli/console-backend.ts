@@ -5,8 +5,12 @@ export function configureConsoleBackend(
     bindings: PanduckBindings | null,
     logFile?: string,
 ): void {
-    if (!logFile || !bindings?.installConsoleLogFile) {
+    if (!logFile) {
         return;
     }
-    bindings.installConsoleLogFile(logFile);
+    const install = bindings?.installLoggerLogFile ?? bindings?.installConsoleLogFile;
+    if (!install) {
+        return;
+    }
+    install(logFile);
 }

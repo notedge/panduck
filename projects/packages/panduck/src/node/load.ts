@@ -22,6 +22,7 @@ type NativeBinding = {
         reportJson: string;
     };
     installConsoleLogFile?: (path: string) => void;
+    installLoggerLogFile?: (path: string) => void;
     inspectDecode?: (inputPath: string, partPath?: string) => {
         format: string;
         outer: string;
@@ -101,6 +102,15 @@ export function loadPanduckNode(): PanduckBindings {
                   };
               }
             : undefined,
+        installLoggerLogFile: binding.installLoggerLogFile
+            ? (path) => {
+                  binding.installLoggerLogFile!(path);
+              }
+            : binding.installConsoleLogFile
+              ? (path) => {
+                    binding.installConsoleLogFile!(path);
+                }
+              : undefined,
         installConsoleLogFile: binding.installConsoleLogFile
             ? (path) => {
                   binding.installConsoleLogFile!(path);
