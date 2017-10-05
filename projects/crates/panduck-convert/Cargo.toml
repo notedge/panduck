@@ -35,7 +35,8 @@ serde_json = { workspace = true }
 
 [features]
 default = []
-console = ["panduck-diagnostic/console"]
+logger = ["panduck-diagnostic/logger"]
+console = ["logger", "panduck-diagnostic/console"]
 
 
 

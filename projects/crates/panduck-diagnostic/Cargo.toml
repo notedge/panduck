@@ -16,7 +16,8 @@ panduck-types = { workspace = true }
 
 [features]
 default = []
-console = ["dep:logger", "dep:console", "diagnostic/console"]
+logger = ["dep:logger", "diagnostic/console"]
+console = ["logger", "dep:console"]
 
 [dev-dependencies]
 serde_json = { workspace = true }
@@ -25,3 +26,7 @@ serial_test = "3.2.0"
 [[test]]
 name = "console_emit"
 required-features = ["console"]
+
+[[test]]
+name = "logger_emit"
+required-features = ["logger"]

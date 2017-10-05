@@ -157,14 +157,17 @@ pub fn diagnostics_from_graph(graph: &DocumentGraph) -> DiagnosticSet {
     set
 }
 
-#[cfg(feature = "console")]
+#[cfg(feature = "logger")]
 pub use diagnostic::{
-    diagnostic_to_event, diagnostic_to_log_event, emit_diagnostic as emit_unified_diagnostic,
-    emit_diagnostic_log, emit_diagnostic_set,
+    diagnostic_to_log_event, emit_diagnostic as emit_unified_diagnostic, emit_diagnostic_log,
+    emit_diagnostic_set,
 };
 
-/// Project a Panduck diagnostic into a log event.
 #[cfg(feature = "console")]
+pub use diagnostic::diagnostic_to_event;
+
+/// Project a Panduck diagnostic into a log event.
+#[cfg(feature = "logger")]
 pub fn to_log_event(diagnostic: &Diagnostic) -> logger::LogEvent {
     diagnostic_to_log_event(diagnostic)
 }
@@ -176,7 +179,7 @@ pub fn to_console_event(diagnostic: &Diagnostic) -> console::ConsoleEvent {
 }
 
 /// Project an adapter failure into a log event.
-#[cfg(feature = "console")]
+#[cfg(feature = "logger")]
 pub fn adapter_error_to_log_event(error: &AdapterError) -> logger::LogEvent {
     diagnostic_to_log_event(&from_adapter_error(error))
 }
@@ -188,26 +191,26 @@ pub fn adapter_error_to_event(error: &AdapterError) -> console::ConsoleEvent {
 }
 
 /// Emit one unified diagnostic through the global logger facade.
-#[cfg(feature = "console")]
+#[cfg(feature = "logger")]
 pub fn emit_diagnostic(diagnostic: &Diagnostic) {
     emit_unified_diagnostic(diagnostic);
 }
 
 /// Emit an adapter failure as a structured diagnostic log event.
-#[cfg(feature = "console")]
+#[cfg(feature = "logger")]
 pub fn emit_adapter_error(error: &AdapterError) {
     emit_unified_diagnostic(&from_adapter_error(error));
 }
 
-/// Emit an adapter failure when the `console` feature is enabled.
+/// Emit an adapter failure when the `logger` feature is enabled.
 pub fn log_adapter_error(error: &AdapterError) {
-    #[cfg(feature = "console")]
+    #[cfg(feature = "logger")]
     emit_adapter_error(error);
 }
 
-/// Emit every diagnostic in a set when the `console` feature is enabled.
+/// Emit every diagnostic in a set when the `logger` feature is enabled.
 pub fn log_diagnostic_set(set: &DiagnosticSet) {
-    #[cfg(feature = "console")]
+    #[cfg(feature = "logger")]
     emit_diagnostic_set(set);
 }
 
