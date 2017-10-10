@@ -1,25 +1,27 @@
 use std::io::Read;
 use std::sync::{Arc, Mutex};
 
-use console::{clear_global_sink, ConsoleEvent, ConsoleSink, EventKind, Filter, Level, VecSink};
+use logger::{
+    clear_global_sink, EventKind, Filter, Level, LogEvent, LogSink, VecSink,
+};
 use panduck_convert::convert_bytes;
 use serial_test::serial;
 
 struct SharedSink(Arc<Mutex<VecSink>>);
 
-impl ConsoleSink for SharedSink {
-    fn emit(&mut self, event: &ConsoleEvent) {
+impl LogSink for SharedSink {
+    fn emit(&mut self, event: &LogEvent) {
         self.0.lock().expect("vec sink mutex poisoned").emit(event);
     }
 }
 
 #[test]
 #[serial]
-fn unsupported_route_emits_diagnostic_console_event() {
+fn unsupported_route_emits_diagnostic_log_event() {
     clear_global_sink();
     let sink = Arc::new(Mutex::new(VecSink::new()));
-    console::set_global_sink(Box::new(SharedSink(sink.clone())));
-    console::set_global_filter(Filter::new(Level::Trace));
+    logger::set_global_sink(Box::new(SharedSink(sink.clone())));
+    logger::set_global_filter(Filter::new(Level::Trace));
 
     let result = convert_bytes("doc", "markdown", "legacy.doc", Vec::new());
     assert!(result.is_err());
@@ -28,7 +30,7 @@ fn unsupported_route_emits_diagnostic_console_event() {
     assert_eq!(guard.events().len(), 1);
     let payload = match guard.events()[0].kind() {
         EventKind::Diagnostic(payload) => payload,
-        _ => panic!("expected diagnostic console event"),
+        _ => panic!("expected diagnostic log event"),
     };
     assert_eq!(payload.code(), "panduck.adapter.not-implemented");
 
@@ -40,10 +42,10 @@ fn unsupported_route_emits_diagnostic_console_event() {
 fn unsupported_route_writes_json_lines_log_file() {
     clear_global_sink();
     let path = std::env::temp_dir().join(format!(
-        "panduck-convert-console-failure-{}.jsonl",
+        "panduck-convert-logger-failure-{}.jsonl",
         std::process::id()
     ));
-    console::install_global_file_sink(&path).expect("install global file sink");
+    logger::install_global_file_sink(&path).expect("install global file sink");
 
     let result = convert_bytes("doc", "markdown", "legacy.doc", Vec::new());
     assert!(result.is_err());

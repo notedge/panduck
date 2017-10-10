@@ -41,14 +41,14 @@ console = ["logger", "panduck-diagnostic/console"]
 
 
 [dev-dependencies]
-console = { workspace = true }
+logger = { workspace = true }
 serial_test = "3.2.0"
 
 [[test]]
-name = "console_failure"
-required-features = ["console"]
+name = "logger_failure"
+required-features = ["logger"]
 
 [[test]]
-name = "console_success"
-required-features = ["console"]
+name = "logger_success"
+required-features = ["logger"]
 
