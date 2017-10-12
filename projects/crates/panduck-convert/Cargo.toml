@@ -30,6 +30,7 @@ notedown-formats = { workspace = true }
 serde = { workspace = true }
 
 serde_json = { workspace = true }
+fs-tools = { workspace = true }
 
 
 
@@ -51,4 +52,7 @@ required-features = ["logger"]
 [[test]]
 name = "logger_success"
 required-features = ["logger"]
+
+[[test]]
+name = "publish_output"
 

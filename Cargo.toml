@@ -19,6 +19,7 @@ panduck-diagnostic = { path = "projects/crates/panduck-diagnostic" }
 diagnostic = { git = "https://github.com/oovm/rust-boost", branch = "dev", package = "diagnostic", default-features = false, features = ["std", "serde"] }
 logger = { git = "https://github.com/oovm/rust-boost", branch = "dev", package = "logger" }
 console = { git = "https://github.com/oovm/rust-boost", branch = "dev", package = "console" }
+fs-tools = { git = "https://github.com/oovm/rust-boost", branch = "dev", package = "fs-tools" }
 panduck-convert = { path = "projects/crates/panduck-convert" }
 panduck-napi = { path = "projects/crates/panduck-napi" }
 acorn-core = { git = "https://github.com/yggdrasil-language/acorn.rs.git", branch = "dev" }
