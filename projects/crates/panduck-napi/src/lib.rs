@@ -81,6 +81,7 @@ pub fn install_logger_log_file(path: String) -> Result<()> {
 }
 
 /// Install a JSON lines file sink as the global console facade.
+#[deprecated(since = "0.1.0", note = "use `install_logger_log_file` instead")]
 #[napi]
 pub fn install_console_log_file(path: String) -> Result<()> {
     install_logger_log_file(path)

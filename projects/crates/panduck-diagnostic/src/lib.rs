@@ -187,7 +187,7 @@ pub fn adapter_error_to_log_event(error: &AdapterError) -> logger::LogEvent {
 /// Project an adapter failure into a console event alias.
 #[cfg(feature = "console")]
 pub fn adapter_error_to_event(error: &AdapterError) -> console::ConsoleEvent {
-    adapter_error_to_log_event(error)
+    diagnostic_to_event(&from_adapter_error(error))
 }
 
 /// Emit one unified diagnostic through the global logger facade.
