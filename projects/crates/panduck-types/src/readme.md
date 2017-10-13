@@ -1,3 +1,21 @@
-# Gaia Types - 错误处理系统
+# panduck-types
 
-这个模块提供了 Gaia 项目中完整的错误处理基础设施，包括错误类型定义、诊断信息收集和错误转换等功能。
+Shared conversion contracts for Panduck adapters.
+
+Document semantics live in `notedown_ir::DocumentGraph`. This crate provides:
+
+- `AdapterError` and `Result<T>` for fatal adapter failures
+- `SourceText`, `BinaryReader`, `TextWriter`
+- re-export of `notedown_ir`
+
+Syntax diagnostics belong to Oak. Container diagnostics belong to Acorn. Semantic loss belongs to `notedown_ir::CoverageReport`.
+
+## Example
+
+```rust
+use panduck_types::{AdapterError, Result};
+
+fn read_bytes() -> Result<Vec<u8>> {
+    Err(AdapterError::not_implemented("example reader"))
+}
+```

@@ -1,4 +1,4 @@
-#![doc = include_str!("../readme.md")]
+#![doc = include_str!("readme.md")]
 
 use super::DwarfInfo;
 use std::collections::HashMap;

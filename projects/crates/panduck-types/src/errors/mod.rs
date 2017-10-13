@@ -1,7 +1,4 @@
-//! Adapter-layer errors for Panduck conversion.
-//!
-//! Syntax and container diagnostics belong to Oak and Acorn.
-//! Semantic loss belongs to `notedown_ir::CoverageReport`.
+#![doc = include_str!("readme.md")]
 
 mod convert;
 mod display;
