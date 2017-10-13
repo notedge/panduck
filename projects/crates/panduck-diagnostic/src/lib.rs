@@ -163,8 +163,15 @@ pub use diagnostic::{
     emit_diagnostic_set,
 };
 
+/// Deprecated alias for [`logger::LogEvent`].
 #[cfg(feature = "console")]
-pub use diagnostic::diagnostic_to_event;
+#[deprecated(since = "0.1.0", note = "use `logger::LogEvent` and `to_log_event`")]
+pub use logger::LogEvent as ConsoleEvent;
+
+/// Deprecated alias for [`diagnostic_to_log_event`].
+#[cfg(feature = "console")]
+#[deprecated(since = "0.1.0", note = "use `diagnostic_to_log_event`")]
+pub use diagnostic::diagnostic_to_log_event as diagnostic_to_event;
 
 /// Project a Panduck diagnostic into a log event.
 #[cfg(feature = "logger")]
@@ -172,10 +179,11 @@ pub fn to_log_event(diagnostic: &Diagnostic) -> logger::LogEvent {
     diagnostic_to_log_event(diagnostic)
 }
 
-/// Project a Panduck diagnostic into a console event alias.
+/// Deprecated alias for [`to_log_event`].
 #[cfg(feature = "console")]
-pub fn to_console_event(diagnostic: &Diagnostic) -> console::ConsoleEvent {
-    diagnostic_to_event(diagnostic)
+#[deprecated(since = "0.1.0", note = "use `to_log_event`")]
+pub fn to_console_event(diagnostic: &Diagnostic) -> logger::LogEvent {
+    to_log_event(diagnostic)
 }
 
 /// Project an adapter failure into a log event.
@@ -184,10 +192,11 @@ pub fn adapter_error_to_log_event(error: &AdapterError) -> logger::LogEvent {
     diagnostic_to_log_event(&from_adapter_error(error))
 }
 
-/// Project an adapter failure into a console event alias.
+/// Deprecated alias for [`adapter_error_to_log_event`].
 #[cfg(feature = "console")]
-pub fn adapter_error_to_event(error: &AdapterError) -> console::ConsoleEvent {
-    diagnostic_to_event(&from_adapter_error(error))
+#[deprecated(since = "0.1.0", note = "use `adapter_error_to_log_event`")]
+pub fn adapter_error_to_event(error: &AdapterError) -> logger::LogEvent {
+    adapter_error_to_log_event(error)
 }
 
 /// Emit one unified diagnostic through the global logger facade.

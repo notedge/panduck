@@ -10,22 +10,17 @@ readme = "readme.md"
 [dependencies]
 diagnostic = { git = "https://github.com/oovm/rust-boost", branch = "dev", package = "diagnostic", default-features = false, features = ["std", "serde"] }
 logger = { workspace = true, optional = true }
-console = { workspace = true, optional = true }
 notedown-ir = { workspace = true }
 panduck-types = { workspace = true }
 
 [features]
 default = []
 logger = ["dep:logger", "diagnostic/console"]
-console = ["logger", "dep:console"]
+console = ["logger"]
 
 [dev-dependencies]
 serde_json = { workspace = true }
 serial_test = "3.2.0"
-
-[[test]]
-name = "console_emit"
-required-features = ["console"]
 
 [[test]]
 name = "logger_emit"

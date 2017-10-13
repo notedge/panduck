@@ -37,7 +37,7 @@ fs-tools = { workspace = true }
 [features]
 default = []
 logger = ["panduck-diagnostic/logger"]
-console = ["logger", "panduck-diagnostic/console"]
+console = ["logger"]
 
 
 
