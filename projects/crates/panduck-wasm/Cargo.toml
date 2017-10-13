@@ -1,10 +1,10 @@
 [package]
 name = "panduck-wasm"
-version = "0.2.0"
-authors = ["Aster <192607617@qq.com>"]
+version.workspace = true
+authors.workspace = true
 description = "WebAssembly bindings for Panduck document conversion"
-license = "MPL-2.0"
-edition = "2021"
+license.workspace = true
+edition.workspace = true
 readme = "readme.md"
 homepage = "https://github.com/notedge/panduck"
 repository = "https://github.com/notedge/panduck"
@@ -13,4 +13,4 @@ repository = "https://github.com/notedge/panduck"
 crate-type = ["cdylib"]
 
 [dependencies]
-wasm-bindgen = "0.2"
+wasm-bindgen = { workspace = true }

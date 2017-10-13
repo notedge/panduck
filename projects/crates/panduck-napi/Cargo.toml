@@ -2,7 +2,7 @@
 
 name = "panduck-napi"
 
-version = "0.2.0"
+version.workspace = true
 
 description = "Node-API bindings for Panduck document conversion"
 
