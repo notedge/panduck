@@ -30,7 +30,6 @@ notedown-formats = { workspace = true }
 serde = { workspace = true }
 
 serde_json = { workspace = true }
-fs-tools = { workspace = true }
 
 
 
