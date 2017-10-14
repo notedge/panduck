@@ -1,3 +1,5 @@
+#![warn(missing_docs)]
+
 //! Node-API export surface for Panduck.
 
 use napi::bindgen_prelude::*;

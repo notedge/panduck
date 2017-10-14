@@ -1,3 +1,5 @@
+#![warn(missing_docs)]
+
 //! WebAssembly export surface for Panduck.
 
 use wasm_bindgen::prelude::*;
