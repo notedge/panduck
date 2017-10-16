@@ -1,0 +1,234 @@
+# Trusted Publisher contract (sole npm trusted workflow — keep this filename):
+#   file = publish-npm.yml
+#   repo = notedge/panduck
+#   env  = NPM_PUBLISH
+
+name: Publish npm
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Must match existing git tag vX.Y.Z (retry only)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  provenance:
+    name: Bind version to tag
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.bind.outputs.version }}
+      sha: ${{ steps.bind.outputs.sha }}
+      tag: ${{ steps.bind.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bind publish tag
+        id: bind
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: node scripts/ci/bind-publish-tag.mjs
+
+  build-native:
+    name: Native ${{ matrix.short }}
+    needs: provenance
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            short: win32-x64
+          - os: ubuntu-latest
+            short: linux-x64
+          - os: ubuntu-24.04-arm
+            short: linux-arm64
+          - os: macos-15-intel
+            short: darwin-x64
+          - os: macos-latest
+            short: darwin-arm64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.provenance.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Verify HEAD is bound tag SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          head="$(git rev-parse HEAD)"
+          want="${{ needs.provenance.outputs.sha }}"
+          if [[ "$head" != "$want" ]]; then
+            echo "Refusing native build: HEAD=$head != bound tag sha=$want" >&2
+            exit 1
+          fi
+
+      - uses: dtolnay/rust-toolchain@nightly
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: publish-native-${{ matrix.short }}
+          cache-on-failure: true
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build native release
+        run: node scripts/build-napi.mjs
+
+      - name: Stage native artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="dist/${{ matrix.short }}"
+          mkdir -p "$out"
+          src="projects/crates/panduck-napi"
+          node="$(find "$src" -maxdepth 1 -name '*.node' | head -n 1)"
+          if [[ -z "$node" ]]; then
+            echo "missing native binary under $src" >&2
+            ls -la "$src" || true
+            exit 1
+          fi
+          cp "$node" "$out/$(basename "$node")"
+          ls -la "$out"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.short }}
+          path: dist/${{ matrix.short }}
+          if-no-files-found: error
+
+  build-wasm:
+    name: Build wasm32 package
+    needs: provenance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.provenance.outputs.tag }}
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: wasm32-unknown-unknown
+
+      - run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          package-manager-cache: false
+
+      - run: pnpm install
+
+      - name: Build wasm package
+        run: pnpm build:wasm
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wasm-pkg
+          path: projects/packages/panduck-unknown-wasm32/pkg
+          if-no-files-found: error
+
+  publish:
+    name: Publish packages
+    needs: [provenance, build-native, build-wasm]
+    runs-on: ubuntu-latest
+    environment: NPM_PUBLISH
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.provenance.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Verify HEAD is bound tag SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          head="$(git rev-parse HEAD)"
+          want="${{ needs.provenance.outputs.sha }}"
+          if [[ "$head" != "$want" ]]; then
+            echo "Refusing publish: HEAD=$head != bound tag sha=$want" >&2
+            exit 1
+          fi
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          package-manager-cache: false
+
+      - run: npm install -g npm@latest
+
+      - run: pnpm install
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: native-*
+          path: dist/native-artifacts
+
+      - name: Normalize native artifact layout
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/native-flat
+          for d in dist/native-artifacts/native-*; do
+            [[ -d "$d" ]] || continue
+            short="$(basename "$d" | sed 's/^native-//')"
+            mkdir -p "dist/native-flat/$short"
+            cp -r "$d"/. "dist/native-flat/$short/"
+          done
+          find dist/native-flat -type f -print
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasm-pkg
+          path: projects/packages/panduck-unknown-wasm32/pkg
+
+      - name: Strip token-style npmrc (OIDC only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset NODE_AUTH_TOKEN NPM_TOKEN || true
+          for f in "${HOME}/.npmrc" "${NPM_CONFIG_USERCONFIG:-}" "${RUNNER_TEMP:-}/.npmrc"; do
+            [[ -n "${f}" && -f "${f}" ]] || continue
+            if grep -q '_authToken' "${f}"; then
+              grep -v '_authToken' "${f}" > "${f}.oidc" && mv "${f}.oidc" "${f}"
+            fi
+          done
+
+      - name: Publish packages
+        env:
+          PANDUCK_NATIVE_ARTIFACTS: ${{ github.workspace }}/dist/native-flat
+          GITHUB_REF: refs/tags/v${{ needs.provenance.outputs.version }}
+        run: node scripts/ci/publish-npm.mjs --version=${{ needs.provenance.outputs.version }}
