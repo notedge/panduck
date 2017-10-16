@@ -124,11 +124,11 @@
 import { probePanduck } from '../lib/panduck-probe.ts';
 
 export default class IndexPage {
-    installSample = 'pnpm add @notedge/panduck@0.0.0';
-    panduckVersion = 'â€¦';
-    panduckBackend = 'â€¦';
-    panduckFormats = 'â€¦';
-    panduckMarkdown = 'â€¦';
+    installSample = 'pnpm add @notedge/panduck@0.0.1';
+    panduckVersion = 'â€?;
+    panduckBackend = 'â€?;
+    panduckFormats = 'â€?;
+    panduckMarkdown = 'â€?;
 
     async onMount() {
         const probe = await probePanduck();

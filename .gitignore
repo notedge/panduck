@@ -19,6 +19,10 @@ Cargo.lock
 # Node
 node_modules/
 dist/
+.placeholder-npm-cache.json
+scripts/.placeholder-npm-cache.json
+.cache/npm-placeholder.json
+.env.placeholder.local
 projects/packages/panduck-unknown-wasm32/pkg/
 projects/packages/homepage/dist/
 projects/packages/homepage/public/

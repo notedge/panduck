@@ -1,15 +1,14 @@
 {
     "name": "@notedge/panduck-skills",
-    "version": "0.0.0",
-    "private": true,
+    "version": "0.0.1",
     "type": "module",
-    "description": "Agent skills for Panduck users — document conversion with @notedge/panduck. Install with npx @notedge/panduck-skills.",
+    "description": "Agent skills for Panduck users. Document conversion with @notedge/panduck. Install with npx @notedge/panduck-skills.",
     "repository": {
         "type": "git",
-        "url": "https://github.com/oovm/panduck.git",
+        "url": "https://github.com/notedge/panduck.git",
         "directory": "projects/packages/panduck-skills"
     },
-    "homepage": "https://github.com/oovm/panduck/tree/dev/projects/packages/panduck-skills",
+    "homepage": "https://github.com/notedge/panduck/tree/dev/projects/packages/panduck-skills",
     "keywords": [
         "panduck",
         "document-conversion",
@@ -21,7 +20,7 @@
     ],
     "license": "MPL-2.0",
     "bin": {
-        "panduck-skills": "./bin/panduck-skills.mjs"
+        "panduck-skills": "bin/panduck-skills"
     },
     "files": [
         "bin",

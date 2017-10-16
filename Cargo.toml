@@ -1,9 +1,9 @@
-﻿[workspace]
+[workspace]
 resolver = "2"
 members = ["projects/crates/*"]
 
 [workspace.package]
-version = "0.0.0"
+version = "0.0.1"
 authors = ["Aster <192607617@qq.com>"]
 license = "MPL-2.0"
 edition = "2021"
