@@ -135,7 +135,13 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
-      - run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: publish-wasm
+          cache-on-failure: true
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh -s -- -y
 
       - uses: pnpm/action-setup@v4
         with:
@@ -149,7 +155,10 @@ jobs:
       - run: pnpm install
 
       - name: Build wasm package
-        run: pnpm build:wasm
+        run: |
+          set -euo pipefail
+          pnpm build:wasm
+          test -f projects/packages/panduck-unknown-wasm32/pkg/panduck_wasm.js
 
       - uses: actions/upload-artifact@v4
         with:

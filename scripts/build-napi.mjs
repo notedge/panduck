@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { copyFileSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -34,7 +34,14 @@ function findBuiltNodes(dir) {
     return readdirSync(dir).filter((name) => name.endsWith(".node"));
 }
 
-execSync("pnpm exec napi build --platform --release --no-js", { cwd: napiDir, stdio: "inherit", shell: true });
+execSync("pnpm exec napi build --platform --release", { cwd: napiDir, stdio: "inherit", shell: true });
+
+for (const generated of ["index.js", "index.d.ts"]) {
+    const path = join(napiDir, generated);
+    if (existsSync(path)) {
+        unlinkSync(path);
+    }
+}
 
 const built = findBuiltNodes(napiDir);
 if (built.length === 0) {
