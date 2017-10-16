@@ -1,6 +1,6 @@
 {
     "name": "@notedge/homepage",
-    "version": "0.2.0",
+    "version": "0.0.0",
     "private": true,
     "type": "module",
     "description": "Panduck marketing homepage (VMZ static site with @notedge/panduck probe)",

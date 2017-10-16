@@ -124,7 +124,7 @@
 import { probePanduck } from '../lib/panduck-probe.ts';
 
 export default class IndexPage {
-    installSample = 'pnpm add @notedge/panduck@0.2.0';
+    installSample = 'pnpm add @notedge/panduck@0.0.0';
     panduckVersion = '…';
     panduckBackend = '…';
     panduckFormats = '…';
