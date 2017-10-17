@@ -1,6 +1,6 @@
 {
     "name": "@notedge/panduck-darwin-arm64",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "description": "Panduck Node-API binary for macOS arm64",
     "type": "module",
     "license": "MPL-2.0",
