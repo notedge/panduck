@@ -11,35 +11,47 @@ use std::fmt::Debug;
 pub enum AdapterError {
     /// File or stream I/O failure.
     Io {
+        /// Underlying operating-system I/O error.
         source: std::io::Error,
+        /// Optional filesystem path tied to the failure.
         path: Option<String>,
     },
     /// Caller supplied invalid bytes, paths, or parameters.
     InvalidInput {
+        /// Human-readable explanation of the invalid input.
         message: String,
     },
     /// Source text slice is out of range.
     InvalidRange {
+        /// Byte offset where the invalid slice starts.
         offset: usize,
+        /// Requested slice length in bytes.
         len: usize,
     },
     /// Adapter path not implemented yet.
     NotImplemented {
+        /// Name of the missing capability.
         feature: String,
     },
     /// Named format adapter failure.
     Adapter {
+        /// Adapter identifier that reported the failure.
         adapter: String,
+        /// Adapter-specific failure message.
         message: String,
     },
     /// Target format cannot perform the requested operation.
     UnsupportedFormat {
+        /// Format name that rejected the operation.
         format: String,
+        /// Operation that was requested, such as `read` or `write`.
         operation: String,
     },
     /// Configuration could not be loaded or validated.
     Config {
+        /// Optional configuration file path.
         path: Option<String>,
+        /// Configuration validation message.
         message: String,
     },
 }

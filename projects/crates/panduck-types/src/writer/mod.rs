@@ -46,6 +46,7 @@ impl<W, E> BinaryWriter<W, E> {
         self.writer
     }
 
+    /// Writes one unsigned 8-bit integer.
     pub fn write_u8(&mut self, value: u8) -> std::io::Result<()>
     where
         W: Write,
@@ -53,6 +54,7 @@ impl<W, E> BinaryWriter<W, E> {
         self.writer.write_u8(value)
     }
 
+    /// Writes one unsigned 16-bit integer using endianness `E`.
     pub fn write_u16(&mut self, value: u16) -> std::io::Result<()>
     where
         W: Write,
@@ -61,6 +63,7 @@ impl<W, E> BinaryWriter<W, E> {
         self.writer.write_u16::<E>(value)
     }
 
+    /// Writes one unsigned 32-bit integer using endianness `E`.
     pub fn write_u32(&mut self, value: u32) -> std::io::Result<()>
     where
         W: Write,
@@ -68,6 +71,8 @@ impl<W, E> BinaryWriter<W, E> {
     {
         self.writer.write_u32::<E>(value)
     }
+
+    /// Writes one signed 32-bit integer using endianness `E`.
     pub fn write_i32(&mut self, value: i32) -> std::io::Result<()>
     where
         W: Write,
@@ -76,6 +81,7 @@ impl<W, E> BinaryWriter<W, E> {
         self.writer.write_i32::<E>(value)
     }
 
+    /// Writes one unsigned 64-bit integer using endianness `E`.
     pub fn write_u64(&mut self, value: u64) -> std::io::Result<()>
     where
         W: Write,
@@ -84,6 +90,7 @@ impl<W, E> BinaryWriter<W, E> {
         self.writer.write_u64::<E>(value)
     }
 
+    /// Writes a raw byte slice without endian conversion.
     pub fn write_bytes(&mut self, bytes: &[u8]) -> std::io::Result<()>
     where
         W: Write,

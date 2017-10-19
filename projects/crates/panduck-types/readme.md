@@ -8,7 +8,8 @@ Document semantics live in `notedown-ir::DocumentGraph`. This crate provides:
 - `SourceText`, `BinaryReader`, `TextWriter`
 - re-export of `notedown_ir`
 
-Syntax diagnostics belong to Oak. Container diagnostics belong to Acorn. Semantic loss belongs to `notedown_ir::CoverageReport`.
+Syntax diagnostics belong to Oak. Container diagnostics belong to Acorn. Semantic loss belongs to
+`notedown_ir::CoverageReport`.
 
 ## Example
 
