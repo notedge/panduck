@@ -158,12 +158,12 @@ jobs:
         run: |
           set -euo pipefail
           pnpm build:wasm
-          test -f projects/packages/panduck-unknown-wasm32/pkg/panduck_wasm.js
+          test -f projects/packages/panduck-unknown-wasm32/lib/panduck_wasm.js
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wasm-pkg
-          path: projects/packages/panduck-unknown-wasm32/pkg
+          name: wasm-lib
+          path: projects/packages/panduck-unknown-wasm32/lib
           if-no-files-found: error
 
   publish:
@@ -221,8 +221,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: wasm-pkg
-          path: projects/packages/panduck-unknown-wasm32/pkg
+          name: wasm-lib
+          path: projects/packages/panduck-unknown-wasm32/lib
 
       - name: Strip token-style npmrc (OIDC only)
         shell: bash

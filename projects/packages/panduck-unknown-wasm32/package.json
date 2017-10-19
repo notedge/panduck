@@ -7,12 +7,12 @@
     "cpu": [
         "wasm32"
     ],
-    "main": "./pkg/panduck_wasm.js",
-    "types": "./pkg/panduck_wasm.d.ts",
+    "main": "./lib/panduck_wasm.js",
+    "types": "./lib/panduck_wasm.d.ts",
     "files": [
-        "pkg"
+        "lib"
     ],
     "sideEffects": [
-        "./pkg/panduck_wasm.js"
+        "./lib/panduck_wasm.js"
     ]
 }

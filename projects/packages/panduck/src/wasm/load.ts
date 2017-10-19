@@ -9,7 +9,7 @@ type WasmModule = {
 
 /** Load `@notedge/panduck-unknown-wasm32` and return the Panduck binding surface. */
 export async function loadPanduckWasm(options: PanduckWasmOptions = {}): Promise<PanduckBindings> {
-    const wasm = (await import("@notedge/panduck-unknown-wasm32/pkg/panduck_wasm.js")) as WasmModule;
+    const wasm = (await import("@notedge/panduck-unknown-wasm32")) as WasmModule;
     if (options.url) {
         await wasm.default({ module_or_path: options.url });
     } else {
