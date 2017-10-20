@@ -4,7 +4,7 @@
     "scripts": {
         "build": "cargo build --release",
         "build:napi": "node scripts/build-napi.mjs",
-        "build:wasm": "wasm-pack build projects/crates/panduck-wasm --target web --out-dir ../../packages/panduck-unknown-wasm32/pkg --release",
+        "build:wasm": "wasm-pack build projects/crates/panduck-wasm --target web --out-dir ../../packages/panduck-unknown-wasm32/lib --release",
         "test": "cargo test --release && pnpm --filter @notedge/panduck test:e2e",
         "test:e2e": "pnpm --filter @notedge/panduck test:e2e",
         "typecheck": "pnpm --filter @notedge/panduck typecheck",
