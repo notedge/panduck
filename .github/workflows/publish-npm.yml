@@ -194,10 +194,11 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           package-manager-cache: false
 
-      - run: npm install -g npm@latest
+      - name: Ensure npm supports Trusted Publishing
+        run: npm install -g npm@latest
 
       - run: pnpm install
 
