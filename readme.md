@@ -21,7 +21,7 @@ Conversion tool by rust, inspired by [pandoc]().
 - [ ] Office Word (docx)
 - [ ] Office Excel (xls, xlsx, xlsm, xlsb, xla, xlam)
 - [x] CSV/TSV
-- [ ] Open Document Spread Sheets(ods)
+- [ ] Open Document Spread Sheets (ods)
 - [ ] TeX
 - [ ] BibTeX
 
@@ -36,9 +36,7 @@ Conversion tool by rust, inspired by [pandoc]().
 
 ### Highlights
 
-- Text(txt)
-
-
+- Text (txt)
 
 ## Developers
 
