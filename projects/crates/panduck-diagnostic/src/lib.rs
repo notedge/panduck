@@ -1,4 +1,4 @@
-#![warn(missing_docs)]
+#![deny(missing_docs)]
 //! Panduck orchestration diagnostics on the shared `diagnostic` contract.
 
 use diagnostic::{

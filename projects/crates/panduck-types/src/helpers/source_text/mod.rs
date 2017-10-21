@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::ops::Range;
 use url::Url;
 
+/// UTF-8 source buffer with optional `file://` provenance and line indexing.
 #[derive(Debug)]
 pub struct SourceText {
     raw: String,
@@ -13,6 +14,7 @@ pub struct SourceText {
 }
 
 impl SourceText {
+    /// Builds source text and precomputes newline offsets for location lookup.
     pub fn new(raw: impl Into<String>, url: Option<Url>) -> Self {
         let raw = raw.into();
         let mut lines_map = Vec::new();
@@ -29,6 +31,7 @@ impl SourceText {
         }
     }
 
+    /// Returns the UTF-8 slice for `range`, or an [`AdapterError::invalid_range`] failure.
     pub fn get_str(&self, range: Range<usize>) -> Result<&str, AdapterError> {
         match self.raw.get(range.start..range.end) {
             Some(s) => Ok(s),
@@ -36,6 +39,7 @@ impl SourceText {
         }
     }
 
+    /// Returns the scalar at `offset`, or an [`AdapterError::invalid_range`] failure.
     pub fn get_char(&self, offset: usize) -> Result<char, AdapterError> {
         match self.raw.get(offset..) {
             Some(s) => match s.chars().next() {
@@ -46,6 +50,7 @@ impl SourceText {
         }
     }
 
+    /// Maps a byte offset to a human-readable line and column.
     pub fn get_location(&self, offset: usize) -> SourceLocation {
         let line_index = match self.lines_map.binary_search(&offset) {
             Ok(index) => index,
@@ -61,21 +66,29 @@ impl SourceText {
         }
     }
 
+    /// Returns the UTF-8 byte length of the backing buffer.
     pub fn utf8_length(&self) -> usize {
         self.raw.len()
     }
 }
 
+/// Byte span inside a [`SourceText`] buffer.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct SourcePosition {
+    /// Inclusive start offset in bytes.
     pub offset: usize,
+    /// Span length in bytes.
     pub length: usize,
 }
 
+/// Human-readable location for diagnostics and error reporting.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct SourceLocation {
+    /// One-based line number.
     pub line: u32,
+    /// One-based column number.
     pub column: u32,
+    /// Optional source URL, commonly `file://` for on-disk inputs.
     pub url: Option<Url>,
 }
 
@@ -90,6 +103,7 @@ impl Default for SourceLocation {
 }
 
 impl SourcePosition {
+    /// Returns a new position shifted forward by `offset` bytes.
     pub fn add(&self, offset: usize) -> Self {
         Self {
             offset: self.offset + offset,

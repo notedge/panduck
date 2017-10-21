@@ -67,6 +67,7 @@ impl<R, E> BinaryReader<R, E> {
         self.position = position;
         Ok(position)
     }
+    /// Returns the wrapped reader and drops position tracking state.
     pub fn finish(self) -> R {
         self.reader
     }
@@ -168,6 +169,7 @@ impl<R: ReadBytesExt, E: ByteOrder> BinaryReader<R, E> {
 }
 
 impl<R: Seek, E: ByteOrder> BinaryReader<R, E> {
+    /// Seeks the underlying reader and leaves [`BinaryReader::position`] unchanged.
     pub fn seek(&mut self, pos: SeekFrom) -> std::io::Result<u64> {
         self.reader.seek(pos)
     }
