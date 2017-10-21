@@ -28,7 +28,9 @@ pub use writers::{write_document_docx, write_document_markdown};
 /// Supported conversion route.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Route {
+    /// Source format name.
     pub from: &'static str,
+    /// Target format name.
     pub to: &'static str,
 }
 
@@ -82,7 +84,9 @@ pub struct ConvertOutput {
     /// Binary output for container targets such as `docx`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub binary: Option<Vec<u8>>,
+    /// Serialized `panduck.report/v1` JSON payload.
     pub report_json: String,
+    /// Number of semantic loss markers recorded in the report.
     pub loss_count: usize,
 }
 

@@ -11,13 +11,21 @@ use panduck_types::AdapterError;
 /// Panduck domain diagnostic code (maps to dotted `panduck.*` wire identifiers).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum DiagnosticCode {
+    /// Adapter or filesystem I/O failure.
     AdapterIo,
+    /// Caller supplied invalid bytes, paths, or parameters.
     AdapterInvalidInput,
+    /// Source text slice is out of range.
     AdapterInvalidRange,
+    /// Adapter capability is not implemented in this build.
     AdapterNotImplemented,
+    /// Named format adapter reported a failure.
     AdapterFailure,
+    /// Target format cannot perform the requested operation.
     AdapterUnsupportedFormat,
+    /// Configuration could not be loaded or validated.
     AdapterConfig,
+    /// Semantic information was lost during conversion.
     SemanticLoss,
 }
 

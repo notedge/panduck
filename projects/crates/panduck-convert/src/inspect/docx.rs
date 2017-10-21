@@ -10,9 +10,13 @@ use crate::format_error;
 /// Container index summary for DOCX packages.
 #[derive(Debug, Clone)]
 pub struct DocxInspectIndex {
+    /// Detected container format, typically `docx`.
     pub format: String,
+    /// Outer container label from Acorn detection.
     pub outer: String,
+    /// Inner payload label from Acorn detection.
     pub inner: String,
+    /// OPC member paths discovered in the package.
     pub parts: Vec<String>,
 }
 
@@ -28,19 +32,28 @@ pub fn inspect_docx_index(path: impl AsRef<Path>) -> Result<DocxInspectIndex> {
 /// One decoded OPC member summary.
 #[derive(Debug, Clone)]
 pub struct DocxDecodedPart {
+    /// OPC member path inside the package.
     pub path: String,
+    /// ZIP compression method identifier.
     pub compression_method: u16,
+    /// Compressed byte length stored in the archive.
     pub compressed_size: u64,
+    /// Uncompressed byte length declared in the archive.
     pub uncompressed_size: u64,
+    /// Decoded payload byte length after inflation.
     pub decoded_size: u64,
 }
 
 /// Decode-stage summary for DOCX packages.
 #[derive(Debug, Clone)]
 pub struct DocxInspectDecode {
+    /// Detected container format, typically `docx`.
     pub format: String,
+    /// Outer container label from Acorn detection.
     pub outer: String,
+    /// Inner payload label from Acorn detection.
     pub inner: String,
+    /// Per-member decode summaries for the package.
     pub parts: Vec<DocxDecodedPart>,
 }
 
