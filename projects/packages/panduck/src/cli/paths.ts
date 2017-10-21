@@ -3,7 +3,8 @@ import { extname, resolve } from "node:path";
 const EXTENSION_HINTS: Record<string, string[]> = {
     ".md": ["markdown"],
     ".markdown": ["markdown"],
-    ".nd": ["notedown"],
+    ".note": ["notedown"],
+    ".notedown": ["notedown"],
     ".org": ["org"],
     ".rst": ["rst"],
     ".tex": ["tex"],
