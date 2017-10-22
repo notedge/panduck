@@ -1,0 +1,38 @@
+{
+    "schema": "vmz.delivery-runtime-files.v0",
+    "note": "Browser/SSR runtime companions copied into app delivery dist. Consumed by vmz-compiler emit_runtime_js and pack ensureRuntimeCompanions.",
+    "flatBarrels": [
+        { "src": "faces/server.js", "out": "vmz-runtime.js" },
+        { "src": "faces/dom.js", "out": "vmz-dom.js" },
+        { "src": "browser/dom-core.js", "out": "dom-core.js" },
+        { "src": "ssr/dom-ssr.js", "out": "dom-ssr.js" },
+        { "src": "faces/dom.client.js", "out": "dom.client.js" },
+        { "src": "faces/dom.browser.js", "out": "dom.browser.js" },
+        { "src": "browser/direct-host-box.js", "out": "direct-host-box.js" },
+        { "src": "browser/unknown-component.js", "out": "unknown-component.js" },
+        { "src": "shared/dom-attr-normalize.js", "out": "dom-attr-normalize.js" },
+        { "src": "faces/http.js", "out": "vmz-http.js" },
+        { "src": "browser/client-nav.js", "out": "vmz-client-nav.js" }
+    ],
+    "nested": [
+        { "src": "browser/diagnostics/precision-trace.js", "out": "browser/diagnostics/precision-trace.js" },
+        { "src": "browser/dom/attributes.js", "out": "browser/dom/attributes.js" },
+        { "src": "browser/dom/component.js", "out": "browser/dom/component.js" },
+        { "src": "browser/dom/direct-api.js", "out": "browser/dom/direct-api.js" },
+        { "src": "browser/dom/lifecycle.js", "out": "browser/dom/lifecycle.js" },
+        { "src": "browser/dom/registry.js", "out": "browser/dom/registry.js" },
+        { "src": "browser/reactivity/patch-scheduler.js", "out": "browser/reactivity/patch-scheduler.js" },
+        { "src": "browser/reactivity/write-barrier.js", "out": "browser/reactivity/write-barrier.js" },
+        { "src": "browser/navigation/client-navigation.js", "out": "browser/navigation/client-navigation.js" },
+        { "src": "browser/navigation/extract-html.js", "out": "browser/navigation/extract-html.js" },
+        { "src": "browser/navigation/layout-retain.js", "out": "browser/navigation/layout-retain.js" },
+        { "src": "browser/navigation/locale-transition.js", "out": "browser/navigation/locale-transition.js" },
+        { "src": "browser/navigation/scroll-focus.js", "out": "browser/navigation/scroll-focus.js" },
+        { "src": "browser/resume/adopt.js", "out": "browser/resume/adopt.js" },
+        { "src": "browser/resume/hydrate.js", "out": "browser/resume/hydrate.js" },
+        { "src": "browser/resume/resume.js", "out": "browser/resume/resume.js" },
+        { "src": "ssr/render.js", "out": "ssr/render.js" },
+        { "src": "ssr/serialize.js", "out": "ssr/serialize.js" },
+        { "src": "ssr/document.js", "out": "ssr/document.js" }
+    ]
+}

@@ -1,15 +1,13 @@
 {
     "name": "@notedge/homepage",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "private": true,
     "type": "module",
     "description": "Panduck marketing homepage (VMZ static site with @notedge/panduck probe)",
     "scripts": {
-        "check": "vmz check .",
-        "predev": "node ../../../scripts/stage-homepage-wasm.mjs",
-        "prebuild": "node ../../../scripts/stage-homepage-wasm.mjs",
-        "build": "vmz build --release --profile static .",
-        "dev": "vmz dev .",
+        "check": "node ../../../scripts/ensure-vmz-host-manifest.mjs && vmz check .",
+        "build": "node ../../../scripts/ensure-vmz-host-manifest.mjs && vmz build --release --profile static .",
+        "dev": "node ../../../scripts/ensure-vmz-host-manifest.mjs && vmz dev .",
         "preview": "vmz serve --profile static .",
         "test:panduck": "pnpm --filter @notedge/panduck test:e2e"
     },

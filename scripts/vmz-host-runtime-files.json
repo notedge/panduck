@@ -1,0 +1,27 @@
+{
+    "schema": "vmz.host-runtime-files.v0",
+    "note": "Single source for Node host companions copied into dist/_vmz/host/. Consumed by vmz-compiler emit_runtime_js and materializeServeHostRuntime.",
+    "files": [
+        { "src": "host/serve-host.mjs", "out": "_vmz/host/vmz-serve-host.mjs", "rewriteVmzRuntimeImport": true },
+        { "src": "host/native-addon.js", "out": "_vmz/host/native-addon.js" },
+        { "src": "host/list-client-components.js", "out": "_vmz/host/list-client-components.js" },
+        { "src": "host/deployment/deployment-registry.js", "out": "_vmz/host/deployment/deployment-registry.js" },
+        { "src": "host/render/render-host.js", "out": "_vmz/host/render/render-host.js" },
+        { "src": "host/render/route-layout-chain.js", "out": "_vmz/host/render/route-layout-chain.js" },
+        { "src": "host/localize-body-links.js", "out": "_vmz/host/localize-body-links.js" },
+        { "src": "host/serve/bootstrap.js", "out": "_vmz/host/serve/bootstrap.js", "rewriteVmzRuntimeImport": true },
+        { "src": "host/serve/http.js", "out": "_vmz/host/serve/http.js", "rewriteVmzRuntimeImport": true },
+        { "src": "host/serve/hmr-dev.js", "out": "_vmz/host/serve/hmr-dev.js", "rewriteVmzRuntimeImport": true },
+        { "src": "host/serve/page-render.js", "out": "_vmz/host/serve/page-render.js", "rewriteVmzRuntimeImport": true },
+        { "src": "host/serve/page-catalog.js", "out": "_vmz/host/serve/page-catalog.js" },
+        { "src": "host/serve/locale-theme.js", "out": "_vmz/host/serve/locale-theme.js" },
+        { "src": "host/serve/constants.js", "out": "_vmz/host/serve/constants.js" },
+        { "src": "host/serve/route-catalog.js", "out": "_vmz/host/serve/route-catalog.js" },
+        { "src": "host/serve/state.js", "out": "_vmz/host/serve/state.js" },
+        { "src": "host/serve/paths.js", "out": "_vmz/host/serve/paths.js" }
+    ],
+    "launcherStub": {
+        "out": "vmz-serve-host.mjs",
+        "body": "// Generated launcher — host companions live under `_vmz/host/` (0.1.31).\nimport './_vmz/host/vmz-serve-host.mjs';\n"
+    }
+}

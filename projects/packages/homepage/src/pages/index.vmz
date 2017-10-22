@@ -9,7 +9,7 @@
     </header>
     <main>
       <section class="panduck-home__hero" aria-labelledby="panduck-hero-title">
-        <Badge tone="brand">Document conversion Â· Rust core</Badge>
+        <Badge tone="brand">Document conversion - Rust core</Badge>
         <h1 id="panduck-hero-title">Convert documents with typed adapters.</h1>
         <p class="panduck-home__lede">
           Panduck bridges markup formats through shared Rust types, with Node-API and WebAssembly bindings for tools and browsers.
@@ -20,7 +20,7 @@
       </section>
 
       <section class="panduck-home__grid" aria-label="Binding snapshot">
-        <Card title="Live probe" description="Browser WASM when staged, otherwise host bindings.">
+        <Card title="Live probe" description="Browser WASM or host Node bindings via @notedge/panduck.">
           <dl class="panduck-home__probe">
             <div><dt>version</dt><dd>{{ panduckVersion }}</dd></div>
             <div><dt>backend</dt><dd>{{ panduckBackend }}</dd></div>
@@ -124,11 +124,11 @@
 import { probePanduck } from '../lib/panduck-probe.ts';
 
 export default class IndexPage {
-    installSample = 'pnpm add @notedge/panduck@0.0.1';
-    panduckVersion = 'â€?;
-    panduckBackend = 'â€?;
-    panduckFormats = 'â€?;
-    panduckMarkdown = 'â€?;
+    installSample = 'pnpm add @notedge/panduck';
+    panduckVersion = '';
+    panduckBackend = '';
+    panduckFormats = '';
+    panduckMarkdown = '';
 
     async onMount() {
         const probe = await probePanduck();
