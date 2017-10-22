@@ -1,10 +1,12 @@
 # @notedge/panduck-skills
 
-Agent skills for **people who use Panduck** to convert documents — not for contributors hacking the Rust repo.
+Agent skill pack for **people who use Panduck** to convert documents—not for contributors hacking the Rust repository.
 
-Install once so coding agents know how to install `@notedge/panduck`, pick formats, write conversion scripts, and explain partial or failed conversions in plain language.
+Install once so coding agents know how to install `@notedge/panduck`, verify a conversion route, write outputs safely, and explain partial or failed conversions in plain language.
 
-## Install
+**Scope:** instructions only. The installer does not add conversion routes, platform binaries, or WASM file conversion.
+
+## 📥 Install
 
 ```bash
 npx @notedge/panduck-skills
@@ -15,25 +17,41 @@ npx @notedge/panduck-skills -g
 npx @notedge/panduck-skills -a cursor -y
 ```
 
-## Example prompts
+## 💬 Example prompts
 
 ```text
-Convert this folder of Markdown files to HTML with Panduck. List anything that did not round-trip.
+Use Panduck to check whether ./notes/paper.docx can convert to Markdown.
+If supported, write ./notes/paper.md and ./notes/paper.report.json without modifying the source.
+List semantic losses from the report.
 ```
 
 ```text
-Write a Node script using @notedge/panduck that checks which formats are available on this machine.
+Write a Node script with @notedge/panduck that calls supportsConversion for docx→markdown
+on this machine and converts one sample file.
 ```
 
 ```text
-I need RST → Markdown for my docs site. Set up Panduck and handle images in a subfolder.
+I have a folder of Markdown files. Plan panduck batch conversion to docx and flag any
+unsupported paths before running.
 ```
 
-## What the skill covers
+## ✅ What the agent checks
 
-- Installing and loading `@notedge/panduck` (Node native vs WASM)
-- Supported format names and honest limits of the current API
-- Batch conversion, CI, and troubleshooting platform packages
-- Explaining semantic loss to end users without internal jargon
+- `panduck doctor` and native binding load
+- `plan`, `formats`, or `supportsConversion` before promising a target format
+- Separate read vs write capability—registered names are not full matrices
+- New output paths and `--report` for `panduck.report/v1`
+- Asset handling (embedded vs linked vs omitted) from report losses
+- WASM vs Node: discovery in browser, conversion on Node for this release
 
-See `skills/panduck/SKILL.md` for the full agent guide.
+## 📎 Full skill
+
+See [`skills/panduck/SKILL.md`](skills/panduck/SKILL.md) for the complete workflow.
+
+Install the runtime separately:
+
+```bash
+npm install @notedge/panduck
+```
+
+License: MPL-2.0
