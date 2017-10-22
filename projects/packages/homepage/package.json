@@ -12,7 +12,7 @@
         "test:panduck": "pnpm --filter @notedge/panduck test:e2e"
     },
     "dependencies": {
-        "@notedge/panduck": "workspace:*",
+        "@notedge/panduck": "0.0.2",
         "@vmz/core": "0.2.7",
         "@vmz/ui": "0.2.7"
     },
