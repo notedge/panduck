@@ -1,23 +1,25 @@
 import type { PanduckBindings, PanduckWasmOptions } from "../types.js";
 
-type WasmModule = {
+const ARTIFACT_PACKAGE = "@notedge/panduck-unknown-wasm32";
+
+type WasmBinding = {
     default: (input?: { module_or_path?: string | URL }) => Promise<unknown>;
     panduckVersion: () => string;
     supportedFormats: () => string[];
     isSupportedFormat: (name: string) => boolean;
 };
 
-/** Load `@notedge/panduck-unknown-wasm32` and return the Panduck binding surface. */
+/** Load the WASM artifact from `@notedge/panduck-unknown-wasm32`. */
 export async function loadPanduckWasm(options: PanduckWasmOptions = {}): Promise<PanduckBindings> {
-    const wasm = (await import("@notedge/panduck-unknown-wasm32")) as WasmModule;
+    const binding = (await import(ARTIFACT_PACKAGE)) as WasmBinding;
     if (options.url) {
-        await wasm.default({ module_or_path: options.url });
+        await binding.default({ module_or_path: options.url });
     } else {
-        await wasm.default();
+        await binding.default();
     }
     return {
-        panduckVersion: () => wasm.panduckVersion(),
-        supportedFormats: () => wasm.supportedFormats(),
-        isSupportedFormat: (name) => wasm.isSupportedFormat(name),
+        panduckVersion: () => binding.panduckVersion(),
+        supportedFormats: () => binding.supportedFormats(),
+        isSupportedFormat: (name) => binding.isSupportedFormat(name),
     };
 }
