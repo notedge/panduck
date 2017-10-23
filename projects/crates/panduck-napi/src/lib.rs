@@ -14,39 +14,58 @@ const FORMATS: [&str; 6] = ["markdown", "org", "rst", "tex", "docx", "epub"];
 /// N-API conversion response.
 #[napi(object)]
 pub struct ConvertResponse {
+    /// Process exit code. Zero means success.
     pub exit_code: u32,
+    /// Text output for text targets such as `markdown`.
     pub markdown: Option<String>,
+    /// Binary output for container targets such as `docx`.
     pub binary: Option<Buffer>,
+    /// Serialized `panduck.report/v1` JSON payload.
     pub report_json: String,
 }
 
 /// N-API container index response.
 #[napi(object)]
 pub struct InspectIndexResponse {
+    /// Detected container format.
     pub format: String,
+    /// Outer container label from Acorn detection.
     pub outer: String,
+    /// Inner payload label from Acorn detection.
     pub inner: String,
+    /// OPC member paths discovered in the package.
     pub parts: Vec<String>,
+    /// Serialized `panduck.report/v1` JSON payload.
     pub report_json: String,
 }
 
 /// One decoded OPC member in an inspect decode response.
 #[napi(object)]
 pub struct InspectDecodedPart {
+    /// OPC member path inside the package.
     pub path: String,
+    /// ZIP compression method identifier.
     pub compression_method: u16,
+    /// Compressed byte length stored in the archive.
     pub compressed_size: u32,
+    /// Uncompressed byte length declared in the archive.
     pub uncompressed_size: u32,
+    /// Decoded payload byte length after inflation.
     pub decoded_size: u32,
 }
 
 /// N-API container decode response.
 #[napi(object)]
 pub struct InspectDecodeResponse {
+    /// Detected container format.
     pub format: String,
+    /// Outer container label from Acorn detection.
     pub outer: String,
+    /// Inner payload label from Acorn detection.
     pub inner: String,
+    /// Per-member decode summaries for the package.
     pub parts: Vec<InspectDecodedPart>,
+    /// Serialized `panduck.report/v1` JSON payload.
     pub report_json: String,
 }
 
@@ -82,7 +101,7 @@ pub fn install_logger_log_file(path: String) -> Result<()> {
     logger::install_global_file_sink(&path).map_err(|error| Error::from_reason(error.to_string()))
 }
 
-/// Install a JSON lines file sink as the global console facade.
+/// Deprecated alias for [`install_logger_log_file`].
 #[deprecated(since = "0.1.0", note = "use `install_logger_log_file` instead")]
 #[napi]
 pub fn install_console_log_file(path: String) -> Result<()> {
