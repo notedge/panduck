@@ -1,6 +1,6 @@
 {
     "name": "@notedge/panduck",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Panduck document conversion bindings (Node-API + TypeScript)",
     "type": "module",
     "license": "MPL-2.0",
@@ -19,6 +19,7 @@
     "files": [
         "bin",
         "locales",
+        "readme.md",
         "src"
     ],
     "engines": {
@@ -29,6 +30,7 @@
         "test:e2e": "tsx --test tests/**/*.test.ts"
     },
     "dependencies": {
+        "@notedge/panduck-unknown-wasm32": "workspace:*",
         "@vmz/commander": "^0.2.0",
         "jiti": "^2.4.2"
     },
@@ -37,8 +39,7 @@
         "@notedge/panduck-darwin-x64": "workspace:*",
         "@notedge/panduck-linux-arm64": "workspace:*",
         "@notedge/panduck-linux-x64": "workspace:*",
-        "@notedge/panduck-win32-x64": "workspace:*",
-        "@notedge/panduck-unknown-wasm32": "workspace:*"
+        "@notedge/panduck-win32-x64": "workspace:*"
     },
     "devDependencies": {
         "@types/node": "^22.13.10",

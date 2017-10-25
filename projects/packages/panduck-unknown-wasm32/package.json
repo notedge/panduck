@@ -1,16 +1,14 @@
 {
     "name": "@notedge/panduck-unknown-wasm32",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Panduck wasm-pack artifact for wasm32-unknown-unknown",
     "type": "module",
     "license": "MPL-2.0",
-    "cpu": [
-        "wasm32"
-    ],
     "main": "./lib/panduck_wasm.js",
     "types": "./lib/panduck_wasm.d.ts",
     "files": [
-        "lib"
+        "lib",
+        "readme.md"
     ],
     "sideEffects": [
         "./lib/panduck_wasm.js"
