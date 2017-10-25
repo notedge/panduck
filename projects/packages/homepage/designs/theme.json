@@ -1,3 +1,4 @@
 {
-    "extends": "./themes/default.json"
+    "default": "default",
+    "activationAttr": "data-theme"
 }

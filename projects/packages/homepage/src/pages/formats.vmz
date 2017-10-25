@@ -10,7 +10,7 @@
     <main>
       <h1>@notedge/panduck probe</h1>
       <p class="panduck-formats-page__lede">
-        WASM in the browser when `public/panduck_wasm_bg.wasm` is staged. Node self-test runs without a browser.
+        Live probe through `@notedge/panduck` only. WASM in the browser, Node bindings in CI and local verify.
       </p>
 
       <Card title="Probe results" description="Live binding capabilities.">

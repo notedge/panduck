@@ -1,4 +1,3 @@
-import { loadPanduckNode } from '@notedge/panduck/node';
 import { loadPanduckWasm } from '@notedge/panduck/wasm';
 
 export type PanduckProbe = {
@@ -9,7 +8,8 @@ export type PanduckProbe = {
 };
 
 /** Node probe for CI and local verify without a browser. */
-export function probePanduckNode(): PanduckProbe {
+export async function probePanduckNode(): Promise<PanduckProbe> {
+    const { loadPanduckNode } = await import('@notedge/panduck/node');
     const binding = loadPanduckNode();
     const formats = binding.supportedFormats();
     return {
@@ -20,15 +20,9 @@ export function probePanduckNode(): PanduckProbe {
     };
 }
 
-function browserWasmUrl(): URL | undefined {
-    if (typeof location === 'undefined') return undefined;
-    return new URL('/panduck_wasm_bg.wasm', location.origin);
-}
-
-/** Browser WASM probe with optional staged public wasm URL. */
+/** Browser WASM probe via `@notedge/panduck/wasm`. */
 export async function probePanduckWasm(): Promise<PanduckProbe> {
-    const url = browserWasmUrl();
-    const binding = await loadPanduckWasm(url ? { url } : {});
+    const binding = await loadPanduckWasm();
     const formats = binding.supportedFormats();
     return {
         version: binding.panduckVersion(),
