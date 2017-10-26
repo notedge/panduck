@@ -6,7 +6,8 @@ Syntax and container diagnostics belong to Oak and Acorn. Semantic loss belongs 
 
 ## AdapterError
 
-Fatal failure in a Panduck reader, writer, or orchestration step. Variants cover I/O, invalid input, unsupported formats, and missing adapter capabilities.
+Fatal failure in a Panduck reader, writer, or orchestration step. Variants cover I/O, invalid input, unsupported
+formats, and missing adapter capabilities.
 
 ## Result
 
