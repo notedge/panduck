@@ -36,6 +36,9 @@ importers:
 
   projects/packages/panduck:
     dependencies:
+      '@notedge/panduck-unknown-wasm32':
+        specifier: workspace:*
+        version: link:../panduck-unknown-wasm32
       '@vmz/commander':
         specifier: ^0.2.0
         version: 0.2.7
@@ -55,9 +58,6 @@ importers:
       '@notedge/panduck-linux-x64':
         specifier: workspace:*
         version: link:../panduck-linux-x64
-      '@notedge/panduck-unknown-wasm32':
-        specifier: workspace:*
-        version: link:../panduck-unknown-wasm32
       '@notedge/panduck-win32-x64':
         specifier: workspace:*
         version: link:../panduck-win32-x64
