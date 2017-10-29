@@ -25,10 +25,10 @@ acorn-docx = { git = "https://github.com/yggdrasil-language/acorn.rs.git", branc
 panduck-wasm = { path = "projects/crates/panduck-wasm" }
 
 # CI resolves git `branch = "dev"`. Local path overlay: `.cargo/config.toml` (gitignored).
-oak-core = { git = "https://github.com/yggdrasil-language/oaks.git", branch = "dev" }
-oak-navigation = { git = "https://github.com/yggdrasil-language/oaks.git", branch = "dev" }
-oak-markdown = { git = "https://github.com/yggdrasil-language/oaks.git", branch = "dev", default-features = false, features = ["serde"] }
-oak-rst = { git = "https://github.com/yggdrasil-language/oaks.git", branch = "dev", default-features = false, features = ["serde"] }
+oak-core = { git = "https://github.com/yggdrasil-language/oak.rs.git", branch = "dev" }
+oak-navigation = { git = "https://github.com/yggdrasil-language/oak.rs.git", branch = "dev" }
+oak-markdown = { git = "https://github.com/yggdrasil-language/oak.rs.git", branch = "dev", default-features = false, features = ["serde"] }
+oak-rst = { git = "https://github.com/yggdrasil-language/oak.rs.git", branch = "dev", default-features = false, features = ["serde"] }
 notedown-ir = { git = "https://github.com/notedge/notedown.git", branch = "dev" }
 notedown-formats = { git = "https://github.com/notedge/notedown.git", branch = "dev", default-features = true }
 serde = { version = "1.0", features = ["derive"] }
