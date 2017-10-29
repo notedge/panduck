@@ -21,8 +21,8 @@ importers:
   projects/packages/homepage:
     dependencies:
       '@notedge/panduck':
-        specifier: workspace:*
-        version: link:../panduck
+        specifier: 0.0.2
+        version: 0.0.2
       '@vmz/core':
         specifier: 0.2.7
         version: 0.2.7
@@ -276,6 +276,39 @@ packages:
   '@napi-rs/cli@2.18.4':
     resolution: {integrity: sha512-SgJeA4df9DE2iAEpr3M2H0OKl/yjtg1BnRI5/JyowS71tUWhrfSu2LT0V3vlHET+g1hBVlrO60PmEXwUEKp8Mg==}
     engines: {node: '>= 10'}
+    hasBin: true
+
+  '@notedge/panduck-darwin-arm64@0.0.2':
+    resolution: {integrity: sha512-xyzD8x3meM+zl7H9CjPGsGuO2SX+r8EC632nipZcskWmEU7oZ+vpHrYWy+NQBpm1lH35ghtbz5gqfCJfqiBL9Q==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@notedge/panduck-darwin-x64@0.0.2':
+    resolution: {integrity: sha512-ctZrKKN1Wxhu7omelinzuCxaz7rp6Hr1OclH8g1avlXf3R2mmsw9iiO+8i+jx8FKbHFpAUX7Mrhfdzkd+qBPug==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@notedge/panduck-linux-arm64@0.0.2':
+    resolution: {integrity: sha512-YcKp9w0ZL7R03RMESmpR/wud/SSmXoGVi7mPjxWKKUCfi7OUiNps8LDe9OWxSxxVvrKRVNTFsLjbbexmwsMVVA==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@notedge/panduck-linux-x64@0.0.2':
+    resolution: {integrity: sha512-wdo3j9y7kQVijsqIfmaKu3VzQ9FI7UyPZKqpmZrFODb4pkZWXEmmfAylsL1QJau0/koYcEqkEXUCRCF8K/lN9g==}
+    cpu: [x64]
+    os: [linux]
+
+  '@notedge/panduck-unknown-wasm32@0.0.2':
+    resolution: {integrity: sha512-oz+GBF8ZdrI2+sPwh+PdoQIeensgWrzLuA/8j+ru/ifnGRdXNqi6QElzS1gqhlCU5Q9cz8FwxeyRTFsy5+O33g==}
+
+  '@notedge/panduck-win32-x64@0.0.2':
+    resolution: {integrity: sha512-CZ6e311ydfyZ6KdcCTgUeHugUZmQMZo7nZvLvVyRwDwjfog8tKRATEBBhQKv7mKKgRb+Fu9cYpzihbrFUttIuw==}
+    cpu: [x64]
+    os: [win32]
+
+  '@notedge/panduck@0.0.2':
+    resolution: {integrity: sha512-AkHS132p03CpgvZj3/lnHf3bgjD5vpYclneufXlg995OlFGIRg6g6Cv2L/K2CRiYk4aJXCo1qsvpYnQtZwQGig==}
+    engines: {node: '>=20'}
     hasBin: true
 
   '@types/node@22.20.4':
@@ -564,6 +597,35 @@ snapshots:
     optional: true
 
   '@napi-rs/cli@2.18.4': {}
+
+  '@notedge/panduck-darwin-arm64@0.0.2':
+    optional: true
+
+  '@notedge/panduck-darwin-x64@0.0.2':
+    optional: true
+
+  '@notedge/panduck-linux-arm64@0.0.2':
+    optional: true
+
+  '@notedge/panduck-linux-x64@0.0.2':
+    optional: true
+
+  '@notedge/panduck-unknown-wasm32@0.0.2': {}
+
+  '@notedge/panduck-win32-x64@0.0.2':
+    optional: true
+
+  '@notedge/panduck@0.0.2':
+    dependencies:
+      '@notedge/panduck-unknown-wasm32': 0.0.2
+      '@vmz/commander': 0.2.7
+      jiti: 2.7.0
+    optionalDependencies:
+      '@notedge/panduck-darwin-arm64': 0.0.2
+      '@notedge/panduck-darwin-x64': 0.0.2
+      '@notedge/panduck-linux-arm64': 0.0.2
+      '@notedge/panduck-linux-x64': 0.0.2
+      '@notedge/panduck-win32-x64': 0.0.2
 
   '@types/node@22.20.4':
     dependencies:
