@@ -5,11 +5,29 @@
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use panduck_convert::{
-    convert_file, inspect_docx_decode, inspect_docx_index, supported_routes, supports_route,
+    convert_file, convert_markdown_project_file, inspect_docx_decode, inspect_docx_index, supported_routes,
+    supports_markdown_project_source, supports_route,
 };
 use panduck_types::AdapterError;
 
-const FORMATS: [&str; 6] = ["markdown", "org", "rst", "tex", "docx", "epub"];
+const FORMATS: [&str; 9] = ["markdown", "html", "org", "rst", "tex", "doc", "docx", "epub", "pdf"];
+
+/// N-API Markdown project conversion response.
+#[napi(object)]
+pub struct ConvertProjectResponse {
+    /// Process exit code. Zero means success.
+    pub exit_code: u32,
+    /// Primary Markdown body written to `index.md`.
+    pub index_markdown: String,
+    /// Project-relative asset paths that were materialized.
+    pub published_assets: Vec<String>,
+    /// Image sources left unresolved in the Markdown body.
+    pub unresolved_assets: Vec<String>,
+    /// Output directory root.
+    pub output_dir: String,
+    /// Serialized `panduck.report/v1` JSON payload.
+    pub report_json: String,
+}
 
 /// N-API conversion response.
 #[napi(object)]
@@ -18,6 +36,8 @@ pub struct ConvertResponse {
     pub exit_code: u32,
     /// Text output for text targets such as `markdown`.
     pub markdown: Option<String>,
+    /// HTML output for the HTML target.
+    pub html: Option<String>,
     /// Binary output for container targets such as `docx`.
     pub binary: Option<Buffer>,
     /// Serialized `panduck.report/v1` JSON payload.
@@ -191,6 +211,27 @@ pub fn inspect_decode(input_path: String, part_path: Option<String>) -> Result<I
     })
 }
 
+/// Returns whether a source format can be converted into a Markdown project.
+#[napi]
+pub fn supports_markdown_project(from: String) -> bool {
+    supports_markdown_project_source(&from)
+}
+
+/// Converts a document file into a Markdown project directory.
+#[napi]
+pub fn convert_markdown_project(from: String, input_path: String, output_dir: String) -> Result<ConvertProjectResponse> {
+    let (output, published) =
+        convert_markdown_project_file(&from, &input_path, &output_dir).map_err(map_adapter_error)?;
+    Ok(ConvertProjectResponse {
+        exit_code: 0,
+        index_markdown: output.index_markdown,
+        published_assets: output.published_assets,
+        unresolved_assets: output.unresolved_assets,
+        output_dir: published.output_dir.display().to_string(),
+        report_json: output.report_json,
+    })
+}
+
 /// Converts a document file through the Panduck IR pipeline.
 #[napi]
 pub fn convert_document(from: String, to: String, input_path: String) -> Result<ConvertResponse> {
@@ -202,6 +243,7 @@ pub fn convert_document(from: String, to: String, input_path: String) -> Result<
         } else {
             Some(output.markdown)
         },
+        html: output.html,
         binary: output.binary.map(Buffer::from),
         report_json: output.report_json,
     })
