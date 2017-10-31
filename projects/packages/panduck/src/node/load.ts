@@ -11,7 +11,17 @@ type NativeBinding = {
     convertDocument?: (from: string, to: string, inputPath: string) => {
         exitCode: number;
         markdown?: string;
+        html?: string;
         binary?: Uint8Array;
+        reportJson: string;
+    };
+    supportsMarkdownProject?: (from: string) => boolean;
+    convertMarkdownProject?: (from: string, inputPath: string, outputDir: string) => {
+        exitCode: number;
+        indexMarkdown: string;
+        publishedAssets: string[];
+        unresolvedAssets: string[];
+        outputDir: string;
         reportJson: string;
     };
     inspectIndex?: (inputPath: string) => {
@@ -71,9 +81,26 @@ export function loadPanduckNode(): PanduckBindings {
                   return {
                       exitCode: response.exitCode,
                       markdown: response.markdown,
+                      html: response.html,
                       binary: response.binary
                           ? new Uint8Array(response.binary)
                           : undefined,
+                      reportJson: response.reportJson,
+                  };
+              }
+            : undefined,
+        supportsMarkdownProject: binding.supportsMarkdownProject
+            ? (from) => binding.supportsMarkdownProject!(from)
+            : undefined,
+        convertMarkdownProject: binding.convertMarkdownProject
+            ? (from, inputPath, outputDir) => {
+                  const response = binding.convertMarkdownProject!(from, inputPath, outputDir);
+                  return {
+                      exitCode: response.exitCode,
+                      indexMarkdown: response.indexMarkdown,
+                      publishedAssets: response.publishedAssets,
+                      unresolvedAssets: response.unresolvedAssets,
+                      outputDir: response.outputDir,
                       reportJson: response.reportJson,
                   };
               }

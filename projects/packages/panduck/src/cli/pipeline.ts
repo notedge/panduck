@@ -216,6 +216,84 @@ function blocked(
     return { exitCode: ExitCode.IrOrWriterFailure, report };
 }
 
+export async function runMarkdownProjectPipeline(input: {
+    ctx: CliContext;
+    bindings: PanduckBindings;
+    inputPath: string;
+    outputDir: string;
+    resolved: ResolvedFormats;
+    shared: SharedCliOptions;
+    toolVersion: string;
+}): Promise<PipelineResult> {
+    const { bindings, inputPath, outputDir, resolved, shared, ctx, toolVersion } = input;
+    const from = resolved.from;
+    if (!from) {
+        throw new Error("markdown project conversion requires resolved source format");
+    }
+
+    if (!bindings.convertMarkdownProject || !bindings.supportsMarkdownProject) {
+        return blocked(
+            ctx,
+            "convert",
+            inputPath,
+            resolved,
+            shared,
+            "native convertMarkdownProject binding is missing",
+        );
+    }
+
+    if (!bindings.supportsMarkdownProject(from)) {
+        return blocked(
+            ctx,
+            "convert",
+            inputPath,
+            resolved,
+            shared,
+            `source format ${from} does not support markdown project export`,
+        );
+    }
+
+    const response = bindings.convertMarkdownProject(from, inputPath, outputDir);
+    const parsedReport = safeParseReport(response.reportJson);
+    const lossCount = Array.isArray(parsedReport?.losses) ? parsedReport.losses.length : 0;
+    const unresolvedCount = response.unresolvedAssets.length;
+    const status =
+        lossCount > 0 || unresolvedCount > 0 ? "success_with_loss" : "success";
+    let exitCode: number = ExitCode.Success;
+    if (shared.strict || shared.loss === "deny") {
+        if (lossCount > 0 || unresolvedCount > 0 || status === "success_with_loss") {
+            exitCode = ExitCode.LossPolicyViolation;
+        }
+    }
+
+    const report = createReport({
+        operation: "convert",
+        toolVersion,
+        status,
+        inputs: [{ path: inputPath, format: from }],
+        detection: { format: from, confidence: "verified", hints: resolved.hints },
+        pipeline: {
+            reader: from,
+            writer: "markdown-project",
+            stages: ["read", "ir", "write", "materialize", "publish"],
+        },
+        losses: parsedReport?.losses as PanduckReport["losses"],
+        outputs: [
+            { path: join(outputDir, "index.md"), published: true },
+            ...response.publishedAssets.map((asset) => ({
+                path: join(outputDir, asset),
+                published: true,
+            })),
+            { path: join(outputDir, "panduck.report.json"), published: true },
+        ],
+        budgets: shared.budgets,
+        determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
+        statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: exitCode },
+    });
+
+    return { exitCode, report };
+}
+
 export async function emitPipelineResult(
     result: PipelineResult,
     shared: SharedCliOptions,

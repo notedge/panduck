@@ -1,7 +1,17 @@
 export type ConvertResponse = {
     exitCode: number;
     markdown?: string;
+    html?: string;
     binary?: Uint8Array;
+    reportJson: string;
+};
+
+export type ConvertProjectResponse = {
+    exitCode: number;
+    indexMarkdown: string;
+    publishedAssets: string[];
+    unresolvedAssets: string[];
+    outputDir: string;
     reportJson: string;
 };
 
@@ -37,6 +47,8 @@ export type PanduckBindings = {
     supportsConversion?: (from: string, to: string) => boolean;
     supportedConversions?: () => string[];
     convertDocument?: (from: string, to: string, inputPath: string) => ConvertResponse;
+    supportsMarkdownProject?: (from: string) => boolean;
+    convertMarkdownProject?: (from: string, inputPath: string, outputDir: string) => ConvertProjectResponse;
     inspectIndex?: (inputPath: string) => InspectIndexResponse;
     inspectDecode?: (inputPath: string, partPath?: string) => InspectDecodeResponse;
     installLoggerLogFile?: (path: string) => void;
