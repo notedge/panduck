@@ -3,6 +3,7 @@ use std::fs;
 use notedown_formats::import::markdown::import_markdown_bytes;
 use notedown_ir::{Block, Inline};
 use panduck_convert::convert_to_markdown_project;
+use panduck_convert::supports_markdown_project_source;
 
 fn stored_zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
     let mut archive = Vec::new();
@@ -129,6 +130,72 @@ fn docx_to_markdown_project_writes_index_assets_and_report() {
                         && matches!(&children[0], Inline::Text { text } if text == "Logo")
                         && matches!(&children[1], Inline::Text { text } if text == "assets/logo.png")
             ))
+    )));
+
+    let _ = fs::remove_dir_all(&output_dir);
+}
+
+fn minimal_epub_zip() -> Vec<u8> {
+    let container = br#"<?xml version="1.0" encoding="UTF-8"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+  <rootfiles>
+    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+  </rootfiles>
+</container>"#;
+    let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Sample Book</dc:title>
+    <dc:language>en</dc:language>
+  </metadata>
+  <manifest>
+    <item id="ch1" href="chapter.xhtml" media-type="application/xhtml+xml"/>
+  </manifest>
+  <spine>
+    <itemref idref="ch1"/>
+  </spine>
+</package>"#;
+    stored_zip(&[
+        ("mimetype", b"application/epub+zip"),
+        ("META-INF/container.xml", container),
+        ("OEBPS/content.opf", opf),
+        (
+            "OEBPS/chapter.xhtml",
+            br#"<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <body>
+    <h1>Chapter One</h1>
+    <p>Hello EPUB</p>
+  </body>
+</html>"#,
+        ),
+    ])
+}
+
+#[test]
+fn epub_to_markdown_project_writes_index_and_reopens_semantics() {
+    assert!(supports_markdown_project_source("epub"));
+    let output_dir = std::env::temp_dir().join(format!("panduck-epub-project-{}", std::process::id()));
+    let (output, published) =
+        convert_to_markdown_project("epub", "book.epub", minimal_epub_zip(), &output_dir).expect("convert epub project");
+
+    assert!(output.index_markdown.contains("# Chapter One"));
+    assert!(output.index_markdown.contains("Hello EPUB"));
+    assert!(output.published_assets.is_empty());
+    assert!(published.index_path.exists());
+
+    let index = fs::read_to_string(published.index_path).expect("read index.md");
+    let reopened = import_markdown_bytes("index.md", &index).expect("reopen markdown");
+    assert!(reopened.validate().is_valid());
+    assert!(reopened.blocks.iter().any(|node| matches!(
+        &node.block,
+        Block::Section { title, .. }
+            if title.iter().any(|inline| matches!(inline, Inline::Text { text } if text == "Chapter One"))
+    )));
+    assert!(reopened.blocks.iter().any(|node| matches!(
+        &node.block,
+        Block::Paragraph { content }
+            if content.iter().any(|inline| matches!(inline, Inline::Text { text } if text == "Hello EPUB"))
     )));
 
     let _ = fs::remove_dir_all(&output_dir);
