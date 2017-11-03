@@ -26,11 +26,13 @@ pub struct PublishedMarkdownProject {
     pub index_path: PathBuf,
     /// Written asset paths relative to `output_dir`.
     pub asset_paths: Vec<String>,
+    /// Written chapter paths relative to `output_dir`.
+    pub chapter_paths: Vec<String>,
     /// Written `panduck.report.json` path.
     pub report_path: PathBuf,
 }
 
-/// Writes `index.md`, `assets/*`, and `panduck.report.json` under `output_dir`.
+/// Writes `index.md`, optional `chapters/*`, `assets/*`, and `panduck.report.json` under `output_dir`.
 pub fn publish_markdown_project(
     output_dir: impl AsRef<Path>,
     project: &MarkdownProject,
@@ -45,6 +47,17 @@ pub fn publish_markdown_project(
 
     let index_path = output_dir.join("index.md");
     publish_text(&index_path, &project.index_markdown)?;
+
+    let mut chapter_paths = Vec::with_capacity(project.chapters.len());
+    for chapter in &project.chapters {
+        let chapter_path = output_dir.join(&chapter.relative_path);
+        if let Some(parent) = chapter_path.parent() {
+            fs::create_dir_all(parent)
+                .map_err(|error| AdapterError::io(error, Some(parent.display().to_string())))?;
+        }
+        publish_text(&chapter_path, &chapter.markdown)?;
+        chapter_paths.push(chapter.relative_path.clone());
+    }
 
     let mut asset_paths = Vec::with_capacity(project.assets.len());
     for asset in &project.assets {
@@ -63,6 +76,7 @@ pub fn publish_markdown_project(
     Ok(PublishedMarkdownProject {
         output_dir: output_dir.to_path_buf(),
         index_path,
+        chapter_paths,
         asset_paths,
         report_path,
     })

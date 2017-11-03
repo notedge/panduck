@@ -126,6 +126,8 @@ pub struct ConvertProjectOutput {
     pub index_markdown: String,
     /// Project-relative asset paths that were materialized.
     pub published_assets: Vec<String>,
+    /// Project-relative chapter paths that were materialized.
+    pub published_chapters: Vec<String>,
     /// Image sources left unresolved in the Markdown body.
     pub unresolved_assets: Vec<String>,
     /// Serialized `panduck.report/v1` JSON payload.
@@ -233,6 +235,15 @@ fn build_convert_project_output(
     }
     let diagnostic_envelope = DiagnosticEnvelope::from_set(&diagnostic_set);
     let published_assets: Vec<String> = project.assets.iter().map(|asset| asset.relative_path.clone()).collect();
+    let published_chapters: Vec<String> = project.chapters.iter().map(|chapter| chapter.relative_path.clone()).collect();
+    let mut outputs = vec![
+        serde_json::json!({ "path": "index.md", "format": "markdown", "published": true }),
+        serde_json::json!({ "path": "assets/", "format": "assets", "published_asset_count": published_assets.len() }),
+    ];
+    for chapter in &published_chapters {
+        outputs.push(serde_json::json!({ "path": chapter, "format": "markdown", "published": true }));
+    }
+    outputs.push(serde_json::json!({ "path": "panduck.report.json", "format": "report", "published": true }));
     let report_json = serde_json::json!({
         "schema_version": "panduck.report/v1",
         "operation": "convert_project",
@@ -242,11 +253,7 @@ fn build_convert_project_output(
         "coverage": graph.coverage,
         "losses": graph.coverage.loss,
         "diagnostics": diagnostic_envelope,
-        "outputs": [
-            { "path": "index.md", "format": "markdown", "published": true },
-            { "path": "assets/", "format": "assets", "published_asset_count": published_assets.len() },
-            { "path": "panduck.report.json", "format": "report", "published": true }
-        ],
+        "outputs": outputs,
         "unresolved_assets": project.unresolved_asset_sources,
     })
     .to_string();
@@ -254,6 +261,7 @@ fn build_convert_project_output(
     ConvertProjectOutput {
         index_markdown: project.index_markdown.clone(),
         published_assets,
+        published_chapters,
         unresolved_assets: project.unresolved_asset_sources.clone(),
         report_json,
         loss_count,
