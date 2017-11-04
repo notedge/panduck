@@ -280,6 +280,10 @@ export async function runMarkdownProjectPipeline(input: {
         losses: parsedReport?.losses as PanduckReport["losses"],
         outputs: [
             { path: join(outputDir, "index.md"), published: true },
+            ...response.publishedChapters.map((chapter) => ({
+                path: join(outputDir, chapter),
+                published: true,
+            })),
             ...response.publishedAssets.map((asset) => ({
                 path: join(outputDir, asset),
                 published: true,

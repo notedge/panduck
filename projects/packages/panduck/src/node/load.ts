@@ -20,6 +20,7 @@ type NativeBinding = {
         exitCode: number;
         indexMarkdown: string;
         publishedAssets: string[];
+        publishedChapters: string[];
         unresolvedAssets: string[];
         outputDir: string;
         reportJson: string;
@@ -99,6 +100,7 @@ export function loadPanduckNode(): PanduckBindings {
                       exitCode: response.exitCode,
                       indexMarkdown: response.indexMarkdown,
                       publishedAssets: response.publishedAssets,
+                      publishedChapters: response.publishedChapters,
                       unresolvedAssets: response.unresolvedAssets,
                       outputDir: response.outputDir,
                       reportJson: response.reportJson,

@@ -21,6 +21,8 @@ pub struct ConvertProjectResponse {
     pub index_markdown: String,
     /// Project-relative asset paths that were materialized.
     pub published_assets: Vec<String>,
+    /// Project-relative chapter paths that were materialized.
+    pub published_chapters: Vec<String>,
     /// Image sources left unresolved in the Markdown body.
     pub unresolved_assets: Vec<String>,
     /// Output directory root.
@@ -226,6 +228,7 @@ pub fn convert_markdown_project(from: String, input_path: String, output_dir: St
         exit_code: 0,
         index_markdown: output.index_markdown,
         published_assets: output.published_assets,
+        published_chapters: output.published_chapters,
         unresolved_assets: output.unresolved_assets,
         output_dir: published.output_dir.display().to_string(),
         report_json: output.report_json,
