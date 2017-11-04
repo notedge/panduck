@@ -201,6 +201,65 @@ fn epub_to_markdown_project_writes_index_and_reopens_semantics() {
     let _ = fs::remove_dir_all(&output_dir);
 }
 
+fn epub_with_image_zip() -> Vec<u8> {
+    let container = br#"<?xml version="1.0" encoding="UTF-8"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+  <rootfiles>
+    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+  </rootfiles>
+</container>"#;
+    let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Image Book</dc:title>
+    <dc:language>en</dc:language>
+  </metadata>
+  <manifest>
+    <item id="cover" href="images/cover.png" media-type="image/png" properties="cover-image"/>
+    <item id="ch1" href="chapter.xhtml" media-type="application/xhtml+xml"/>
+  </manifest>
+  <spine>
+    <itemref idref="ch1"/>
+  </spine>
+</package>"#;
+    stored_zip(&[
+        ("mimetype", b"application/epub+zip"),
+        ("META-INF/container.xml", container),
+        ("OEBPS/content.opf", opf),
+        (
+            "OEBPS/chapter.xhtml",
+            br#"<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <body>
+    <p>Before image</p>
+    <img src="images/cover.png" alt="Cover art"/>
+  </body>
+</html>"#,
+        ),
+        ("OEBPS/images/cover.png", b"\x89PNG\r\n"),
+    ])
+}
+
+#[test]
+fn epub_to_markdown_project_materializes_chapter_image() {
+    let output_dir = std::env::temp_dir().join(format!("panduck-epub-image-project-{}", std::process::id()));
+    let (output, published) = convert_to_markdown_project(
+        "epub",
+        "image.epub",
+        epub_with_image_zip(),
+        &output_dir,
+    )
+    .expect("convert epub project");
+
+    assert!(output.published_chapters.is_empty());
+    assert_eq!(output.published_assets, vec!["assets/cover.png".to_string()]);
+    let index = fs::read_to_string(published.index_path).expect("read index.md");
+    assert!(index.contains("![Cover art](assets/cover.png)"));
+    assert_eq!(fs::read(output_dir.join("assets/cover.png")).expect("read asset"), b"\x89PNG\r\n");
+
+    let _ = fs::remove_dir_all(&output_dir);
+}
+
 fn multi_chapter_epub_zip() -> Vec<u8> {
     let container = br#"<?xml version="1.0" encoding="UTF-8"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
