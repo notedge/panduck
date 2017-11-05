@@ -361,6 +361,57 @@ fn html_to_markdown_project_writes_index_and_reopens_semantics() {
     let _ = fs::remove_dir_all(&output_dir);
 }
 
+fn minimal_legacy_doc_bytes(text: &str) -> Vec<u8> {
+    use std::io::{Cursor, Write};
+
+    let mut word_document = vec![0u8; 32];
+    word_document[0..2].copy_from_slice(&[0xec, 0xa5]);
+    let text_bytes = text.as_bytes();
+    let fc_min = 32u32;
+    let fc_mac = fc_min + text_bytes.len() as u32;
+    word_document.extend_from_slice(text_bytes);
+    word_document[24..28].copy_from_slice(&fc_min.to_le_bytes());
+    word_document[28..32].copy_from_slice(&fc_mac.to_le_bytes());
+
+    let mut buffer = Cursor::new(Vec::new());
+    let mut compound = cfb::CompoundFile::create(&mut buffer).expect("create OLE compound file");
+    {
+        let mut stream = compound.create_stream("/WordDocument").expect("WordDocument stream");
+        stream.write_all(&word_document).expect("write WordDocument");
+    }
+    {
+        let mut stream = compound.create_stream("/0Table").expect("0Table stream");
+        stream.write_all(&[]).expect("write 0Table");
+    }
+    compound.flush().expect("flush compound file");
+    buffer.into_inner()
+}
+
+#[test]
+fn doc_to_markdown_project_writes_index_and_reopens_text() {
+    assert!(supports_markdown_project_source("doc"));
+    let output_dir = std::env::temp_dir().join(format!("panduck-doc-project-{}", std::process::id()));
+    let bytes = minimal_legacy_doc_bytes("Hello legacy DOC\rSecond paragraph");
+    let (output, published) =
+        convert_to_markdown_project("doc", "sample.doc", bytes, &output_dir).expect("convert doc project");
+
+    assert!(output.index_markdown.contains("Hello legacy DOC"));
+    assert!(output.published_chapters.is_empty());
+    assert!(output.loss_count > 0);
+    assert!(output.report_json.contains("convert_project"));
+    assert!(published.index_path.exists());
+
+    let index = fs::read_to_string(published.index_path).expect("read index.md");
+    let reopened = import_markdown_bytes("index.md", &index).expect("reopen markdown");
+    assert!(reopened.blocks.iter().any(|node| matches!(
+        &node.block,
+        Block::Paragraph { content }
+            if content.iter().any(|inline| matches!(inline, Inline::Text { text } if text == "Second paragraph"))
+    )));
+
+    let _ = fs::remove_dir_all(&output_dir);
+}
+
 #[test]
 fn pdf_to_markdown_project_writes_index_and_reopens_text() {
     use panduck_convert::convert_bytes;
