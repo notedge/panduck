@@ -30,7 +30,7 @@ oak-navigation = { git = "https://github.com/yggdrasil-language/oak.rs.git", bra
 oak-markdown = { git = "https://github.com/yggdrasil-language/oak.rs.git", branch = "dev", default-features = false, features = ["serde"] }
 oak-rst = { git = "https://github.com/yggdrasil-language/oak.rs.git", branch = "dev", default-features = false, features = ["serde"] }
 notedown-ir = { git = "https://github.com/notedge/notedown.git", branch = "dev" }
-notedown-formats = { git = "https://github.com/notedge/notedown.git", branch = "dev", default-features = true }
+notedown-formats = { git = "https://github.com/notedge/notedown.git", branch = "dev", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 url = { version = "2.5.7", features = ["serde"] }
