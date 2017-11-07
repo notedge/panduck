@@ -1,3 +1,4 @@
+use notedown_formats::import::markdown::import_markdown_bytes;
 use panduck_convert::convert_bytes;
 
 fn stored_zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
@@ -105,4 +106,45 @@ fn epub_to_markdown_route() {
     assert!(output.markdown.contains("Hello EPUB"));
     assert!(output.report_json.contains("panduck.report/v1"));
     assert!(output.report_json.contains("epub"));
+}
+
+#[test]
+fn epub_to_markdown_route_reopens_with_ir_semantics_and_loss_report() {
+    let output = convert_bytes("epub", "markdown", "book.epub", minimal_epub_zip()).expect("convert epub");
+    let reopened = import_markdown_bytes("book.md", &output.markdown).expect("reopen markdown");
+    assert!(reopened.validate().is_valid());
+    assert!(reopened.blocks.iter().any(|node| matches!(
+        &node.block,
+        notedown_ir::Block::Section { title, .. }
+            if title.iter().any(|inline| matches!(inline, notedown_ir::Inline::Text { text } if text == "Chapter One"))
+    )));
+    assert!(reopened.blocks.iter().any(|node| matches!(
+        &node.block,
+        notedown_ir::Block::Paragraph { content }
+            if content.iter().any(|inline| matches!(inline, notedown_ir::Inline::Text { text } if text == "Hello EPUB"))
+    )));
+    assert!(output.loss_count > 0);
+    assert!(output.report_json.contains("success_with_loss"));
+}
+
+#[test]
+fn epub_to_docx_route_reopens_semantic_content() {
+    let output = convert_bytes("epub", "docx", "book.epub", minimal_epub_zip()).expect("convert epub");
+    let reopened = notedown_formats::import::docx::import_docx_bytes(
+        "book.docx", &output.binary.expect("docx output")
+    ).expect("reopen docx");
+    assert!(reopened.validate().is_valid());
+    assert!(reopened.blocks.iter().any(|node| matches!(
+        &node.block,
+        notedown_ir::Block::Section { title, .. }
+            if title == &[notedown_ir::Inline::Text { text: "Chapter One".into() }]
+    )), "{:?}", reopened.blocks);
+    assert!(reopened.blocks.iter().any(|node| matches!(
+        &node.block,
+        notedown_ir::Block::Paragraph { content }
+            if content == &[notedown_ir::Inline::Text { text: "Hello EPUB".into() }]
+    )));
+    let report: serde_json::Value = serde_json::from_str(&output.report_json).expect("report");
+    assert_eq!(report["status"], "success_with_loss");
+    assert!(report["losses"].as_array().expect("losses").iter().any(|loss| loss["code"] == "import.epub.partial_coverage"));
 }
