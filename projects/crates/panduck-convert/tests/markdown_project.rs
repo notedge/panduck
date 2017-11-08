@@ -400,6 +400,8 @@ fn doc_to_markdown_project_writes_index_and_reopens_text() {
     assert!(output.loss_count > 0);
     assert!(output.report_json.contains("convert_project"));
     assert!(published.index_path.exists());
+    assert!(published.report_path.exists());
+    assert!(published.report_path.ends_with("panduck.report.json"));
 
     let index = fs::read_to_string(published.index_path).expect("read index.md");
     let reopened = import_markdown_bytes("index.md", &index).expect("reopen markdown");
