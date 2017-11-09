@@ -1,14 +1,19 @@
 # Copy to `config.toml` (gitignored) when sibling repos exist.
-[patch."https://github.com/yggdrasil-language/acorn.rs.git"]
-acorn-diagnostic = { path = "../acorn.rs/projects/acorn-diagnostic" }
-acorn-core = { path = "../acorn.rs/projects/acorn-core" }
-acorn-source = { path = "../acorn.rs/projects/acorn-source" }
 
-[patch."https://github.com/yggdrasil-language/oak.rs.git"]
-oak-core = { path = "../oaks/projects/oak-core" }
-oak-navigation = { path = "../oaks/projects/oak-navigation" }
-oak-markdown = { path = "../oaks/examples/oak-markdown" }
-oak-rst = { path = "../oaks/examples/oak-rst" }
+[patch."https://github.com/yggdrasil-language/acorn.rs.git"]
+acorn-core = { path = "../acorn.rs/projects/acorn-core" }
+acorn-cfb = { path = "../acorn.rs/examples/acorn-cfb" }
+acorn-doc = { path = "../acorn.rs/examples/acorn-doc" }
+acorn-docx = { path = "../acorn.rs/examples/acorn-docx" }
+acorn-epub = { path = "../acorn.rs/examples/acorn-epub" }
 
 [patch."https://github.com/notedge/notedown.git"]
 notedown-ir = { path = "../notedown/projects/crates/notedown-ir" }
+notedown-formats = { path = "../notedown/projects/crates/notedown-formats" }
+
+[patch."https://github.com/yggdrasil-language/oak.rs.git"]
+oak-core = { path = "../oaks/projects/oak-core" }
+oak-markdown = { path = "../oaks/examples/oak-markdown" }
+oak-notedown = { path = "../oaks/examples/oak-notedown" }
+oak-html = { path = "../oaks/examples/oak-html" }
+oak-xml = { path = "../oaks/examples/oak-xml" }
