@@ -1,22 +1,14 @@
 # @notedge/panduck-win32-x64
 
-Prebuilt Node-API binary for **Windows x64**. `@notedge/panduck` loads this package automatically on `win32` + `x64` through an optional dependency.
-
-## 📦 Install
+The Windows piece Panduck needs to run fast on 64-bit PCs. You
+install [@notedge/panduck](https://www.npmjs.com/package/@notedge/panduck), not this package name.
 
 ```bash
-npm install @notedge/panduck
+npm install -g @notedge/panduck
+panduck convert ./draft.docx --to markdown -o ./draft.md
 ```
 
-npm pulls `@notedge/panduck-win32-x64` when the host matches `os: win32` and `cpu: x64`.
-
-## 🔧 Mismatch diagnosis
-
-| Symptom | Likely cause |
-|---------|----------------|
-| `Unsupported platform for Panduck native bindings` | Wrong OS/CPU or optional dependency not installed |
-| Binding loads but convert fails | Run `npx panduck doctor` and check `supportsConversion` |
-
-Main package: https://www.npmjs.com/package/@notedge/panduck
+npm adds this helper automatically on `win32` + `x64`. If `panduck doctor` fails, make sure you did not run
+`npm install --omit=optional`.
 
 License: MPL-2.0

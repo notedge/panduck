@@ -1,5 +1,3 @@
-## Tests
+# tests
 
-```bash
-wee test
-```
+Integration tests for `panduck-types`. Run with `cargo test -p panduck-types`.

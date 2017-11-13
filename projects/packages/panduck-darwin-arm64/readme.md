@@ -1,21 +1,16 @@
 # @notedge/panduck-darwin-arm64
 
-Prebuilt Node-API binary for **macOS arm64 (Apple Silicon)**. `@notedge/panduck` loads this package automatically on `darwin` + `arm64` through an optional dependency.
+Native Node-API binary for Panduck on **Apple Silicon Macs** (`darwin` / `arm64`).
 
-## 📦 Install
+Install Panduck itself globally or in a project:
 
 ```bash
-npm install @notedge/panduck
+npm install -g @notedge/panduck
+panduck doctor
 ```
 
-npm pulls `@notedge/panduck-darwin-arm64` when the host matches `os: darwin` and `cpu: arm64`.
-
-## 🔧 Mismatch diagnosis
-
-| Symptom | Likely cause |
-|---------|----------------|
-| `Unsupported platform for Panduck native bindings` | Wrong OS/CPU or optional dependency not installed |
-| Binding loads but convert fails | Run `npx panduck doctor` and check `supportsConversion` |
+npm pulls `@notedge/panduck-darwin-arm64` automatically on M-series hardware. Do not add this package to your own
+dependencies unless you are repackaging Panduck.
 
 Main package: https://www.npmjs.com/package/@notedge/panduck
 

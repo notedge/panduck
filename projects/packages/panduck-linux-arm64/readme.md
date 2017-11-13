@@ -1,21 +1,12 @@
 # @notedge/panduck-linux-arm64
 
-Prebuilt Node-API binary for **Linux arm64**. `@notedge/panduck` loads this package automatically on `linux` + `arm64` through an optional dependency.
+Native Node-API binary for Panduck on **Linux aarch64** (ARM64 servers, many SBCs, ARM cloud instances).
 
-## 📦 Install
+`@notedge/panduck` selects this optional dependency when `process.platform === 'linux'` and `process.arch === 'arm64'`.
+Application projects should still list only `@notedge/panduck`; npm wires the matching `.node` file during install.
 
-```bash
-npm install @notedge/panduck
-```
-
-npm pulls `@notedge/panduck-linux-arm64` when the host matches `os: linux` and `cpu: arm64`.
-
-## 🔧 Mismatch diagnosis
-
-| Symptom | Likely cause |
-|---------|----------------|
-| `Unsupported platform for Panduck native bindings` | Wrong OS/CPU or optional dependency not installed |
-| Binding loads but convert fails | Run `npx panduck doctor` and check `supportsConversion` |
+If bindings fail to load, compare `uname -m` with the published optional packages and rerun install without omitting
+optional dependencies.
 
 Main package: https://www.npmjs.com/package/@notedge/panduck
 

@@ -6,7 +6,7 @@
  * Usage:
  *   npx @notedge/panduck-skills
  *   npx @notedge/panduck-skills -g
- *   npx @notedge/panduck-skills -a cursor -y
+ *   npx @notedge/panduck-skills -y
  *
  * Extra args are forwarded to `npx skills add`.
  */
@@ -24,7 +24,8 @@ if (userArgs.includes('--help') || userArgs.includes('-h')) {
 Usage:
   npx @notedge/panduck-skills
   npx @notedge/panduck-skills -g
-  npx @notedge/panduck-skills -a cursor -y
+  npx @notedge/panduck-skills -y
+  npx @notedge/panduck-skills -a <agent> -y
 
 This runs \`npx skills add <package-root> --skill panduck\` and forwards extra flags.
 `);

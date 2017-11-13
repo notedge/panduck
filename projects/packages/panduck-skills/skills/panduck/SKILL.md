@@ -42,7 +42,7 @@ Native speed on Node uses an optional platform package (`@notedge/panduck-win32-
 
 ```bash
 npx @notedge/panduck-skills
-npx @notedge/panduck-skills -a cursor -y
+npx @notedge/panduck-skills -y
 ```
 
 ## Quick start (Node)

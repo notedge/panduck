@@ -1,21 +1,9 @@
 # @notedge/panduck-darwin-x64
 
-Prebuilt Node-API binary for **macOS x64 (Intel)**. `@notedge/panduck` loads this package automatically on `darwin` + `x64` through an optional dependency.
+Native Node-API binary for Panduck on **Intel Macs** (`darwin` / `x64`).
 
-## 📦 Install
-
-```bash
-npm install @notedge/panduck
-```
-
-npm pulls `@notedge/panduck-darwin-x64` when the host matches `os: darwin` and `cpu: x64`.
-
-## 🔧 Mismatch diagnosis
-
-| Symptom | Likely cause |
-|---------|----------------|
-| `Unsupported platform for Panduck native bindings` | Wrong OS/CPU or optional dependency not installed |
-| Binding loads but convert fails | Run `npx panduck doctor` and check `supportsConversion` |
+Optional dependency of `@notedge/panduck` for older macOS hardware. Users convert documents through the main package CLI
+(`panduck convert`, `panduck plan`, markdown projects, reports)—not by importing this module name.
 
 Main package: https://www.npmjs.com/package/@notedge/panduck
 
