@@ -43,6 +43,7 @@ console = ["logger"]
 [dev-dependencies]
 cfb = "0.7.3"
 logger = { workspace = true }
+notedown-fixtures = { git = "https://github.com/notedge/notedown.git", branch = "dev" }
 serial_test = "3.2.0"
 
 [[test]]

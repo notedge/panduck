@@ -361,9 +361,8 @@ fn html_to_markdown_project_writes_index_and_reopens_semantics() {
     let _ = fs::remove_dir_all(&output_dir);
 }
 
-fn legacy_plain_doc_fixture() -> Vec<u8> {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/legacy_plain.doc");
-    std::fs::read(path).expect("read legacy_plain.doc fixture")
+fn legacy_plain_doc_fixture() -> &'static [u8] {
+    notedown_fixtures::acorn::doc::LEGACY_PLAIN_DOC
 }
 
 #[test]
@@ -372,7 +371,7 @@ fn doc_to_markdown_project_writes_index_and_reopens_text() {
     let output_dir = std::env::temp_dir().join(format!("panduck-doc-project-{}", std::process::id()));
     let bytes = legacy_plain_doc_fixture();
     let (output, published) =
-        convert_to_markdown_project("doc", "sample.doc", bytes, &output_dir).expect("convert doc project");
+        convert_to_markdown_project("doc", "sample.doc", bytes.to_vec(), &output_dir).expect("convert doc project");
 
     assert!(output.index_markdown.contains("Hello legacy DOC"));
     assert!(output.published_chapters.is_empty());
