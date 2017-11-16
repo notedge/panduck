@@ -5,6 +5,9 @@ use notedown_ir::{Block, Inline};
 use panduck_convert::convert_to_markdown_project;
 use panduck_convert::supports_markdown_project_source;
 
+mod common;
+use common::{assert_convert_project_report, assert_report_contains_loss_codes};
+
 fn stored_zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
     let mut archive = Vec::new();
     let mut central = Vec::new();
@@ -108,14 +111,13 @@ fn docx_to_markdown_project_writes_index_assets_and_report() {
     assert!(output.index_markdown.contains("![Logo](assets/logo.png)"));
     assert_eq!(output.published_assets, vec!["assets/logo.png".to_string()]);
     assert!(output.unresolved_assets.is_empty());
-    assert!(output.report_json.contains("convert_project"));
+    assert_convert_project_report(&output, &published);
+    assert_report_contains_loss_codes(&output.report_json, &["import.docx.partial_coverage"]);
 
     let index = fs::read_to_string(published.index_path).expect("read index.md");
     assert!(index.contains("![Logo](assets/logo.png)"));
     let asset_bytes = fs::read(output_dir.join("assets/logo.png")).expect("read asset");
     assert_eq!(asset_bytes, b"\x89PNG\r\n");
-    assert!(published.report_path.exists());
-    assert!(published.report_path.ends_with("panduck.report.json"));
 
     let reopened = import_markdown_bytes("index.md", &index).expect("oak markdown reopen");
     assert!(reopened.validate().is_valid());
@@ -183,6 +185,8 @@ fn epub_to_markdown_project_writes_index_and_reopens_semantics() {
     assert!(output.index_markdown.contains("Hello EPUB"));
     assert!(output.published_assets.is_empty());
     assert!(published.index_path.exists());
+    assert_convert_project_report(&output, &published);
+    assert_report_contains_loss_codes(&output.report_json, &["import.epub.partial_coverage"]);
 
     let index = fs::read_to_string(published.index_path).expect("read index.md");
     let reopened = import_markdown_bytes("index.md", &index).expect("reopen markdown");
@@ -253,6 +257,8 @@ fn epub_to_markdown_project_materializes_chapter_image() {
 
     assert!(output.published_chapters.is_empty());
     assert_eq!(output.published_assets, vec!["assets/cover.png".to_string()]);
+    assert_convert_project_report(&output, &published);
+    assert_report_contains_loss_codes(&output.report_json, &["import.epub.partial_coverage"]);
     let index = fs::read_to_string(published.index_path).expect("read index.md");
     assert!(index.contains("![Cover art](assets/cover.png)"));
     assert_eq!(fs::read(output_dir.join("assets/cover.png")).expect("read asset"), b"\x89PNG\r\n");
@@ -334,6 +340,8 @@ fn epub_to_markdown_project_splits_spine_into_chapters() {
             if title.iter().any(|inline| matches!(inline, Inline::Text { text } if text == "Chapter One"))
     )));
     assert_eq!(published.chapter_paths.len(), 2);
+    assert_convert_project_report(&output, &published);
+    assert_report_contains_loss_codes(&output.report_json, &["import.epub.partial_coverage"]);
 
     let _ = fs::remove_dir_all(&output_dir);
 }
@@ -349,6 +357,8 @@ fn html_to_markdown_project_writes_index_and_reopens_semantics() {
     assert!(output.index_markdown.contains("# Title"));
     assert!(output.published_chapters.is_empty());
     assert!(published.index_path.exists());
+    assert_convert_project_report(&output, &published);
+    assert_report_contains_loss_codes(&output.report_json, &["import.html.partial_coverage"]);
 
     let index = fs::read_to_string(published.index_path).expect("read index.md");
     let reopened = import_markdown_bytes("index.md", &index).expect("reopen markdown");
@@ -357,6 +367,22 @@ fn html_to_markdown_project_writes_index_and_reopens_semantics() {
         Block::Paragraph { content }
             if content.iter().any(|inline| matches!(inline, Inline::Text { text } if text == "Hello HTML."))
     )));
+
+    let _ = fs::remove_dir_all(&output_dir);
+}
+
+#[test]
+fn html_to_markdown_project_reports_unsupported_elements_in_panduck_report() {
+    let output_dir = std::env::temp_dir().join(format!("panduck-html-loss-project-{}", std::process::id()));
+    let html = br#"<html><body><h1>Title</h1><p>Before script.</p><script>alert(1)</script></body></html>"#.to_vec();
+    let (output, published) =
+        convert_to_markdown_project("html", "page.html", html, &output_dir).expect("convert html project");
+
+    assert_convert_project_report(&output, &published);
+    assert_report_contains_loss_codes(
+        &output.report_json,
+        &["import.html.partial_coverage", "import.html.unsupported_script"],
+    );
 
     let _ = fs::remove_dir_all(&output_dir);
 }
@@ -376,10 +402,8 @@ fn doc_to_markdown_project_writes_index_and_reopens_text() {
     assert!(output.index_markdown.contains("Hello legacy DOC"));
     assert!(output.published_chapters.is_empty());
     assert!(output.loss_count > 0);
-    assert!(output.report_json.contains("convert_project"));
-    assert!(published.index_path.exists());
-    assert!(published.report_path.exists());
-    assert!(published.report_path.ends_with("panduck.report.json"));
+    assert_convert_project_report(&output, &published);
+    assert_report_contains_loss_codes(&output.report_json, &["import.doc.partial_coverage"]);
 
     let index = fs::read_to_string(published.index_path).expect("read index.md");
     let reopened = import_markdown_bytes("index.md", &index).expect("reopen markdown");
@@ -409,6 +433,8 @@ fn pdf_to_markdown_project_writes_index_and_reopens_text() {
     assert!(output.index_markdown.contains("Heading"));
     assert!(output.index_markdown.contains("Body text."));
     assert!(published.index_path.exists());
+    assert_convert_project_report(&output, &published);
+    assert_report_contains_loss_codes(&output.report_json, &["import.pdf.partial_coverage"]);
 
     let index = fs::read_to_string(published.index_path).expect("read index.md");
     let reopened = import_markdown_bytes("index.md", &index).expect("reopen markdown");
