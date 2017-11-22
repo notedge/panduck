@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::Path;
 
-use acorn_core::ParseBudget;
+use acorn_core::{Budget, BudgetTracker};
 use acorn_docx::OpcPackage;
 use panduck_types::{AdapterError, Result};
 
@@ -89,7 +89,7 @@ pub fn inspect_docx_decode_bytes(
 
     let label = label.into();
     let package = OpcPackage::open(label, bytes).map_err(map_opc_error)?;
-    let budget = ParseBudget::default();
+    let mut ledger = BudgetTracker::new(Budget::default());
     let paths = match part_filter {
         Some(path) => vec![acorn_docx::normalize_part_path(path)],
         None => package.part_paths(),
@@ -101,7 +101,7 @@ pub fn inspect_docx_decode_bytes(
             AdapterError::invalid_input(format!("opc part not found: {path}"))
         })?;
         let decoded = package
-            .read_part(&path, &budget)
+            .read_part(&path, &mut ledger)
             .map_err(map_opc_error)?;
         parts.push(DocxDecodedPart {
             path,
