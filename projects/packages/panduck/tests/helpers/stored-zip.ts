@@ -36,7 +36,8 @@ export function storedZip(entries: ReadonlyArray<{ path: string; payload: Uint8A
         archive.push(payload);
 
         central.push(Buffer.from("PK\x01\x02"));
-        const cdFixed = Buffer.alloc(46);
+        // 42 bytes after the signature (APPNOTE central directory total = 46).
+        const cdFixed = Buffer.alloc(42);
         cdFixed.writeUInt16LE(0x0014, 0);
         cdFixed.writeUInt16LE(0x0014, 2);
         cdFixed.writeUInt32LE(crc, 12);
