@@ -23,7 +23,7 @@ fn unsupported_route_emits_diagnostic_log_event() {
     logger::set_global_sink(Box::new(SharedSink(sink.clone())));
     logger::set_global_filter(Filter::new(Level::Trace));
 
-    let result = convert_bytes("doc", "markdown", "legacy.doc", Vec::new());
+    let result = convert_bytes("xlsx", "markdown", "sheet.xlsx", Vec::new());
     assert!(result.is_err());
 
     let guard = sink.lock().expect("vec sink mutex poisoned");
@@ -32,7 +32,7 @@ fn unsupported_route_emits_diagnostic_log_event() {
         EventKind::Diagnostic(payload) => payload,
         _ => panic!("expected diagnostic log event"),
     };
-    assert_eq!(payload.code(), "panduck.adapter.not-implemented");
+    assert_eq!(payload.code(), "panduck.adapter.unsupported-format");
 
     clear_global_sink();
 }
@@ -47,7 +47,7 @@ fn unsupported_route_writes_json_lines_log_file() {
     ));
     logger::install_global_file_sink(&path).expect("install global file sink");
 
-    let result = convert_bytes("doc", "markdown", "legacy.doc", Vec::new());
+    let result = convert_bytes("xlsx", "markdown", "sheet.xlsx", Vec::new());
     assert!(result.is_err());
 
     clear_global_sink();
@@ -56,7 +56,7 @@ fn unsupported_route_writes_json_lines_log_file() {
     let mut text = String::new();
     file.read_to_string(&mut text).expect("read log file");
     assert!(text.contains("\"kind\":\"diagnostic\""));
-    assert!(text.contains("\"code\":\"panduck.adapter.not-implemented\""));
+    assert!(text.contains("\"code\":\"panduck.adapter.unsupported-format\""));
 
     let _ = std::fs::remove_file(path);
 }
