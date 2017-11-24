@@ -8,14 +8,14 @@ edition.workspace = true
 readme = "readme.md"
 
 [dependencies]
-diagnostic = { workspace = true }
-logger = { workspace = true, optional = true }
+boost-diagnostic = { workspace = true }
+boost-log = { workspace = true, optional = true }
 notedown-ir = { workspace = true }
 panduck-types = { workspace = true }
 
 [features]
 default = []
-logger = ["dep:logger", "diagnostic/console"]
+logger = ["dep:boost-log", "boost-diagnostic/log"]
 console = ["logger"]
 
 [dev-dependencies]

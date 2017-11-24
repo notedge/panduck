@@ -1,7 +1,7 @@
 #![deny(missing_docs)]
-//! Panduck orchestration diagnostics on the shared `diagnostic` contract.
+//! Panduck orchestration diagnostics on the shared `boost-diagnostic` contract.
 
-use diagnostic::{
+use boost_diagnostic::{
     Diagnostic, DiagnosticCode as WireDiagnosticCode, DiagnosticOrigin, DiagnosticSeverity,
     DiagnosticSet, Message,
 };
@@ -58,7 +58,7 @@ impl DiagnosticCode {
     }
 }
 
-pub use diagnostic::{
+pub use boost_diagnostic::{
     Diagnostic as UnifiedDiagnostic, DiagnosticAction, DiagnosticEnvelope, DiagnosticLabel,
     DiagnosticLocation, DiagnosticSet as UnifiedDiagnosticSet, DiagnosticSink, MessageArg,
     SCHEMA_VERSION as DIAGNOSTIC_SCHEMA_VERSION,
@@ -166,44 +166,44 @@ pub fn diagnostics_from_graph(graph: &DocumentGraph) -> DiagnosticSet {
 }
 
 #[cfg(feature = "logger")]
-pub use diagnostic::{
+pub use boost_diagnostic::{
     diagnostic_to_log_event, emit_diagnostic as emit_unified_diagnostic, emit_diagnostic_log,
     emit_diagnostic_set,
 };
 
-/// Deprecated alias for [`logger::LogEvent`].
+/// Deprecated alias for [`boost_log::LogEvent`].
 #[cfg(feature = "console")]
-#[deprecated(since = "0.1.0", note = "use `logger::LogEvent` and `to_log_event`")]
-pub use logger::LogEvent as ConsoleEvent;
+#[deprecated(since = "0.1.0", note = "use `boost_log::LogEvent` and `to_log_event`")]
+pub use boost_log::LogEvent as ConsoleEvent;
 
 /// Deprecated alias for [`diagnostic_to_log_event`].
 #[cfg(feature = "console")]
 #[deprecated(since = "0.1.0", note = "use `diagnostic_to_log_event`")]
-pub use diagnostic::diagnostic_to_log_event as diagnostic_to_event;
+pub use boost_diagnostic::diagnostic_to_log_event as diagnostic_to_event;
 
 /// Project a Panduck diagnostic into a log event.
 #[cfg(feature = "logger")]
-pub fn to_log_event(diagnostic: &Diagnostic) -> logger::LogEvent {
+pub fn to_log_event(diagnostic: &Diagnostic) -> boost_log::LogEvent {
     diagnostic_to_log_event(diagnostic)
 }
 
 /// Deprecated alias for [`to_log_event`].
 #[cfg(feature = "console")]
 #[deprecated(since = "0.1.0", note = "use `to_log_event`")]
-pub fn to_console_event(diagnostic: &Diagnostic) -> logger::LogEvent {
+pub fn to_console_event(diagnostic: &Diagnostic) -> boost_log::LogEvent {
     to_log_event(diagnostic)
 }
 
 /// Project an adapter failure into a log event.
 #[cfg(feature = "logger")]
-pub fn adapter_error_to_log_event(error: &AdapterError) -> logger::LogEvent {
+pub fn adapter_error_to_log_event(error: &AdapterError) -> boost_log::LogEvent {
     diagnostic_to_log_event(&from_adapter_error(error))
 }
 
 /// Deprecated alias for [`adapter_error_to_log_event`].
 #[cfg(feature = "console")]
 #[deprecated(since = "0.1.0", note = "use `adapter_error_to_log_event`")]
-pub fn adapter_error_to_event(error: &AdapterError) -> logger::LogEvent {
+pub fn adapter_error_to_event(error: &AdapterError) -> boost_log::LogEvent {
     adapter_error_to_log_event(error)
 }
 

@@ -1,7 +1,7 @@
 use std::io::Read;
 use std::sync::{Arc, Mutex};
 
-use logger::{
+use boost_log::{
     clear_global_sink, EventKind, Filter, Level, LogEvent, LogSink, VecSink,
 };
 use panduck_convert::convert_bytes;
@@ -20,8 +20,8 @@ impl LogSink for SharedSink {
 fn unsupported_route_emits_diagnostic_log_event() {
     clear_global_sink();
     let sink = Arc::new(Mutex::new(VecSink::new()));
-    logger::set_global_sink(Box::new(SharedSink(sink.clone())));
-    logger::set_global_filter(Filter::new(Level::Trace));
+    boost_log::set_global_sink(Box::new(SharedSink(sink.clone())));
+    boost_log::set_global_filter(Filter::new(Level::Trace));
 
     let result = convert_bytes("xlsx", "markdown", "sheet.xlsx", Vec::new());
     assert!(result.is_err());
@@ -45,7 +45,7 @@ fn unsupported_route_writes_json_lines_log_file() {
         "panduck-convert-logger-failure-{}.jsonl",
         std::process::id()
     ));
-    logger::install_global_file_sink(&path).expect("install global file sink");
+    boost_log::install_global_file_sink(&path).expect("install global file sink");
 
     let result = convert_bytes("xlsx", "markdown", "sheet.xlsx", Vec::new());
     assert!(result.is_err());

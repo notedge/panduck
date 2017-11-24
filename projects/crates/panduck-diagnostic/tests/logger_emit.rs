@@ -1,7 +1,7 @@
 use serial_test::serial;
 use std::sync::{Arc, Mutex};
 
-use logger::{
+use boost_log::{
     clear_global_sink, dropped_events, reset_dropped_events, EventKind, Filter, Level, LogEvent,
     LogSink, VecSink,
 };
@@ -33,8 +33,8 @@ fn emit_adapter_error_uses_global_logger_sink() {
     clear_global_sink();
     reset_dropped_events();
     let sink = Arc::new(Mutex::new(VecSink::new()));
-    logger::set_global_sink(Box::new(SharedSink(sink.clone())));
-    logger::set_global_filter(Filter::new(Level::Trace));
+    boost_log::set_global_sink(Box::new(SharedSink(sink.clone())));
+    boost_log::set_global_filter(Filter::new(Level::Trace));
 
     emit_adapter_error(&AdapterError::unsupported_format("doc", "read"));
 
@@ -51,8 +51,8 @@ fn emit_diagnostic_set_projects_graph_losses() {
     clear_global_sink();
     reset_dropped_events();
     let sink = Arc::new(Mutex::new(VecSink::new()));
-    logger::set_global_sink(Box::new(SharedSink(sink.clone())));
-    logger::set_global_filter(Filter::new(Level::Trace));
+    boost_log::set_global_sink(Box::new(SharedSink(sink.clone())));
+    boost_log::set_global_filter(Filter::new(Level::Trace));
 
     let mut graph = DocumentGraph::new(IdAllocator::default().document_id());
     graph.push_loss(LossMarker {

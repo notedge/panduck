@@ -1,45 +1,57 @@
 [workspace]
 resolver = "2"
 members = ["projects/crates/*"]
+default-members = [
+    "projects/crates/panduck",
+    "projects/crates/panduck-types",
+    "projects/crates/panduck-convert",
+    "projects/crates/panduck-napi",
+]
 
 [workspace.package]
 version = "0.0.3"
 authors = ["Aster <192607617@qq.com>"]
 license = "MPL-2.0"
-edition = "2021"
-default-members = [
-	"projects/crates/panduck-types",
-	"projects/crates/panduck-convert",
-	"projects/crates/panduck-napi",
-]
+edition = "2024"
 
 [workspace.dependencies]
+# Boost
+# Overlaid by local path `.cargo/config.toml` (git ignored).
+boost-diagnostic = { git = "https://github.com/oovm/rust-boost", rev = "2218a644af335aa4cef9f3e9e6b37475a829cfe2", default-features = false, features = ["std", "serde"] }
+boost-log = { git = "https://github.com/oovm/rust-boost", rev = "2218a644af335aa4cef9f3e9e6b37475a829cfe2" }
+
+#
+panduck = { path = "projects/crates/panduck" }
 panduck-types = { path = "projects/crates/panduck-types" }
 panduck-diagnostic = { path = "projects/crates/panduck-diagnostic" }
-diagnostic = { git = "https://github.com/oovm/rust-boost", branch = "dev", default-features = false, features = ["std", "serde"] }
-logger = { git = "https://github.com/oovm/rust-boost", branch = "dev" }
 panduck-convert = { path = "projects/crates/panduck-convert" }
 panduck-napi = { path = "projects/crates/panduck-napi" }
-acorn-core = { git = "https://github.com/yggdrasil-language/acorn.rs.git", branch = "dev" }
-acorn-docx = { git = "https://github.com/yggdrasil-language/acorn.rs.git", branch = "dev" }
 panduck-wasm = { path = "projects/crates/panduck-wasm" }
 
-# CI resolves git `branch = "dev"`. Local path overlay: `.cargo/config.toml` (gitignored).
-oak-core = { git = "https://github.com/yggdrasil-language/oak.rs.git", branch = "dev" }
-oak-navigation = { git = "https://github.com/yggdrasil-language/oak.rs.git", branch = "dev" }
-oak-markdown = { git = "https://github.com/yggdrasil-language/oak.rs.git", branch = "dev", default-features = false, features = ["serde"] }
-oak-rst = { git = "https://github.com/yggdrasil-language/oak.rs.git", branch = "dev", default-features = false, features = ["serde"] }
+#
+acorn-core = { git = "https://github.com/yggdrasil-language/acorn.rs.git", rev = "0b2c71ce9ce5c7862098d7dab255b23796873199" }
+acorn-docx = { git = "https://github.com/yggdrasil-language/acorn.rs.git", rev = "0b2c71ce9ce5c7862098d7dab255b23796873199" }
+
+# Overlaid by local path `.cargo/config.toml` (git ignored).
+oak-core = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "8907696cd6929bdda632209e57705ee7b521bdc9" }
+oak-navigation = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "8907696cd6929bdda632209e57705ee7b521bdc9" }
+oak-markdown = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "8907696cd6929bdda632209e57705ee7b521bdc9", default-features = false, features = ["serde"] }
+oak-rst = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "8907696cd6929bdda632209e57705ee7b521bdc9", default-features = false, features = ["serde"] }
+
+#
 notedown-ir = { git = "https://github.com/notedge/notedown.git", branch = "dev" }
 notedown-formats = { git = "https://github.com/notedge/notedown.git", branch = "dev", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }
 notedown-fixtures = { git = "https://github.com/notedge/notedown.git", branch = "dev" }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+
+# External dependencies
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
 url = { version = "2.5.7", features = ["serde"] }
 source-map = "0.15.0"
 byteorder = "1.5.0"
-wasm-bindgen = "0.2"
-napi = { version = "2", default-features = false, features = ["napi4"] }
-napi-derive = "2"
+wasm-bindgen = "0.2.129"
+napi = { version = "3.14.2", default-features = false, features = ["napi4"] }
+napi-derive = "3.6.12"
 
 [profile.release]
 lto = true

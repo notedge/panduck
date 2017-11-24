@@ -1,4 +1,4 @@
-use diagnostic::DiagnosticSeverity;
+use boost_diagnostic::DiagnosticSeverity;
 use notedown_ir::{DocumentGraph, IdAllocator, LossMarker, SemanticStatus};
 use panduck_diagnostic::{
     diagnostics_from_graph, from_adapter_error, from_loss_marker, DiagnosticEnvelope,

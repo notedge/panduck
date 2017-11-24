@@ -120,7 +120,7 @@ pub fn supports_conversion(from: String, to: String) -> bool {
 /// Install a JSON lines file sink on the global logger facade.
 #[napi]
 pub fn install_logger_log_file(path: String) -> Result<()> {
-    logger::install_global_file_sink(&path).map_err(|error| Error::from_reason(error.to_string()))
+    boost_log::install_global_file_sink(&path).map_err(|error| Error::from_reason(error.to_string()))
 }
 
 /// Deprecated alias for [`install_logger_log_file`].

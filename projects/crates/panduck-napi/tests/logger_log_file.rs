@@ -1,7 +1,7 @@
 use std::fs;
 use std::io::Read;
 
-use logger::{clear_global_sink, emit, install_global_file_sink, Level, LogEvent};
+use boost_log::{clear_global_sink, emit, install_global_file_sink, Level, LogEvent};
 use serial_test::serial;
 
 #[test]
@@ -13,7 +13,7 @@ fn install_logger_log_file_sets_global_sink() {
 
     emit(
         LogEvent::log(Level::Info, "panduck-napi")
-            .field("message", logger::FieldValue::str("ready"))
+            .field("message", boost_log::FieldValue::str("ready"))
             .build(),
     );
 
