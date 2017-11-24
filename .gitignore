@@ -19,6 +19,7 @@ Cargo.lock
 # Node
 node_modules/
 dist/
+pnpm-lock.yaml
 .placeholder-npm-cache.json
 scripts/.placeholder-npm-cache.json
 .cache/npm-placeholder.json
