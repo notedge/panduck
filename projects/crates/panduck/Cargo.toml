@@ -1,0 +1,26 @@
+[package]
+name = "panduck"
+version.workspace = true
+authors.workspace = true
+description = "Feature-gated facade for the Panduck document conversion family"
+repository = "https://github.com/notedge/panduck"
+readme = "readme.md"
+license.workspace = true
+edition.workspace = true
+keywords = ["panduck", "document", "conversion", "facade"]
+categories = ["text-processing"]
+
+[dependencies]
+panduck-types = { workspace = true, optional = true }
+panduck-diagnostic = { workspace = true, optional = true }
+panduck-convert = { workspace = true, optional = true }
+
+[features]
+default = []
+types = ["dep:panduck-types"]
+diagnostic = ["dep:panduck-diagnostic", "types"]
+convert = ["dep:panduck-convert", "diagnostic"]
+logger = ["convert", "panduck-convert/logger", "panduck-diagnostic/logger"]
+
+[package.metadata.docs.rs]
+all-features = true

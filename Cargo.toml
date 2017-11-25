@@ -15,30 +15,25 @@ license = "MPL-2.0"
 edition = "2024"
 
 [workspace.dependencies]
-# Boost
 # Overlaid by local path `.cargo/config.toml` (git ignored).
 boost-diagnostic = { git = "https://github.com/oovm/rust-boost", rev = "2218a644af335aa4cef9f3e9e6b37475a829cfe2", default-features = false, features = ["std", "serde"] }
 boost-log = { git = "https://github.com/oovm/rust-boost", rev = "2218a644af335aa4cef9f3e9e6b37475a829cfe2" }
-
-#
+# Overlaid by local path `.cargo/config.toml` (git ignored).
 panduck = { path = "projects/crates/panduck" }
 panduck-types = { path = "projects/crates/panduck-types" }
 panduck-diagnostic = { path = "projects/crates/panduck-diagnostic" }
 panduck-convert = { path = "projects/crates/panduck-convert" }
 panduck-napi = { path = "projects/crates/panduck-napi" }
 panduck-wasm = { path = "projects/crates/panduck-wasm" }
-
-#
+# Overlaid by local path `.cargo/config.toml` (git ignored).
 acorn-core = { git = "https://github.com/yggdrasil-language/acorn.rs.git", rev = "0b2c71ce9ce5c7862098d7dab255b23796873199" }
 acorn-docx = { git = "https://github.com/yggdrasil-language/acorn.rs.git", rev = "0b2c71ce9ce5c7862098d7dab255b23796873199" }
-
 # Overlaid by local path `.cargo/config.toml` (git ignored).
 oak-core = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "8907696cd6929bdda632209e57705ee7b521bdc9" }
 oak-navigation = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "8907696cd6929bdda632209e57705ee7b521bdc9" }
 oak-markdown = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "8907696cd6929bdda632209e57705ee7b521bdc9", default-features = false, features = ["serde"] }
 oak-rst = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "8907696cd6929bdda632209e57705ee7b521bdc9", default-features = false, features = ["serde"] }
-
-#
+# Overlaid by local path `.cargo/config.toml` (git ignored).
 notedown-ir = { git = "https://github.com/notedge/notedown.git", branch = "dev" }
 notedown-formats = { git = "https://github.com/notedge/notedown.git", branch = "dev", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }
 notedown-fixtures = { git = "https://github.com/notedge/notedown.git", branch = "dev" }

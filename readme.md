@@ -108,6 +108,15 @@ Every real conversion can produce `panduck.report/v1` JSON (`--report`, stdout, 
 
 Read the report even when the command exits 0. Use `--strict` if you want losses to count as failure.
 
+## 🦀 Rust facade
+
+The `panduck` crate is a feature-gated facade over `panduck-types`, `panduck-diagnostic`, and `panduck-convert`. See [`projects/crates/panduck/readme.md`](projects/crates/panduck/readme.md).
+
+```toml
+[dependencies]
+panduck = { version = "0.0.3", default-features = false, features = ["convert", "logger"] }
+```
+
 ## 🧪 Node API
 
 ```ts
