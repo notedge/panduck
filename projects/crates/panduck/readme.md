@@ -21,7 +21,7 @@ Default features are **empty**. Enable only what you need:
 
 ```toml
 [dependencies]
-panduck = { version = "0.0.3", default-features = false, features = ["convert", "logger"] }
+panduck = { version = "0.0.4", default-features = false, features = ["convert", "logger"] }
 ```
 
 ```rust

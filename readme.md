@@ -114,7 +114,7 @@ The `panduck` crate is a feature-gated facade over `panduck-types`, `panduck-dia
 
 ```toml
 [dependencies]
-panduck = { version = "0.0.3", default-features = false, features = ["convert", "logger"] }
+panduck = { version = "0.0.4", default-features = false, features = ["convert", "logger"] }
 ```
 
 ## 🧪 Node API
