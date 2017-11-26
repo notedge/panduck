@@ -8,23 +8,23 @@ const napiDir = join(root, "projects/crates/panduck-napi");
 
 /** @type {Record<string, { packageDir: string, fileName: string }>} */
 const ARTIFACTS = {
-    "index.win32-x64-msvc.node": {
+    "panduck.win32-x64-msvc.node": {
         packageDir: "panduck-win32-x64",
         fileName: "panduck-win32-x64-msvc.node",
     },
-    "index.linux-x64-gnu.node": {
+    "panduck.linux-x64-gnu.node": {
         packageDir: "panduck-linux-x64",
         fileName: "panduck-linux-x64-gnu.node",
     },
-    "index.darwin-x64.node": {
+    "panduck.darwin-x64.node": {
         packageDir: "panduck-darwin-x64",
         fileName: "panduck-darwin-x64.node",
     },
-    "index.darwin-arm64.node": {
+    "panduck.darwin-arm64.node": {
         packageDir: "panduck-darwin-arm64",
         fileName: "panduck-darwin-arm64.node",
     },
-    "index.linux-arm64-gnu.node": {
+    "panduck.linux-arm64-gnu.node": {
         packageDir: "panduck-linux-arm64",
         fileName: "panduck-linux-arm64-gnu.node",
     },
@@ -32,6 +32,10 @@ const ARTIFACTS = {
 
 function findBuiltNodes(dir) {
     return readdirSync(dir).filter((name) => name.endsWith(".node"));
+}
+
+for (const stale of findBuiltNodes(napiDir)) {
+    unlinkSync(join(napiDir, stale));
 }
 
 execSync("pnpm exec napi build --platform --release", { cwd: napiDir, stdio: "inherit", shell: true });
