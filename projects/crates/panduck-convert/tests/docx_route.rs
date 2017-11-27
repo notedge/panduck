@@ -1,5 +1,5 @@
 use notedown_formats::import::docx::import_docx_bytes;
-use notedown_ir::{Block, Inline};
+use notedown_ir::{Block, Inline, RelationEndpoint};
 use panduck_convert::convert_bytes;
 
 mod common;
@@ -41,10 +41,9 @@ fn markdown_shortcut_link_to_docx_reopens_with_same_target() {
         &node.block,
         Block::Paragraph { content } if content.iter().any(|inline| matches!(
             inline,
-            Inline::Styled { style, children } if style == "link" && children == &[
-                Inline::Text { text: "Guide".into() },
-                Inline::Text { text: "https://example.com/guide".into() }
-            ]
+            Inline::Link { target, display, .. }
+                if target == &RelationEndpoint::ExternalUri("https://example.com/guide".into())
+                    && display == &[Inline::Text { text: "Guide".into() }]
         ))
     )), "{:?}", reopened.blocks);
 }

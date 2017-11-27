@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const panduckBin = join(dirname(fileURLToPath(import.meta.url)), "../../bin/panduck.mjs");
+const panduckBin = join(dirname(fileURLToPath(import.meta.url)), "../../bin/panduck");
 
 export type PanduckCliResult = {
     code: number;

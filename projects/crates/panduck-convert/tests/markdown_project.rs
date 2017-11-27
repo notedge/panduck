@@ -66,11 +66,9 @@ fn docx_to_markdown_project_writes_index_assets_and_report() {
         Block::Paragraph { content }
             if content.iter().any(|inline| matches!(
                 inline,
-                Inline::Styled { style, children }
-                    if style == "image"
-                        && children.len() >= 2
-                        && matches!(&children[0], Inline::Text { text } if text == "Logo")
-                        && matches!(&children[1], Inline::Text { text } if text == "assets/logo.png")
+                Inline::Image { source, alt, .. }
+                    if source == "assets/logo.png"
+                        && alt.iter().any(|child| matches!(child, Inline::Text { text } if text == "Logo"))
             ))
     )));
 

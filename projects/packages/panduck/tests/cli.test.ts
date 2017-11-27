@@ -14,7 +14,7 @@ test("formats emits markdown capability json", () => {
 });
 
 test("plan blocks unsupported ready pipeline with report schema", () => {
-    const plan = runPanduck(["plan", "package.json", "--from", "markdown", "--to", "docx", "--json"]);
+    const plan = runPanduck(["plan", "package.json", "--from", "markdown", "--to", "epub", "--json"]);
     assert.equal(plan.code, 3);
     assert.match(plan.stdout, /panduck\.report\/v1/);
 });

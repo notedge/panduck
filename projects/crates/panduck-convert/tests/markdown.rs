@@ -52,10 +52,13 @@ fn markdown_reference_link_route_reopens_semantically_and_reports_loss() {
             notedown_ir::Block::Paragraph { content }
                 if content.iter().any(|inline| matches!(
                     inline,
-                    notedown_ir::Inline::Styled { style, children }
-                        if style == "link" && children.iter().any(|child| {
-                            matches!(child, notedown_ir::Inline::Text { text } if text == "https://example.com/guide")
-                        })
+                    notedown_ir::Inline::Link { target, display, .. }
+                        if target == &notedown_ir::RelationEndpoint::ExternalUri(
+                            "https://example.com/guide".into()
+                        )
+                            && display.iter().any(|child| {
+                                matches!(child, notedown_ir::Inline::Text { text } if text == "guide")
+                            })
                 ))
         )
     }));
