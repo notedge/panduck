@@ -1,7 +1,6 @@
-use std::fs;
-use std::io::Read;
+use std::{fs, io::Read};
 
-use boost_log::{clear_global_sink, emit, install_global_file_sink, Level, LogEvent};
+use boost_log::{Level, LogEvent, clear_global_sink, emit, install_global_file_sink};
 use serial_test::serial;
 
 #[test]
@@ -11,11 +10,7 @@ fn install_logger_log_file_sets_global_sink() {
     let path = std::env::temp_dir().join(format!("panduck-napi-logger-{}.jsonl", std::process::id()));
     install_global_file_sink(&path).expect("install log file");
 
-    emit(
-        LogEvent::log(Level::Info, "panduck-napi")
-            .field("message", boost_log::FieldValue::str("ready"))
-            .build(),
-    );
+    emit(LogEvent::log(Level::Info, "panduck-napi").field("message", boost_log::FieldValue::str("ready")).build());
 
     clear_global_sink();
 

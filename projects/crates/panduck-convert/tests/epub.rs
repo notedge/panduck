@@ -131,15 +131,18 @@ fn epub_to_markdown_route_reopens_with_ir_semantics_and_loss_report() {
 #[test]
 fn epub_to_docx_route_reopens_semantic_content() {
     let output = convert_bytes("epub", "docx", "book.epub", minimal_epub_zip()).expect("convert epub");
-    let reopened = notedown_formats::import::docx::import_docx_bytes(
-        "book.docx", &output.binary.expect("docx output")
-    ).expect("reopen docx");
+    let reopened = notedown_formats::import::docx::import_docx_bytes("book.docx", &output.binary.expect("docx output"))
+        .expect("reopen docx");
     assert!(reopened.validate().is_valid());
-    assert!(reopened.blocks.iter().any(|node| matches!(
-        &node.block,
-        notedown_ir::Block::Section { title, .. }
-            if title == &[notedown_ir::Inline::Text { text: "Chapter One".into() }]
-    )), "{:?}", reopened.blocks);
+    assert!(
+        reopened.blocks.iter().any(|node| matches!(
+            &node.block,
+            notedown_ir::Block::Section { title, .. }
+                if title == &[notedown_ir::Inline::Text { text: "Chapter One".into() }]
+        )),
+        "{:?}",
+        reopened.blocks
+    );
     assert!(reopened.blocks.iter().any(|node| matches!(
         &node.block,
         notedown_ir::Block::Paragraph { content }

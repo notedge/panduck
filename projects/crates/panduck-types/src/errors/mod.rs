@@ -3,8 +3,7 @@
 mod convert;
 mod display;
 
-use std::error::Error;
-use std::fmt::Debug;
+use std::{error::Error, fmt::Debug};
 
 /// Fatal failure in a Panduck reader, writer, or orchestration step.
 #[derive(Debug)]
@@ -59,17 +58,12 @@ pub enum AdapterError {
 impl AdapterError {
     /// I/O failure, optionally tied to a filesystem path.
     pub fn io(source: std::io::Error, path: Option<impl ToString>) -> Self {
-        Self::Io {
-            source,
-            path: path.map(|p| p.to_string()),
-        }
+        Self::Io { source, path: path.map(|p| p.to_string()) }
     }
 
     /// Invalid user or adapter input.
     pub fn invalid_input(message: impl ToString) -> Self {
-        Self::InvalidInput {
-            message: message.to_string(),
-        }
+        Self::InvalidInput { message: message.to_string() }
     }
 
     /// Source offset does not fit the backing text.
@@ -79,33 +73,22 @@ impl AdapterError {
 
     /// Missing adapter capability.
     pub fn not_implemented(feature: impl ToString) -> Self {
-        Self::NotImplemented {
-            feature: feature.to_string(),
-        }
+        Self::NotImplemented { feature: feature.to_string() }
     }
 
     /// Failure inside a named adapter.
     pub fn adapter(adapter: impl ToString, message: impl ToString) -> Self {
-        Self::Adapter {
-            adapter: adapter.to_string(),
-            message: message.to_string(),
-        }
+        Self::Adapter { adapter: adapter.to_string(), message: message.to_string() }
     }
 
     /// Target format does not support the operation.
     pub fn unsupported_format(format: impl ToString, operation: impl ToString) -> Self {
-        Self::UnsupportedFormat {
-            format: format.to_string(),
-            operation: operation.to_string(),
-        }
+        Self::UnsupportedFormat { format: format.to_string(), operation: operation.to_string() }
     }
 
     /// Configuration error.
     pub fn config(path: Option<impl ToString>, message: impl ToString) -> Self {
-        Self::Config {
-            path: path.map(|p| p.to_string()),
-            message: message.to_string(),
-        }
+        Self::Config { path: path.map(|p| p.to_string()), message: message.to_string() }
     }
 }
 

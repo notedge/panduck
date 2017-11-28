@@ -1,9 +1,9 @@
-use std::io::Read;
-use std::sync::{Arc, Mutex};
-
-use boost_log::{
-    clear_global_sink, EventKind, Filter, Level, LogEvent, LogSink, VecSink,
+use std::{
+    io::Read,
+    sync::{Arc, Mutex},
 };
+
+use boost_log::{EventKind, Filter, Level, LogEvent, LogSink, VecSink, clear_global_sink};
 use panduck_convert::convert_bytes;
 use serial_test::serial;
 
@@ -41,10 +41,7 @@ fn unsupported_route_emits_diagnostic_log_event() {
 #[serial]
 fn unsupported_route_writes_json_lines_log_file() {
     clear_global_sink();
-    let path = std::env::temp_dir().join(format!(
-        "panduck-convert-logger-failure-{}.jsonl",
-        std::process::id()
-    ));
+    let path = std::env::temp_dir().join(format!("panduck-convert-logger-failure-{}.jsonl", std::process::id()));
     boost_log::install_global_file_sink(&path).expect("install global file sink");
 
     let result = convert_bytes("xlsx", "markdown", "sheet.xlsx", Vec::new());

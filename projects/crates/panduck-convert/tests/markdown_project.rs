@@ -2,8 +2,7 @@ use std::fs;
 
 use notedown_formats::import::markdown::import_markdown_bytes;
 use notedown_ir::{Block, Inline};
-use panduck_convert::convert_to_markdown_project;
-use panduck_convert::supports_markdown_project_source;
+use panduck_convert::{convert_to_markdown_project, supports_markdown_project_source};
 
 mod common;
 use common::{assert_convert_project_report, assert_report_contains_loss_codes, stored_zip};
@@ -45,8 +44,7 @@ fn docx_to_markdown_project_writes_index_assets_and_report() {
     ]);
 
     let output_dir = std::env::temp_dir().join(format!("panduck-md-project-{}", std::process::id()));
-    let (output, published) =
-        convert_to_markdown_project("docx", "image.docx", zip, &output_dir).expect("convert project");
+    let (output, published) = convert_to_markdown_project("docx", "image.docx", zip, &output_dir).expect("convert project");
 
     assert!(output.index_markdown.contains("![Logo](assets/logo.png)"));
     assert_eq!(output.published_assets, vec!["assets/logo.png".to_string()]);
@@ -185,13 +183,8 @@ fn epub_with_image_zip() -> Vec<u8> {
 #[test]
 fn epub_to_markdown_project_materializes_chapter_image() {
     let output_dir = std::env::temp_dir().join(format!("panduck-epub-image-project-{}", std::process::id()));
-    let (output, published) = convert_to_markdown_project(
-        "epub",
-        "image.epub",
-        epub_with_image_zip(),
-        &output_dir,
-    )
-    .expect("convert epub project");
+    let (output, published) =
+        convert_to_markdown_project("epub", "image.epub", epub_with_image_zip(), &output_dir).expect("convert epub project");
 
     assert!(output.published_chapters.is_empty());
     assert_eq!(output.published_assets, vec!["assets/cover.png".to_string()]);
@@ -256,13 +249,8 @@ fn multi_chapter_epub_zip() -> Vec<u8> {
 #[test]
 fn epub_to_markdown_project_splits_spine_into_chapters() {
     let output_dir = std::env::temp_dir().join(format!("panduck-epub-chapters-{}", std::process::id()));
-    let (output, published) = convert_to_markdown_project(
-        "epub",
-        "book.epub",
-        multi_chapter_epub_zip(),
-        &output_dir,
-    )
-    .expect("convert epub project");
+    let (output, published) =
+        convert_to_markdown_project("epub", "book.epub", multi_chapter_epub_zip(), &output_dir).expect("convert epub project");
 
     assert_eq!(output.published_chapters.len(), 2);
     assert!(output.index_markdown.contains("# Sample Book"));
@@ -317,10 +305,7 @@ fn html_to_markdown_project_reports_unsupported_elements_in_panduck_report() {
         convert_to_markdown_project("html", "page.html", html, &output_dir).expect("convert html project");
 
     assert_convert_project_report(&output, &published);
-    assert_report_contains_loss_codes(
-        &output.report_json,
-        &["import.html.partial_coverage", "import.html.unsupported_script"],
-    );
+    assert_report_contains_loss_codes(&output.report_json, &["import.html.partial_coverage", "import.html.unsupported_script"]);
 
     let _ = fs::remove_dir_all(&output_dir);
 }
@@ -365,8 +350,7 @@ fn pdf_to_markdown_project_writes_index_and_reopens_text() {
         .expect("pdf bytes");
 
     let output_dir = std::env::temp_dir().join(format!("panduck-pdf-project-{}", std::process::id()));
-    let (output, published) =
-        convert_to_markdown_project("pdf", "sample.pdf", pdf, &output_dir).expect("convert pdf project");
+    let (output, published) = convert_to_markdown_project("pdf", "sample.pdf", pdf, &output_dir).expect("convert pdf project");
 
     assert!(output.index_markdown.contains("Heading"));
     assert!(output.index_markdown.contains("Body text."));

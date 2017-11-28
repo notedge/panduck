@@ -1,4 +1,4 @@
-use notedown_formats::export::markdown_project::{export_markdown_project, MarkdownProject};
+use notedown_formats::export::markdown_project::{MarkdownProject, export_markdown_project};
 use notedown_ir::DocumentGraph;
 use panduck_types::Result;
 

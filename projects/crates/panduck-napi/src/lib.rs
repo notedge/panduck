@@ -106,9 +106,7 @@ pub fn supported_formats() -> Vec<String> {
 /// Returns whether a format name is recognized by Panduck adapters.
 #[napi]
 pub fn is_supported_format(name: String) -> bool {
-    FORMATS
-        .iter()
-        .any(|format| format.eq_ignore_ascii_case(name.as_str()))
+    FORMATS.iter().any(|format| format.eq_ignore_ascii_case(name.as_str()))
 }
 
 /// Returns whether a conversion route is wired in this build.
@@ -133,10 +131,7 @@ pub fn install_console_log_file(path: String) -> Result<()> {
 /// Lists wired conversion routes as `from:to` strings.
 #[napi]
 pub fn supported_conversions() -> Vec<String> {
-    supported_routes()
-        .into_iter()
-        .map(|(from, to)| format!("{from}:{to}"))
-        .collect()
+    supported_routes().into_iter().map(|(from, to)| format!("{from}:{to}")).collect()
 }
 
 /// Indexes a DOCX OPC package and returns member part paths.
@@ -158,13 +153,7 @@ pub fn inspect_index(input_path: String) -> Result<InspectIndexResponse> {
         "parts": index.parts,
     })
     .to_string();
-    Ok(InspectIndexResponse {
-        format: index.format,
-        outer: index.outer,
-        inner: index.inner,
-        parts: index.parts,
-        report_json,
-    })
+    Ok(InspectIndexResponse { format: index.format, outer: index.outer, inner: index.inner, parts: index.parts, report_json })
 }
 
 /// Decodes DOCX OPC members and returns per-part payload sizes.
@@ -222,8 +211,7 @@ pub fn supports_markdown_project(from: String) -> bool {
 /// Converts a document file into a Markdown project directory.
 #[napi]
 pub fn convert_markdown_project(from: String, input_path: String, output_dir: String) -> Result<ConvertProjectResponse> {
-    let (output, published) =
-        convert_markdown_project_file(&from, &input_path, &output_dir).map_err(map_adapter_error)?;
+    let (output, published) = convert_markdown_project_file(&from, &input_path, &output_dir).map_err(map_adapter_error)?;
     Ok(ConvertProjectResponse {
         exit_code: 0,
         index_markdown: output.index_markdown,
@@ -241,11 +229,7 @@ pub fn convert_document(from: String, to: String, input_path: String) -> Result<
     let output = convert_file(&from, &to, &input_path).map_err(map_adapter_error)?;
     Ok(ConvertResponse {
         exit_code: 0,
-        markdown: if output.markdown.is_empty() {
-            None
-        } else {
-            Some(output.markdown)
-        },
+        markdown: if output.markdown.is_empty() { None } else { Some(output.markdown) },
         html: output.html,
         binary: output.binary.map(Buffer::from),
         report_json: output.report_json,

@@ -1,7 +1,5 @@
 use notedown_formats::import::docx::import_docx_bytes;
-use panduck_convert::{
-    inspect_docx_decode_bytes, inspect_docx_index_bytes, write_document_markdown,
-};
+use panduck_convert::{inspect_docx_decode_bytes, inspect_docx_index_bytes, write_document_markdown};
 
 fn stored_zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
     let mut archive = Vec::new();
@@ -94,8 +92,7 @@ fn docx_inspect_decodes_package_parts() {
 #[test]
 fn docx_inspect_decodes_single_part_filter() {
     let zip = minimal_docx_zip();
-    let decode =
-        inspect_docx_decode_bytes("sample.docx", zip, Some("word/document.xml")).expect("decode");
+    let decode = inspect_docx_decode_bytes("sample.docx", zip, Some("word/document.xml")).expect("decode");
     assert_eq!(decode.parts.len(), 1);
     assert_eq!(decode.parts[0].path, "word/document.xml");
 }

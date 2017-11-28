@@ -1,8 +1,6 @@
 use boost_diagnostic::DiagnosticSeverity;
 use notedown_ir::{DocumentGraph, IdAllocator, LossMarker, SemanticStatus};
-use panduck_diagnostic::{
-    diagnostics_from_graph, from_adapter_error, from_loss_marker, DiagnosticEnvelope,
-};
+use panduck_diagnostic::{DiagnosticEnvelope, diagnostics_from_graph, from_adapter_error, from_loss_marker};
 use panduck_types::AdapterError;
 
 #[test]
@@ -20,10 +18,7 @@ fn loss_marker_maps_to_semantic_diagnostic() {
         status: SemanticStatus::Partial,
     };
     let diagnostic = from_loss_marker(&marker);
-    assert_eq!(
-        diagnostic.code().as_str(),
-        "reader.docx.numbering_unresolved"
-    );
+    assert_eq!(diagnostic.code().as_str(), "reader.docx.numbering_unresolved");
     assert_eq!(diagnostic.severity(), DiagnosticSeverity::Warning);
 }
 
@@ -37,10 +32,7 @@ fn graph_losses_collect_into_diagnostic_set() {
     });
     let set = diagnostics_from_graph(&graph);
     assert_eq!(set.diagnostics().len(), 1);
-    assert_eq!(
-        set.diagnostics()[0].code().as_str(),
-        "panduck.writer.unsupported-feature"
-    );
+    assert_eq!(set.diagnostics()[0].code().as_str(), "panduck.writer.unsupported-feature");
 }
 
 #[test]

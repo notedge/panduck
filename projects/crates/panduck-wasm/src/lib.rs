@@ -15,16 +15,11 @@ pub fn panduck_version() -> String {
 /// Lists format adapters wired into this workspace.
 #[wasm_bindgen(js_name = supportedFormats)]
 pub fn supported_formats() -> Vec<JsValue> {
-    FORMATS
-        .iter()
-        .map(|name| JsValue::from_str(name))
-        .collect()
+    FORMATS.iter().map(|name| JsValue::from_str(name)).collect()
 }
 
 /// Returns whether a format name is recognized by Panduck adapters.
 #[wasm_bindgen(js_name = isSupportedFormat)]
 pub fn is_supported_format(name: &str) -> bool {
-    FORMATS
-        .iter()
-        .any(|format| format.eq_ignore_ascii_case(name))
+    FORMATS.iter().any(|format| format.eq_ignore_ascii_case(name))
 }

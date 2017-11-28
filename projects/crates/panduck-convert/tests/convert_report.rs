@@ -2,10 +2,7 @@ use notedown_formats::import::markdown::import_markdown_bytes;
 use panduck_convert::convert_bytes;
 
 mod common;
-use common::{
-    assert_convert_report, assert_report_contains_loss_codes, docx_zip, docx_zip_with_footnotes,
-    stored_zip,
-};
+use common::{assert_convert_report, assert_report_contains_loss_codes, docx_zip, docx_zip_with_footnotes, stored_zip};
 
 #[test]
 fn html_to_markdown_convert_report_matches_ir_loss() {
@@ -18,13 +15,7 @@ fn html_to_markdown_convert_report_matches_ir_loss() {
     .expect("convert html to markdown");
 
     assert_convert_report(&output, "markdown");
-    assert_report_contains_loss_codes(
-        &output.report_json,
-        &[
-            "import.html.partial_coverage",
-            "import.html.unsupported_script",
-        ],
-    );
+    assert_report_contains_loss_codes(&output.report_json, &["import.html.partial_coverage", "import.html.unsupported_script"]);
     let reopened = import_markdown_bytes("round.md", &output.markdown).expect("reopen markdown");
     assert!(reopened.validate().is_valid());
 }
@@ -35,14 +26,10 @@ fn docx_field_to_markdown_convert_report_lists_field_loss() {
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:body><w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r><w:r><w:t>visible fallback</w:t></w:r></w:p></w:body>
 </w:document>"#;
-    let output = convert_bytes("docx", "markdown", "field.docx", docx_zip(document_xml))
-        .expect("convert docx with field");
+    let output = convert_bytes("docx", "markdown", "field.docx", docx_zip(document_xml)).expect("convert docx with field");
 
     assert_convert_report(&output, "markdown");
-    assert_report_contains_loss_codes(
-        &output.report_json,
-        &["reader.docx.fields", "import.docx.partial_coverage"],
-    );
+    assert_report_contains_loss_codes(&output.report_json, &["reader.docx.fields", "import.docx.partial_coverage"]);
     assert!(output.markdown.contains("visible fallback"));
 }
 
@@ -62,10 +49,7 @@ fn docx_unresolved_footnote_to_markdown_convert_report_lists_footnote_loss() {
         .expect("convert docx with unresolved footnote");
 
     assert_convert_report(&output, "markdown");
-    assert_report_contains_loss_codes(
-        &output.report_json,
-        &["reader.docx.footnote_body", "import.docx.partial_coverage"],
-    );
+    assert_report_contains_loss_codes(&output.report_json, &["reader.docx.footnote_body", "import.docx.partial_coverage"]);
     assert!(output.markdown.contains("See[^1] for details."));
 }
 
@@ -87,23 +71,15 @@ fn docx_resolved_footnote_to_markdown_convert_report_omits_footnote_body_loss() 
     <w:p><w:r><w:t>Footnote body.</w:t></w:r></w:p>
   </w:footnote>
 </w:footnotes>"#;
-    let output = convert_bytes(
-        "docx",
-        "markdown",
-        "footnote-resolved.docx",
-        docx_zip_with_footnotes(document_xml, footnotes_xml),
-    )
-    .expect("convert docx with resolved footnote");
+    let output =
+        convert_bytes("docx", "markdown", "footnote-resolved.docx", docx_zip_with_footnotes(document_xml, footnotes_xml))
+            .expect("convert docx with resolved footnote");
 
     assert_convert_report(&output, "markdown");
     assert_report_contains_loss_codes(&output.report_json, &["import.docx.partial_coverage"]);
     let report = serde_json::from_str::<serde_json::Value>(&output.report_json).expect("report");
-    let loss_codes = report["losses"]
-        .as_array()
-        .expect("losses")
-        .iter()
-        .filter_map(|loss| loss["code"].as_str())
-        .collect::<Vec<_>>();
+    let loss_codes =
+        report["losses"].as_array().expect("losses").iter().filter_map(|loss| loss["code"].as_str()).collect::<Vec<_>>();
     assert!(
         !loss_codes.iter().any(|code| *code == "reader.docx.footnote_body"),
         "resolved footnote must not report reader.docx.footnote_body, got {loss_codes:?}"
@@ -187,10 +163,7 @@ fn epub_missing_nav_member_convert_report_lists_navigation_missing() {
 
     let output = convert_bytes("epub", "markdown", "broken-nav.epub", zip).expect("convert epub");
     assert_convert_report(&output, "markdown");
-    assert_report_contains_loss_codes(
-        &output.report_json,
-        &["import.epub.partial_coverage", "import.epub.navigation_missing"],
-    );
+    assert_report_contains_loss_codes(&output.report_json, &["import.epub.partial_coverage", "import.epub.navigation_missing"]);
 }
 
 #[test]
@@ -240,12 +213,8 @@ fn epub_with_nav_to_markdown_convert_report_omits_navigation_missing() {
     let output = convert_bytes("epub", "markdown", "nav.epub", zip).expect("convert epub with nav");
     assert_convert_report(&output, "markdown");
     let report = serde_json::from_str::<serde_json::Value>(&output.report_json).expect("report");
-    let loss_codes = report["losses"]
-        .as_array()
-        .expect("losses")
-        .iter()
-        .filter_map(|loss| loss["code"].as_str())
-        .collect::<Vec<_>>();
+    let loss_codes =
+        report["losses"].as_array().expect("losses").iter().filter_map(|loss| loss["code"].as_str()).collect::<Vec<_>>();
     assert!(
         !loss_codes.iter().any(|code| *code == "import.epub.navigation_missing"),
         "nav manifest must not report navigation_missing, got {loss_codes:?}"
@@ -294,23 +263,14 @@ fn epub_styled_to_markdown_convert_report_lists_css_and_inline_style_losses() {
     assert_convert_report(&output, "markdown");
     assert_report_contains_loss_codes(
         &output.report_json,
-        &[
-            "import.epub.partial_coverage",
-            "import.epub.css_link_unsupported",
-            "import.epub.inline_style_unsupported",
-        ],
+        &["import.epub.partial_coverage", "import.epub.css_link_unsupported", "import.epub.inline_style_unsupported"],
     );
 }
 
 #[test]
 fn doc_to_markdown_convert_report_lists_partial_coverage() {
-    let output = convert_bytes(
-        "doc",
-        "markdown",
-        "legacy.doc",
-        notedown_fixtures::acorn::doc::LEGACY_PLAIN_DOC.to_vec(),
-    )
-    .expect("convert doc to markdown");
+    let output = convert_bytes("doc", "markdown", "legacy.doc", notedown_fixtures::acorn::doc::LEGACY_PLAIN_DOC.to_vec())
+        .expect("convert doc to markdown");
 
     assert_convert_report(&output, "markdown");
     assert_report_contains_loss_codes(&output.report_json, &["import.doc.partial_coverage"]);
@@ -335,8 +295,5 @@ fn markdown_reference_link_convert_report_matches_loss_count() {
 
     assert_convert_report(&output, "markdown");
     assert_eq!(output.loss_count, 1);
-    assert_report_contains_loss_codes(
-        &output.report_json,
-        &["import.markdown.reference_definition_title"],
-    );
+    assert_report_contains_loss_codes(&output.report_json, &["import.markdown.reference_definition_title"]);
 }

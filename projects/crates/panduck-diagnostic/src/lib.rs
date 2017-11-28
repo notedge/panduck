@@ -2,8 +2,7 @@
 //! Panduck orchestration diagnostics on the shared `boost-diagnostic` contract.
 
 use boost_diagnostic::{
-    Diagnostic, DiagnosticCode as WireDiagnosticCode, DiagnosticOrigin, DiagnosticSeverity,
-    DiagnosticSet, Message,
+    Diagnostic, DiagnosticCode as WireDiagnosticCode, DiagnosticOrigin, DiagnosticSet, DiagnosticSeverity, Message,
 };
 use notedown_ir::{DocumentGraph, LossMarker, SemanticStatus};
 use panduck_types::AdapterError;
@@ -59,9 +58,8 @@ impl DiagnosticCode {
 }
 
 pub use boost_diagnostic::{
-    Diagnostic as UnifiedDiagnostic, DiagnosticAction, DiagnosticEnvelope, DiagnosticLabel,
-    DiagnosticLocation, DiagnosticSet as UnifiedDiagnosticSet, DiagnosticSink, MessageArg,
-    SCHEMA_VERSION as DIAGNOSTIC_SCHEMA_VERSION,
+    Diagnostic as UnifiedDiagnostic, DiagnosticAction, DiagnosticEnvelope, DiagnosticLabel, DiagnosticLocation,
+    DiagnosticSet as UnifiedDiagnosticSet, DiagnosticSink, MessageArg, SCHEMA_VERSION as DIAGNOSTIC_SCHEMA_VERSION,
 };
 
 /// Build a Panduck error diagnostic with fallback text.
@@ -97,7 +95,8 @@ fn loss_severity(status: SemanticStatus) -> DiagnosticSeverity {
 pub fn from_loss_marker(marker: &LossMarker) -> Diagnostic {
     let code = if marker.code.contains('.') {
         WireDiagnosticCode::new(&marker.code)
-    } else {
+    }
+    else {
         DiagnosticCode::SemanticLoss.wire_code()
     };
     Diagnostic::new(
@@ -118,32 +117,16 @@ pub fn from_adapter_error(error: &AdapterError) -> Diagnostic {
             };
             (DiagnosticCode::AdapterIo, detail)
         }
-        AdapterError::InvalidInput { message } => {
-            (DiagnosticCode::AdapterInvalidInput, message.clone())
-        }
+        AdapterError::InvalidInput { message } => (DiagnosticCode::AdapterInvalidInput, message.clone()),
         AdapterError::InvalidRange { offset, len } => {
-            (
-                DiagnosticCode::AdapterInvalidRange,
-                format!("invalid source range at {offset} len {len}"),
-            )
+            (DiagnosticCode::AdapterInvalidRange, format!("invalid source range at {offset} len {len}"))
         }
         AdapterError::NotImplemented { feature } => {
-            (
-                DiagnosticCode::AdapterNotImplemented,
-                format!("not implemented: {feature}"),
-            )
+            (DiagnosticCode::AdapterNotImplemented, format!("not implemented: {feature}"))
         }
-        AdapterError::Adapter { adapter, message } => {
-            (
-                DiagnosticCode::AdapterFailure,
-                format!("{adapter}: {message}"),
-            )
-        }
+        AdapterError::Adapter { adapter, message } => (DiagnosticCode::AdapterFailure, format!("{adapter}: {message}")),
         AdapterError::UnsupportedFormat { format, operation } => {
-            (
-                DiagnosticCode::AdapterUnsupportedFormat,
-                format!("{format} does not support {operation}"),
-            )
+            (DiagnosticCode::AdapterUnsupportedFormat, format!("{format} does not support {operation}"))
         }
         AdapterError::Config { path, message } => {
             let detail = match path {
@@ -167,8 +150,7 @@ pub fn diagnostics_from_graph(graph: &DocumentGraph) -> DiagnosticSet {
 
 #[cfg(feature = "logger")]
 pub use boost_diagnostic::{
-    diagnostic_to_log_event, emit_diagnostic as emit_unified_diagnostic, emit_diagnostic_log,
-    emit_diagnostic_set,
+    diagnostic_to_log_event, emit_diagnostic as emit_unified_diagnostic, emit_diagnostic_log, emit_diagnostic_set,
 };
 
 /// Deprecated alias for [`boost_log::LogEvent`].

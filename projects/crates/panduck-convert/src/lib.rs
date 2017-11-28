@@ -7,26 +7,28 @@ mod publish;
 mod readers;
 mod writers;
 
-use std::fs;
-use std::path::Path;
+use std::{fs, path::Path};
 
+use notedown_formats::import::{
+    doc::import_doc_bytes, docx::import_docx_bytes, epub::import_epub_bytes, html::import_html_bytes, pdf::import_pdf_bytes,
+};
 use notedown_ir::DocumentGraph;
-use panduck_diagnostic::{diagnostics_from_graph, DiagnosticEnvelope};
-use notedown_formats::import::docx::import_docx_bytes;
-use notedown_formats::import::doc::{import_doc_bytes};
-use notedown_formats::import::pdf::import_pdf_bytes;
-use notedown_formats::import::epub::import_epub_bytes;
-use notedown_formats::import::html::import_html_bytes;
+use panduck_diagnostic::{DiagnosticEnvelope, diagnostics_from_graph};
 use panduck_types::{AdapterError, Result};
 use serde::Serialize;
 
 pub use inspect::{
-    inspect_docx_decode, inspect_docx_decode_bytes, inspect_docx_index, inspect_docx_index_bytes,
-    DocxDecodedPart, DocxInspectDecode, DocxInspectIndex,
+    DocxDecodedPart, DocxInspectDecode, DocxInspectIndex, inspect_docx_decode, inspect_docx_decode_bytes, inspect_docx_index,
+    inspect_docx_index_bytes,
 };
-pub use publish::{publish_bytes, publish_markdown_project, publish_text, PublishedMarkdownProject};
-pub use readers::{read_doc, read_doc_bytes, read_html, read_html_bytes, read_markdown, read_markdown_bytes, read_notedown, read_notedown_bytes, read_pdf, read_pdf_bytes};
-pub use writers::{write_document_docx, write_document_html, write_document_markdown, write_document_pdf, write_markdown_project};
+pub use publish::{PublishedMarkdownProject, publish_bytes, publish_markdown_project, publish_text};
+pub use readers::{
+    read_doc, read_doc_bytes, read_html, read_html_bytes, read_markdown, read_markdown_bytes, read_notedown,
+    read_notedown_bytes, read_pdf, read_pdf_bytes,
+};
+pub use writers::{
+    write_document_docx, write_document_html, write_document_markdown, write_document_pdf, write_markdown_project,
+};
 
 /// Supported conversion route.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -38,14 +40,8 @@ pub struct Route {
 }
 
 const ROUTES: &[Route] = &[
-    Route {
-        from: "docx",
-        to: "markdown",
-    },
-    Route {
-        from: "docx",
-        to: "docx",
-    },
+    Route { from: "docx", to: "markdown" },
+    Route { from: "docx", to: "docx" },
     Route { from: "doc", to: "markdown" },
     Route { from: "doc", to: "html" },
     Route { from: "pdf", to: "markdown" },
@@ -54,54 +50,18 @@ const ROUTES: &[Route] = &[
     Route { from: "docx", to: "pdf" },
     Route { from: "markdown", to: "pdf" },
     Route { from: "html", to: "pdf" },
-    Route {
-        from: "markdown",
-        to: "markdown",
-    },
-    Route {
-        from: "markdown",
-        to: "html",
-    },
-    Route {
-        from: "notedown",
-        to: "markdown",
-    },
-    Route {
-        from: "notedown",
-        to: "html",
-    },
-    Route {
-        from: "epub",
-        to: "markdown",
-    },
-    Route {
-        from: "epub",
-        to: "docx",
-    },
-    Route {
-        from: "epub",
-        to: "html",
-    },
-    Route {
-        from: "markdown",
-        to: "docx",
-    },
-    Route {
-        from: "docx",
-        to: "html",
-    },
-    Route {
-        from: "html",
-        to: "markdown",
-    },
-    Route {
-        from: "html",
-        to: "html",
-    },
-    Route {
-        from: "html",
-        to: "docx",
-    },
+    Route { from: "markdown", to: "markdown" },
+    Route { from: "markdown", to: "html" },
+    Route { from: "notedown", to: "markdown" },
+    Route { from: "notedown", to: "html" },
+    Route { from: "epub", to: "markdown" },
+    Route { from: "epub", to: "docx" },
+    Route { from: "epub", to: "html" },
+    Route { from: "markdown", to: "docx" },
+    Route { from: "docx", to: "html" },
+    Route { from: "html", to: "markdown" },
+    Route { from: "html", to: "html" },
+    Route { from: "html", to: "docx" },
 ];
 
 /// Returns whether Panduck can run this conversion today.
@@ -113,10 +73,7 @@ pub fn supports_route(from: &str, to: &str) -> bool {
 
 /// Lists wired conversion routes.
 pub fn supported_routes() -> Vec<(String, String)> {
-    ROUTES
-        .iter()
-        .map(|route| (route.from.to_string(), route.to.to_string()))
-        .collect()
+    ROUTES.iter().map(|route| (route.from.to_string(), route.to.to_string())).collect()
 }
 
 /// Markdown project conversion output.
@@ -182,13 +139,7 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>) -> Resul
     })
     .to_string();
 
-    Ok(ConvertOutput {
-        markdown,
-        html,
-        binary,
-        report_json,
-        loss_count,
-    })
+    Ok(ConvertOutput { markdown, html, binary, report_json, loss_count })
 }
 
 /// Converts bytes into a Markdown project description without writing disk.
@@ -270,10 +221,7 @@ fn build_convert_project_output(
 
 /// Returns whether Panduck can emit a Markdown project from this source format.
 pub fn supports_markdown_project_source(from: &str) -> bool {
-    matches!(
-        from.to_ascii_lowercase().as_str(),
-        "docx" | "doc" | "pdf" | "epub" | "html" | "markdown" | "notedown"
-    )
+    matches!(from.to_ascii_lowercase().as_str(), "docx" | "doc" | "pdf" | "epub" | "html" | "markdown" | "notedown")
 }
 
 /// Converts a file on disk into a Markdown project directory.

@@ -15,11 +15,15 @@ fn markdown_to_docx_route() {
     assert!(binary.starts_with(b"PK\x03\x04"));
     let reopened = import_docx_bytes("round.docx", &binary).expect("reopen generated docx");
     assert!(reopened.validate().is_valid());
-    assert!(reopened.blocks.iter().any(|node| matches!(
-        &node.block,
-        Block::Section { title, .. }
-            if title.iter().any(|inline| matches!(inline, Inline::Text { text } if text == "Title"))
-    )), "reopened blocks: {:?}", reopened.blocks);
+    assert!(
+        reopened.blocks.iter().any(|node| matches!(
+            &node.block,
+            Block::Section { title, .. }
+                if title.iter().any(|inline| matches!(inline, Inline::Text { text } if text == "Title"))
+        )),
+        "reopened blocks: {:?}",
+        reopened.blocks
+    );
     assert!(reopened.blocks.iter().any(|node| matches!(
         &node.block,
         Block::Paragraph { content }
@@ -37,15 +41,19 @@ fn markdown_shortcut_link_to_docx_reopens_with_same_target() {
     let binary = output.binary.expect("docx bytes");
     let reopened = import_docx_bytes("shortcut.docx", &binary).expect("reopen");
     assert!(reopened.validate().is_valid());
-    assert!(reopened.blocks.iter().any(|node| matches!(
-        &node.block,
-        Block::Paragraph { content } if content.iter().any(|inline| matches!(
-            inline,
-            Inline::Link { target, display, .. }
-                if target == &RelationEndpoint::ExternalUri("https://example.com/guide".into())
-                    && display == &[Inline::Text { text: "Guide".into() }]
-        ))
-    )), "{:?}", reopened.blocks);
+    assert!(
+        reopened.blocks.iter().any(|node| matches!(
+            &node.block,
+            Block::Paragraph { content } if content.iter().any(|inline| matches!(
+                inline,
+                Inline::Link { target, display, .. }
+                    if target == &RelationEndpoint::ExternalUri("https://example.com/guide".into())
+                        && display == &[Inline::Text { text: "Guide".into() }]
+            ))
+        )),
+        "{:?}",
+        reopened.blocks
+    );
 }
 
 #[test]

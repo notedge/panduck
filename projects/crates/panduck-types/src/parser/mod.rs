@@ -1,7 +1,6 @@
 #![doc = include_str!("readme.md")]
 
-use crate::helpers::SourceText;
-use crate::reader::Token;
+use crate::{helpers::SourceText, reader::Token};
 
 /// Parser state for transitional Panduck-owned text adapters.
 #[derive(Debug)]

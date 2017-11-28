@@ -1,8 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use boost_log::{
-    clear_global_sink, EventKind, Filter, Level, LogEvent, LogSink, VecSink,
-};
+use boost_log::{EventKind, Filter, Level, LogEvent, LogSink, VecSink, clear_global_sink};
 use panduck_convert::convert_bytes;
 use serial_test::serial;
 
@@ -33,8 +31,7 @@ fn notedown_loss_emits_semantic_diagnostic_log_event() {
                 EventKind::Diagnostic(payload) => payload,
                 _ => return false,
             };
-            payload.code().contains("partial_coverage")
-                || payload.message().key() == "panduck.semantic.loss"
+            payload.code().contains("partial_coverage") || payload.message().key() == "panduck.semantic.loss"
         }),
         "expected semantic loss diagnostic event",
     );

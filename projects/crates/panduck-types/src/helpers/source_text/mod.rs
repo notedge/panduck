@@ -24,11 +24,7 @@ impl SourceText {
                 lines_map.push(i + 1);
             }
         }
-        Self {
-            raw,
-            url,
-            lines_map,
-        }
+        Self { raw, url, lines_map }
     }
 
     /// Returns the UTF-8 slice for `range`, or an [`AdapterError::invalid_range`] failure.
@@ -59,11 +55,7 @@ impl SourceText {
         let line_start_offset = self.lines_map[line_index];
         let line = (line_index + 1) as u32;
         let column = (offset - line_start_offset + 1) as u32;
-        SourceLocation {
-            line,
-            column,
-            url: self.url.clone(),
-        }
+        SourceLocation { line, column, url: self.url.clone() }
     }
 
     /// Returns the UTF-8 byte length of the backing buffer.
@@ -94,20 +86,13 @@ pub struct SourceLocation {
 
 impl Default for SourceLocation {
     fn default() -> Self {
-        Self {
-            line: 1,
-            column: 1,
-            url: None,
-        }
+        Self { line: 1, column: 1, url: None }
     }
 }
 
 impl SourcePosition {
     /// Returns a new position shifted forward by `offset` bytes.
     pub fn add(&self, offset: usize) -> Self {
-        Self {
-            offset: self.offset + offset,
-            length: self.length,
-        }
+        Self { offset: self.offset + offset, length: self.length }
     }
 }

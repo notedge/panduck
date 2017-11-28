@@ -1,7 +1,10 @@
 #![doc = include_str!("readme.md")]
 
-use crate::helpers::{SourcePosition, SourceText};
-use crate::{reader::Token, AdapterError, Result};
+use crate::{
+    AdapterError, Result,
+    helpers::{SourcePosition, SourceText},
+    reader::Token,
+};
 
 /// Token classification contract for [`LexerState`].
 pub trait TokenType: Copy {
@@ -26,11 +29,7 @@ pub struct LexerState<'input, T: TokenType> {
 impl<'input, T: TokenType> LexerState<'input, T> {
     /// Creates lexer state at the start of `input`.
     pub fn new(input: &'input SourceText) -> Self {
-        Self {
-            source: input,
-            tokens: Vec::new(),
-            offset: 0,
-        }
+        Self { source: input, tokens: Vec::new(), offset: 0 }
     }
 
     /// Returns the scalar at the current offset, if in range.
@@ -53,26 +52,14 @@ impl<'input, T: TokenType> LexerState<'input, T> {
 
     /// Records a token spanning `start_offset` through the current cursor.
     pub fn add_token(&mut self, token_type: T, start_offset: usize) {
-        let position = SourcePosition {
-            offset: start_offset,
-            length: self.offset - start_offset,
-        };
-        self.tokens.push(Token {
-            token_type,
-            position,
-        });
+        let position = SourcePosition { offset: start_offset, length: self.offset - start_offset };
+        self.tokens.push(Token { token_type, position });
     }
 
     /// Appends an end-of-stream token and returns the collected token vector.
     pub fn finish(mut self) -> Result<Vec<Token<T>>> {
-        let position = SourcePosition {
-            offset: self.source.utf8_length(),
-            length: 0,
-        };
-        self.tokens.push(Token {
-            token_type: T::END_OF_STREAM,
-            position,
-        });
+        let position = SourcePosition { offset: self.source.utf8_length(), length: 0 };
+        self.tokens.push(Token { token_type: T::END_OF_STREAM, position });
         Ok(self.tokens)
     }
 

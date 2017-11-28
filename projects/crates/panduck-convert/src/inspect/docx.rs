@@ -1,5 +1,4 @@
-use std::fs;
-use std::path::Path;
+use std::{fs, path::Path};
 
 use acorn_core::{Budget, BudgetTracker};
 use acorn_docx::OpcPackage;
@@ -23,9 +22,7 @@ pub struct DocxInspectIndex {
 /// Indexes a DOCX file on disk without reading document semantics.
 pub fn inspect_docx_index(path: impl AsRef<Path>) -> Result<DocxInspectIndex> {
     let path = path.as_ref();
-    let bytes = fs::read(path).map_err(|source| {
-        AdapterError::io(source, Some(path.display().to_string()))
-    })?;
+    let bytes = fs::read(path).map_err(|source| AdapterError::io(source, Some(path.display().to_string())))?;
     inspect_docx_index_bytes(path.display().to_string(), bytes)
 }
 
@@ -58,10 +55,7 @@ pub struct DocxInspectDecode {
 }
 
 /// Decodes DOCX package members on disk without projecting document semantics.
-pub fn inspect_docx_decode(
-    path: impl AsRef<Path>,
-    part_filter: Option<&str>,
-) -> Result<DocxInspectDecode> {
+pub fn inspect_docx_decode(path: impl AsRef<Path>, part_filter: Option<&str>) -> Result<DocxInspectDecode> {
     let path = path.as_ref();
     let bytes = match fs::read(path) {
         Ok(bytes) => bytes,
@@ -79,9 +73,7 @@ pub fn inspect_docx_decode_bytes(
     part_filter: Option<&str>,
 ) -> Result<DocxInspectDecode> {
     if looks_like_ole(&bytes) {
-        return format_error::fail(AdapterError::not_implemented(
-            "legacy .doc OLE inspect is not available yet",
-        ));
+        return format_error::fail(AdapterError::not_implemented("legacy .doc OLE inspect is not available yet"));
     }
     if !looks_like_zip(&bytes) {
         return format_error::fail(AdapterError::invalid_input("input is not a ZIP-based DOCX package"));
@@ -97,12 +89,8 @@ pub fn inspect_docx_decode_bytes(
 
     let mut parts = Vec::new();
     for path in paths {
-        let member = package.part(&path).ok_or_else(|| {
-            AdapterError::invalid_input(format!("opc part not found: {path}"))
-        })?;
-        let decoded = package
-            .read_part(&path, &mut ledger)
-            .map_err(map_opc_error)?;
+        let member = package.part(&path).ok_or_else(|| AdapterError::invalid_input(format!("opc part not found: {path}")))?;
+        let decoded = package.read_part(&path, &mut ledger).map_err(map_opc_error)?;
         parts.push(DocxDecodedPart {
             path,
             compression_method: member.compression_method,
@@ -112,20 +100,13 @@ pub fn inspect_docx_decode_bytes(
         });
     }
 
-    Ok(DocxInspectDecode {
-        format: "docx".into(),
-        outer: "zip".into(),
-        inner: "opc".into(),
-        parts,
-    })
+    Ok(DocxInspectDecode { format: "docx".into(), outer: "zip".into(), inner: "opc".into(), parts })
 }
 
 /// Indexes DOCX bytes without reading document semantics.
 pub fn inspect_docx_index_bytes(label: impl Into<String>, bytes: Vec<u8>) -> Result<DocxInspectIndex> {
     if looks_like_ole(&bytes) {
-        return format_error::fail(AdapterError::not_implemented(
-            "legacy .doc OLE inspect is not available yet",
-        ));
+        return format_error::fail(AdapterError::not_implemented("legacy .doc OLE inspect is not available yet"));
     }
     if !looks_like_zip(&bytes) {
         return format_error::fail(AdapterError::invalid_input("input is not a ZIP-based DOCX package"));
@@ -133,12 +114,7 @@ pub fn inspect_docx_index_bytes(label: impl Into<String>, bytes: Vec<u8>) -> Res
 
     let label = label.into();
     let package = OpcPackage::open(label, bytes).map_err(map_opc_error)?;
-    Ok(DocxInspectIndex {
-        format: "docx".into(),
-        outer: "zip".into(),
-        inner: "opc".into(),
-        parts: package.part_paths(),
-    })
+    Ok(DocxInspectIndex { format: "docx".into(), outer: "zip".into(), inner: "opc".into(), parts: package.part_paths() })
 }
 
 fn looks_like_zip(bytes: &[u8]) -> bool {

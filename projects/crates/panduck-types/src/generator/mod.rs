@@ -11,11 +11,7 @@ pub struct TextWriter<W> {
 impl<W> TextWriter<W> {
     /// Wraps a [`std::fmt::Write`] sink with Panduck indentation defaults.
     pub fn new(writer: W) -> Self {
-        Self {
-            writer,
-            indent_level: 0,
-            indent_text: "    ",
-        }
+        Self { writer, indent_level: 0, indent_text: "    " }
     }
 }
 

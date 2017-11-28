@@ -35,10 +35,7 @@ impl<W: Seek, E> Seek for BinaryWriter<W, E> {
 impl<W, E> BinaryWriter<W, E> {
     /// 创建一个新的二进制写入器
     pub fn new(writer: W) -> Self {
-        Self {
-            writer,
-            endian: PhantomData,
-        }
+        Self { writer, endian: PhantomData }
     }
 
     /// 获取内部写入器

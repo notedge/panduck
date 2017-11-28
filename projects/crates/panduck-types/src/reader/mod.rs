@@ -35,11 +35,7 @@ impl<R, E> BinaryReader<R, E> {
     /// # Returns
     /// 返回新的 BinaryReader 实例
     pub fn new(reader: R) -> Self {
-        Self {
-            reader,
-            position: 0,
-            endian: Default::default(),
-        }
+        Self { reader, position: 0, endian: Default::default() }
     }
 
     /// 获取当前读取位置

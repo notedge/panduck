@@ -2,13 +2,12 @@ use serial_test::serial;
 use std::sync::{Arc, Mutex};
 
 use boost_log::{
-    clear_global_sink, dropped_events, reset_dropped_events, EventKind, Filter, Level, LogEvent,
-    LogSink, VecSink,
+    EventKind, Filter, Level, LogEvent, LogSink, VecSink, clear_global_sink, dropped_events, reset_dropped_events,
 };
 use notedown_ir::{DocumentGraph, IdAllocator, LossMarker, SemanticStatus};
 use panduck_diagnostic::{
-    adapter_error_to_log_event, diagnostics_from_graph, emit_adapter_error, emit_diagnostic_set,
-    from_adapter_error, to_log_event,
+    adapter_error_to_log_event, diagnostics_from_graph, emit_adapter_error, emit_diagnostic_set, from_adapter_error,
+    to_log_event,
 };
 use panduck_types::AdapterError;
 
@@ -76,7 +75,5 @@ fn emit_diagnostic_set_projects_graph_losses() {
 fn to_log_event_round_trips_existing_adapter_mapping() {
     let diagnostic = from_adapter_error(&AdapterError::invalid_input("bad header"));
     let event = to_log_event(&diagnostic);
-    assert!(
-        matches!(event.kind(), EventKind::Diagnostic(payload) if payload.code() == "panduck.adapter.invalid-input")
-    );
+    assert!(matches!(event.kind(), EventKind::Diagnostic(payload) if payload.code() == "panduck.adapter.invalid-input"));
 }

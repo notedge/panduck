@@ -1,5 +1,4 @@
-use std::fs;
-use std::path::Path;
+use std::{fs, path::Path};
 
 use notedown_formats::import::html::import_html_bytes;
 use notedown_ir::DocumentGraph;

@@ -20,9 +20,7 @@ pub fn assert_convert_report(output: &ConvertOutput, writer: &str) {
 
     let outputs = report["outputs"].as_array().expect("outputs array");
     assert!(
-        outputs
-            .iter()
-            .any(|entry| entry["format"] == writer && entry["published"] == true),
+        outputs.iter().any(|entry| entry["format"] == writer && entry["published"] == true),
         "expected published output for format {writer}, got {outputs:?}"
     );
 }
@@ -78,10 +76,7 @@ pub fn docx_zip(document_xml: &[u8]) -> Vec<u8> {
 }
 
 pub fn docx_zip_with_footnotes(document_xml: &[u8], footnotes_xml: &[u8]) -> Vec<u8> {
-    stored_zip(&[
-        ("word/document.xml", document_xml),
-        ("word/footnotes.xml", footnotes_xml),
-    ])
+    stored_zip(&[("word/document.xml", document_xml), ("word/footnotes.xml", footnotes_xml)])
 }
 
 fn crc32(data: &[u8]) -> u32 {
@@ -100,10 +95,7 @@ fn crc32(data: &[u8]) -> u32 {
 }
 
 /// Assert `panduck.report/v1` matches IR loss, on-disk report, and project output fields.
-pub fn assert_convert_project_report(
-    output: &ConvertProjectOutput,
-    published: &PublishedMarkdownProject,
-) {
+pub fn assert_convert_project_report(output: &ConvertProjectOutput, published: &PublishedMarkdownProject) {
     let report = parse_report_json(&output.report_json);
     let disk = fs::read_to_string(&published.report_path).expect("read panduck.report.json");
     let disk_report = parse_report_json(&disk);
@@ -117,19 +109,10 @@ pub fn assert_convert_project_report(
     assert_eq!(output.loss_count, losses.len());
     assert_eq!(losses, coverage_losses, "report losses must mirror graph.coverage.loss");
 
-    let unresolved = report["unresolved_assets"]
-        .as_array()
-        .expect("unresolved_assets array");
-    assert_eq!(
-        output.unresolved_assets.len(),
-        unresolved.len(),
-        "report unresolved_assets must mirror project export"
-    );
+    let unresolved = report["unresolved_assets"].as_array().expect("unresolved_assets array");
+    assert_eq!(output.unresolved_assets.len(), unresolved.len(), "report unresolved_assets must mirror project export");
     for source in &output.unresolved_assets {
-        assert!(
-            unresolved.iter().any(|value| value.as_str() == Some(source)),
-            "missing unresolved asset {source} in report"
-        );
+        assert!(unresolved.iter().any(|value| value.as_str() == Some(source)), "missing unresolved asset {source} in report");
     }
 
     let expected_status = if losses.is_empty() { "success" } else { "success_with_loss" };
@@ -152,17 +135,10 @@ pub fn assert_convert_project_report(
 /// Assert the report lists every expected loss code at least once.
 pub fn assert_report_contains_loss_codes(report_json: &str, codes: &[&str]) {
     let report = parse_report_json(report_json);
-    let loss_codes = report["losses"]
-        .as_array()
-        .expect("losses array")
-        .iter()
-        .filter_map(|loss| loss["code"].as_str())
-        .collect::<Vec<_>>();
+    let loss_codes =
+        report["losses"].as_array().expect("losses array").iter().filter_map(|loss| loss["code"].as_str()).collect::<Vec<_>>();
     for code in codes {
-        assert!(
-            loss_codes.iter().any(|entry| *entry == *code),
-            "expected loss code {code}, got {loss_codes:?}"
-        );
+        assert!(loss_codes.iter().any(|entry| *entry == *code), "expected loss code {code}, got {loss_codes:?}");
     }
 }
 
