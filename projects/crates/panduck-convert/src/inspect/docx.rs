@@ -1,7 +1,6 @@
 use std::{fs, path::Path};
 
-use acorn_core::{Budget, BudgetTracker};
-use acorn_docx::OpcPackage;
+use notedown_formats::{InspectBudget, inspect_docx_bytes};
 use panduck_types::{AdapterError, Result};
 
 use crate::format_error;
@@ -11,9 +10,9 @@ use crate::format_error;
 pub struct DocxInspectIndex {
     /// Detected container format, typically `docx`.
     pub format: String,
-    /// Outer container label from Acorn detection.
+    /// Outer container label from the format layer.
     pub outer: String,
-    /// Inner payload label from Acorn detection.
+    /// Inner payload label from the format layer.
     pub inner: String,
     /// OPC member paths discovered in the package.
     pub parts: Vec<String>,
@@ -46,9 +45,9 @@ pub struct DocxDecodedPart {
 pub struct DocxInspectDecode {
     /// Detected container format, typically `docx`.
     pub format: String,
-    /// Outer container label from Acorn detection.
+    /// Outer container label from the format layer.
     pub outer: String,
-    /// Inner payload label from Acorn detection.
+    /// Inner payload label from the format layer.
     pub inner: String,
     /// Per-member decode summaries for the package.
     pub parts: Vec<DocxDecodedPart>,
@@ -72,59 +71,32 @@ pub fn inspect_docx_decode_bytes(
     bytes: Vec<u8>,
     part_filter: Option<&str>,
 ) -> Result<DocxInspectDecode> {
-    if looks_like_ole(&bytes) {
-        return format_error::fail(AdapterError::not_implemented("legacy .doc OLE inspect is not available yet"));
-    }
-    if !looks_like_zip(&bytes) {
-        return format_error::fail(AdapterError::invalid_input("input is not a ZIP-based DOCX package"));
-    }
-
     let label = label.into();
-    let package = OpcPackage::open(label, bytes).map_err(map_opc_error)?;
-    let mut ledger = BudgetTracker::new(Budget::default());
-    let paths = match part_filter {
-        Some(path) => vec![acorn_docx::normalize_part_path(path)],
-        None => package.part_paths(),
-    };
-
-    let mut parts = Vec::new();
-    for path in paths {
-        let member = package.part(&path).ok_or_else(|| AdapterError::invalid_input(format!("opc part not found: {path}")))?;
-        let decoded = package.read_part(&path, &mut ledger).map_err(map_opc_error)?;
-        parts.push(DocxDecodedPart {
-            path,
-            compression_method: member.compression_method,
-            compressed_size: member.compressed_size,
-            uncompressed_size: member.uncompressed_size,
-            decoded_size: decoded.len() as u64,
-        });
-    }
-
-    Ok(DocxInspectDecode { format: "docx".into(), outer: "zip".into(), inner: "opc".into(), parts })
+    let inspect = inspect_docx_bytes(&label, &bytes, part_filter, true, InspectBudget::default())
+        .map_err(format_error::map_format_error)?;
+    let parts = inspect
+        .parts
+        .into_iter()
+        .map(|part| DocxDecodedPart {
+            path: part.path,
+            compression_method: part.compression_method,
+            compressed_size: part.compressed_size,
+            uncompressed_size: part.uncompressed_size,
+            decoded_size: part.decoded_size.unwrap_or_default(),
+        })
+        .collect();
+    Ok(DocxInspectDecode { format: inspect.format, outer: inspect.outer, inner: inspect.inner, parts })
 }
 
 /// Indexes DOCX bytes without reading document semantics.
 pub fn inspect_docx_index_bytes(label: impl Into<String>, bytes: Vec<u8>) -> Result<DocxInspectIndex> {
-    if looks_like_ole(&bytes) {
-        return format_error::fail(AdapterError::not_implemented("legacy .doc OLE inspect is not available yet"));
-    }
-    if !looks_like_zip(&bytes) {
-        return format_error::fail(AdapterError::invalid_input("input is not a ZIP-based DOCX package"));
-    }
-
     let label = label.into();
-    let package = OpcPackage::open(label, bytes).map_err(map_opc_error)?;
-    Ok(DocxInspectIndex { format: "docx".into(), outer: "zip".into(), inner: "opc".into(), parts: package.part_paths() })
-}
-
-fn looks_like_zip(bytes: &[u8]) -> bool {
-    bytes.starts_with(b"PK\x03\x04") || bytes.starts_with(b"PK\x05\x06")
-}
-
-fn looks_like_ole(bytes: &[u8]) -> bool {
-    bytes.starts_with(&[0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1])
-}
-
-fn map_opc_error(error: acorn_docx::OpcError) -> AdapterError {
-    AdapterError::adapter("docx", error.to_string())
+    let inspect = inspect_docx_bytes(&label, &bytes, None, false, InspectBudget::default())
+        .map_err(format_error::map_format_error)?;
+    Ok(DocxInspectIndex {
+        format: inspect.format,
+        outer: inspect.outer,
+        inner: inspect.inner,
+        parts: inspect.parts.into_iter().map(|part| part.path).collect(),
+    })
 }

@@ -21,9 +21,6 @@ edition.workspace = true
 panduck-types = { workspace = true }
 panduck-diagnostic = { workspace = true }
 
-acorn-core = { workspace = true }
-acorn-docx = { workspace = true }
-
 notedown-ir = { workspace = true }
 notedown-formats = { workspace = true }
 
@@ -41,7 +38,6 @@ console = ["logger"]
 
 
 [dev-dependencies]
-cfb = "0.7.3"
 boost-log = { workspace = true }
 notedown-fixtures = { git = "https://github.com/notedge/notedown.git", branch = "dev" }
 serial_test = "3.2.0"

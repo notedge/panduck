@@ -19,5 +19,6 @@ pub(crate) fn map_format_error(error: FormatError) -> AdapterError {
         FormatError::InvalidInput { message } => AdapterError::invalid_input(message),
         FormatError::Parse { format, message } => AdapterError::adapter(format, message),
         FormatError::Unsupported { format, operation } => AdapterError::unsupported_format(format, operation),
+        FormatError::Budget { format, message } => AdapterError::adapter(format, format!("budget exhausted: {message}")),
     }
 }
