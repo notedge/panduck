@@ -6,6 +6,7 @@ mod inspect;
 mod publish;
 mod readers;
 mod writers;
+mod dedupe_assets;
 
 use std::{fs, path::Path};
 
@@ -150,7 +151,8 @@ pub fn convert_to_markdown_project_bytes(from: &str, label: &str, bytes: Vec<u8>
     }
 
     let graph = format_error::propagate(read_source(&from, label, bytes))?;
-    let project = format_error::propagate(write_markdown_project(&graph))?;
+    let mut project = format_error::propagate(write_markdown_project(&graph))?;
+    dedupe_assets::dedupe_markdown_project(&mut project);
     Ok(build_convert_project_output(&from, label, &graph, &project))
 }
 
@@ -167,7 +169,8 @@ pub fn convert_to_markdown_project(
     }
 
     let graph = format_error::propagate(read_source(&from, label, bytes))?;
-    let project = format_error::propagate(write_markdown_project(&graph))?;
+    let mut project = format_error::propagate(write_markdown_project(&graph))?;
+    dedupe_assets::dedupe_markdown_project(&mut project);
     let output = build_convert_project_output(&from, label, &graph, &project);
     let published = publish_markdown_project(output_dir, &project, &output.report_json)?;
     Ok((output, published))

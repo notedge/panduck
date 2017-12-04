@@ -7,6 +7,18 @@ use panduck_convert::{convert_to_markdown_project, supports_markdown_project_sou
 mod common;
 use common::{assert_convert_project_report, assert_report_contains_loss_codes, stored_zip};
 
+/// Assert that an asset path matches the content-addressed pattern
+/// `assets/{16-hex-chars}.{ext}`.
+fn assert_content_addressed(path: &str, expected_ext: &str) {
+    let expected_prefix = "assets/";
+    assert!(path.starts_with(expected_prefix), "path {path} must start with assets/");
+    let rest = &path[expected_prefix.len()..];
+    let (hex, ext) = rest.rsplit_once('.').expect("path must have extension");
+    assert_eq!(ext, expected_ext, "extension mismatch for {path}");
+    assert_eq!(hex.len(), 16, "fingerprint prefix must be 16 hex chars in {path}");
+    assert!(hex.chars().all(|c| c.is_ascii_hexdigit()), "must be hex in {path}");
+}
+
 #[test]
 fn docx_to_markdown_project_writes_index_assets_and_report() {
     let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -46,15 +58,17 @@ fn docx_to_markdown_project_writes_index_assets_and_report() {
     let output_dir = std::env::temp_dir().join(format!("panduck-md-project-{}", std::process::id()));
     let (output, published) = convert_to_markdown_project("docx", "image.docx", zip, &output_dir).expect("convert project");
 
-    assert!(output.index_markdown.contains("![Logo](assets/logo.png)"));
-    assert_eq!(output.published_assets, vec!["assets/logo.png".to_string()]);
+    assert_eq!(output.published_assets.len(), 1);
+    let asset_path = &output.published_assets[0];
+    assert_content_addressed(asset_path, "png");
+    assert!(output.index_markdown.contains(&format!("![Logo]({asset_path})")));
     assert!(output.unresolved_assets.is_empty());
     assert_convert_project_report(&output, &published);
     assert_report_contains_loss_codes(&output.report_json, &["import.docx.partial_coverage"]);
 
     let index = fs::read_to_string(published.index_path).expect("read index.md");
-    assert!(index.contains("![Logo](assets/logo.png)"));
-    let asset_bytes = fs::read(output_dir.join("assets/logo.png")).expect("read asset");
+    assert!(index.contains(&format!("![Logo]({asset_path})")));
+    let asset_bytes = fs::read(output_dir.join(asset_path)).expect("read asset");
     assert_eq!(asset_bytes, b"\x89PNG\r\n");
 
     let reopened = import_markdown_bytes("index.md", &index).expect("oak markdown reopen");
@@ -65,7 +79,7 @@ fn docx_to_markdown_project_writes_index_assets_and_report() {
             if content.iter().any(|inline| matches!(
                 inline,
                 Inline::Image { source, alt, .. }
-                    if source == "assets/logo.png"
+                    if source == asset_path
                         && alt.iter().any(|child| matches!(child, Inline::Text { text } if text == "Logo"))
             ))
     )));
@@ -187,12 +201,14 @@ fn epub_to_markdown_project_materializes_chapter_image() {
         convert_to_markdown_project("epub", "image.epub", epub_with_image_zip(), &output_dir).expect("convert epub project");
 
     assert!(output.published_chapters.is_empty());
-    assert_eq!(output.published_assets, vec!["assets/cover.png".to_string()]);
+    assert_eq!(output.published_assets.len(), 1);
+    let asset_path = &output.published_assets[0];
+    assert_content_addressed(asset_path, "png");
     assert_convert_project_report(&output, &published);
     assert_report_contains_loss_codes(&output.report_json, &["import.epub.partial_coverage"]);
     let index = fs::read_to_string(published.index_path).expect("read index.md");
-    assert!(index.contains("![Cover art](assets/cover.png)"));
-    assert_eq!(fs::read(output_dir.join("assets/cover.png")).expect("read asset"), b"\x89PNG\r\n");
+    assert!(index.contains(&format!("![Cover art]({asset_path})")));
+    assert_eq!(fs::read(output_dir.join(asset_path)).expect("read asset"), b"\x89PNG\r\n");
 
     let _ = fs::remove_dir_all(&output_dir);
 }
