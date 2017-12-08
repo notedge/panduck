@@ -10,6 +10,7 @@ mod dedupe_assets;
 
 use std::{fs, path::Path};
 
+use notedown_formats::{FormatCapability, FormatDirection, FormatStatus};
 use notedown_formats::import::{
     doc::import_doc_bytes, docx::import_docx_bytes, epub::import_epub_bytes, html::import_html_bytes, pdf::import_pdf_bytes,
 };
@@ -31,7 +32,7 @@ pub use writers::{
     write_document_docx, write_document_html, write_document_markdown, write_document_pdf, write_markdown_project,
 };
 
-/// Supported conversion route.
+/// Supported conversion route declared by Panduck orchestration.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Route {
     /// Source format name.
@@ -65,16 +66,111 @@ const ROUTES: &[Route] = &[
     Route { from: "html", to: "docx" },
 ];
 
-/// Returns whether Panduck can run this conversion today.
+/// Whether Panduck can run this conversion today.
+///
+/// Returns `true` when Panduck's hard-coded route table declares the pair **and**
+/// `notedown_formats::capabilities()` reports neither side as `Unavailable` or
+/// `Planned`. Partial routes are allowed through — the caller should inspect
+/// [`route_status`] if they want to surface warnings.
 pub fn supports_route(from: &str, to: &str) -> bool {
     let from = from.to_ascii_lowercase();
     let to = to.to_ascii_lowercase();
-    ROUTES.iter().any(|route| route.from == from && route.to == to)
+    let declared = ROUTES.iter().any(|route| route.from == from && route.to == to);
+    if !declared {
+        return false;
+    }
+    // Validate against live capability registry.
+    match route_status(&from, &to) {
+        Some(RouteStatus { from_status, to_status, .. }) => !is_blocked(from_status) && !is_blocked(to_status),
+        None => false,
+    }
 }
 
-/// Lists wired conversion routes.
+/// Live capability inspection for a Panduck route.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RouteStatus {
+    /// Status reported by `notedown_formats` for import side.
+    pub from_status: FormatStatus,
+    /// Status reported by `notedown_formats` for export side.
+    pub to_status: FormatStatus,
+}
+
+/// Look up the live capability status for a Panduck route pair.
+///
+/// Returns `None` when either side is absent from the `notedown_formats`
+/// capability registry entirely (should be treated as unavailable).
+pub fn route_status(from: &str, to: &str) -> Option<RouteStatus> {
+    let capabilities = notedown_formats::capabilities();
+    let from_status = status_for(&capabilities, from, FormatDirection::Import)?;
+    let to_status = status_for(&capabilities, to, FormatDirection::Export)?;
+    Some(RouteStatus { from_status, to_status })
+}
+
+fn status_for(capabilities: &[FormatCapability], id: &str, direction: FormatDirection) -> Option<FormatStatus> {
+    capabilities
+        .iter()
+        .find(|entry| entry.id == id && entry.direction == direction)
+        .map(|entry| entry.status)
+}
+
+fn is_blocked(status: FormatStatus) -> bool {
+    matches!(status, FormatStatus::Unavailable | FormatStatus::Planned)
+}
+
+fn status_label(status: FormatStatus) -> &'static str {
+    match status {
+        FormatStatus::Ready => "ready",
+        FormatStatus::Partial => "partial",
+        FormatStatus::Planned => "planned",
+        FormatStatus::Unavailable => "unavailable",
+    }
+}
+
+/// Build a capability report fragment for inclusion in the report envelope.
+fn build_capability_report(from: &str, to: &str) -> serde_json::Value {
+    let (from_status, to_status) = route_status(from, to)
+        .map(|s| (status_label(s.from_status), status_label(s.to_status)))
+        .unwrap_or(("unknown", "unknown"));
+    serde_json::json!({
+        "import_format": from,
+        "import_status": from_status,
+        "export_format": to,
+        "export_status": to_status,
+    })
+}
+
+/// Derive overall report status from capability and coverage.
+///
+/// Partial capability + full coverage → "success_with_partial_capability".
+/// Full capability + loss → "success_with_loss" (existing).
+/// Both fine → "success".
+fn derive_report_status(capability_report: &serde_json::Value, coverage_complete: bool) -> &'static str {
+    let import_status = capability_report["import_status"].as_str().unwrap_or("unknown");
+    let export_status = capability_report["export_status"].as_str().unwrap_or("unknown");
+    let capability_partial = matches!(import_status, "partial" | "unknown") || matches!(export_status, "partial" | "unknown");
+    match (capability_partial, coverage_complete) {
+        (true, true) => "success_with_partial_capability",
+        (false, false) => "success_with_loss",
+        (true, false) => "success_with_partial_capability_and_loss",
+        (false, true) => "success",
+    }
+}
+
+/// Whether either side of a route is `Partial` or lower.
+pub fn route_has_partial(from: &str, to: &str) -> bool {
+    route_status(from, to).is_some_and(|s| {
+        matches!(s.from_status, FormatStatus::Partial)
+            || matches!(s.to_status, FormatStatus::Partial)
+    })
+}
+
+/// Lists wired conversion routes filtered by live capability.
 pub fn supported_routes() -> Vec<(String, String)> {
-    ROUTES.iter().map(|route| (route.from.to_string(), route.to.to_string())).collect()
+    ROUTES
+        .iter()
+        .filter(|route| route_status(route.from, route.to).is_some_and(|s| !is_blocked(s.from_status) && !is_blocked(s.to_status)))
+        .map(|route| (route.from.to_string(), route.to.to_string()))
+        .collect()
 }
 
 /// Markdown project conversion output.
@@ -127,12 +223,15 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>) -> Resul
         panduck_diagnostic::log_diagnostic_set(&diagnostic_set);
     }
     let diagnostic_envelope = DiagnosticEnvelope::from_set(&diagnostic_set);
+    let capability_report = build_capability_report(&from, &to);
+    let report_status = derive_report_status(&capability_report, graph.coverage.complete);
     let report_json = serde_json::json!({
         "schema_version": "panduck.report/v1",
         "operation": "convert",
-        "status": if graph.coverage.complete { "success" } else { "success_with_loss" },
+        "status": report_status,
         "inputs": [{ "path": label, "format": from }],
         "pipeline": { "reader": from, "writer": to, "stages": ["read", "ir", "write"] },
+        "capabilities": capability_report,
         "coverage": graph.coverage,
         "losses": graph.coverage.loss,
         "diagnostics": diagnostic_envelope,
@@ -188,6 +287,8 @@ fn build_convert_project_output(
         panduck_diagnostic::log_diagnostic_set(&diagnostic_set);
     }
     let diagnostic_envelope = DiagnosticEnvelope::from_set(&diagnostic_set);
+    let capability_report = build_capability_report(from, "markdown");
+    let report_status = derive_report_status(&capability_report, graph.coverage.complete);
     let published_assets: Vec<String> = project.assets.iter().map(|asset| asset.relative_path.clone()).collect();
     let published_chapters: Vec<String> = project.chapters.iter().map(|chapter| chapter.relative_path.clone()).collect();
     let mut outputs = vec![
@@ -201,9 +302,10 @@ fn build_convert_project_output(
     let report_json = serde_json::json!({
         "schema_version": "panduck.report/v1",
         "operation": "convert_project",
-        "status": if graph.coverage.complete { "success" } else { "success_with_loss" },
+        "status": report_status,
         "inputs": [{ "path": label, "format": from }],
         "pipeline": { "reader": from, "writer": "markdown-project", "stages": ["read", "ir", "write", "materialize"] },
+        "capabilities": capability_report,
         "coverage": graph.coverage,
         "losses": graph.coverage.loss,
         "diagnostics": diagnostic_envelope,

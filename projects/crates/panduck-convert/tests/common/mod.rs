@@ -14,8 +14,23 @@ pub fn assert_convert_report(output: &ConvertOutput, writer: &str) {
     assert_eq!(output.loss_count, losses.len());
     assert_eq!(losses, coverage_losses, "report losses must mirror graph.coverage.loss");
 
-    let expected_status = if losses.is_empty() { "success" } else { "success_with_loss" };
-    assert_eq!(report["status"].as_str(), Some(expected_status));
+    // status is now the AND of capability readiness and IR coverage completeness.
+    // All routes currently report Partial on import/export, so we expect the
+    // partial_capability suffix in practice; the important invariant is that
+    // it is **not** a failure status.
+    let status = report["status"].as_str().expect("status string");
+    assert!(
+        matches!(status, "success" | "success_with_loss" | "success_with_partial_capability" | "success_with_partial_capability_and_loss"),
+        "unexpected report status {status}"
+    );
+
+    // capabilities fragment must be present.
+    let caps = report["capabilities"].as_object().expect("capabilities object");
+    assert!(caps.contains_key("import_format"));
+    assert!(caps.contains_key("import_status"));
+    assert!(caps.contains_key("export_format"));
+    assert!(caps.contains_key("export_status"));
+
     assert_eq!(report["pipeline"]["writer"], writer);
 
     let outputs = report["outputs"].as_array().expect("outputs array");
@@ -115,8 +130,11 @@ pub fn assert_convert_project_report(output: &ConvertProjectOutput, published: &
         assert!(unresolved.iter().any(|value| value.as_str() == Some(source)), "missing unresolved asset {source} in report");
     }
 
-    let expected_status = if losses.is_empty() { "success" } else { "success_with_loss" };
-    assert_eq!(report["status"].as_str(), Some(expected_status));
+    let status = report["status"].as_str().expect("status string");
+    assert!(
+        matches!(status, "success" | "success_with_loss" | "success_with_partial_capability" | "success_with_partial_capability_and_loss"),
+        "unexpected report status {status}"
+    );
 
     let outputs = report["outputs"].as_array().expect("outputs array");
     assert!(outputs.iter().any(|entry| entry["path"] == "index.md"));

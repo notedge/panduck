@@ -125,7 +125,12 @@ fn epub_to_markdown_route_reopens_with_ir_semantics_and_loss_report() {
             if content.iter().any(|inline| matches!(inline, notedown_ir::Inline::Text { text } if text == "Hello EPUB"))
     )));
     assert!(output.loss_count > 0);
-    assert!(output.report_json.contains("success_with_loss"));
+    let report: serde_json::Value = serde_json::from_str(&output.report_json).expect("report");
+    let status = report["status"].as_str().expect("status");
+    assert!(
+        status.contains("success") && status.contains("loss"),
+        "expected a success+loss status, got {status}"
+    );
 }
 
 #[test]
@@ -149,6 +154,10 @@ fn epub_to_docx_route_reopens_semantic_content() {
             if content == &[notedown_ir::Inline::Text { text: "Hello EPUB".into() }]
     )));
     let report: serde_json::Value = serde_json::from_str(&output.report_json).expect("report");
-    assert_eq!(report["status"], "success_with_loss");
+    let status = report["status"].as_str().expect("status");
+    assert!(
+        status.contains("success") && status.contains("loss"),
+        "expected a success+loss status, got {status}"
+    );
     assert!(report["losses"].as_array().expect("losses").iter().any(|loss| loss["code"] == "import.epub.partial_coverage"));
 }
