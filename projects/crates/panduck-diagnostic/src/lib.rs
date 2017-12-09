@@ -99,44 +99,98 @@ pub fn from_loss_marker(marker: &LossMarker) -> Diagnostic {
     else {
         DiagnosticCode::SemanticLoss.wire_code()
     };
+    let msg = Message::new("panduck.semantic.loss")
+        .with_arg("code", MessageArg::Text(marker.code.clone()))
+        .with_arg("severity", MessageArg::Text(format!("{:?}", marker.status)));
     Diagnostic::new(
         code,
         loss_severity(marker.status),
         DiagnosticOrigin::new("panduck", "semantic"),
-        Message::new("panduck.semantic.loss").with_fallback(marker.message.clone()),
+        msg.with_fallback(marker.message.clone()),
     )
 }
 
 /// Map adapter-layer failures to unified diagnostics.
+///
+/// Every typed field on each [`AdapterError`] variant is carried into the
+/// diagnostic args map so downstream consumers can react on stable keys rather
+/// than parsing the human-readable fallback.
 pub fn from_adapter_error(error: &AdapterError) -> Diagnostic {
-    let (code, fallback) = match error {
+    let origin = DiagnosticOrigin::new("panduck", "adapter");
+    match error {
         AdapterError::Io { source, path } => {
-            let detail = match path {
-                Some(path) => format!("I/O error at {path}: {source}"),
+            let mut msg = Message::new("panduck.adapter.io")
+                .with_arg("source", MessageArg::Text(source.to_string()));
+            let fallback = match path {
+                Some(path) => {
+                    msg = msg.with_arg("path", MessageArg::Text(path.clone()));
+                    format!("I/O error at {path}: {source}")
+                }
                 None => format!("I/O error: {source}"),
             };
-            (DiagnosticCode::AdapterIo, detail)
+            Diagnostic::new(DiagnosticCode::AdapterIo.wire_code(), DiagnosticSeverity::Error, origin, msg.with_fallback(fallback))
         }
-        AdapterError::InvalidInput { message } => (DiagnosticCode::AdapterInvalidInput, message.clone()),
+        AdapterError::InvalidInput { message } => {
+            let diag = Diagnostic::new(
+                DiagnosticCode::AdapterInvalidInput.wire_code(),
+                DiagnosticSeverity::Error,
+                origin,
+                Message::new("panduck.adapter.invalid-input")
+                    .with_arg("message", MessageArg::Text(message.clone()))
+                    .with_fallback(message.clone()),
+            );
+            diag
+        }
         AdapterError::InvalidRange { offset, len } => {
-            (DiagnosticCode::AdapterInvalidRange, format!("invalid source range at {offset} len {len}"))
+            Diagnostic::new(
+                DiagnosticCode::AdapterInvalidRange.wire_code(),
+                DiagnosticSeverity::Error,
+                origin,
+                Message::new("panduck.adapter.invalid-range")
+                    .with_arg("offset", MessageArg::U64(*offset as u64))
+                    .with_arg("len", MessageArg::U64(*len as u64))
+                    .with_fallback(format!("invalid source range at {offset} len {len}")),
+            )
         }
-        AdapterError::NotImplemented { feature } => {
-            (DiagnosticCode::AdapterNotImplemented, format!("not implemented: {feature}"))
-        }
-        AdapterError::Adapter { adapter, message } => (DiagnosticCode::AdapterFailure, format!("{adapter}: {message}")),
-        AdapterError::UnsupportedFormat { format, operation } => {
-            (DiagnosticCode::AdapterUnsupportedFormat, format!("{format} does not support {operation}"))
-        }
+        AdapterError::NotImplemented { feature } => Diagnostic::new(
+            DiagnosticCode::AdapterNotImplemented.wire_code(),
+            DiagnosticSeverity::Error,
+            origin,
+            Message::new("panduck.adapter.not-implemented")
+                .with_arg("feature", MessageArg::Text(feature.clone()))
+                .with_fallback(format!("not implemented: {feature}")),
+        ),
+        AdapterError::Adapter { adapter, message } => Diagnostic::new(
+            DiagnosticCode::AdapterFailure.wire_code(),
+            DiagnosticSeverity::Error,
+            origin,
+            Message::new("panduck.adapter.failure")
+                .with_arg("adapter", MessageArg::Text(adapter.clone()))
+                .with_arg("message", MessageArg::Text(message.clone()))
+                .with_fallback(format!("{adapter}: {message}")),
+        ),
+        AdapterError::UnsupportedFormat { format, operation } => Diagnostic::new(
+            DiagnosticCode::AdapterUnsupportedFormat.wire_code(),
+            DiagnosticSeverity::Error,
+            origin,
+            Message::new("panduck.adapter.unsupported-format")
+                .with_arg("format", MessageArg::Text(format.clone()))
+                .with_arg("operation", MessageArg::Text(operation.clone()))
+                .with_fallback(format!("{format} does not support {operation}")),
+        ),
         AdapterError::Config { path, message } => {
-            let detail = match path {
-                Some(path) => format!("config error at {path}: {message}"),
+            let mut msg = Message::new("panduck.adapter.config")
+                .with_arg("message", MessageArg::Text(message.clone()));
+            let fallback = match path {
+                Some(path) => {
+                    msg = msg.with_arg("path", MessageArg::Text(path.clone()));
+                    format!("config error at {path}: {message}")
+                }
                 None => format!("config error: {message}"),
             };
-            (DiagnosticCode::AdapterConfig, detail)
+            Diagnostic::new(DiagnosticCode::AdapterConfig.wire_code(), DiagnosticSeverity::Error, origin, msg.with_fallback(fallback))
         }
-    };
-    build(code, DiagnosticSeverity::Error, fallback)
+    }
 }
 
 /// Collect semantic loss diagnostics from a document graph.
