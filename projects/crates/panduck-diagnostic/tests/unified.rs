@@ -48,3 +48,38 @@ fn diagnostic_envelope_serializes_to_json() {
     let json = serde_json::to_string(&envelope).expect("serialize diagnostic envelope");
     assert!(json.contains("import.epub.partial_coverage"));
 }
+
+#[test]
+fn adapter_error_typed_args_in_json_envelope() {
+    let diag = from_adapter_error(&AdapterError::invalid_range(42usize, 7usize));
+    let set = {
+        let mut s = boost_diagnostic::DiagnosticSet::new();
+        s.push(diag);
+        s
+    };
+    let envelope = DiagnosticEnvelope::from_set(&set);
+    let json = serde_json::to_string(&envelope).expect("serialize adapter-error envelope");
+    // 验证 MessageArg::U64 的 typed args 序列化正确 (external tag variant name as key)
+    assert!(json.contains("\"offset\""));
+    assert!(json.contains("42"));
+    assert!(json.contains("\"len\""));
+    assert!(json.contains("7"));
+    assert!(json.contains("panduck.adapter.invalid-range"));
+}
+
+#[test]
+fn adapter_error_text_args_in_json_envelope() {
+    let diag = from_adapter_error(&AdapterError::adapter("docx-writer", "numbering unresolved"));
+    let set = {
+        let mut s = boost_diagnostic::DiagnosticSet::new();
+        s.push(diag);
+        s
+    };
+    let envelope = DiagnosticEnvelope::from_set(&set);
+    let json = serde_json::to_string(&envelope).expect("serialize adapter envelope");
+    assert!(json.contains("\"adapter\""));
+    assert!(json.contains("docx-writer"));
+    assert!(json.contains("\"message\""));
+    assert!(json.contains("numbering unresolved"));
+    assert!(json.contains("panduck.adapter.failure"));
+}
