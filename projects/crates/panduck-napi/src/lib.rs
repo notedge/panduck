@@ -121,13 +121,6 @@ pub fn install_logger_log_file(path: String) -> Result<()> {
     boost_log::install_global_file_sink(&path).map_err(|error| Error::from_reason(error.to_string()))
 }
 
-/// Deprecated alias for [`install_logger_log_file`].
-#[deprecated(since = "0.1.0", note = "use `install_logger_log_file` instead")]
-#[napi]
-pub fn install_console_log_file(path: String) -> Result<()> {
-    install_logger_log_file(path)
-}
-
 /// Lists wired conversion routes as `from:to` strings.
 #[napi]
 pub fn supported_conversions() -> Vec<String> {

@@ -20,16 +20,13 @@ pub fn assert_convert_report(output: &ConvertOutput, writer: &str) {
     // it is **not** a failure status.
     let status = report["status"].as_str().expect("status string");
     assert!(
-        matches!(status, "success" | "success_with_loss" | "success_with_partial_capability" | "success_with_partial_capability_and_loss"),
+        matches!(status, "success" | "success_with_loss"),
         "unexpected report status {status}"
     );
 
-    // capabilities fragment must be present.
-    let caps = report["capabilities"].as_object().expect("capabilities object");
-    assert!(caps.contains_key("import_format"));
-    assert!(caps.contains_key("import_status"));
-    assert!(caps.contains_key("export_format"));
-    assert!(caps.contains_key("export_status"));
+    // coverage + diagnostics envelope must always be present.
+    assert!(report["coverage"].is_object());
+    assert!(report["diagnostics"].is_object());
 
     assert_eq!(report["pipeline"]["writer"], writer);
 
@@ -132,7 +129,7 @@ pub fn assert_convert_project_report(output: &ConvertProjectOutput, published: &
 
     let status = report["status"].as_str().expect("status string");
     assert!(
-        matches!(status, "success" | "success_with_loss" | "success_with_partial_capability" | "success_with_partial_capability_and_loss"),
+        matches!(status, "success" | "success_with_loss"),
         "unexpected report status {status}"
     );
 
