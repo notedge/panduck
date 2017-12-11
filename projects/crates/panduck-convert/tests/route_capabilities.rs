@@ -1,12 +1,11 @@
 use panduck_convert::supports_route;
 
 #[test]
-fn legacy_doc_writer_routes_remain_unavailable() {
+fn doc_reader_supports_all_writers() {
     assert!(supports_route("doc", "markdown"));
     assert!(supports_route("doc", "html"));
-    assert!(!supports_route("doc", "doc"));
-    assert!(!supports_route("doc", "docx"));
-    assert!(!supports_route("doc", "pdf"));
+    assert!(supports_route("doc", "docx"));
+    assert!(supports_route("doc", "pdf"));
 }
 
 #[test]
