@@ -2,15 +2,15 @@
 
 //! Node-API export surface for Panduck.
 
+use std::collections::BTreeSet;
+
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use panduck_convert::{
-    convert_file, convert_markdown_project_file, inspect_docx_decode, inspect_docx_index, supported_routes,
-    supports_markdown_project_source, supports_route,
+    READERS, WRITERS, convert_file, convert_markdown_project_file, inspect_docx_decode, inspect_docx_index,
+    supported_routes, supports_markdown_project_source, supports_route,
 };
 use panduck_types::AdapterError;
-
-const FORMATS: [&str; 9] = ["markdown", "html", "org", "rst", "tex", "doc", "docx", "epub", "pdf"];
 
 /// N-API Markdown project conversion response.
 #[napi(object)]
@@ -97,16 +97,23 @@ pub fn panduck_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }
 
-/// Lists format adapters wired into this workspace.
+/// Lists formats wired into this build (reader ∪ writer).
 #[napi]
 pub fn supported_formats() -> Vec<String> {
-    FORMATS.iter().map(|name| (*name).to_string()).collect()
+    let mut set = BTreeSet::new();
+    for f in READERS {
+        set.insert(*f);
+    }
+    for f in WRITERS {
+        set.insert(*f);
+    }
+    set.into_iter().map(|s| s.to_string()).collect()
 }
 
 /// Returns whether a format name is recognized by Panduck adapters.
 #[napi]
 pub fn is_supported_format(name: String) -> bool {
-    FORMATS.iter().any(|format| format.eq_ignore_ascii_case(name.as_str()))
+    supported_formats().iter().any(|f| f.eq_ignore_ascii_case(name.as_str()))
 }
 
 /// Returns whether a conversion route is wired in this build.

@@ -31,11 +31,11 @@ pub use writers::{
     write_document_docx, write_document_html, write_document_markdown, write_document_pdf, write_markdown_project,
 };
 
-/// Hard-coded reader formats (`from` parameter).
-const READERS: &[&str] = &["docx", "doc", "pdf", "epub", "html", "markdown", "notedown"];
+/// Reader formats wired into this build (lowercase).
+pub const READERS: &[&str] = &["docx", "doc", "pdf", "epub", "html", "markdown", "notedown"];
 
-/// Hard-coded writer formats (`to` parameter).
-const WRITERS: &[&str] = &["markdown", "docx", "pdf", "html"];
+/// Writer formats wired into this build (lowercase).
+pub const WRITERS: &[&str] = &["markdown", "docx", "pdf", "html"];
 
 /// Whether Panduck has a reader for `from` and a writer for `to`.
 ///
