@@ -7,8 +7,8 @@ use std::collections::BTreeSet;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use panduck_convert::{
-    READERS, WRITERS, convert_file, convert_markdown_project_file, inspect_docx_decode, inspect_docx_index,
-    supported_routes, supports_markdown_project_source, supports_route,
+    READERS, WRITERS, convert_file, convert_markdown_project_file, empty_diagnostic_envelope, inspect_docx_decode,
+    inspect_docx_index, supported_routes, supports_markdown_project_source, supports_route,
 };
 use panduck_types::AdapterError;
 
@@ -151,6 +151,7 @@ pub fn inspect_index(input_path: String) -> Result<InspectIndexResponse> {
         },
         "pipeline": { "stages": ["index"] },
         "parts": index.parts,
+        "diagnostics": empty_diagnostic_envelope(),
     })
     .to_string();
     Ok(InspectIndexResponse { format: index.format, outer: index.outer, inner: index.inner, parts: index.parts, report_json })
@@ -191,6 +192,7 @@ pub fn inspect_decode(input_path: String, part_path: Option<String>) -> Result<I
             "uncompressed_size": part.uncompressed_size,
             "decoded_size": part.decoded_size,
         })).collect::<Vec<_>>(),
+        "diagnostics": empty_diagnostic_envelope(),
     })
     .to_string();
     Ok(InspectDecodeResponse {

@@ -18,6 +18,7 @@ edition.workspace = true
 
 [dependencies]
 
+boost-diagnostic = { workspace = true }
 panduck-types = { workspace = true }
 panduck-diagnostic = { workspace = true }
 
