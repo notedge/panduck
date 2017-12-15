@@ -6,7 +6,7 @@
 
 You have a Word file, an EPUB, or a pile of Markdown notes. Panduck converts it to another format and tells you honestly what survived—headings, links, images, footnotes, tables—and what did not.
 
-It is not “Save As” with marketing copy. Complex layouts often come out partial. Panduck writes `panduck.report/v1` JSON so you can read the losses before you ship the result.
+It is not "Save As" with marketing copy. Complex layouts often come out partial. Panduck writes `panduck.report/v0` JSON so you can read the losses before you ship the result.
 
 You can also get a **Markdown project** folder: `index.md` or `chapters/*.md`, images under `assets/`, and `panduck.report.json` next to them—something you can commit and browse on GitHub.
 
@@ -100,7 +100,7 @@ flowchart LR
 
 ## 📊 Reports
 
-Every real conversion can produce `panduck.report/v1` JSON (`--report`, stdout, or the API).
+Every real conversion can produce `panduck.report/v0` JSON (`--report`, stdout, or the API).
 
 - **status** — finished clean, finished with losses, or blocked
 - **losses** — footnotes, images, styles, and other semantics that dropped
