@@ -21,7 +21,7 @@ use serde::Serialize;
 /// Re-export of `panduck-diagnostic` envelope type so downstream NAPI consumers
 /// can build diagnostics-aligned reports without depending on the diagnostic
 /// crate directly.
-pub use panduck_diagnostic::DiagnosticEnvelope;
+pub use panduck_diagnostic::{DiagnosticEnvelope, SCHEMA_REPORT};
 
 /// Build an empty diagnostic envelope for operations that completed cleanly.
 pub fn empty_diagnostic_envelope() -> DiagnosticEnvelope {
@@ -121,7 +121,7 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>) -> Resul
     }
     let diagnostic_envelope = DiagnosticEnvelope::from_set(&diagnostic_set);
     let report_json = serde_json::json!({
-        "schema_version": "panduck.report/v1",
+        "schema_version": panduck_diagnostic::SCHEMA_REPORT,
         "operation": "convert",
         "status": if loss_count == 0 { "success" } else { "success_with_loss" },
         "inputs": [{ "path": label, "format": from }],
@@ -192,7 +192,7 @@ fn build_convert_project_output(
     }
     outputs.push(serde_json::json!({ "path": "panduck.report.json", "format": "report", "published": true }));
     let report_json = serde_json::json!({
-        "schema_version": "panduck.report/v1",
+        "schema_version": panduck_diagnostic::SCHEMA_REPORT,
         "operation": "convert_project",
         "status": if loss_count == 0 { "success" } else { "success_with_loss" },
         "inputs": [{ "path": label, "format": from }],

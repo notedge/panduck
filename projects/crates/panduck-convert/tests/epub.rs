@@ -105,7 +105,7 @@ fn epub_to_markdown_route() {
     let output = convert_bytes("epub", "markdown", "book.epub", zip).expect("convert epub");
     assert!(output.markdown.contains("# Chapter One"));
     assert!(output.markdown.contains("Hello EPUB"));
-    assert!(output.report_json.contains("panduck.report/v1"));
+    assert!(output.report_json.contains(panduck_convert::SCHEMA_REPORT));
     assert!(output.report_json.contains("epub"));
 }
 

@@ -1,12 +1,12 @@
 use std::fs;
 
-use panduck_convert::{ConvertOutput, ConvertProjectOutput, PublishedMarkdownProject};
+use panduck_convert::{ConvertOutput, ConvertProjectOutput, PublishedMarkdownProject, SCHEMA_REPORT};
 use serde_json::Value;
 
 /// Assert single-file `convert` report matches IR loss and writer metadata.
 pub fn assert_convert_report(output: &ConvertOutput, writer: &str) {
     let report = parse_report_json(&output.report_json);
-    assert_eq!(report["schema_version"], "panduck.report/v1");
+    assert_eq!(report["schema_version"], SCHEMA_REPORT);
     assert_eq!(report["operation"], "convert");
 
     let losses = report["losses"].as_array().expect("losses array");
@@ -113,7 +113,7 @@ pub fn assert_convert_project_report(output: &ConvertProjectOutput, published: &
     let disk_report = parse_report_json(&disk);
     assert_eq!(report, disk_report, "in-memory and on-disk report must match");
 
-    assert_eq!(report["schema_version"], "panduck.report/v1");
+    assert_eq!(report["schema_version"], SCHEMA_REPORT);
     assert_eq!(report["operation"], "convert_project");
 
     let losses = report["losses"].as_array().expect("losses array");

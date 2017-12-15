@@ -16,7 +16,6 @@ panduck-types = { workspace = true }
 [features]
 default = []
 logger = ["dep:boost-log", "boost-diagnostic/log"]
-console = ["logger"]
 
 [dev-dependencies]
 serde_json = { workspace = true }

@@ -139,7 +139,7 @@ pub fn supported_conversions() -> Vec<String> {
 pub fn inspect_index(input_path: String) -> Result<InspectIndexResponse> {
     let index = inspect_docx_index(&input_path).map_err(map_adapter_error)?;
     let report_json = serde_json::json!({
-        "schema_version": "panduck.report/v1",
+        "schema_version": panduck_convert::SCHEMA_REPORT,
         "operation": "inspect",
         "status": "success",
         "inputs": [{ "path": input_path, "format": index.format }],
@@ -174,7 +174,7 @@ pub fn inspect_decode(input_path: String, part_path: Option<String>) -> Result<I
         })
         .collect::<Vec<_>>();
     let report_json = serde_json::json!({
-        "schema_version": "panduck.report/v1",
+        "schema_version": panduck_convert::SCHEMA_REPORT,
         "operation": "inspect",
         "status": "success",
         "inputs": [{ "path": input_path, "format": decode.format }],

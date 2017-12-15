@@ -7,6 +7,9 @@ use boost_diagnostic::{
 use notedown_ir::{DocumentGraph, LossMarker, SemanticStatus};
 use panduck_types::AdapterError;
 
+/// Panduck report schema (pre-1.0 — bump only on breaking wire changes).
+pub const SCHEMA_REPORT: &str = "panduck.report/v0";
+
 /// Panduck domain diagnostic code (maps to dotted `panduck.*` wire identifiers).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum DiagnosticCode {
@@ -207,40 +210,16 @@ pub use boost_diagnostic::{
     diagnostic_to_log_event, emit_diagnostic as emit_unified_diagnostic, emit_diagnostic_log, emit_diagnostic_set,
 };
 
-/// Deprecated alias for [`boost_log::LogEvent`].
-#[cfg(feature = "console")]
-#[deprecated(since = "0.1.0", note = "use `boost_log::LogEvent` and `to_log_event`")]
-pub use boost_log::LogEvent as ConsoleEvent;
-
-/// Deprecated alias for [`diagnostic_to_log_event`].
-#[cfg(feature = "console")]
-#[deprecated(since = "0.1.0", note = "use `diagnostic_to_log_event`")]
-pub use boost_diagnostic::diagnostic_to_log_event as diagnostic_to_event;
-
 /// Project a Panduck diagnostic into a log event.
 #[cfg(feature = "logger")]
 pub fn to_log_event(diagnostic: &Diagnostic) -> boost_log::LogEvent {
     diagnostic_to_log_event(diagnostic)
 }
 
-/// Deprecated alias for [`to_log_event`].
-#[cfg(feature = "console")]
-#[deprecated(since = "0.1.0", note = "use `to_log_event`")]
-pub fn to_console_event(diagnostic: &Diagnostic) -> boost_log::LogEvent {
-    to_log_event(diagnostic)
-}
-
 /// Project an adapter failure into a log event.
 #[cfg(feature = "logger")]
 pub fn adapter_error_to_log_event(error: &AdapterError) -> boost_log::LogEvent {
     diagnostic_to_log_event(&from_adapter_error(error))
-}
-
-/// Deprecated alias for [`adapter_error_to_log_event`].
-#[cfg(feature = "console")]
-#[deprecated(since = "0.1.0", note = "use `adapter_error_to_log_event`")]
-pub fn adapter_error_to_event(error: &AdapterError) -> boost_log::LogEvent {
-    adapter_error_to_log_event(error)
 }
 
 /// Emit one unified diagnostic through the global logger facade.

@@ -14,7 +14,7 @@ fn notedown_to_markdown_route() {
     let source = b"# Route\n\nBody.\n".to_vec();
     let output = convert_bytes("notedown", "markdown", "route.nd", source).expect("convert");
     assert!(output.markdown.contains("# Route"));
-    assert!(output.report_json.contains("panduck.report/v1"));
+    assert!(output.report_json.contains(panduck_convert::SCHEMA_REPORT));
 }
 
 #[test]

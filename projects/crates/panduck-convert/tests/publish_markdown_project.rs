@@ -18,7 +18,7 @@ fn publish_markdown_project_writes_index_chapters_assets_and_report() {
         }],
         unresolved_asset_sources: Vec::new(),
     };
-    let report = r#"{"schema_version":"panduck.report/v1","operation":"convert_project"}"#;
+    let report = format!(r#"{{"schema_version":"{}","operation":"convert_project"}}"#, panduck_convert::SCHEMA_REPORT);
     let output_dir = std::env::temp_dir().join(format!("panduck-publish-project-{}", std::process::id()));
 
     let published = publish_markdown_project(&output_dir, &project, report).expect("publish project");
