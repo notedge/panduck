@@ -5,9 +5,20 @@ mod display;
 
 use std::{error::Error, fmt::Debug};
 
+use boost_diagnostic::Diagnostic;
+
 /// Fatal failure in a Panduck reader, writer, or orchestration step.
 #[derive(Debug)]
 pub enum AdapterError {
+    /// Adapter-layer failure that has already been converted to a structured
+    /// [`Diagnostic`]. This variant preserves the original code, typed args,
+    /// origin, and cause chain from the producing crate (typically Notedown
+    /// formats), so Panduck does not re-stringify it into a free-form message.
+    Diagnostic {
+        /// The authoritative structured diagnostic from the underlying layer.
+        diagnostic: Diagnostic,
+    },
+
     /// File or stream I/O failure.
     Io {
         /// Underlying operating-system I/O error.
@@ -56,6 +67,11 @@ pub enum AdapterError {
 }
 
 impl AdapterError {
+    /// A failure that is already a structured diagnostic from the producing layer.
+    pub fn diagnostic(diagnostic: Diagnostic) -> Self {
+        Self::Diagnostic { diagnostic }
+    }
+
     /// I/O failure, optionally tied to a filesystem path.
     pub fn io(source: std::io::Error, path: Option<impl ToString>) -> Self {
         Self::Io { source, path: path.map(|p| p.to_string()) }

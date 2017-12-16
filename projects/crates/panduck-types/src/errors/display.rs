@@ -4,6 +4,15 @@ use std::fmt::{Display, Formatter};
 impl Display for AdapterError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            AdapterError::Diagnostic { diagnostic } => match diagnostic.message().fallback() {
+                Some(fallback) => write!(f, "{fallback}"),
+                None => write!(
+                    f,
+                    "{}/{}",
+                    diagnostic.origin().namespace(),
+                    diagnostic.code()
+                ),
+            },
             AdapterError::Io { source, path } => match path {
                 Some(path) => write!(f, "I/O error at {}: {}", path, source),
                 None => write!(f, "I/O error: {}", source),

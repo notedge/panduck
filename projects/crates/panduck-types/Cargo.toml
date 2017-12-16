@@ -16,6 +16,7 @@ exclude = ["package.json", "tests/**"]
 doctest = false
 
 [dependencies]
+boost-diagnostic = { workspace = true }
 notedown-ir = { workspace = true }
 url = { workspace = true }
 source-map = { workspace = true }

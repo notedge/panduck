@@ -1,4 +1,4 @@
-use notedown_formats::FormatError;
+use notedown_formats::{from_format_error, FormatError};
 use panduck_types::{AdapterError, Result};
 
 pub(crate) fn fail<T>(error: AdapterError) -> Result<T> {
@@ -13,12 +13,11 @@ pub(crate) fn propagate<T>(result: Result<T>) -> Result<T> {
     result
 }
 
+/// Convert a Notedown [`FormatError`] into an [`AdapterError`] while preserving
+/// the structured diagnostic code, typed args, and origin from the formats
+/// layer. This avoids the previous pattern of stringifying the error into a
+/// free-form message and losing the stable wire identifiers.
 pub(crate) fn map_format_error(error: FormatError) -> AdapterError {
-    match error {
-        FormatError::NotImplemented { format, direction } => AdapterError::not_implemented(format!("{direction} for {format}")),
-        FormatError::InvalidInput { message } => AdapterError::invalid_input(message),
-        FormatError::Parse { format, message } => AdapterError::adapter(format, message),
-        FormatError::Unsupported { format, operation } => AdapterError::unsupported_format(format, operation),
-        FormatError::Budget { format, message } => AdapterError::adapter(format, format!("budget exhausted: {message}")),
-    }
+    let diagnostic = from_format_error(&error);
+    AdapterError::diagnostic(diagnostic)
 }

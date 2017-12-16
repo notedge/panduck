@@ -121,6 +121,10 @@ pub fn from_loss_marker(marker: &LossMarker) -> Diagnostic {
 pub fn from_adapter_error(error: &AdapterError) -> Diagnostic {
     let origin = DiagnosticOrigin::new("panduck", "adapter");
     match error {
+        // Already a structured diagnostic from the producing layer (e.g.
+        // notedown-formats via format_error::map_format_error). Preserve the
+        // original code, args, origin, and cause chain instead of remapping.
+        AdapterError::Diagnostic { diagnostic } => diagnostic.clone(),
         AdapterError::Io { source, path } => {
             let mut msg = Message::new("panduck.adapter.io")
                 .with_arg("source", MessageArg::Text(source.to_string()));
