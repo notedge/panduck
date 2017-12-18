@@ -239,5 +239,21 @@ pub fn convert_document(from: String, to: String, input_path: String) -> Result<
 }
 
 fn map_adapter_error(error: AdapterError) -> Error {
-    Error::from_reason(error.to_string())
+    // Preserve the structured diagnostic identity for JS consumers instead of
+    // collapsing everything into a free-form string. When the AdapterError
+    // wraps a Diagnostic (from the notedown formats layer via map_format_error)
+    // we extract the stable code and fallback message directly. For legacy
+    // variants we fall back to the error's Display impl.
+    let (code, fallback) = match &error {
+        AdapterError::Diagnostic { diagnostic } => (
+            diagnostic.code().to_string(),
+            diagnostic
+                .message()
+                .fallback()
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| diagnostic.code().to_string()),
+        ),
+        _ => ("panduck.adapter.error".to_string(), error.to_string()),
+    };
+    Error::from_reason(format!("[code={code}] {fallback}"))
 }
