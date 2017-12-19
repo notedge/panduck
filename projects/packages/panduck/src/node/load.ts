@@ -15,6 +15,18 @@ type NativeBinding = {
         binary?: Uint8Array;
         reportJson: string;
     };
+    convertBytesMemory?: (
+        from: string,
+        to: string,
+        label: string,
+        bytes: Uint8Array,
+    ) => {
+        exitCode: number;
+        markdown?: string;
+        html?: string;
+        binary?: Uint8Array;
+        reportJson: string;
+    };
     supportsMarkdownProject?: (from: string) => boolean;
     convertMarkdownProject?: (from: string, inputPath: string, outputDir: string) => {
         exitCode: number;
@@ -79,6 +91,20 @@ export function loadPanduckNode(): PanduckBindings {
         convertDocument: binding.convertDocument
             ? (from, to, inputPath) => {
                   const response = binding.convertDocument!(from, to, inputPath);
+                  return {
+                      exitCode: response.exitCode,
+                      markdown: response.markdown,
+                      html: response.html,
+                      binary: response.binary
+                          ? new Uint8Array(response.binary)
+                          : undefined,
+                      reportJson: response.reportJson,
+                  };
+              }
+            : undefined,
+        convertBytesMemory: binding.convertBytesMemory
+            ? (from, to, label, bytes) => {
+                  const response = binding.convertBytesMemory!(from, to, label, bytes);
                   return {
                       exitCode: response.exitCode,
                       markdown: response.markdown,

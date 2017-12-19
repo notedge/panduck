@@ -7,8 +7,8 @@ use std::collections::BTreeSet;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use panduck_convert::{
-    READERS, WRITERS, convert_file, convert_markdown_project_file, empty_diagnostic_envelope, inspect_docx_decode,
-    inspect_docx_index, supported_routes, supports_markdown_project_source, supports_route,
+    READERS, WRITERS, convert_bytes, convert_file, convert_markdown_project_file, empty_diagnostic_envelope,
+    inspect_docx_decode, inspect_docx_index, supported_routes, supports_markdown_project_source, supports_route,
 };
 use panduck_types::AdapterError;
 
@@ -229,6 +229,22 @@ pub fn convert_markdown_project(from: String, input_path: String, output_dir: St
 #[napi]
 pub fn convert_document(from: String, to: String, input_path: String) -> Result<ConvertResponse> {
     let output = convert_file(&from, &to, &input_path).map_err(map_adapter_error)?;
+    Ok(ConvertResponse {
+        exit_code: 0,
+        markdown: if output.markdown.is_empty() { None } else { Some(output.markdown) },
+        html: output.html,
+        binary: output.binary.map(Buffer::from),
+        report_json: output.report_json,
+    })
+}
+
+/// Converts in-memory bytes through the Panduck IR pipeline.
+///
+/// Accepts any supported reader format. Use `from = "html"` with UTF-8 bytes
+/// when converting Pandark-fetched pages without writing them to disk first.
+#[napi]
+pub fn convert_bytes_memory(from: String, to: String, label: String, bytes: Buffer) -> Result<ConvertResponse> {
+    let output = convert_bytes(&from, &to, &label, bytes.to_vec()).map_err(map_adapter_error)?;
     Ok(ConvertResponse {
         exit_code: 0,
         markdown: if output.markdown.is_empty() { None } else { Some(output.markdown) },

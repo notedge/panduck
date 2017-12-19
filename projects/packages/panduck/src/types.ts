@@ -48,6 +48,8 @@ export type PanduckBindings = {
     supportsConversion?: (from: string, to: string) => boolean;
     supportedConversions?: () => string[];
     convertDocument?: (from: string, to: string, inputPath: string) => ConvertResponse;
+    /** Convert in-memory bytes — the path Pandark Engine takes when the page is already fetched. */
+    convertBytesMemory?: (from: string, to: string, label: string, bytes: Uint8Array) => ConvertResponse;
     supportsMarkdownProject?: (from: string) => boolean;
     convertMarkdownProject?: (from: string, inputPath: string, outputDir: string) => ConvertProjectResponse;
     inspectIndex?: (inputPath: string) => InspectIndexResponse;
