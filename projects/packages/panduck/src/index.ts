@@ -11,7 +11,11 @@ export type {
     ConverterPageLike,
     ConverterArtifactLike,
     ConverterResult,
+    ConverterStatus,
+    DiagnosticRecord,
+    DiagnosticSeverity,
     ToMarkdownOptions,
+    LossPolicy,
 } from "./converter.js";
 
 /** @deprecated Use `loadPanduckNode` or `loadPanduckNative`. */
