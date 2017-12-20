@@ -16,6 +16,15 @@
  */
 
 import { loadPanduckNode } from "./node/load.js";
+import type {
+    RulePlan,
+    RuleStep,
+    RuleOp,
+    InputOp,
+    TransformOp,
+    OutputOp,
+} from "./rule-builder.js";
+import { RuleBuilder } from "./rule-builder.js";
 
 // ---------------------------------------------------------------------------
 // Diagnostic record (shared shape with Pandark Crawler)
@@ -44,7 +53,7 @@ export type DiagnosticRecord = {
     };
     severity?: DiagnosticSeverity;
     /** Which converter stage produced this record. */
-    stage?: "input" | "structure" | "convert" | "loss" | "rule";
+    stage?: "input" | "structure" | "transform" | "convert" | "loss" | "rule" | "output";
     /** URL or label the diagnostic belongs to. */
     url?: string;
     /** Affected selector / source span / asset. */
@@ -131,13 +140,17 @@ export type ToMarkdownOptions = {
     /** What to do when known structural loss is detected during conversion. */
     loss?: LossPolicy;
 
-    // --- Custom rules (deferred) --------------------------------------------
+    // --- Declarative rule plan ----------------------------------------------
     /**
-     * Custom node-to-Markdown rules. The full rule-engine lands in a follow-up
-     * Rust-side policy builder; until then, Converter records each entry as a
-     * "rule not executed" diagnostic so users can see what they expected.
+     * Declarative rule plan produced by `new RuleBuilder().input(...).transform(...).output(...).build()`.
+     * Can also be a RuleBuilder itself — Converter will call `.build()` for you.
+     *
+     * The rule engine that actually executes these plans lives in a Rust-side
+     * policy builder that is not wired yet. Until it lands, Converter records
+     * every requested operation as a structured diagnostic so the full intent
+     * is preserved in the run report and Rust can catch up without guessing.
      */
-    rules?: Record<string, unknown>;
+    rules?: RulePlan | RuleBuilder;
 };
 
 // ---------------------------------------------------------------------------
@@ -193,58 +206,50 @@ export class Converter {
 
         const diagnostics: DiagnosticRecord[] = [];
 
-        // (1) Requested-but-not-yet-executed option diagnostics.
+        // (1) Flatten RuleBuilder → RulePlan and walk every step/op so the full
+        // declarative intent is preserved as structured diagnostics.
+        const plan = resolvePlan(options?.rules);
+        if (plan !== null) {
+            diagnostics.push(...planToDiagnostics(plan, urlHint));
+        }
+
+        // (2) Legacy flat options — still honored while the Rust side migrates.
+        // They each collapse into a single diagnostic so the author can see
+        // what was requested alongside any RulePlan.
         if (options?.select || options?.root) {
             diagnostics.push({
-                code: "panduck.convert.select-deferred",
-                fallback: "`select` / `root` option requested but selector engine is not yet wired",
-                messageKey: "panduck.diagnostic.selectDeferred",
+                code: "panduck.rule.select-legacy",
+                fallback: "Legacy flat `select` / `root` option — prefer RuleBuilder.input(i => i.select(...))",
+                messageKey: "panduck.diagnostic.selectLegacy",
                 args: { select: options.select ?? options.root },
                 origin: { namespace: "panduck", component: "convert" },
                 severity: "info",
-                stage: "convert",
+                stage: "input",
                 url: urlHint,
             });
         }
         if (options?.remove && options.remove.length > 0) {
             diagnostics.push({
-                code: "panduck.convert.remove-deferred",
-                fallback: `\`remove\` option with ${options.remove.length} selector(s) requested but not yet executed`,
-                messageKey: "panduck.diagnostic.removeDeferred",
+                code: "panduck.rule.remove-legacy",
+                fallback: `Legacy flat \`remove\` option with ${options.remove.length} selector(s) — prefer RuleBuilder.transform(t => t.remove(...))`,
+                messageKey: "panduck.diagnostic.removeLegacy",
                 args: { selectors: [...options.remove] },
                 origin: { namespace: "panduck", component: "convert" },
                 severity: "info",
-                stage: "convert",
+                stage: "transform",
                 url: urlHint,
             });
         }
-        if (options?.rules && Object.keys(options.rules).length > 0) {
-            diagnostics.push({
-                code: "panduck.convert.rules-deferred",
-                fallback: "Custom `rules` requested but rule engine is not yet wired",
-                messageKey: "panduck.diagnostic.rulesDeferred",
-                args: { selectors: Object.keys(options.rules) },
-                origin: { namespace: "panduck", component: "convert" },
-                severity: "info",
-                stage: "rule",
-                url: urlHint,
-            });
-        }
-
-        // (2) Required-structure enforcement — lightweight selector-less gate.
-        // Full CSS matching lands in the Rust side; until then we check the
-        // input is non-empty and mark each declared required field as "not
-        // validated" so users know it was requested but not enforced.
         if (options?.required) {
             const keys = Object.keys(options.required);
             for (const key of keys) {
                 diagnostics.push({
-                    code: "panduck.convert.required-not-validated",
-                    fallback: `Required structure "${key}" was requested but selector matching is not yet wired`,
-                    messageKey: "panduck.diagnostic.requiredNotValidated",
+                    code: "panduck.rule.require-legacy",
+                    fallback: `Legacy flat required "${key}" → prefer RuleBuilder.input(i => i.require("${key}", "${options.required![key]}"))`,
+                    messageKey: "panduck.diagnostic.requireLegacy",
                     args: { key, selector: options.required[key] },
                     origin: { namespace: "panduck", component: "convert" },
-                    severity: "warn",
+                    severity: "info",
                     stage: "structure",
                     target: options.required[key],
                     url: urlHint,
@@ -398,11 +403,133 @@ function tryParseReportDiagnostics(reportJson: string): DiagnosticRecord[] {
 function deriveStatus(diags: DiagnosticRecord[], loss: LossPolicy): ConverterStatus {
     // Any error-severity diagnostic → failed, no matter the policy.
     if (diags.some((d) => d.severity === "error")) return "failed";
+    // Loss / deferred execution / unvalidated structure → the conversion is
+    // incomplete even though the Rust side didn't report an error.
     const hasLoss = diags.some((d) =>
-        /loss|deferred|not-validated|required-missing|unsupported/i.test(d.code),
+        /loss|not-validated|required-missing|unsupported|rule\./i.test(d.code),
     );
     if (!hasLoss) return "success";
     // Loss detected — policy decides.
     if (loss === "deny") return "failed";
     return "success_with_loss";
+}
+
+// ---------------------------------------------------------------------------
+// Rule-plan helpers — bridge RuleBuilder / RulePlan into DiagnosticRecord[]
+// so Panduck preserves the full declarative intent even before the Rust
+// executor is wired.
+// ---------------------------------------------------------------------------
+
+function resolvePlan(rules: RulePlan | RuleBuilder | undefined): RulePlan | null {
+    if (!rules) return null;
+    if (rules instanceof RuleBuilder) return rules.build();
+    return rules;
+}
+
+/**
+ * Walk every step/op in a RulePlan and produce a DiagnosticRecord per op.
+ * All current diagnostics are severity=info because Rust still has to
+ * execute the plan; they carry `stage` (input/structure/transform/output/rule)
+ * so a future host can tell them apart and replace with real execution
+ * outcomes.
+ */
+function planToDiagnostics(plan: RulePlan, urlHint?: string): DiagnosticRecord[] {
+    const out: DiagnosticRecord[] = [];
+    for (let stepIdx = 0; stepIdx < plan.steps.length; stepIdx++) {
+        const step = plan.steps[stepIdx];
+        for (let opIdx = 0; opIdx < step.ops.length; opIdx++) {
+            const op = step.ops[opIdx];
+            out.push(opToDiagnostic(op, step, stepIdx, opIdx, urlHint));
+        }
+    }
+    return out;
+}
+
+function opToDiagnostic(
+    op: RuleOp,
+    step: RuleStep,
+    stepIdx: number,
+    opIdx: number,
+    urlHint?: string,
+): DiagnosticRecord {
+    const common: Pick<DiagnosticRecord, "origin" | "severity" | "url"> = {
+        origin: { namespace: "panduck", component: "rule" },
+        severity: "info",
+        url: urlHint,
+    };
+    const commonArgs = { step: stepIdx + 1, op: opIdx + 1 };
+    const commonStage = domainToStage(step.domain);
+
+    switch (op.op) {
+        case "select":
+            return {
+                code: "panduck.rule.select.requested",
+                fallback: `Rule step ${stepIdx + 1} input.select("${op.selector}") — executor not yet wired`,
+                messageKey: "panduck.rule.select.requested",
+                args: { ...commonArgs, selector: op.selector },
+                target: op.selector,
+                stage: commonStage,
+                ...common,
+            };
+        case "require":
+            return {
+                code: "panduck.rule.require.requested",
+                fallback: `Rule step ${stepIdx + 1} input.require("${op.key}", "${op.selector}") — executor not yet wired`,
+                messageKey: "panduck.rule.require.requested",
+                args: { ...commonArgs, key: op.key, selector: op.selector },
+                target: op.selector,
+                stage: commonStage,
+                ...common,
+            };
+        case "remove":
+            return {
+                code: "panduck.rule.remove.requested",
+                fallback: `Rule step ${stepIdx + 1} transform.remove("${op.selector}") — executor not yet wired`,
+                messageKey: "panduck.rule.remove.requested",
+                args: { ...commonArgs, selector: op.selector },
+                target: op.selector,
+                stage: commonStage,
+                ...common,
+            };
+        case "unwrap":
+            return {
+                code: "panduck.rule.unwrap.requested",
+                fallback: `Rule step ${stepIdx + 1} transform.unwrap("${op.selector}") — executor not yet wired`,
+                messageKey: "panduck.rule.unwrap.requested",
+                args: { ...commonArgs, selector: op.selector },
+                target: op.selector,
+                stage: commonStage,
+                ...common,
+            };
+        case "replace":
+            return {
+                code: "panduck.rule.replace.requested",
+                fallback: `Rule step ${stepIdx + 1} output.replace("${op.selector}", handler="${op.handlerKey}") — executor not yet wired`,
+                messageKey: "panduck.rule.replace.requested",
+                args: { ...commonArgs, selector: op.selector, handlerKey: op.handlerKey },
+                target: op.selector,
+                stage: commonStage,
+                ...common,
+            };
+        case "require-no-loss":
+            return {
+                code: "panduck.rule.require-no-loss.requested",
+                fallback: `Rule step ${stepIdx + 1} output.requireNoLoss() — executor not yet wired`,
+                messageKey: "panduck.rule.requireNoLoss.requested",
+                args: commonArgs,
+                stage: commonStage,
+                ...common,
+            };
+    }
+}
+
+function domainToStage(domain: RuleStep["domain"]): NonNullable<DiagnosticRecord["stage"]> {
+    switch (domain) {
+        case "input":
+            return "input";
+        case "transform":
+            return "transform";
+        case "output":
+            return "output";
+    }
 }

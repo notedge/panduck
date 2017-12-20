@@ -18,5 +18,22 @@ export type {
     LossPolicy,
 } from "./converter.js";
 
+// Rule-plan builder.
+export {
+    RuleBuilder,
+    InputScope,
+    TransformScope,
+    OutputScope,
+} from "./rule-builder.js";
+export type {
+    RulePlan,
+    RuleStep,
+    RuleOp,
+    RuleDomain,
+    InputOp,
+    TransformOp,
+    OutputOp,
+} from "./rule-builder.js";
+
 /** @deprecated Use `loadPanduckNode` or `loadPanduckNative`. */
 export type PanduckNative = import("./types.js").PanduckBindings;
