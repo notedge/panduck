@@ -38,7 +38,12 @@ for (const stale of findBuiltNodes(napiDir)) {
     unlinkSync(join(napiDir, stale));
 }
 
-execSync("pnpm exec napi build --platform --release", { cwd: napiDir, stdio: "inherit", shell: true });
+execSync(
+    process.env.NAPI_BUILD_TARGET
+        ? `pnpm exec napi build --platform --target ${process.env.NAPI_BUILD_TARGET} --release`
+        : "pnpm exec napi build --platform --release",
+    { cwd: napiDir, stdio: "inherit", shell: true },
+);
 
 for (const generated of ["index.js", "index.d.ts"]) {
     const path = join(napiDir, generated);

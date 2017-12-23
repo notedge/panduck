@@ -41,6 +41,20 @@ export type TransformOp =
     | { readonly op: "unwrap"; readonly selector: string };
 
 // Output ops — register rendering rules and delivery constraints.
+/** Handler passed to `.replace(selector, handler)` — receives the node and a minimal Markdown helper surface. */
+export type ReplaceHandlerFn = (
+    node: unknown,
+    md: MarkdownHelper,
+) => string;
+
+/** Markdown helper surface passed to `.replace()` handlers. */
+export type MarkdownHelper = {
+    children: (node: unknown) => string;
+    quote: (text: string) => string;
+    emphasis: (text: string) => string;
+    strong: (text: string) => string;
+};
+
 export type OutputOp =
     | {
           readonly op: "replace";
@@ -125,7 +139,8 @@ export class TransformScope {
 /**
  * Register target-format output rules. `.replace()` binds a selector to a
  * custom Markdown renderer callback; the callback itself is **not** part of
- * the serialized plan — only a stable `handlerKey` is stored.
+ * the serialized plan — only a stable `handlerKey` is stored, and the actual
+ * function is registered on the owning RuleBuilder.
  *
  * `.requireNoLoss()` declares that the final output for the current scope
  * must not contain known structural loss. It is placement-independent — the
@@ -133,6 +148,8 @@ export class TransformScope {
  */
 export class OutputScope {
     private readonly _ops: OutputOp[] = [];
+    constructor(private readonly _builder: RuleBuilder) {}
+
     get ops(): readonly OutputOp[] {
         return this._ops;
     }
@@ -143,12 +160,10 @@ export class OutputScope {
      * `.quote(...)`, `.emphasis(...)`, ...) that the executor provides — the
      * scope only records the selector + a stable opaque key for the handler.
      */
-    replace(selector: string, handler: (...args: unknown[]) => unknown): this {
-        // handlerKey = handler.name ?? anonymous counter. Stable within one
-        // RuleBuilder so execution can match them up; intentionally not
-        // serializable as code.
+    replace(selector: string, handler: ReplaceHandlerFn): this {
         const key = handler.name || `anon-${anonCounter++}`;
         this._ops.push({ op: "replace", selector, handlerKey: key });
+        this._builder.registerHandler(key, handler);
         return this;
     }
 
@@ -169,9 +184,21 @@ let anonCounter = 0;
  * Declare an ordered, domain-scoped RulePlan. Domains can be interleaved
  * freely — `input → transform → input → transform → output → input` is a
  * valid plan. Each `.domain(cb)` call appends one RuleStep; order is exact.
+ *
+ * Custom `.replace(selector, handler)` callbacks are collected in `.handlers`
+ * keyed by their stable opaque key (handler.name or `anon-N`). The plan
+ * itself is JSON-serializable (no closures), but the RuleBuilder instance
+ * must be kept alive long enough for execution.
  */
 export class RuleBuilder {
     private readonly _steps: RuleStep[] = [];
+    /** Collected ReplaceHandlerFn keyed by their handlerKey. */
+    readonly handlers: Record<string, ReplaceHandlerFn> = {};
+
+    /** Register a custom handler under its stable key — called by OutputScope. */
+    registerHandler(key: string, fn: ReplaceHandlerFn): void {
+        this.handlers[key] = fn;
+    }
 
     /** Read / select / assert structure. */
     input(cb: (scope: InputScope) => void): this {
@@ -195,7 +222,7 @@ export class RuleBuilder {
 
     /** Register target-format rendering rules and delivery constraints. */
     output(cb: (scope: OutputScope) => void): this {
-        const scope = new OutputScope();
+        const scope = new OutputScope(this);
         cb(scope);
         if (scope.ops.length > 0) {
             this._steps.push({ domain: "output", ops: [...scope.ops] });

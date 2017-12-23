@@ -56,8 +56,11 @@ jobs:
             short: linux-x64
           - os: ubuntu-24.04-arm
             short: linux-arm64
-          - os: macos-15-intel
+          # darwin-x64 now cross-compiles on the arm64 macos-latest runner
+          # instead of the perpetually-busy macos-15-intel pool.
+          - os: macos-latest
             short: darwin-x64
+            target: x86_64-apple-darwin
           - os: macos-latest
             short: darwin-arm64
     steps:
@@ -79,6 +82,10 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@nightly
 
+      - name: Install cross-compile target
+        if: matrix.target != ''
+        run: rustup target add ${{ matrix.target }}
+
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: publish-native-${{ matrix.short }}
@@ -97,6 +104,8 @@ jobs:
         run: pnpm install
 
       - name: Build native release
+        env:
+          NAPI_BUILD_TARGET: ${{ matrix.target }}
         run: node scripts/build-napi.mjs
 
       - name: Stage native artifact
