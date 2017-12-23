@@ -268,10 +268,13 @@ export class Converter {
                 stage: "input",
                 url: urlHint,
             });
-            return makeResult("failed", "", diagnostics, label);
+            return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
-        // (4) Rust conversion.
+        // (4) Rust conversion — NEVER throws now. Failures come back as
+        // `exit_code: 1` with a full report_json that carries the structured
+        // DiagnosticEnvelope. We parse that the same way as the success path
+        // so the two modes never diverge on what diagnostics get kept.
         const fn = this.binding.convertBytesMemory;
         if (!fn) {
             diagnostics.push({
@@ -283,38 +286,64 @@ export class Converter {
                 stage: "convert",
                 url: urlHint,
             });
-            return makeResult("failed", "", diagnostics, label);
+            return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
-        let response: { markdown?: string; reportJson: string } | undefined;
-        let rustError: unknown = undefined;
+        let response: {
+            exitCode: number;
+            markdown?: string;
+            reportJson: string;
+        } | undefined = undefined;
+        let nativePanic: unknown = undefined;
         try {
             response = fn(from, "markdown", label, bytes);
         } catch (err) {
-            rustError = err;
+            nativePanic = err;
         }
 
-        if (rustError !== undefined || !response) {
-            const msg = rustError instanceof Error ? rustError.message : String(rustError);
+        if (nativePanic !== undefined || !response) {
+            const msg = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
             diagnostics.push({
-                code: "panduck.convert.failed",
-                fallback: `Rust conversion failed for ${label}: ${msg}`,
-                messageKey: "panduck.diagnostic.convertFailed",
+                code: "panduck.convert.native-panic",
+                fallback: `Panduck native binary panicked for ${label}: ${msg}`,
+                messageKey: "panduck.diagnostic.nativePanic",
                 args: { message: msg },
                 origin: { namespace: "panduck", component: "convert" },
                 severity: "error",
                 stage: "convert",
                 url: urlHint,
             });
-            return makeResult("failed", "", diagnostics, label);
+            return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
-        // (5) Parse Rust report for loss / diagnostics envelope.
-        const reportDiags = tryParseReportDiagnostics(response.reportJson);
-        diagnostics.push(...reportDiags);
+        // (5) Parse Rust report for status, losses, and DiagnosticEnvelope.
+        //     Both success and failure paths enter here — the envelope is
+        //     the single source of truth for what actually happened.
+        const parsedReport = safeParseReport(response.reportJson);
+        diagnostics.push(...parsedReport.diagnostics);
+
+        // (6) Derive status from Rust report + diagnostics + loss policy.
+        const rustStatus = parsedReport.rawStatus;
+        const hasRustLoss = parsedReport.losses.length > 0;
+        if (hasRustLoss) {
+            diagnostics.push({
+                code: "panduck.convert.rust-loss",
+                fallback: `Rust reported ${parsedReport.losses.length} known structural loss(es) for ${label}`,
+                messageKey: "panduck.diagnostic.rustLoss",
+                args: { count: parsedReport.losses.length },
+                origin: { namespace: "panduck", component: "convert" },
+                severity: "warn",
+                stage: "loss",
+                url: urlHint,
+            });
+        }
 
         const markdown = response.markdown ?? "";
-        const status = deriveStatus(diagnostics, loss);
+        const status = deriveStatus(diagnostics, loss, {
+            rustStatus,
+            hasRustLoss,
+            exitCode: response.exitCode,
+        });
 
         return {
             status,
@@ -362,54 +391,158 @@ async function materializeInput(
     return { bytes: new Uint8Array(), label: explicitLabel ?? "<unknown>" };
 }
 
-function makeResult(status: ConverterStatus, markdown: string, diags: DiagnosticRecord[], label: string): ConverterResult {
+function makeResult(
+    status: ConverterStatus,
+    markdown: string,
+    diags: DiagnosticRecord[],
+    label: string,
+    urlHint?: string,
+): ConverterResult {
+    const reportStatus = status === "failed" ? "failed" : status === "success_with_loss" ? "partial" : "ok";
     const reportJson = JSON.stringify({
-        schemaVersion: "v0",
-        format: "html",
-        from: "html",
-        to: "markdown",
-        inputLabel: label,
-        diagnostics: { envelope: diags },
-        artifacts: [],
+        schema_version: "panduck.report/v0",
+        operation: "convert",
+        status: reportStatus,
+        inputs: [{ path: label, format: "html" }],
+        pipeline: { reader: "html", writer: "markdown", stages: ["read", "ir", "write"] },
+        diagnostics: {
+            schema_version: "panduck.diagnostic/v0",
+            diagnostics: diags.map(toRustDiagnosticShape),
+            truncated: 0,
+            dropped: 0,
+        },
+        losses: [],
+        outputs: [],
     });
     return { status, markdown, diagnostics: diags, reportJson };
 }
 
-/** Parse the Rust-side reportJson.diagnostics.envelope into DiagnosticRecord[]. */
-function tryParseReportDiagnostics(reportJson: string): DiagnosticRecord[] {
-    try {
-        const parsed = JSON.parse(reportJson);
-        const envelope = parsed?.diagnostics?.envelope;
-        if (!Array.isArray(envelope)) return [];
-        return envelope.map((raw): DiagnosticRecord => {
-            const r = raw as Record<string, unknown>;
-            const messageKey = r.messageKey ?? r.message_key;
-            return {
-                code: String(r.code ?? "panduck.convert.unknown"),
-                fallback: typeof r.fallback === "string" ? r.fallback : undefined,
-                messageKey: typeof messageKey === "string" ? messageKey : undefined,
-                args: (r.args as Record<string, unknown> | undefined) ?? undefined,
-                origin: r.origin as { namespace: string; component: string } | undefined,
-                severity: (r.severity as DiagnosticSeverity | undefined) ?? "error",
-                stage: (r.stage as DiagnosticRecord["stage"]) ?? "convert",
-            };
-        });
-    } catch {
-        return [];
-    }
+/**
+ * Convert TS-side flat DiagnosticRecord into the shape Rust's
+ * DiagnosticEnvelope expects (snake_case + origin namespace/component).
+ * This lets failure-path reportJson match the success-path exactly.
+ */
+function toRustDiagnosticShape(d: DiagnosticRecord): Record<string, unknown> {
+    return {
+        code: d.code,
+        fallback: d.fallback ?? "",
+        message_key: d.messageKey,
+        args: d.args,
+        origin: d.origin,
+        severity: d.severity ?? "error",
+        stage: d.stage,
+        url: d.url,
+        target: d.target,
+    };
 }
 
-/** Derive ConverterStatus from the diagnostics + loss policy. */
-function deriveStatus(diags: DiagnosticRecord[], loss: LossPolicy): ConverterStatus {
-    // Any error-severity diagnostic → failed, no matter the policy.
+/**
+ * Parse Rust-side report_json. The Rust DiagnosticEnvelope serializes as
+ *   { schema_version: "...", diagnostics: Diagnostic[], truncated, dropped }
+ * and sits under the top-level `diagnostics` key. So we read
+ * `parsed.diagnostics.diagnostics` (array), NOT the old buggy path
+ * `parsed.diagnostics.envelope`.
+ *
+ * If the envelope is missing, corrupt, or JSON itself unparseable we still
+ * return a DiagnosticRecord describing *that* — we never silently return an
+ * empty array from this function.
+ */
+function safeParseReport(reportJson: string, urlHint?: string): {
+    diagnostics: DiagnosticRecord[];
+    rawStatus?: string;
+    losses: unknown[];
+} {
+    const errDiags: DiagnosticRecord[] = [];
+    let parsed: any;
+    try {
+        parsed = JSON.parse(reportJson);
+    } catch (e) {
+        errDiags.push({
+            code: "panduck.convert.report-corrupt",
+            fallback: "Failed to parse Rust report JSON",
+            args: { error: e instanceof Error ? e.message : String(e) },
+            origin: { namespace: "panduck", component: "convert" },
+            severity: "error",
+            stage: "convert",
+            url: urlHint,
+        });
+        return { diagnostics: errDiags, losses: [] };
+    }
+
+    const envelope = parsed?.diagnostics;
+    if (!envelope || typeof envelope !== "object") {
+        errDiags.push({
+            code: "panduck.convert.report-missing",
+            fallback: "Rust report missing `diagnostics` envelope",
+            origin: { namespace: "panduck", component: "convert" },
+            severity: "error",
+            stage: "convert",
+            url: urlHint,
+        });
+        return { diagnostics: errDiags, rawStatus: parsed?.status, losses: [] };
+    }
+
+    const rawDiags = envelope.diagnostics;
+    if (!Array.isArray(rawDiags)) {
+        errDiags.push({
+            code: "panduck.convert.report-corrupt",
+            fallback: "Rust diagnostics envelope missing `diagnostics` array",
+            origin: { namespace: "panduck", component: "convert" },
+            severity: "error",
+            stage: "convert",
+            url: urlHint,
+        });
+        return { diagnostics: errDiags, rawStatus: parsed?.status, losses: [] };
+    }
+
+    const mapped = rawDiags.map((raw): DiagnosticRecord => {
+        const r = raw as Record<string, unknown>;
+        const severity = (r.severity as DiagnosticSeverity | undefined) ?? "error";
+        // Rust uses snake_case for wire — read both names defensively.
+        return {
+            code: String(r.code ?? "panduck.convert.unknown"),
+            fallback: typeof r.fallback === "string" ? r.fallback : undefined,
+            messageKey: typeof r.message_key === "string" ? r.message_key :
+                typeof r.messageKey === "string" ? r.messageKey : undefined,
+            args: (r.args as Record<string, unknown> | undefined) ?? undefined,
+            origin: (r.origin as { namespace: string; component: string } | undefined) ?? undefined,
+            severity,
+            stage: (r.stage as DiagnosticRecord["stage"] | undefined) ?? "convert",
+            url: typeof r.url === "string" ? r.url : undefined,
+            target: typeof r.target === "string" ? r.target : undefined,
+        };
+    });
+
+    return {
+        diagnostics: mapped,
+        rawStatus: typeof parsed.status === "string" ? parsed.status : undefined,
+        losses: Array.isArray(parsed.losses) ? parsed.losses : [],
+    };
+}
+
+/**
+ * Derive ConverterStatus. Trust hierarchy:
+ *   1. exitCode from Rust → 1 means the binary considers this a hard failure.
+ *   2. Rust report.status === "failed" → same, hard failure.
+ *   3. Error-severity diagnostics → failed, no matter the policy.
+ *   4. Diagnostics + Rust losses → has known structural loss; policy decides.
+ *   5. Otherwise → success.
+ *
+ * We deliberately do NOT trust a raw `status` field inside a ConverterResult
+ * that the caller hand-built — diagnostics + exit_code are the wire truth.
+ */
+function deriveStatus(
+    diags: DiagnosticRecord[],
+    loss: LossPolicy,
+    rustReport: { rustStatus?: string; hasRustLoss: boolean; exitCode: number },
+): ConverterStatus {
+    if (rustReport.exitCode !== 0) return "failed";
+    if (rustReport.rustStatus === "failed") return "failed";
     if (diags.some((d) => d.severity === "error")) return "failed";
-    // Loss / deferred execution / unvalidated structure → the conversion is
-    // incomplete even though the Rust side didn't report an error.
-    const hasLoss = diags.some((d) =>
+    const hasLoss = rustReport.hasRustLoss || diags.some((d) =>
         /loss|not-validated|required-missing|unsupported|rule\./i.test(d.code),
     );
     if (!hasLoss) return "success";
-    // Loss detected — policy decides.
     if (loss === "deny") return "failed";
     return "success_with_loss";
 }

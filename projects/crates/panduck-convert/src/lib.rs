@@ -21,7 +21,7 @@ use serde::Serialize;
 /// Re-export of `panduck-diagnostic` envelope type so downstream NAPI consumers
 /// can build diagnostics-aligned reports without depending on the diagnostic
 /// crate directly.
-pub use panduck_diagnostic::{DiagnosticEnvelope, SCHEMA_REPORT};
+pub use panduck_diagnostic::{DiagnosticEnvelope, SCHEMA_REPORT, from_adapter_error};
 
 /// Build an empty diagnostic envelope for operations that completed cleanly.
 pub fn empty_diagnostic_envelope() -> DiagnosticEnvelope {

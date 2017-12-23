@@ -211,47 +211,134 @@ pub fn supports_markdown_project(from: String) -> bool {
 }
 
 /// Converts a document file into a Markdown project directory.
+///
+/// **Never throws** — see `convert_bytes_memory` for rationale.
 #[napi]
-pub fn convert_markdown_project(from: String, input_path: String, output_dir: String) -> Result<ConvertProjectResponse> {
-    let (output, published) = convert_markdown_project_file(&from, &input_path, &output_dir).map_err(map_adapter_error)?;
-    Ok(ConvertProjectResponse {
-        exit_code: 0,
-        index_markdown: output.index_markdown,
-        published_assets: output.published_assets,
-        published_chapters: output.published_chapters,
-        unresolved_assets: output.unresolved_assets,
-        output_dir: published.output_dir.display().to_string(),
-        report_json: output.report_json,
-    })
+pub fn convert_markdown_project(from: String, input_path: String, output_dir: String) -> ConvertProjectResponse {
+    match convert_markdown_project_file(&from, &input_path, &output_dir) {
+        Ok((output, published)) => ConvertProjectResponse {
+            exit_code: 0,
+            index_markdown: output.index_markdown,
+            published_assets: output.published_assets,
+            published_chapters: output.published_chapters,
+            unresolved_assets: output.unresolved_assets,
+            output_dir: published.output_dir.display().to_string(),
+            report_json: output.report_json,
+        },
+        Err(adapter_error) => build_project_error_report(&from, &input_path, &output_dir, &adapter_error),
+    }
 }
 
 /// Converts a document file through the Panduck IR pipeline.
+///
+/// **Never throws** — failures are reported via `exit_code: 1` and a report
+/// JSON that carries the structured `DiagnosticEnvelope`. This avoids the
+/// `Error::from_reason("[code=...] ...")` string-construction path where
+/// structured diagnostic identity would be collapsed back into free-form text.
 #[napi]
-pub fn convert_document(from: String, to: String, input_path: String) -> Result<ConvertResponse> {
-    let output = convert_file(&from, &to, &input_path).map_err(map_adapter_error)?;
-    Ok(ConvertResponse {
-        exit_code: 0,
-        markdown: if output.markdown.is_empty() { None } else { Some(output.markdown) },
-        html: output.html,
-        binary: output.binary.map(Buffer::from),
-        report_json: output.report_json,
-    })
+pub fn convert_document(from: String, to: String, input_path: String) -> ConvertResponse {
+    match convert_file(&from, &to, &input_path) {
+        Ok(output) => ConvertResponse {
+            exit_code: 0,
+            markdown: if output.markdown.is_empty() { None } else { Some(output.markdown) },
+            html: output.html,
+            binary: output.binary.map(Buffer::from),
+            report_json: output.report_json,
+        },
+        Err(adapter_error) => build_convert_error_report(&from, &to, &input_path, &adapter_error),
+    }
 }
 
 /// Converts in-memory bytes through the Panduck IR pipeline.
 ///
-/// Accepts any supported reader format. Use `from = "html"` with UTF-8 bytes
-/// when converting Pandark-fetched pages without writing them to disk first.
+/// **Never throws** — see `convert_document` for rationale. The failure path
+/// always returns `exit_code: 1` with a report JSON that carries the full
+/// structured diagnostic identity (code, typed args, origin, severity) so
+/// downstream TS consumers never need to parse free-form error strings.
 #[napi]
-pub fn convert_bytes_memory(from: String, to: String, label: String, bytes: Buffer) -> Result<ConvertResponse> {
-    let output = convert_bytes(&from, &to, &label, bytes.to_vec()).map_err(map_adapter_error)?;
-    Ok(ConvertResponse {
-        exit_code: 0,
-        markdown: if output.markdown.is_empty() { None } else { Some(output.markdown) },
-        html: output.html,
-        binary: output.binary.map(Buffer::from),
-        report_json: output.report_json,
+pub fn convert_bytes_memory(from: String, to: String, label: String, bytes: Buffer) -> ConvertResponse {
+    match convert_bytes(&from, &to, &label, bytes.to_vec()) {
+        Ok(output) => ConvertResponse {
+            exit_code: 0,
+            markdown: if output.markdown.is_empty() { None } else { Some(output.markdown) },
+            html: output.html,
+            binary: output.binary.map(Buffer::from),
+            report_json: output.report_json,
+        },
+        Err(adapter_error) => build_convert_error_report(&from, &to, &label, &adapter_error),
+    }
+}
+
+/// Build a failure `ConvertResponse` where the report JSON carries a proper
+/// `DiagnosticEnvelope` wrapping the structured `AdapterError::Diagnostic`.
+/// This is the only legitimate path for convert failures — `map_adapter_error`
+/// is still kept for legacy N-API entry points that genuinely use
+/// `Result<ConvertResponse>`, but every new convert entry must route through
+/// this helper instead of throwing.
+fn build_convert_error_report(from: &str, to: &str, label: &str, error: &AdapterError) -> ConvertResponse {
+    use boost_diagnostic::{DiagnosticSet, DiagnosticEnvelope};
+
+    let diagnostic = panduck_convert::from_adapter_error(error);
+    let mut set = DiagnosticSet::new();
+    set.push(diagnostic);
+    let envelope = DiagnosticEnvelope::from_set(&set);
+    let report_json = serde_json::json!({
+        "schema_version": panduck_convert::SCHEMA_REPORT,
+        "operation": "convert",
+        "status": "failed",
+        "inputs": [{ "path": label, "format": from }],
+        "pipeline": { "reader": from, "writer": to, "stages": ["read", "ir", "write"] },
+        "diagnostics": envelope,
+        "losses": [],
+        "outputs": [],
     })
+    .to_string();
+    ConvertResponse {
+        exit_code: 1,
+        markdown: None,
+        html: None,
+        binary: None,
+        report_json,
+    }
+}
+
+fn build_project_error_report(
+    from: &str,
+    input_path: &str,
+    output_dir: &str,
+    error: &AdapterError,
+) -> ConvertProjectResponse {
+    use boost_diagnostic::{DiagnosticSet, DiagnosticEnvelope};
+
+    let diagnostic = panduck_convert::from_adapter_error(error);
+    let mut set = DiagnosticSet::new();
+    set.push(diagnostic);
+    let envelope = DiagnosticEnvelope::from_set(&set);
+    let report_json = serde_json::json!({
+        "schema_version": panduck_convert::SCHEMA_REPORT,
+        "operation": "convert",
+        "status": "failed",
+        "inputs": [{ "path": input_path, "format": from }],
+        "pipeline": {
+            "reader": from,
+            "writer": "markdown_project",
+            "stages": ["read", "ir", "markdown_project"],
+            "output_dir": output_dir,
+        },
+        "diagnostics": envelope,
+        "losses": [],
+        "outputs": [],
+    })
+    .to_string();
+    ConvertProjectResponse {
+        exit_code: 1,
+        index_markdown: String::new(),
+        published_assets: Vec::new(),
+        published_chapters: Vec::new(),
+        unresolved_assets: Vec::new(),
+        output_dir: String::new(),
+        report_json,
+    }
 }
 
 fn map_adapter_error(error: AdapterError) -> Error {

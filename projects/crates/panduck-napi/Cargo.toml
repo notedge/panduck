@@ -36,6 +36,8 @@ panduck-convert = { workspace = true, features = ["logger"] }
 
 panduck-types = { workspace = true }
 
+boost-diagnostic = { workspace = true }
+
 boost-log = { workspace = true }
 
 serde_json = { workspace = true }
