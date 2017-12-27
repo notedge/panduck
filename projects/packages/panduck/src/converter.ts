@@ -8,23 +8,19 @@
  *   - FetchArtifact (from Pandark Crawler.fetch())
  *   - string | Uint8Array
  *
- * All three enter the same Notedown HTML import + Markdown export in Rust.
- * Panduck does NOT ship its own HTML parser or Markdown writer.
+ * All three enter: Rule-executor (TS, linkedom) → Notedown Rust lowering →
+ * sentinel post-process (TS). Panduck does NOT ship its own HTML parser or
+ * Markdown writer — linkedom is the structural pass, Rust owns the lowering.
  *
  * Converter produces a structured DiagnosticRecord[] that the Pandark Crawler
  * can aggregate into the run report without parsing free-form message text.
  */
 
 import { loadPanduckNode } from "./node/load.js";
-import type {
-    RulePlan,
-    RuleStep,
-    RuleOp,
-    InputOp,
-    TransformOp,
-    OutputOp,
-} from "./rule-builder.js";
+import type { RulePlan } from "./rule-builder.js";
 import { RuleBuilder } from "./rule-builder.js";
+import type { ReplaceHandlerFn } from "./rule-builder.js";
+import { executePlan, postProcessMarkdown } from "./rule-executor.js";
 
 // ---------------------------------------------------------------------------
 // Diagnostic record (shared shape with Pandark Crawler)
@@ -90,26 +86,18 @@ export type ConverterArtifactLike = {
 // ---------------------------------------------------------------------------
 
 /**
- * Loss policy for conversion.
- *
- * - `"deny"`  — any known structural loss results in a failing ConverterResult.
- * - `"allow"` — conversion succeeds with a `success_with_loss` status and the
- *               loss record is preserved in diagnostics.
- * - `"warn"`  — default. Conversion succeeds with `success_with_loss` when
- *               loss is known, diagnostics carry all loss records.
- *
- * **None of these close the diagnostic gate.** Even `"allow"` and `"warn"`
- * must record every loss with target, reason, and typed args.
- */
-export type LossPolicy = "deny" | "allow" | "warn";
-
-/**
  * Markdown conversion options.
  *
- * The options here map to Notedown's conversion policies. Some — `remove`,
- * `rules` — are deferred to a Rust-side policy builder; until they land,
- * Converter records them as "requested but not executed" diagnostics so users
- * can see what was requested and adjust.
+ * **Only RuleBuilder / RulePlan lives here.** The legacy flat options
+ * (`select`, `root`, `remove`, `required`, `loss`) were removed in favor of
+ * declaring everything through RuleBuilder domains — `input.select(...)`,
+ * `transform.remove(...)`, `output.requireNoLoss()`, etc.
+ *
+ * Loss policy is **not** a standalone option anymore — `output.requireNoLoss()`
+ * inside a RuleBuilder converts to `deny` semantics for that plan, while a
+ * plan that does NOT call `requireNoLoss()` defaults to `warn` semantics
+ * (loss records stay, but don't push the status to failed). This keeps the
+ * policy inside the same declarative body as the rest of the conversion rules.
  */
 export type ToMarkdownOptions = {
     /** Format identifier passed to Panduck ("html", "docx", "epub", ...). Default "html". */
@@ -117,38 +105,10 @@ export type ToMarkdownOptions = {
     /** Label written into the report provenance when the input is anonymous. */
     label?: string;
 
-    // --- Selection & removal ------------------------------------------------
-    /** CSS selector for the root element to convert. */
-    select?: string;
-    /** In-HTML selector for the root (alternate spelling of `select`). */
-    root?: string;
-    /** Elements or selectors to strip before conversion. */
-    remove?: readonly string[];
-
-    // --- Required structure -------------------------------------------------
     /**
-     * Selectors that must match in the selected input. When a key is declared
-     * as required and its selector does not match, Converter produces a
-     * `panduck.convert.required-missing` diagnostic and the page fails.
-     *
-     * Example:
-     *   required: { title: "h1", content: ".article-body" }
-     */
-    required?: Record<string, string>;
-
-    // --- Loss policy --------------------------------------------------------
-    /** What to do when known structural loss is detected during conversion. */
-    loss?: LossPolicy;
-
-    // --- Declarative rule plan ----------------------------------------------
-    /**
-     * Declarative rule plan produced by `new RuleBuilder().input(...).transform(...).output(...).build()`.
-     * Can also be a RuleBuilder itself — Converter will call `.build()` for you.
-     *
-     * The rule engine that actually executes these plans lives in a Rust-side
-     * policy builder that is not wired yet. Until it lands, Converter records
-     * every requested operation as a structured diagnostic so the full intent
-     * is preserved in the run report and Rust can catch up without guessing.
+     * Declarative rule plan — either a `RulePlan` (already built) or a live
+     * `RuleBuilder` instance. If you pass a `RuleBuilder`, `.build()` is called
+     * internally and its `handlers` registry is used for `.replace()` callbacks.
      */
     rules?: RulePlan | RuleBuilder;
 };
@@ -183,7 +143,7 @@ export type ConverterResult = {
 // Converter
 // ---------------------------------------------------------------------------
 
-/** Public façade over Panduck's Rust conversion pipeline. */
+/** Public façade over Panduck's Rust conversion pipeline + TS Rule executor. */
 export class Converter {
     private binding: ReturnType<typeof loadPanduckNode>;
 
@@ -194,70 +154,24 @@ export class Converter {
     /**
      * Convert HTML (or any Panduck-supported reader format) to Markdown.
      *
-     * The input is any of:
-     *   - `Page` — from Pandark Crawler handlePage
-     *   - `FetchArtifact` — from Pandark Crawler.fetch()
-     *   - raw `string` / `Uint8Array`
+     * Pipeline:
+     *   1. Materialize input → HTML string (for Rule executor) + bytes (for Rust)
+     *   2. Execute RulePlan via linkedom DOM executor: input/transform/output ops
+     *      modify the working document; handler callbacks embed sentinels
+     *   3. Serialize post-plan DOM → HTML → convert to bytes → send to Rust
+     *   4. Rust lowering → parse report → post-process Markdown (sentinel substitution)
+     *   5. Derive status from executor diags + Rust report + requireNoLoss flag
      */
     async toMarkdown(input: ConverterInput, options?: ToMarkdownOptions): Promise<ConverterResult> {
         const from = options?.from ?? "html";
-        const loss: LossPolicy = options?.loss ?? "warn";
-        const { bytes, label, urlHint } = await materializeInput(input, options?.label);
+        const { html: inputHtml, bytes, label, urlHint } = await materializeInput(input, options?.label);
 
         const diagnostics: DiagnosticRecord[] = [];
 
-        // (1) Flatten RuleBuilder → RulePlan and walk every step/op so the full
-        // declarative intent is preserved as structured diagnostics.
-        const plan = resolvePlan(options?.rules);
-        if (plan !== null) {
-            diagnostics.push(...planToDiagnostics(plan, urlHint));
-        }
+        // (1) Resolve RulePlan + handler registry.
+        const { plan, handlers } = resolveRules(options?.rules);
 
-        // (2) Legacy flat options — still honored while the Rust side migrates.
-        // They each collapse into a single diagnostic so the author can see
-        // what was requested alongside any RulePlan.
-        if (options?.select || options?.root) {
-            diagnostics.push({
-                code: "panduck.rule.select-legacy",
-                fallback: "Legacy flat `select` / `root` option — prefer RuleBuilder.input(i => i.select(...))",
-                messageKey: "panduck.diagnostic.selectLegacy",
-                args: { select: options.select ?? options.root },
-                origin: { namespace: "panduck", component: "convert" },
-                severity: "info",
-                stage: "input",
-                url: urlHint,
-            });
-        }
-        if (options?.remove && options.remove.length > 0) {
-            diagnostics.push({
-                code: "panduck.rule.remove-legacy",
-                fallback: `Legacy flat \`remove\` option with ${options.remove.length} selector(s) — prefer RuleBuilder.transform(t => t.remove(...))`,
-                messageKey: "panduck.diagnostic.removeLegacy",
-                args: { selectors: [...options.remove] },
-                origin: { namespace: "panduck", component: "convert" },
-                severity: "info",
-                stage: "transform",
-                url: urlHint,
-            });
-        }
-        if (options?.required) {
-            const keys = Object.keys(options.required);
-            for (const key of keys) {
-                diagnostics.push({
-                    code: "panduck.rule.require-legacy",
-                    fallback: `Legacy flat required "${key}" → prefer RuleBuilder.input(i => i.require("${key}", "${options.required![key]}"))`,
-                    messageKey: "panduck.diagnostic.requireLegacy",
-                    args: { key, selector: options.required[key] },
-                    origin: { namespace: "panduck", component: "convert" },
-                    severity: "info",
-                    stage: "structure",
-                    target: options.required[key],
-                    url: urlHint,
-                });
-            }
-        }
-
-        // (3) Empty input short-circuit — no Rust conversion needed.
+        // (2) Empty input short-circuit.
         if (bytes.length === 0) {
             diagnostics.push({
                 code: "panduck.convert.empty-input",
@@ -271,16 +185,100 @@ export class Converter {
             return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
-        // (4) Rust conversion — NEVER throws now. Failures come back as
-        // `exit_code: 1` with a full report_json that carries the structured
-        // DiagnosticEnvelope. We parse that the same way as the success path
-        // so the two modes never diverge on what diagnostics get kept.
+        // (3) Rule-executor pass — DOM-level input/transform/output ops.
+        //     This is where `.select()`, `.require()`, `.remove()`, `.unwrap()`,
+        //     and `.replace()` callbacks actually run against the document.
+        let planHtmlForRust = inputHtml;
+        let requireNoLoss = false;
+        if (plan) {
+            const exec = executePlan(inputHtml, plan, handlers, urlHint);
+            diagnostics.push(...exec.diagnostics);
+            planHtmlForRust = exec.html;
+            requireNoLoss = exec.requireNoLoss;
+            // Keep sentinel map alive — we post-process after Rust returns.
+            // Use a local closure capture instead of a module-level variable.
+            const sentinels = exec.sentinels;
+
+            // (4) Convert the post-plan HTML to bytes for Rust.
+            const planBytes = new TextEncoder().encode(planHtmlForRust);
+
+            // (5) Rust conversion — NEVER throws.
+            const fn = this.binding.convertBytesMemory;
+            if (!fn) {
+                diagnostics.push({
+                    code: "panduck.convert.binding-missing",
+                    fallback: "Panduck binding does not expose convertBytesMemory — rebuild @notedge/panduck-native",
+                    messageKey: "panduck.diagnostic.bindingMissing",
+                    origin: { namespace: "panduck", component: "convert" },
+                    severity: "error",
+                    stage: "convert",
+                    url: urlHint,
+                });
+                return makeResult("failed", "", diagnostics, label, urlHint);
+            }
+
+            let response: { exitCode: number; markdown?: string; reportJson: string } | undefined = undefined;
+            let nativePanic: unknown = undefined;
+            try {
+                response = fn(from, "markdown", label, planBytes);
+            } catch (err) {
+                nativePanic = err;
+            }
+
+            if (nativePanic !== undefined || !response) {
+                const msg = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
+                diagnostics.push({
+                    code: "panduck.convert.native-panic",
+                    fallback: `Panduck native binary panicked for ${label}: ${msg}`,
+                    args: { message: msg },
+                    origin: { namespace: "panduck", component: "convert" },
+                    severity: "error",
+                    stage: "convert",
+                    url: urlHint,
+                });
+                return makeResult("failed", "", diagnostics, label, urlHint);
+            }
+
+            // (6) Parse Rust report + accumulate loss/warn diags.
+            const parsedReport = safeParseReport(response.reportJson);
+            diagnostics.push(...parsedReport.diagnostics);
+
+            const rustStatus = parsedReport.rawStatus;
+            const hasRustLoss = parsedReport.losses.length > 0;
+            if (hasRustLoss) {
+                diagnostics.push({
+                    code: "panduck.convert.rust-loss",
+                    fallback: `Rust reported ${parsedReport.losses.length} known structural loss(es) for ${label}`,
+                    args: { count: parsedReport.losses.length },
+                    origin: { namespace: "panduck", component: "convert" },
+                    severity: "warn",
+                    stage: "loss",
+                    url: urlHint,
+                });
+            }
+
+            // (7) Post-process Markdown — substitute handler sentinels.
+            let markdown = response.markdown ?? "";
+            markdown = postProcessMarkdown(markdown, sentinels, diagnostics, urlHint);
+
+            // (8) Derive status. requireNoLoss from RuleBuilder overrides the
+            //     default "warn" policy — it is equivalent to loss policy "deny".
+            const status = deriveStatus(diagnostics, {
+                rustStatus,
+                hasRustLoss,
+                exitCode: response.exitCode,
+                requireNoLoss,
+            });
+
+            return { status, markdown, diagnostics, reportJson: response.reportJson };
+        }
+
+        // --- No RulePlan path — direct Rust conversion, no DOM executor ---
         const fn = this.binding.convertBytesMemory;
         if (!fn) {
             diagnostics.push({
                 code: "panduck.convert.binding-missing",
                 fallback: "Panduck binding does not expose convertBytesMemory — rebuild @notedge/panduck-native",
-                messageKey: "panduck.diagnostic.bindingMissing",
                 origin: { namespace: "panduck", component: "convert" },
                 severity: "error",
                 stage: "convert",
@@ -289,11 +287,7 @@ export class Converter {
             return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
-        let response: {
-            exitCode: number;
-            markdown?: string;
-            reportJson: string;
-        } | undefined = undefined;
+        let response: { exitCode: number; markdown?: string; reportJson: string } | undefined = undefined;
         let nativePanic: unknown = undefined;
         try {
             response = fn(from, "markdown", label, bytes);
@@ -306,7 +300,6 @@ export class Converter {
             diagnostics.push({
                 code: "panduck.convert.native-panic",
                 fallback: `Panduck native binary panicked for ${label}: ${msg}`,
-                messageKey: "panduck.diagnostic.nativePanic",
                 args: { message: msg },
                 origin: { namespace: "panduck", component: "convert" },
                 severity: "error",
@@ -316,20 +309,12 @@ export class Converter {
             return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
-        // (5) Parse Rust report for status, losses, and DiagnosticEnvelope.
-        //     Both success and failure paths enter here — the envelope is
-        //     the single source of truth for what actually happened.
         const parsedReport = safeParseReport(response.reportJson);
         diagnostics.push(...parsedReport.diagnostics);
-
-        // (6) Derive status from Rust report + diagnostics + loss policy.
-        const rustStatus = parsedReport.rawStatus;
-        const hasRustLoss = parsedReport.losses.length > 0;
-        if (hasRustLoss) {
+        if (parsedReport.losses.length > 0) {
             diagnostics.push({
                 code: "panduck.convert.rust-loss",
                 fallback: `Rust reported ${parsedReport.losses.length} known structural loss(es) for ${label}`,
-                messageKey: "panduck.diagnostic.rustLoss",
                 args: { count: parsedReport.losses.length },
                 origin: { namespace: "panduck", component: "convert" },
                 severity: "warn",
@@ -339,18 +324,14 @@ export class Converter {
         }
 
         const markdown = response.markdown ?? "";
-        const status = deriveStatus(diagnostics, loss, {
-            rustStatus,
-            hasRustLoss,
+        const status = deriveStatus(diagnostics, {
+            rustStatus: parsedReport.rawStatus,
+            hasRustLoss: parsedReport.losses.length > 0,
             exitCode: response.exitCode,
+            requireNoLoss: false,
         });
 
-        return {
-            status,
-            markdown,
-            diagnostics,
-            reportJson: response.reportJson,
-        };
+        return { status, markdown, diagnostics, reportJson: response.reportJson };
     }
 }
 
@@ -358,37 +339,60 @@ export class Converter {
 // Helpers
 // ---------------------------------------------------------------------------
 
+type ResolvedRules = {
+    plan: RulePlan | null;
+    handlers: Record<string, ReplaceHandlerFn>;
+};
+
+/** Resolve RuleBuilder / RulePlan → executable plan + handler registry. */
+function resolveRules(rules: RulePlan | RuleBuilder | undefined): ResolvedRules {
+    if (!rules) return { plan: null, handlers: {} };
+    if (rules instanceof RuleBuilder) {
+        return { plan: rules.build(), handlers: { ...rules.handlers } };
+    }
+    return { plan: rules, handlers: {} };
+}
+
 async function materializeInput(
     input: ConverterInput,
     explicitLabel?: string,
-): Promise<{ bytes: Uint8Array; label: string; urlHint?: string }> {
+): Promise<{ html: string; bytes: Uint8Array; label: string; urlHint?: string }> {
     if (typeof input === "string") {
-        return { bytes: new TextEncoder().encode(input), label: explicitLabel ?? "<string>" };
+        return { html: input, bytes: new TextEncoder().encode(input), label: explicitLabel ?? "<string>" };
     }
     if (input instanceof Uint8Array) {
-        return { bytes: input, label: explicitLabel ?? "<bytes>" };
+        return {
+            html: new TextDecoder().decode(input),
+            bytes: input,
+            label: explicitLabel ?? "<bytes>",
+        };
     }
     if (typeof input === "object" && input !== null) {
         const candidate = input as Record<string, unknown>;
         if (typeof candidate.bytes === "function") {
             const page = input as ConverterPageLike;
             let bytes = page.bytes();
+            let html: string;
             if (!bytes || bytes.length === 0) {
-                const html = await page.html();
+                html = await page.html();
                 bytes = new TextEncoder().encode(html);
+            } else {
+                html = await page.html();
             }
-            return { bytes, label: explicitLabel ?? (page.url ?? "<page>"), urlHint: page.url };
+            return { html, bytes, label: explicitLabel ?? (page.url ?? "<page>"), urlHint: page.url };
         }
         if ("bodyBytes" in candidate) {
             const artifact = input as ConverterArtifactLike;
+            const html = artifact.bodyText ?? new TextDecoder().decode(artifact.bodyBytes);
             return {
+                html,
                 bytes: artifact.bodyBytes,
                 label: explicitLabel ?? (artifact.finalUrl ?? "<artifact>"),
                 urlHint: artifact.finalUrl,
             };
         }
     }
-    return { bytes: new Uint8Array(), label: explicitLabel ?? "<unknown>" };
+    return { html: "", bytes: new Uint8Array(), label: explicitLabel ?? "<unknown>" };
 }
 
 function makeResult(
@@ -417,11 +421,6 @@ function makeResult(
     return { status, markdown, diagnostics: diags, reportJson };
 }
 
-/**
- * Convert TS-side flat DiagnosticRecord into the shape Rust's
- * DiagnosticEnvelope expects (snake_case + origin namespace/component).
- * This lets failure-path reportJson match the success-path exactly.
- */
 function toRustDiagnosticShape(d: DiagnosticRecord): Record<string, unknown> {
     return {
         code: d.code,
@@ -498,7 +497,6 @@ function safeParseReport(reportJson: string, urlHint?: string): {
     const mapped = rawDiags.map((raw): DiagnosticRecord => {
         const r = raw as Record<string, unknown>;
         const severity = (r.severity as DiagnosticSeverity | undefined) ?? "error";
-        // Rust uses snake_case for wire — read both names defensively.
         return {
             code: String(r.code ?? "panduck.convert.unknown"),
             fallback: typeof r.fallback === "string" ? r.fallback : undefined,
@@ -524,145 +522,23 @@ function safeParseReport(reportJson: string, urlHint?: string): {
  * Derive ConverterStatus. Trust hierarchy:
  *   1. exitCode from Rust → 1 means the binary considers this a hard failure.
  *   2. Rust report.status === "failed" → same, hard failure.
- *   3. Error-severity diagnostics → failed, no matter the policy.
- *   4. Diagnostics + Rust losses → has known structural loss; policy decides.
- *   5. Otherwise → success.
- *
- * We deliberately do NOT trust a raw `status` field inside a ConverterResult
- * that the caller hand-built — diagnostics + exit_code are the wire truth.
+ *   3. Error-severity diagnostics (executor OR Rust OR post-process) → failed.
+ *   4. requireNoLoss from RuleBuilder → deny semantics. Any loss = failed.
+ *   5. Otherwise, known loss → success_with_loss.
+ *   6. Otherwise → success.
  */
 function deriveStatus(
     diags: DiagnosticRecord[],
-    loss: LossPolicy,
-    rustReport: { rustStatus?: string; hasRustLoss: boolean; exitCode: number },
+    ctx: { rustStatus?: string; hasRustLoss: boolean; exitCode: number; requireNoLoss: boolean },
 ): ConverterStatus {
-    if (rustReport.exitCode !== 0) return "failed";
-    if (rustReport.rustStatus === "failed") return "failed";
+    if (ctx.exitCode !== 0) return "failed";
+    if (ctx.rustStatus === "failed") return "failed";
     if (diags.some((d) => d.severity === "error")) return "failed";
-    const hasLoss = rustReport.hasRustLoss || diags.some((d) =>
-        /loss|not-validated|required-missing|unsupported|rule\./i.test(d.code),
+    const hasAnyLoss = ctx.hasRustLoss || diags.some((d) =>
+        /loss|required-missing|sentinel-lost|replace-missing-handler|not-validated|unsupported/i.test(d.code),
     );
-    if (!hasLoss) return "success";
-    if (loss === "deny") return "failed";
+    if (!hasAnyLoss) return "success";
+    // requireNoLoss elevates any known loss to a hard failure.
+    if (ctx.requireNoLoss) return "failed";
     return "success_with_loss";
-}
-
-// ---------------------------------------------------------------------------
-// Rule-plan helpers — bridge RuleBuilder / RulePlan into DiagnosticRecord[]
-// so Panduck preserves the full declarative intent even before the Rust
-// executor is wired.
-// ---------------------------------------------------------------------------
-
-function resolvePlan(rules: RulePlan | RuleBuilder | undefined): RulePlan | null {
-    if (!rules) return null;
-    if (rules instanceof RuleBuilder) return rules.build();
-    return rules;
-}
-
-/**
- * Walk every step/op in a RulePlan and produce a DiagnosticRecord per op.
- * All current diagnostics are severity=info because Rust still has to
- * execute the plan; they carry `stage` (input/structure/transform/output/rule)
- * so a future host can tell them apart and replace with real execution
- * outcomes.
- */
-function planToDiagnostics(plan: RulePlan, urlHint?: string): DiagnosticRecord[] {
-    const out: DiagnosticRecord[] = [];
-    for (let stepIdx = 0; stepIdx < plan.steps.length; stepIdx++) {
-        const step = plan.steps[stepIdx];
-        for (let opIdx = 0; opIdx < step.ops.length; opIdx++) {
-            const op = step.ops[opIdx];
-            out.push(opToDiagnostic(op, step, stepIdx, opIdx, urlHint));
-        }
-    }
-    return out;
-}
-
-function opToDiagnostic(
-    op: RuleOp,
-    step: RuleStep,
-    stepIdx: number,
-    opIdx: number,
-    urlHint?: string,
-): DiagnosticRecord {
-    const common: Pick<DiagnosticRecord, "origin" | "severity" | "url"> = {
-        origin: { namespace: "panduck", component: "rule" },
-        severity: "info",
-        url: urlHint,
-    };
-    const commonArgs = { step: stepIdx + 1, op: opIdx + 1 };
-    const commonStage = domainToStage(step.domain);
-
-    switch (op.op) {
-        case "select":
-            return {
-                code: "panduck.rule.select.requested",
-                fallback: `Rule step ${stepIdx + 1} input.select("${op.selector}") — executor not yet wired`,
-                messageKey: "panduck.rule.select.requested",
-                args: { ...commonArgs, selector: op.selector },
-                target: op.selector,
-                stage: commonStage,
-                ...common,
-            };
-        case "require":
-            return {
-                code: "panduck.rule.require.requested",
-                fallback: `Rule step ${stepIdx + 1} input.require("${op.key}", "${op.selector}") — executor not yet wired`,
-                messageKey: "panduck.rule.require.requested",
-                args: { ...commonArgs, key: op.key, selector: op.selector },
-                target: op.selector,
-                stage: commonStage,
-                ...common,
-            };
-        case "remove":
-            return {
-                code: "panduck.rule.remove.requested",
-                fallback: `Rule step ${stepIdx + 1} transform.remove("${op.selector}") — executor not yet wired`,
-                messageKey: "panduck.rule.remove.requested",
-                args: { ...commonArgs, selector: op.selector },
-                target: op.selector,
-                stage: commonStage,
-                ...common,
-            };
-        case "unwrap":
-            return {
-                code: "panduck.rule.unwrap.requested",
-                fallback: `Rule step ${stepIdx + 1} transform.unwrap("${op.selector}") — executor not yet wired`,
-                messageKey: "panduck.rule.unwrap.requested",
-                args: { ...commonArgs, selector: op.selector },
-                target: op.selector,
-                stage: commonStage,
-                ...common,
-            };
-        case "replace":
-            return {
-                code: "panduck.rule.replace.requested",
-                fallback: `Rule step ${stepIdx + 1} output.replace("${op.selector}", handler="${op.handlerKey}") — executor not yet wired`,
-                messageKey: "panduck.rule.replace.requested",
-                args: { ...commonArgs, selector: op.selector, handlerKey: op.handlerKey },
-                target: op.selector,
-                stage: commonStage,
-                ...common,
-            };
-        case "require-no-loss":
-            return {
-                code: "panduck.rule.require-no-loss.requested",
-                fallback: `Rule step ${stepIdx + 1} output.requireNoLoss() — executor not yet wired`,
-                messageKey: "panduck.rule.requireNoLoss.requested",
-                args: commonArgs,
-                stage: commonStage,
-                ...common,
-            };
-    }
-}
-
-function domainToStage(domain: RuleStep["domain"]): NonNullable<DiagnosticRecord["stage"]> {
-    switch (domain) {
-        case "input":
-            return "input";
-        case "transform":
-            return "transform";
-        case "output":
-            return "output";
-    }
 }

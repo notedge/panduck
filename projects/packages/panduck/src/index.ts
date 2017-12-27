@@ -4,7 +4,7 @@ export { loadPanduckWeb, loadPanduckWasm } from "./wasm/index.js";
 export { buildPanduckCli, runCli, getFormatRegistry, ExitCode, REPORT_SCHEMA_VERSION } from "./cli/index.js";
 export type { FormatRecord, PanduckReport, CapabilityState } from "./cli/index.js";
 
-// New authoring surface.
+// Public authoring surface — Converter + RuleBuilder.
 export { Converter } from "./converter.js";
 export type {
     ConverterInput,
@@ -15,10 +15,8 @@ export type {
     DiagnosticRecord,
     DiagnosticSeverity,
     ToMarkdownOptions,
-    LossPolicy,
 } from "./converter.js";
 
-// Rule-plan builder.
 export {
     RuleBuilder,
     InputScope,
@@ -28,11 +26,11 @@ export {
 export type {
     RulePlan,
     RuleStep,
-    RuleOp,
-    RuleDomain,
     InputOp,
     TransformOp,
     OutputOp,
+    ReplaceHandlerFn,
+    MarkdownHelper,
 } from "./rule-builder.js";
 
 /** @deprecated Use `loadPanduckNode` or `loadPanduckNative`. */
