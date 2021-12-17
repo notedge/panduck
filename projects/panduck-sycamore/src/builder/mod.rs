@@ -1,71 +1,51 @@
-mod blocks;
-mod command;
-mod link;
-mod list;
-mod table;
-mod text;
+use crate::traits::IntoSycamore;
+use notedown_ast::ASTNode;
+use panduck_html::HTMLConfig;
+use sycamore::{prelude::GenericNode, render_to_string, view::View, SsrNode};
 
-use notedown_ast::{
-    nodes::{Delimiter, Header, ListView, Literal, StyleKind, StyleNode, TableView, TextNode},
-    ASTKind, ASTNodes,
-};
-use sycamore::generic_node::GenericNode;
-
-pub trait IntoSycamore<G: GenericNode> {
-    fn into_sycamore(self) -> G;
+pub struct SycamoreBuilder {
+    pub config: HTMLConfig,
 }
 
-impl<T, G> IntoSycamore<G> for Literal<T>
-where
-    T: IntoSycamore<G>,
-    G: GenericNode,
-{
-    fn into_sycamore(self) -> G {
-        self.value.into_sycamore()
+impl Default for SycamoreBuilder {
+    fn default() -> Self {
+        Self { config: Default::default() }
     }
 }
 
-impl<G> IntoSycamore<G> for ASTKind
-where
-    G: GenericNode,
-{
-    fn into_sycamore(self) -> G {
-        match self {
-            Self::Statements(children) => {
-                let root: G = GenericNode::element("div");
-                root.set_class_name("notedown");
-                push_nodes(&root, children);
-                return root;
-            }
-            Self::Paragraph(children) => {
-                let p = GenericNode::element("p");
-                push_nodes(&p, children);
-                return p;
-            }
-            Self::Header(inner) => inner.into_sycamore(),
-            Self::Delimiter(inner) => inner.into_sycamore(),
-            Self::TableView(inner) => inner.into_sycamore(),
-            Self::ListView(inner) => inner.into_sycamore(),
-            Self::CodeNode(inner) => inner.into_sycamore(),
-            Self::MathNode(inner) => inner.into_sycamore(),
-            Self::LinkNode(inner) => inner.into_sycamore(),
-            Self::TextSpan(inner) => inner.into_sycamore(),
-            Self::StyledSpan(inner) => inner.into_sycamore(),
-            Self::Command(_) => {
-                unimplemented!()
-            }
-            Self::Value(_) => {
-                unimplemented!()
-            }
-        }
+impl SycamoreBuilder {
+    /// the html fragment
+    pub fn render(&self, ast: ASTNode) -> String {
+        let view = View::<SsrNode>::new_node(ast.into_sycamore(self));
+        render_to_string(|| view)
     }
-}
+    /// a complete html
+    pub fn render_standalone(&self, ast: ASTNode) -> String {
+        let html = SsrNode::element("html");
+        html.append_child(&self.html_head());
+        html.append_child(&ast.into_sycamore(self));
+        render_to_string(|| View::new_node(html))
+    }
 
-pub fn push_nodes<G>(node: &G, children: ASTNodes)
-where
-    G: GenericNode,
-{
-    for i in children {
-        node.append_child(&i.value.into_sycamore())
+    fn html_head<G: GenericNode>(&self) -> G {
+        let head: G = GenericNode::element("head");
+        head.append_child(&{
+            let meta: G = GenericNode::element("meta");
+            meta.set_attribute("charset", "UTF-8");
+            meta
+        });
+        head.append_child(&{
+            let meta: G = GenericNode::element("meta");
+            meta.set_attribute("name", "viewport-8");
+            meta.set_attribute("content", "'width=device-width, initial-scale=1.0'");
+            meta
+        });
+        head.append_child(&{
+            let meta: G = GenericNode::element("link");
+            meta.set_attribute("rel", "stylesheet");
+            meta.set_attribute("href", "https://latex.now.sh/style.css");
+            meta
+        });
+        return head;
     }
 }

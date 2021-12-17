@@ -1,13 +1,8 @@
 use super::*;
 use pretty::RcDoc;
-mod text;
-
-pub trait PrettyHTML {
-    fn pretty_html(&self, f: &mut HTMLRenderer) -> RcDoc<()>;
-}
 
 impl PrettyHTML for ASTNode {
-    fn pretty_html(&self, f: &mut HTMLRenderer) -> RcDoc<()> {
+    fn pretty_html(&self, f: &mut PrettyRenderer) -> RcDoc<()> {
         match &self.value {
             ASTKind::Statements(v) => RcDoc::intersperse(v.iter().map(|x| x.pretty_html(f)), RcDoc::line()).nest(1).group(),
             ASTKind::Paragraph(v) => RcDoc::text("<p>")

@@ -23,9 +23,7 @@ ASTNode {
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "{{ message }}",
-                    ),
+                    "{{ message }}",
                 ),
             },
             ASTNode {
@@ -50,9 +48,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "/",
-                                    ),
+                                    "/",
                                 ),
                             },
                             ASTNode {
@@ -83,9 +79,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "Markdown parser, done right. 100% CommonMark support, extensions, syntax plugins &amp; high speed",
-                                ),
+                                "Markdown parser, done right. 100% CommonMark support, extensions, syntax plugins &amp; high speed",
                             ),
                         },
                     ],
@@ -148,9 +142,7 @@ ASTNode {
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "master",
-                    ),
+                    "master",
                 ),
             },
             ASTNode {
@@ -175,9 +167,7 @@ ASTNode {
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "Add file",
-                    ),
+                    "Add file",
                 ),
             },
             ASTNode {
@@ -202,9 +192,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Latest commit",
-                                    ),
+                                    "Latest commit",
                                 ),
                             },
                         ],
@@ -278,9 +266,7 @@ ASTNode {
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "1b204ef",
-                    ),
+                    "1b204ef",
                 ),
             },
             ASTNode {
@@ -290,9 +276,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Git stats",
-                                    ),
+                                    "Git stats",
                                 ),
                             },
                         ],
@@ -311,9 +295,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Files",
-                                    ),
+                                    "Files",
                                 ),
                             },
                         ],
@@ -332,37 +314,27 @@ ASTNode {
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "Failed to load latest commit information.",
-                    ),
+                    "Failed to load latest commit information.",
                 ),
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "Type",
-                    ),
+                    "Type",
                 ),
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "Name",
-                    ),
+                    "Name",
                 ),
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "Latest commit message",
-                    ),
+                    "Latest commit message",
                 ),
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "Commit time",
-                    ),
+                    "Commit time",
                 ),
             },
             ASTNode {
@@ -812,9 +784,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "README.md",
-                                    ),
+                                    "README.md",
                                 ),
                             },
                         ],
@@ -833,9 +803,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "markdown-it",
-                                    ),
+                                    "markdown-it",
                                 ),
                             },
                         ],
@@ -908,9 +876,7 @@ ASTNode {
                                     children: [
                                         ASTNode {
                                             kind: TextSpan(
-                                                Normal(
-                                                    "Table of content",
-                                                ),
+                                                "Table of content",
                                             ),
                                         },
                                     ],
@@ -937,9 +903,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Install",
-                                    ),
+                                    "Install",
                                 ),
                             },
                         ],
@@ -956,9 +920,7 @@ ASTNode {
                                     children: [
                                         ASTNode {
                                             kind: TextSpan(
-                                                Normal(
-                                                    "node.js",
-                                                ),
+                                                "node.js",
                                             ),
                                         },
                                     ],
@@ -967,9 +929,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    ":",
-                                ),
+                                ":",
                             ),
                         },
                     ],
@@ -990,9 +950,7 @@ ASTNode {
                                     children: [
                                         ASTNode {
                                             kind: TextSpan(
-                                                Normal(
-                                                    "browser (CDN):",
-                                                ),
+                                                "browser (CDN):",
                                             ),
                                         },
                                     ],
@@ -1019,9 +977,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Usage examples",
-                                    ),
+                                    "Usage examples",
                                 ),
                             },
                         ],
@@ -1033,9 +989,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "See also:",
-                                ),
+                                "See also:",
                             ),
                         },
                     ],
@@ -1058,9 +1012,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Simple",
-                                    ),
+                                    "Simple",
                                 ),
                             },
                         ],
@@ -1077,9 +1029,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "Single line rendering, without paragraph wrap:",
-                                ),
+                                "Single line rendering, without paragraph wrap:",
                             ),
                         },
                     ],
@@ -1102,9 +1052,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Init with presets and options",
-                                    ),
+                                    "Init with presets and options",
                                 ),
                             },
                         ],
@@ -1116,9 +1064,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "(*) presets define combinations of active rules and options. Can be",
-                                ),
+                                "(*) presets define combinations of active rules and options. Can be",
                             ),
                         },
                         ASTNode {
@@ -1128,9 +1074,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    ", ",
-                                ),
+                                ", ",
                             ),
                         },
                         ASTNode {
@@ -1140,9 +1084,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "or",
-                                ),
+                                "or",
                             ),
                         },
                         ASTNode {
@@ -1152,9 +1094,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "(if skipped). See",
-                                ),
+                                "(if skipped). See",
                             ),
                         },
                         ASTNode {
@@ -1164,9 +1104,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "for more details.",
-                                ),
+                                "for more details.",
                             ),
                         },
                     ],
@@ -1189,9 +1127,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Plugins load",
-                                    ),
+                                    "Plugins load",
                                 ),
                             },
                         ],
@@ -1215,9 +1151,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Syntax highlighting",
-                                    ),
+                                    "Syntax highlighting",
                                 ),
                             },
                         ],
@@ -1229,9 +1163,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "Apply syntax highlighting to fenced code blocks with the",
-                                ),
+                                "Apply syntax highlighting to fenced code blocks with the",
                             ),
                         },
                         ASTNode {
@@ -1241,9 +1173,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "option:",
-                                ),
+                                "option:",
                             ),
                         },
                     ],
@@ -1259,9 +1189,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "Or with full wrapper override (if you need assign class to",
-                                ),
+                                "Or with full wrapper override (if you need assign class to",
                             ),
                         },
                         ASTNode {
@@ -1271,9 +1199,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "):",
-                                ),
+                                "):",
                             ),
                         },
                     ],
@@ -1296,9 +1222,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Linkify",
-                                    ),
+                                    "Linkify",
                                 ),
                             },
                         ],
@@ -1315,9 +1239,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "uses",
-                                ),
+                                "uses",
                             ),
                         },
                         ASTNode {
@@ -1327,9 +1249,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    ". To\n                                            configure linkify-it, access the linkify instance through",
-                                ),
+                                ". To\n                                            configure linkify-it, access the linkify instance through",
                             ),
                         },
                         ASTNode {
@@ -1339,9 +1259,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    ":\n                                        ",
-                                ),
+                                ":\n                                        ",
                             ),
                         },
                     ],
@@ -1364,9 +1282,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "API",
-                                    ),
+                                    "API",
                                 ),
                             },
                         ],
@@ -1398,9 +1314,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "If you are going to write plugins - take a look at",
-                                ),
+                                "If you are going to write plugins - take a look at",
                             ),
                         },
                         ASTNode {
@@ -1410,9 +1324,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    ".\n                                        ",
-                                ),
+                                ".\n                                        ",
                             ),
                         },
                     ],
@@ -1430,9 +1342,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Syntax extensions",
-                                    ),
+                                    "Syntax extensions",
                                 ),
                             },
                         ],
@@ -1444,9 +1354,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "Embedded (enabled by default):",
-                                ),
+                                "Embedded (enabled by default):",
                             ),
                         },
                     ],
@@ -1462,9 +1370,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "Via plugins:",
-                                ),
+                                "Via plugins:",
                             ),
                         },
                     ],
@@ -1487,9 +1393,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Manage rules",
-                                    ),
+                                    "Manage rules",
                                 ),
                             },
                         ],
@@ -1501,9 +1405,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "By default all rules are enabled, but can be restricted by options. On plugin\n                                            load all its rules are enabled automatically.",
-                                ),
+                                "By default all rules are enabled, but can be restricted by options. On plugin\n                                            load all its rules are enabled automatically.",
                             ),
                         },
                     ],
@@ -1519,9 +1421,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "You can find all rules in sources:",
-                                ),
+                                "You can find all rules in sources:",
                             ),
                         },
                         ASTNode {
@@ -1531,9 +1431,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    ", ",
-                                ),
+                                ", ",
                             ),
                         },
                         ASTNode {
@@ -1543,9 +1441,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    ",\n                                            ",
-                                ),
+                                ",\n                                            ",
                             ),
                         },
                         ASTNode {
@@ -1555,9 +1451,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    ".\n                                        ",
-                                ),
+                                ".\n                                        ",
                             ),
                         },
                     ],
@@ -1575,9 +1469,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Benchmark",
-                                    ),
+                                    "Benchmark",
                                 ),
                             },
                         ],
@@ -1589,9 +1481,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "Here is the result of readme parse at MB Pro Retina 2013 (2.4 GHz):",
-                                ),
+                                "Here is the result of readme parse at MB Pro Retina 2013 (2.4 GHz):",
                             ),
                         },
                     ],
@@ -1612,9 +1502,7 @@ ASTNode {
                                     children: [
                                         ASTNode {
                                             kind: TextSpan(
-                                                Normal(
-                                                    "Note.",
-                                                ),
+                                                "Note.",
                                             ),
                                         },
                                     ],
@@ -1623,9 +1511,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "CommonMark version runs with",
-                                ),
+                                "CommonMark version runs with",
                             ),
                         },
                         ASTNode {
@@ -1635,9 +1521,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "for more \"honest\" compare. Difference is ~ 1.5x.",
-                                ),
+                                "for more \"honest\" compare. Difference is ~ 1.5x.",
                             ),
                         },
                     ],
@@ -1648,9 +1532,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "As you can see,",
-                                ),
+                                "As you can see,",
                             ),
                         },
                         ASTNode {
@@ -1660,9 +1542,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "doesn't pay with speed for it's flexibility.\n                                            Slowdown of \"full\" version caused by additional features not available in\n                                            other implementations.",
-                                ),
+                                "doesn't pay with speed for it's flexibility.\n                                            Slowdown of \"full\" version caused by additional features not available in\n                                            other implementations.",
                             ),
                         },
                     ],
@@ -1680,9 +1560,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "markdown-it for enterprise",
-                                    ),
+                                    "markdown-it for enterprise",
                                 ),
                             },
                         ],
@@ -1694,9 +1572,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "Available as part of the Tidelift Subscription.",
-                                ),
+                                "Available as part of the Tidelift Subscription.",
                             ),
                         },
                     ],
@@ -1707,9 +1583,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "The maintainers of",
-                                ),
+                                "The maintainers of",
                             ),
                         },
                         ASTNode {
@@ -1719,9 +1593,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "and thousands of other packages are working with Tidelift to deliver commercial support and maintenance for the open source dependencies you use to build your applications. Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies you use.",
-                                ),
+                                "and thousands of other packages are working with Tidelift to deliver commercial support and maintenance for the open source dependencies you use to build your applications. Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies you use.",
                             ),
                         },
                         ASTNode {
@@ -1744,9 +1616,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Authors",
-                                    ),
+                                    "Authors",
                                 ),
                             },
                         ],
@@ -1768,9 +1638,7 @@ ASTNode {
                                     children: [
                                         ASTNode {
                                             kind: TextSpan(
-                                                Normal(
-                                                    "markdown-it",
-                                                ),
+                                                "markdown-it",
                                             ),
                                         },
                                     ],
@@ -1779,9 +1647,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "is the result of the decision of the authors who contributed to\n                                            99% of the",
-                                ),
+                                "is the result of the decision of the authors who contributed to\n                                            99% of the",
                             ),
                         },
                         ASTNode {
@@ -1791,9 +1657,7 @@ ASTNode {
                                     children: [
                                         ASTNode {
                                             kind: TextSpan(
-                                                Normal(
-                                                    "Remarkable",
-                                                ),
+                                                "Remarkable",
                                             ),
                                         },
                                     ],
@@ -1802,9 +1666,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "code to move to a project with the same authorship but\n                                            new leadership (Vitaly and Alex). It's not a fork.",
-                                ),
+                                "code to move to a project with the same authorship but\n                                            new leadership (Vitaly and Alex). It's not a fork.",
                             ),
                         },
                     ],
@@ -1822,9 +1684,7 @@ ASTNode {
                             },
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "References / Thanks",
-                                    ),
+                                    "References / Thanks",
                                 ),
                             },
                         ],
@@ -1836,9 +1696,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "Big thanks to",
-                                ),
+                                "Big thanks to",
                             ),
                         },
                         ASTNode {
@@ -1848,9 +1706,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "for his work on the\n                                            CommonMark spec and reference implementations. His work saved us a lot of time\n                                            during this project's development.",
-                                ),
+                                "for his work on the\n                                            CommonMark spec and reference implementations. His work saved us a lot of time\n                                            during this project's development.",
                             ),
                         },
                     ],
@@ -1866,9 +1722,7 @@ ASTNode {
                                     children: [
                                         ASTNode {
                                             kind: TextSpan(
-                                                Normal(
-                                                    "Related Links:",
-                                                ),
+                                                "Related Links:",
                                             ),
                                         },
                                     ],
@@ -1893,9 +1747,7 @@ ASTNode {
                                     children: [
                                         ASTNode {
                                             kind: TextSpan(
-                                                Normal(
-                                                    "Ports",
-                                                ),
+                                                "Ports",
                                             ),
                                         },
                                     ],
@@ -1917,9 +1769,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "About",
-                                    ),
+                                    "About",
                                 ),
                             },
                         ],
@@ -1931,9 +1781,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "Markdown parser, done right. 100% CommonMark support, extensions, syntax plugins &amp; high speed",
-                                ),
+                                "Markdown parser, done right. 100% CommonMark support, extensions, syntax plugins &amp; high speed",
                             ),
                         },
                     ],
@@ -1956,9 +1804,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Topics",
-                                    ),
+                                    "Topics",
                                 ),
                             },
                         ],
@@ -1982,9 +1828,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Resources",
-                                    ),
+                                    "Resources",
                                 ),
                             },
                         ],
@@ -2003,9 +1847,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "License",
-                                    ),
+                                    "License",
                                 ),
                             },
                         ],
@@ -2043,9 +1885,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Sponsor this project",
-                                    ),
+                                    "Sponsor this project",
                                 ),
                             },
                         ],
@@ -2078,16 +1918,12 @@ ASTNode {
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "No packages published",
-                    ),
+                    "No packages published",
                 ),
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "\n",
-                    ),
+                    "\n",
                 ),
             },
             ASTNode {
@@ -2140,9 +1976,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Languages",
-                                    ),
+                                    "Languages",
                                 ),
                             },
                         ],
@@ -2176,9 +2010,7 @@ ASTNode {
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "You can’t perform that action at this time.",
-                    ),
+                    "You can’t perform that action at this time.",
                 ),
             },
             ASTNode {
@@ -2188,9 +2020,7 @@ ASTNode {
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "You signed in with another tab or window.",
-                    ),
+                    "You signed in with another tab or window.",
                 ),
             },
             ASTNode {
@@ -2200,16 +2030,12 @@ ASTNode {
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "to refresh your session.",
-                    ),
+                    "to refresh your session.",
                 ),
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "You signed out in another tab or window.",
-                    ),
+                    "You signed out in another tab or window.",
                 ),
             },
             ASTNode {
@@ -2219,9 +2045,7 @@ ASTNode {
             },
             ASTNode {
                 kind: TextSpan(
-                    Normal(
-                        "to refresh your session.",
-                    ),
+                    "to refresh your session.",
                 ),
             },
             ASTNode {
@@ -2234,37 +2058,27 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "We use",
-                                ),
+                                "We use",
                             ),
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "optional",
-                                ),
+                                "optional",
                             ),
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "third-party analytics cookies to understand how you use GitHub.com so we can build better products.",
-                                ),
+                                "third-party analytics cookies to understand how you use GitHub.com so we can build better products.",
                             ),
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "Learn more",
-                                ),
+                                "Learn more",
                             ),
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    ".\n                        ",
-                                ),
+                                ".\n                        ",
                             ),
                         },
                     ],
@@ -2285,51 +2099,37 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "We use",
-                                ),
+                                "We use",
                             ),
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "optional",
-                                ),
+                                "optional",
                             ),
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "third-party analytics cookies to understand how you use GitHub.com so we can build better products.",
-                                ),
+                                "third-party analytics cookies to understand how you use GitHub.com so we can build better products.",
                             ),
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "\n",
-                                ),
+                                "\n",
                             ),
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "You can always update your selection by clicking",
-                                ),
+                                "You can always update your selection by clicking",
                             ),
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "Cookie Preferences",
-                                ),
+                                "Cookie Preferences",
                             ),
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "at the bottom of the page.\n                            For more information, see our",
-                                ),
+                                "at the bottom of the page.\n                            For more information, see our",
                             ),
                         },
                         ASTNode {
@@ -2339,9 +2139,7 @@ ASTNode {
                         },
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    ".\n                        ",
-                                ),
+                                ".\n                        ",
                             ),
                         },
                     ],
@@ -2354,9 +2152,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Essential cookies",
-                                    ),
+                                    "Essential cookies",
                                 ),
                             },
                         ],
@@ -2368,9 +2164,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "We use essential cookies to perform essential website functions, e.g. they're used to log you in.",
-                                ),
+                                "We use essential cookies to perform essential website functions, e.g. they're used to log you in.",
                             ),
                         },
                         ASTNode {
@@ -2388,9 +2182,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Always active",
-                                    ),
+                                    "Always active",
                                 ),
                             },
                         ],
@@ -2404,9 +2196,7 @@ ASTNode {
                         children: [
                             ASTNode {
                                 kind: TextSpan(
-                                    Normal(
-                                        "Analytics cookies",
-                                    ),
+                                    "Analytics cookies",
                                 ),
                             },
                         ],
@@ -2418,9 +2208,7 @@ ASTNode {
                     [
                         ASTNode {
                             kind: TextSpan(
-                                Normal(
-                                    "We use analytics cookies to understand how you use our websites so we can make them better, e.g. they're used to gather information about the pages you visit and how many clicks you need to accomplish a task.",
-                                ),
+                                "We use analytics cookies to understand how you use our websites so we can make them better, e.g. they're used to gather information about the pages you visit and how many clicks you need to accomplish a task.",
                             ),
                         },
                         ASTNode {

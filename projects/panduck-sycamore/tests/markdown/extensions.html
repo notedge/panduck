@@ -1,0 +1,797 @@
+<html><head><meta charset="UTF-8"/><meta name="viewport-8" content="'width=device-width, initial-scale=1.0'"/><link rel="stylesheet" href="https://latex.now.sh/style.css"/></head><div class="notedown"><hr/><p>title: Extensions test
+author: Yuki Izumi
+version: 0.1
+date: ‘2016-08-31’
+license: ‘<a href="http://creativecommons.org/licenses/by-sa/4.0/"></a>’
+…</p><h2>Tables</h2><p>Here’s a well-formed table, doing everything it should.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">| abc | def |
+</span><span style="color:#323232;">| --- | --- |
+</span><span style="color:#323232;">| ghi | jkl |
+</span><span style="color:#323232;">| mno | pqr |
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;abc&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;def&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;ghi&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;jkl&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;mno&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;pqr&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span></pre>
+<p>We’re going to mix up the table now; we’ll demonstrate that inline formatting
+works fine, but block elements don’t.  You can also have empty cells, and the
+textual alignment of the columns is shown to be irrelevant.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">Hello!
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">| _abc_ | セン |
+</span><span style="color:#323232;">| ----- | ---- |
+</span><span style="color:#323232;">| 1. Block elements inside cells don&#39;t work. | |
+</span><span style="color:#323232;">| But _**inline elements do**_. | x |
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">Hi!
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;Hello!&lt;/p&gt;
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;&lt;em&gt;abc&lt;/em&gt;&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;セン&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;1. Block elements inside cells don&#39;t work.&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;But &lt;em&gt;&lt;strong&gt;inline elements do&lt;/strong&gt;&lt;/em&gt;.&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;x&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span><span style="color:#323232;">&lt;p&gt;Hi!&lt;/p&gt;
+</span></pre>
+<p>Here we demonstrate some edge cases about what is and isn’t a table.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">| Not enough table | to be considered table |
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">| Not enough table | to be considered table |
+</span><span style="color:#323232;">| Not enough table | to be considered table |
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">| Just enough table | to be considered table |
+</span><span style="color:#323232;">| ----------------- | ---------------------- |
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">| ---- | --- |
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">|x|
+</span><span style="color:#323232;">|-|
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">| xyz |
+</span><span style="color:#323232;">| --- |
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;| Not enough table | to be considered table |&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;| Not enough table | to be considered table |
+</span><span style="color:#323232;">| Not enough table | to be considered table |&lt;/p&gt;
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;Just enough table&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;to be considered table&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span><span style="color:#323232;">&lt;p&gt;| ---- | --- |&lt;/p&gt;
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;x&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;xyz&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span></pre>
+<p>A “simpler” table, GFM style:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">abc | def
+</span><span style="color:#323232;">--- | ---
+</span><span style="color:#323232;">xyz | ghi
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;abc&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;def&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;xyz&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;ghi&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span></pre>
+<p>We are making the parser slighly more lax here. Here is a table with spaces at
+the end:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">Hello!
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">| _abc_ | セン |
+</span><span style="color:#323232;">| ----- | ---- |
+</span><span style="color:#323232;">| this row has a space at the end | | 
+</span><span style="color:#323232;">| But _**inline elements do**_. | x |
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">Hi!
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;Hello!&lt;/p&gt;
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;&lt;em&gt;abc&lt;/em&gt;&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;セン&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;this row has a space at the end&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;But &lt;em&gt;&lt;strong&gt;inline elements do&lt;/strong&gt;&lt;/em&gt;.&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;x&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span><span style="color:#323232;">&lt;p&gt;Hi!&lt;/p&gt;
+</span></pre>
+<p>Table alignment:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">aaa | bbb | ccc | ddd | eee
+</span><span style="color:#323232;">:-- | --- | :-: | --- | --:
+</span><span style="color:#323232;">fff | ggg | hhh | iii | jjj
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th align=&quot;left&quot;&gt;aaa&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;bbb&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th align=&quot;center&quot;&gt;ccc&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;ddd&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th align=&quot;right&quot;&gt;eee&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td align=&quot;left&quot;&gt;fff&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;ggg&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td align=&quot;center&quot;&gt;hhh&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;iii&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td align=&quot;right&quot;&gt;jjj&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span></pre>
+<h3>Table cell count mismatches</h3><p>The header and marker row must match.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">| a | b | c |
+</span><span style="color:#323232;">| --- | --- |
+</span><span style="color:#323232;">| this | isn&#39;t | okay |
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;| a | b | c |
+</span><span style="color:#323232;">| --- | --- |
+</span><span style="color:#323232;">| this | isn&#39;t | okay |&lt;/p&gt;
+</span></pre>
+<p>But any of the body rows can be shorter. Rows longer
+than the header are truncated.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">| a | b | c |
+</span><span style="color:#323232;">| --- | --- | ---
+</span><span style="color:#323232;">| x
+</span><span style="color:#323232;">| a | b
+</span><span style="color:#323232;">| 1 | 2 | 3 | 4 | 5 |
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;a&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;b&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;c&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;x&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;a&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;b&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;1&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;2&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;3&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span></pre>
+<h3>Embedded pipes</h3><p>Tables with embedded pipes could be tricky.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">| a | b |
+</span><span style="color:#323232;">| --- | --- |
+</span><span style="color:#323232;">| Escaped pipes are \|okay\|. | Like \| this. |
+</span><span style="color:#323232;">| Within `\|code\| is okay` too. |
+</span><span style="color:#323232;">| _**`c\|`**_ \| complex
+</span><span style="color:#323232;">| don&#39;t **\_reparse\_**
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;a&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;b&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;Escaped pipes are |okay|.&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;Like | this.&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;Within &lt;code&gt;|code| is okay&lt;/code&gt; too.&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;em&gt;&lt;strong&gt;&lt;code&gt;c|&lt;/code&gt;&lt;/strong&gt;&lt;/em&gt; | complex&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;don&#39;t &lt;strong&gt;_reparse_&lt;/strong&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span></pre>
+<h3>Oddly-formatted markers</h3><p>This shouldn’t assert.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">| a |
+</span><span style="color:#323232;">--- |
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;a&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span></pre>
+<h3>Escaping</h3><pre style="background-color:#ffffff;">
+<span style="color:#323232;">| a | b |
+</span><span style="color:#323232;">| --- | --- |
+</span><span style="color:#323232;">| \\ | `\\` |
+</span><span style="color:#323232;">| \\\\ | `\\\\` |
+</span><span style="color:#323232;">| \_ | `\_` |
+</span><span style="color:#323232;">| \| | `\|` |
+</span><span style="color:#323232;">| \a | `\a` |
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">\\ `\\`
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">\\\\ `\\\\`
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">\_ `\_`
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">\| `\|`
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">\a `\a`
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;a&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;b&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;\&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;code&gt;\\&lt;/code&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;\\&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;code&gt;\\\\&lt;/code&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;_&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;code&gt;\_&lt;/code&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;|&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;code&gt;|&lt;/code&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;\a&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;code&gt;\a&lt;/code&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span><span style="color:#323232;">&lt;p&gt;\ &lt;code&gt;\\&lt;/code&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;\\ &lt;code&gt;\\\\&lt;/code&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;_ &lt;code&gt;\_&lt;/code&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;| &lt;code&gt;\|&lt;/code&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;\a &lt;code&gt;\a&lt;/code&gt;&lt;/p&gt;
+</span></pre>
+<h3>Embedded HTML</h3><pre style="background-color:#ffffff;">
+<span style="color:#323232;">| a |
+</span><span style="color:#323232;">| --- |
+</span><span style="color:#323232;">| &lt;strong&gt;hello&lt;/strong&gt; |
+</span><span style="color:#323232;">| ok &lt;br&gt; sure |
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;a&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;strong&gt;hello&lt;/strong&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;ok &lt;br&gt; sure&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span></pre>
+<h3>Reference-style links</h3><pre style="background-color:#ffffff;">
+<span style="color:#323232;">Here&#39;s a link to [Freedom Planet 2][].
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">| Here&#39;s a link to [Freedom Planet 2][] in a table header. |
+</span><span style="color:#323232;">| --- |
+</span><span style="color:#323232;">| Here&#39;s a link to [Freedom Planet 2][] in a table row. |
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[Freedom Planet 2]: http://www.freedomplanet2.com/
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;Here&#39;s a link to &lt;a href=&quot;http://www.freedomplanet2.com/&quot;&gt;Freedom Planet 2&lt;/a&gt;.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;Here&#39;s a link to &lt;a href=&quot;http://www.freedomplanet2.com/&quot;&gt;Freedom Planet 2&lt;/a&gt; in a table header.&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;Here&#39;s a link to &lt;a href=&quot;http://www.freedomplanet2.com/&quot;&gt;Freedom Planet 2&lt;/a&gt; in a table row.&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span></pre>
+<h3>Sequential cells</h3><pre style="background-color:#ffffff;">
+<span style="color:#323232;">| a | b | c |
+</span><span style="color:#323232;">| --- | --- | --- |
+</span><span style="color:#323232;">| d || e |
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;a&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;b&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;c&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;d&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;e&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span></pre>
+<h3>Interaction with emphasis</h3><pre style="background-color:#ffffff;">
+<span style="color:#323232;">| a | b |
+</span><span style="color:#323232;">| --- | --- |
+</span><span style="color:#323232;">|***(a)***|
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;a&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;b&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;em&gt;&lt;strong&gt;(a)&lt;/strong&gt;&lt;/em&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span></pre>
+<h3>a table can be recognised when separated from a paragraph of text without an empty line</h3><pre style="background-color:#ffffff;">
+<span style="color:#323232;">123
+</span><span style="color:#323232;">456
+</span><span style="color:#323232;">| a | b |
+</span><span style="color:#323232;">| ---| --- |
+</span><span style="color:#323232;">d | e
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;123
+</span><span style="color:#323232;">456&lt;/p&gt;
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;a&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;b&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;d&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;e&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span></pre>
+<h2>Strikethroughs</h2><p>A well-formed strikethrough.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">A proper ~strikethrough~.
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;A proper &lt;del&gt;strikethrough&lt;/del&gt;.&lt;/p&gt;
+</span></pre>
+<p>Some strikethrough edge cases.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">These are ~not strikethroughs.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">No, they are not~
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">This ~is ~ legit~ isn&#39;t ~ legit.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">This is not ~~~~~one~~~~~ huge strikethrough.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">~one~ ~~two~~ ~~~three~~~
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">No ~mismatch~~
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;These are ~not strikethroughs.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;No, they are not~&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;This &lt;del&gt;is ~ legit&lt;/del&gt; isn&#39;t ~ legit.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;This is not ~~~~~one~~~~~ huge strikethrough.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;del&gt;one&lt;/del&gt; &lt;del&gt;two&lt;/del&gt; ~~~three~~~&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;No ~mismatch~~&lt;/p&gt;
+</span></pre>
+<p>Using 200 tilde since it overflows the internal buffer
+size (100) for parsing delimiters in inlines.c</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">
+</span><span style="color:#323232;">## Autolinks
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">```````````````````````````````` example
+</span><span style="color:#323232;">: http://google.com https://google.com
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&lt;http://google.com/å&gt; http://google.com/å
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">scyther@pokemon.com
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">www.github.com www.github.com/á
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">www.google.com/a_b
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">**Autolink and http://inlines**
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">![http://inline.com/image](http://inline.com/image)
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">a.w@b.c
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">Full stop outside parens shouldn&#39;t be included http://google.com/ok.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">(Full stop inside parens shouldn&#39;t be included http://google.com/ok.)
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&quot;http://google.com&quot;
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&#39;http://google.com&#39;
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">http://🍄.ga/ http://x🍄.ga/
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;: &lt;a href=&quot;http://google.com&quot;&gt;http://google.com&lt;/a&gt; &lt;a href=&quot;https://google.com&quot;&gt;https://google.com&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;a href=&quot;http://google.com/%C3%A5&quot;&gt;http://google.com/å&lt;/a&gt; &lt;a href=&quot;http://google.com/%C3%A5&quot;&gt;http://google.com/å&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;a href=&quot;mailto:scyther@pokemon.com&quot;&gt;scyther@pokemon.com&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;a href=&quot;http://www.github.com&quot;&gt;www.github.com&lt;/a&gt; &lt;a href=&quot;http://www.github.com/%C3%A1&quot;&gt;www.github.com/á&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;a href=&quot;http://www.google.com/a_b&quot;&gt;www.google.com/a_b&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;strong&gt;Autolink and &lt;a href=&quot;http://inlines&quot;&gt;http://inlines&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;img src=&quot;http://inline.com/image&quot; alt=&quot;http://inline.com/image&quot; /&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;a href=&quot;mailto:a.w@b.c&quot;&gt;a.w@b.c&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;Full stop outside parens shouldn&#39;t be included &lt;a href=&quot;http://google.com/ok&quot;&gt;http://google.com/ok&lt;/a&gt;.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;(Full stop inside parens shouldn&#39;t be included &lt;a href=&quot;http://google.com/ok&quot;&gt;http://google.com/ok&lt;/a&gt;.)&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&amp;quot;&lt;a href=&quot;http://google.com&quot;&gt;http://google.com&lt;/a&gt;&amp;quot;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&#39;&lt;a href=&quot;http://google.com&quot;&gt;http://google.com&lt;/a&gt;&#39;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;a href=&quot;http://%F0%9F%8D%84.ga/&quot;&gt;http://🍄.ga/&lt;/a&gt; &lt;a href=&quot;http://x%F0%9F%8D%84.ga/&quot;&gt;http://x🍄.ga/&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">````````````````````````````````
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">```````````````````````````````` example
+</span><span style="color:#323232;">This shouldn&#39;t crash everything: (_A_@_.A
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;IGNORE&gt;
+</span><span style="color:#323232;">````````````````````````````````
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">```````````````````````````````` example
+</span><span style="color:#323232;">These should not link:
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">* @a.b.c@. x
+</span><span style="color:#323232;">* n@.  b
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;These should not link:&lt;/p&gt;
+</span><span style="color:#323232;">&lt;ul&gt;
+</span><span style="color:#323232;">&lt;li&gt;@a.b.c@. x&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li&gt;n@.  b&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ul&gt;
+</span><span style="color:#323232;">````````````````````````````````
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">## HTML tag filter
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">```````````````````````````````` example
+</span><span style="color:#323232;">This is &lt;xmp&gt; not okay, but **this** &lt;strong&gt;is&lt;/strong&gt;.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&lt;p&gt;This is &lt;xmp&gt; not okay, but **this** &lt;strong&gt;is&lt;/strong&gt;.&lt;/p&gt;
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">Nope, I won&#39;t have &lt;textarea&gt;.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&lt;p&gt;No &lt;textarea&gt; here either.&lt;/p&gt;
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&lt;p&gt;This &lt;random /&gt; &lt;thing&gt; is okay&lt;/thing&gt; though.&lt;/p&gt;
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">Yep, &lt;totally&gt;okay&lt;/totally&gt;.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&lt;!-- HTML comments are okay, though. --&gt;
+</span><span style="color:#323232;">&lt;!- But we&#39;re strict. -&gt;
+</span><span style="color:#323232;">&lt;! No nonsense. &gt;
+</span><span style="color:#323232;">&lt;!-- Leave multiline comments the heck alone, though, okay?
+</span><span style="color:#323232;">Even with {&quot;x&quot;:&quot;y&quot;} or 1 &gt; 2 or whatever. Even **markdown**.
+</span><span style="color:#323232;">--&gt;
+</span><span style="color:#323232;">&lt;!--- Support everything CommonMark&#39;s parser does. --&gt;
+</span><span style="color:#323232;">&lt;!----&gt;
+</span><span style="color:#323232;">&lt;!--thistoo--&gt;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;This is &amp;lt;xmp&gt; not okay, but &lt;strong&gt;this&lt;/strong&gt; &lt;strong&gt;is&lt;/strong&gt;.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;This is &amp;lt;xmp&gt; not okay, but **this** &lt;strong&gt;is&lt;/strong&gt;.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;Nope, I won&#39;t have &amp;lt;textarea&gt;.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;No &amp;lt;textarea&gt; here either.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;This &lt;random /&gt; &lt;thing&gt; is okay&lt;/thing&gt; though.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;Yep, &lt;totally&gt;okay&lt;/totally&gt;.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;!-- HTML comments are okay, though. --&gt;
+</span><span style="color:#323232;">&lt;p&gt;&amp;lt;!- But we&#39;re strict. -&amp;gt;
+</span><span style="color:#323232;">&amp;lt;! No nonsense. &amp;gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;!-- Leave multiline comments the heck alone, though, okay?
+</span><span style="color:#323232;">Even with {&quot;x&quot;:&quot;y&quot;} or 1 &gt; 2 or whatever. Even **markdown**.
+</span><span style="color:#323232;">--&gt;
+</span><span style="color:#323232;">&lt;!--- Support everything CommonMark&#39;s parser does. --&gt;
+</span><span style="color:#323232;">&lt;!----&gt;
+</span><span style="color:#323232;">&lt;!--thistoo--&gt;
+</span><span style="color:#323232;">````````````````````````````````
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">## Footnotes
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">```````````````````````````````` example
+</span><span style="color:#323232;">This is some text![^1]. Other text.[^footnote].
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">Here&#39;s a thing[^other-note].
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">And another thing[^codeblock-note].
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">This doesn&#39;t have a referent[^nope].
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^other-note]:       no code block here (spaces are stripped away)
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^codeblock-note]:
+</span><span style="color:#323232;">        this is now a code block (8 spaces indentation)
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^1]: Some *bolded* footnote definition.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">Hi!
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^footnote]:
+</span><span style="color:#323232;">    &gt; Blockquotes can be in a footnote.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">        as well as code blocks
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">    or, naturally, simple paragraphs.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^unused]: This is unused.
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;This is some text!&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-1&quot; id=&quot;fnref-1&quot; data-footnote-ref&gt;1&lt;/a&gt;&lt;/sup&gt;. Other text.&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-footnote&quot; id=&quot;fnref-footnote&quot; data-footnote-ref&gt;2&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;Here&#39;s a thing&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-other-note&quot; id=&quot;fnref-other-note&quot; data-footnote-ref&gt;3&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;And another thing&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-codeblock-note&quot; id=&quot;fnref-codeblock-note&quot; data-footnote-ref&gt;4&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;This doesn&#39;t have a referent[^nope].&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;Hi!&lt;/p&gt;
+</span><span style="color:#323232;">&lt;section class=&quot;footnotes&quot; data-footnotes&gt;
+</span><span style="color:#323232;">&lt;ol&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-1&quot;&gt;
+</span><span style="color:#323232;">&lt;p&gt;Some &lt;em&gt;bolded&lt;/em&gt; footnote definition. &lt;a href=&quot;#fnref-1&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-footnote&quot;&gt;
+</span><span style="color:#323232;">&lt;blockquote&gt;
+</span><span style="color:#323232;">&lt;p&gt;Blockquotes can be in a footnote.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/blockquote&gt;
+</span><span style="color:#323232;">&lt;pre&gt;&lt;code&gt;as well as code blocks
+</span><span style="color:#323232;">&lt;/code&gt;&lt;/pre&gt;
+</span><span style="color:#323232;">&lt;p&gt;or, naturally, simple paragraphs. &lt;a href=&quot;#fnref-footnote&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-other-note&quot;&gt;
+</span><span style="color:#323232;">&lt;p&gt;no code block here (spaces are stripped away) &lt;a href=&quot;#fnref-other-note&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-codeblock-note&quot;&gt;
+</span><span style="color:#323232;">&lt;pre&gt;&lt;code&gt;this is now a code block (8 spaces indentation)
+</span><span style="color:#323232;">&lt;/code&gt;&lt;/pre&gt;
+</span><span style="color:#323232;">&lt;a href=&quot;#fnref-codeblock-note&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ol&gt;
+</span><span style="color:#323232;">&lt;/section&gt;
+</span><span style="color:#323232;">````````````````````````````````
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">## When a footnote is used multiple times, we insert multiple backrefs.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">```````````````````````````````` example
+</span><span style="color:#323232;">This is some text. It has a footnote[^a-footnote].
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">This footnote is referenced[^a-footnote] multiple times, in lots of different places.[^a-footnote]
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^a-footnote]: This footnote definition should have three backrefs.
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;This is some text. It has a footnote&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-a-footnote&quot; id=&quot;fnref-a-footnote&quot; data-footnote-ref&gt;1&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;This footnote is referenced&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-a-footnote&quot; id=&quot;fnref-a-footnote-2&quot; data-footnote-ref&gt;1&lt;/a&gt;&lt;/sup&gt; multiple times, in lots of different places.&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-a-footnote&quot; id=&quot;fnref-a-footnote-3&quot; data-footnote-ref&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;section class=&quot;footnotes&quot; data-footnotes&gt;
+</span><span style="color:#323232;">&lt;ol&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-a-footnote&quot;&gt;
+</span><span style="color:#323232;">&lt;p&gt;This footnote definition should have three backrefs. &lt;a href=&quot;#fnref-a-footnote&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt; &lt;a href=&quot;#fnref-a-footnote-2&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;sup class=&quot;footnote-ref&quot;&gt;2&lt;/sup&gt;&lt;/a&gt; &lt;a href=&quot;#fnref-a-footnote-3&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;sup class=&quot;footnote-ref&quot;&gt;3&lt;/sup&gt;&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ol&gt;
+</span><span style="color:#323232;">&lt;/section&gt;
+</span><span style="color:#323232;">````````````````````````````````
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">## Footnote reference labels are href escaped
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">```````````````````````````````` example
+</span><span style="color:#323232;">Hello[^&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;]
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;]: pwned
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;Hello&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-%22%3E%3Cscript%3Ealert(1)%3C/script%3E&quot; id=&quot;fnref-%22%3E%3Cscript%3Ealert(1)%3C/script%3E&quot; data-footnote-ref&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;section class=&quot;footnotes&quot; data-footnotes&gt;
+</span><span style="color:#323232;">&lt;ol&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-%22%3E%3Cscript%3Ealert(1)%3C/script%3E&quot;&gt;
+</span><span style="color:#323232;">&lt;p&gt;pwned &lt;a href=&quot;#fnref-%22%3E%3Cscript%3Ealert(1)%3C/script%3E&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ol&gt;
+</span><span style="color:#323232;">&lt;/section&gt;
+</span><span style="color:#323232;">````````````````````````````````
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">## Interop
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">Autolink and strikethrough.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">```````````````````````````````` example
+</span><span style="color:#323232;">~~www.google.com~~
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">~~http://google.com~~
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;&lt;del&gt;&lt;a href=&quot;http://www.google.com&quot;&gt;www.google.com&lt;/a&gt;&lt;/del&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;del&gt;&lt;a href=&quot;http://google.com&quot;&gt;http://google.com&lt;/a&gt;&lt;/del&gt;&lt;/p&gt;
+</span><span style="color:#323232;">````````````````````````````````
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">Autolink and tables.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">```````````````````````````````` example
+</span><span style="color:#323232;">| a | b |
+</span><span style="color:#323232;">| --- | --- |
+</span><span style="color:#323232;">| https://github.com www.github.com | http://pokemon.com |
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;a&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;b&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;a href=&quot;https://github.com&quot;&gt;https://github.com&lt;/a&gt; &lt;a href=&quot;http://www.github.com&quot;&gt;www.github.com&lt;/a&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;&lt;a href=&quot;http://pokemon.com&quot;&gt;http://pokemon.com&lt;/a&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span><span style="color:#323232;">````````````````````````````````
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">## Task lists
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">```````````````````````````````` example
+</span><span style="color:#323232;">- [ ] foo
+</span><span style="color:#323232;">- [x] bar
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;ul&gt;
+</span><span style="color:#323232;">&lt;li&gt;&lt;input type=&quot;checkbox&quot; disabled=&quot;&quot; /&gt; foo&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li&gt;&lt;input type=&quot;checkbox&quot; checked=&quot;&quot; disabled=&quot;&quot; /&gt; bar&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ul&gt;
+</span><span style="color:#323232;">````````````````````````````````
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">Show that a task list and a regular list get processed the same in
+</span><span style="color:#323232;">the way that sublists are created. If something works in a list
+</span><span style="color:#323232;">item, then it should work the same way with a task.  The only
+</span><span style="color:#323232;">difference should be the tasklist marker. So, if we use something
+</span><span style="color:#323232;">other than a space or x, it won&#39;t be recognized as a task item, and
+</span><span style="color:#323232;">so will be treated as a regular item.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">```````````````````````````````` example
+</span><span style="color:#323232;">- [x] foo
+</span><span style="color:#323232;">  - [ ] bar
+</span><span style="color:#323232;">  - [x] baz
+</span><span style="color:#323232;">- [ ] bim
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">Show a regular (non task) list to show that it has the same structure
+</span><span style="color:#323232;">- [@] foo
+</span><span style="color:#323232;">  - [@] bar
+</span><span style="color:#323232;">  - [@] baz
+</span><span style="color:#323232;">- [@] bim
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;ul&gt;
+</span><span style="color:#323232;">&lt;li&gt;&lt;input type=&quot;checkbox&quot; checked=&quot;&quot; disabled=&quot;&quot; /&gt; foo
+</span><span style="color:#323232;">&lt;ul&gt;
+</span><span style="color:#323232;">&lt;li&gt;&lt;input type=&quot;checkbox&quot; disabled=&quot;&quot; /&gt; bar&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li&gt;&lt;input type=&quot;checkbox&quot; checked=&quot;&quot; disabled=&quot;&quot; /&gt; baz&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ul&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li&gt;&lt;input type=&quot;checkbox&quot; disabled=&quot;&quot; /&gt; bim&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ul&gt;
+</span><span style="color:#323232;">&lt;p&gt;Show a regular (non task) list to show that it has the same structure&lt;/p&gt;
+</span><span style="color:#323232;">&lt;ul&gt;
+</span><span style="color:#323232;">&lt;li&gt;[@] foo
+</span><span style="color:#323232;">&lt;ul&gt;
+</span><span style="color:#323232;">&lt;li&gt;[@] bar&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li&gt;[@] baz&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ul&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li&gt;[@] bim&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ul&gt;
+</span><span style="color:#323232;">````````````````````````````````
+</span><span style="color:#323232;">Use a larger indent -- a task list and a regular list should produce
+</span><span style="color:#323232;">the same structure.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">```````````````````````````````` example
+</span><span style="color:#323232;">- [x] foo
+</span><span style="color:#323232;">    - [ ] bar
+</span><span style="color:#323232;">    - [x] baz
+</span><span style="color:#323232;">- [ ] bim
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">Show a regular (non task) list to show that it has the same structure
+</span><span style="color:#323232;">- [@] foo
+</span><span style="color:#323232;">    - [@] bar
+</span><span style="color:#323232;">    - [@] baz
+</span><span style="color:#323232;">- [@] bim
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;ul&gt;
+</span><span style="color:#323232;">&lt;li&gt;&lt;input type=&quot;checkbox&quot; checked=&quot;&quot; disabled=&quot;&quot; /&gt; foo
+</span><span style="color:#323232;">&lt;ul&gt;
+</span><span style="color:#323232;">&lt;li&gt;&lt;input type=&quot;checkbox&quot; disabled=&quot;&quot; /&gt; bar&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li&gt;&lt;input type=&quot;checkbox&quot; checked=&quot;&quot; disabled=&quot;&quot; /&gt; baz&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ul&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li&gt;&lt;input type=&quot;checkbox&quot; disabled=&quot;&quot; /&gt; bim&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ul&gt;
+</span><span style="color:#323232;">&lt;p&gt;Show a regular (non task) list to show that it has the same structure&lt;/p&gt;
+</span><span style="color:#323232;">&lt;ul&gt;
+</span><span style="color:#323232;">&lt;li&gt;[@] foo
+</span><span style="color:#323232;">&lt;ul&gt;
+</span><span style="color:#323232;">&lt;li&gt;[@] bar&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li&gt;[@] baz&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ul&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li&gt;[@] bim&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ul&gt;
+</span><span style="color:#323232;">````````````````````````````````
+</span></pre>
+</div></html>

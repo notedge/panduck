@@ -9,12 +9,26 @@ license = "MPL-2.0"
 edition = "2018"
 
 [dependencies]
-notedown_ast = "0.13.5"
+notedown_ast = "0.14.0"
 
+[dependencies.panduck-html]
+version = "0.1.0"
+path = "../panduck-html"
+default-features = false
 
 [dependencies.sycamore]
-version = "0.7.0"
+version = "0.7.1"
+git = "https://github.com/notedge/sycamore.git"
 features = ["ssr"]
 
-[dev-dependencies]
-panduck-core = {version = "0.1", path = "../panduck-core"}
+[dev-dependencies.panduck-core]
+version = "*"
+path = "../panduck-core"
+features = ["markdown"]
+
+
+[features]
+default = ["local"]
+local = ["panduck-html/katex", "panduck-html/syntect", ]
+
+

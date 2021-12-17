@@ -2,6 +2,7 @@ mod code;
 mod html;
 mod list;
 mod table;
+pub use self::list::{block_quote, node_item, node_list};
 
 use crate::{ExtensionHandler, ExtensionRegistrar, Result, ToNotedown};
 use comrak::{
@@ -50,21 +51,19 @@ impl<'a> ToNotedown for &'a AstNode<'a> {
         match node {
             NodeValue::Document => ASTKind::statements(self.children().into_notedown_list(), None),
             NodeValue::FrontMatter(v) => {
-                let _front = String::from_utf8_lossy(&v);
-                ASTNode::default()
+                let front = String::from_utf8_lossy(&v);
+                ASTKind::code_block(front, "front-matter", None)
             }
-            NodeValue::BlockQuote => ASTNode::default(),
-            NodeValue::List(v) => v.into_notedown(),
-            NodeValue::Item(_) => {
-                unimplemented!()
-            }
+            NodeValue::BlockQuote => block_quote(self),
+            NodeValue::List(v) => node_list(v, self.children().into_notedown_list()),
+            NodeValue::Item(v) => node_item(v, self.children().into_notedown_list()),
             NodeValue::DescriptionList => ASTNode::default(),
             NodeValue::DescriptionItem(v) => v.into_notedown(),
             NodeValue::DescriptionTerm => {
-                unimplemented!()
+                todo!()
             }
             NodeValue::DescriptionDetails => {
-                unimplemented!()
+                todo!()
             }
             NodeValue::CodeBlock(v) => v.into_notedown(),
             NodeValue::HtmlBlock(v) => v.into_notedown(),
@@ -72,26 +71,23 @@ impl<'a> ToNotedown for &'a AstNode<'a> {
             NodeValue::Heading(v) => ASTKind::header(self.children().into_notedown_list(), v.level as u8, None),
             NodeValue::ThematicBreak => ASTKind::hr(None),
             NodeValue::FootnoteDefinition(_) => {
-                unimplemented!()
+                todo!()
             }
             NodeValue::Table(v) => v.into_notedown(),
             NodeValue::TableRow(_) => {
-                unimplemented!()
+                todo!()
             }
             NodeValue::TableCell => {
-                unimplemented!()
+                todo!()
             }
             NodeValue::Text(v) => ASTKind::text(String::from_utf8_lossy(&v), None),
             NodeValue::TaskItem(_) => {
-                unimplemented!()
+                todo!()
             }
             NodeValue::SoftBreak => ASTKind::soft_break(None),
             NodeValue::LineBreak => ASTKind::hard_break(None),
             NodeValue::Code(v) => v.into_notedown(),
-            NodeValue::HtmlInline(v) => {
-                let _html = String::from_utf8_lossy(&v);
-                todo!()
-            }
+            NodeValue::HtmlInline(v) => ASTKind::raw_html_inline(String::from_utf8_lossy(&v), None),
             NodeValue::Emph => ASTKind::emphasis(self.children().into_notedown_list(), None),
             NodeValue::Strong => ASTKind::strong(self.children().into_notedown_list(), None),
             NodeValue::Strikethrough => ASTKind::delete(self.children().into_notedown_list(), None),

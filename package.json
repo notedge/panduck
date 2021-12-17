@@ -1,12 +1,11 @@
 {
     "private": true,
     "scripts": {
-        "u": "git pull && cargo upgrade --workspace",
-        "p": "cargo publish --allow-dirty",
+        "u": "git pull && cargo upgrade --allow-prerelease --skip-compatible --workspace ",
+        "p": "cargo-publish-all --yes --allow-dirty --no-verify1 --verbose",
         "test": "cargo test --release",
         "fmt": "cargo fmt --all",
         "push": "wee test && git push",
-        "reset": "git reset Head~ --soft",
-        "pub": "cargo-publish-all --yes --allow-dirty --no-verify1 --verbose"
+        "reset": "git reset Head~ --soft"
     }
 }
