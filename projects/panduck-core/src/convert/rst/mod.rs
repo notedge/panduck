@@ -4,7 +4,7 @@ mod inline;
 use crate::{ExtensionHandler, ExtensionRegistrar, Result, ToNotedown};
 use document_tree::{
     element_categories::{BodyElement, StructuralSubElement, SubStructure, TextOrInlineElement},
-    Decoration, Docinfo, Document, HasChildren, Inline, Math, Subtitle, Title,
+    Decoration, Docinfo, Document, HasChildren, Inline, Math, Section, Subtitle, Title,
 };
 use notedown_ast::{ASTKind, ASTNode, ASTNodes};
 use std::{collections::BTreeSet, iter::FromIterator};
@@ -36,6 +36,16 @@ impl ToNotedown for Document {
 
     fn into_notedown_list(self) -> ASTNodes {
         self.children().iter().cloned().map(|e| e.into_notedown()).collect()
+    }
+}
+
+impl ToNotedown for Vec<StructuralSubElement> {
+    fn into_notedown(self) -> ASTNode {
+        ASTKind::paragraph(self.into_notedown_list(), None)
+    }
+
+    fn into_notedown_list(self) -> ASTNodes {
+        self.into_iter().map(|e| e.into_notedown()).collect()
     }
 }
 
@@ -74,11 +84,15 @@ impl ToNotedown for SubStructure {
             Self::Transition(v) => {
                 todo!("{:#?}", v)
             }
-            Self::Section(v) => {
-                todo!("{:#?}", v)
-            }
+            Self::Section(v) => v.into_notedown(),
             Self::BodyElement(v) => v.into_notedown(),
         }
+    }
+}
+
+impl ToNotedown for Section {
+    fn into_notedown(self) -> ASTNode {
+        self.children().clone().into_notedown()
     }
 }
 

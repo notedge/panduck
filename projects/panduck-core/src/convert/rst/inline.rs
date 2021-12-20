@@ -2,20 +2,18 @@ use super::*;
 
 impl ToNotedown for Vec<TextOrInlineElement> {
     fn into_notedown(self) -> ASTNode {
-        todo!()
+        ASTKind::paragraph(self.into_notedown_list(), None)
     }
 
     fn into_notedown_list(self) -> ASTNodes {
-        todo!()
+        self.into_iter().map(|e| e.into_notedown()).collect()
     }
 }
 
 impl ToNotedown for TextOrInlineElement {
     fn into_notedown(self) -> ASTNode {
         match self {
-            TextOrInlineElement::String(_) => {
-                unimplemented!()
-            }
+            TextOrInlineElement::String(s) => ASTKind::text(*s, None),
             TextOrInlineElement::Emphasis(v) => ASTKind::emphasis(v.children().clone().into_notedown_list(), None),
             TextOrInlineElement::Strong(v) => ASTKind::strong(v.children().clone().into_notedown_list(), None),
             TextOrInlineElement::Literal(_) => {
