@@ -1,11 +1,33 @@
+mod body;
 mod inline;
 
-use crate::ToNotedown;
+use crate::{ExtensionHandler, ExtensionRegistrar, Result, ToNotedown};
 use document_tree::{
-    element_categories::{StructuralSubElement, SubStructure, TextOrInlineElement},
+    element_categories::{BodyElement, StructuralSubElement, SubStructure, TextOrInlineElement},
     Decoration, Docinfo, Document, HasChildren, Inline, Math, Subtitle, Title,
 };
 use notedown_ast::{ASTKind, ASTNode, ASTNodes};
+use std::{collections::BTreeSet, iter::FromIterator};
+
+pub fn register_rst(r: &mut ExtensionRegistrar) {
+    let ext = vec!["rst"];
+    let new = ExtensionHandler {
+        name: String::from("reStructuredText"),
+        try_extension: BTreeSet::from_iter(ext.into_iter().map(String::from)),
+        parser: parse_rst,
+    };
+    r.insert(new)
+}
+
+pub fn parse_rst(input: &str) -> Result<ASTNode> {
+    let parsed = match rst_parser::parse(input) {
+        Ok(o) => o,
+        Err(e) => {
+            unimplemented!("{:#?}", e)
+        }
+    };
+    return Ok(parsed.into_notedown());
+}
 
 impl ToNotedown for Document {
     fn into_notedown(self) -> ASTNode {
@@ -42,7 +64,21 @@ impl ToNotedown for Docinfo {
 
 impl ToNotedown for SubStructure {
     fn into_notedown(self) -> ASTNode {
-        todo!()
+        match self {
+            Self::Topic(v) => {
+                todo!("{:#?}", v)
+            }
+            Self::Sidebar(v) => {
+                todo!("{:#?}", v)
+            }
+            Self::Transition(v) => {
+                todo!("{:#?}", v)
+            }
+            Self::Section(v) => {
+                todo!("{:#?}", v)
+            }
+            Self::BodyElement(v) => v.into_notedown(),
+        }
     }
 }
 

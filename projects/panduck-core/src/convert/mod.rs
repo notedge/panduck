@@ -32,6 +32,8 @@ pub use notedown::register_notedown;
 
 #[cfg(feature = "rst")]
 mod rst;
+#[cfg(feature = "rst")]
+pub use self::rst::{parse_rst, register_rst};
 
 use notedown_ast::{ASTNode, ASTNodes};
 
