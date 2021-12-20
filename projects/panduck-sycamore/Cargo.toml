@@ -25,9 +25,9 @@ features = ["ssr"]
 docx-rs = "0.3.2"
 
 [dev-dependencies.panduck-core]
-version = "0.1.3"
+version = "0.1"
 path = "../panduck-core"
-features = ["markdown"]
+features = ["markdown", "html", "rst"]
 
 [features]
 default = ["local"]

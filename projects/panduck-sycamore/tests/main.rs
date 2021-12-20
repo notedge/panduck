@@ -6,6 +6,7 @@ mod docx;
 mod html;
 mod jupyter;
 mod markdown;
+mod rst;
 
 #[test]
 fn ready() {
