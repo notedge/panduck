@@ -1,5 +1,5 @@
 use super::*;
-use document_tree::Literal;
+use document_tree::{ExtraAttributes, Literal, Reference};
 
 impl ToNotedown for Vec<TextOrInlineElement> {
     fn into_notedown(self) -> ASTNode {
@@ -18,9 +18,7 @@ impl ToNotedown for TextOrInlineElement {
             TextOrInlineElement::Emphasis(v) => ASTKind::emphasis(v.children().clone().into_notedown_list(), None),
             TextOrInlineElement::Strong(v) => ASTKind::strong(v.children().clone().into_notedown_list(), None),
             TextOrInlineElement::Literal(v) => v.into_notedown(),
-            TextOrInlineElement::Reference(_) => {
-                unimplemented!()
-            }
+            TextOrInlineElement::Reference(v) => v.into_notedown(),
             TextOrInlineElement::FootnoteReference(_) => {
                 unimplemented!()
             }
@@ -75,5 +73,12 @@ impl ToNotedown for Inline {
 impl ToNotedown for Literal {
     fn into_notedown(self) -> ASTNode {
         ASTKind::text(self.children().join(""), None)
+    }
+}
+
+impl ToNotedown for Reference {
+    fn into_notedown(self) -> ASTNode {
+        let _r = self.extra();
+        ASTNode::default()
     }
 }

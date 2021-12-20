@@ -9,3 +9,9 @@ pub fn example() -> Result<()> {
     html_standalone(include_str!("example.rst"), include_str!("example.html"))?;
     Ok(())
 }
+
+#[test]
+pub fn header() -> Result<()> {
+    html_standalone(include_str!("header.rst"), include_str!("header.html"))?;
+    Ok(())
+}
