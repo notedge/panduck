@@ -1,5 +1,6 @@
 use panduck_core::{convert, Result};
 use panduck_sycamore::SycamoreBuilder;
+mod docx;
 mod markdown;
 
 #[test]
