@@ -1,13 +1,15 @@
 #[cfg(feature = "docx-rs")]
 mod docx;
+
 #[cfg(feature = "html")]
 mod html;
-
 #[cfg(feature = "html")]
 pub use self::html::{parse_html, register_html};
 
 #[cfg(feature = "jupyter")]
 mod jupyter;
+#[cfg(feature = "jupyter")]
+pub use self::jupyter::{parse_jupyter, register_jupyter};
 
 // #[cfg(feature = "markdown")]
 // mod markdown;
@@ -24,9 +26,6 @@ mod notedown;
 mod rich_text;
 #[cfg(feature = "wiki")]
 mod wiki;
-
-#[cfg(feature = "jupyter")]
-pub use jupyter::register_jupyter;
 
 #[cfg(feature = "notedown")]
 pub use notedown::register_notedown;

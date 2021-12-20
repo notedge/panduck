@@ -1,47 +1,51 @@
 use super::*;
-use crate::{error::Error::ParseError, parse_markdown, Result};
+use crate::{ExtensionHandler, ExtensionRegistrar, PanduckError, Result};
 use notedown_ast::ASTKind;
 use serde_json::{Map, Value};
+use std::{collections::BTreeSet, iter::FromIterator};
 
 pub fn register_jupyter(r: &mut ExtensionRegistrar) {
-    let ext = vec!["note"];
-    let parser = |input| Ok(ParserConfig::default().parse(input)?.to_notedown());
-    let new = ExtensionHandler { try_extension: BTreeSet::from_iter(ext.iter().map(String::from)), parser };
+    let ext = vec!["ipynb"];
+    let new = ExtensionHandler {
+        name: String::from("jupyter"),
+        try_extension: BTreeSet::from_iter(ext.into_iter().map(String::from)),
+        parser: parse_jupyter,
+    };
     r.insert(new)
 }
 
-pub fn parse_jupyter(text: &str) -> Result<AST> {
+pub fn parse_jupyter(text: &str) -> Result<ASTNode> {
     let v: Value = serde_json::from_str(text)?;
     Ok(jupyter_from_json(&v)?)
 }
 
-pub fn jupyter_from_json(root: &Value) -> Result<AST> {
+pub fn jupyter_from_json(root: &Value) -> Result<ASTNode> {
     match root {
         Value::Object(o) => Ok(jupyter_root(o)),
-        _ => Err(ParseError(String::from("Not a valid jupyter json"))),
+        _ => Err(PanduckError::parse_error("Not a valid jupyter json")),
     }
 }
 
-fn jupyter_root(dict: &Map<String, Value>) -> AST {
+fn jupyter_root(dict: &Map<String, Value>) -> ASTNode {
     if let Some(cells) = dict.get("cells") {
         if let Value::Array(v) = cells {
             return jupyter_cells(v);
         }
     }
-    AST::statements(vec![])
+    ASTKind::statements(vec![], None)
 }
 
-fn jupyter_cells(cells: &Vec<Value>) -> AST {
+fn jupyter_cells(cells: &Vec<Value>) -> ASTNode {
     let mut out = vec![];
     for cell in cells {
         if let Value::Object(o) = cell {
             out.extend(jupyter_cell(o))
         }
     }
-    AST::statements(out)
+    ASTKind::statements(out, None)
 }
 
-fn jupyter_cell(dict: &Map<String, Value>) -> Vec<AST> {
+fn jupyter_cell(dict: &Map<String, Value>) -> Vec<ASTNode> {
     let mut cell_type = "markdown";
     if let Some(key) = dict.get("cell_type") {
         if let Value::String(s) = key {
@@ -54,12 +58,12 @@ fn jupyter_cell(dict: &Map<String, Value>) -> Vec<AST> {
     }
 }
 
-fn jupyter_markdown(dict: &Value) -> Vec<AST> {
+fn jupyter_markdown(dict: &Value) -> Vec<ASTNode> {
     let lines: Vec<String> = match dict {
         Value::Array(v) => v.into_iter().map(|v| jupyter_string(v)).collect(),
         _ => vec![],
     };
-    if let Ok(o) = parse_markdown(&lines.join("\n")) {
+    if let Ok(o) = parse_common_markdown(&lines.join("\n")) {
         match o.kind {
             ASTKind::Statements(v) => {
                 return v;
