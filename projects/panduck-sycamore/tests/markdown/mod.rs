@@ -1,5 +1,9 @@
 use super::*;
 
+pub fn html_standalone(source: &str, target: &str) -> Result<()> {
+    html_standalone_builder(panduck_core::convert::parse_common_markdown)(source, target)
+}
+
 #[test]
 pub fn basic() -> Result<()> {
     html_standalone(include_str!("basic.md"), include_str!("basic.html"))?;

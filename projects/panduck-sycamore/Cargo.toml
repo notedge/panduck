@@ -18,7 +18,7 @@ default-features = false
 
 [dependencies.sycamore]
 version = "0.7.1"
-# git = "https://github.com/notedge/sycamore.git"
+git = "https://github.com/sycamore-rs/sycamore.git"
 features = ["ssr"]
 
 [dev-dependencies]
