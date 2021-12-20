@@ -1,4 +1,5 @@
 use super::*;
+use document_tree::Literal;
 
 impl ToNotedown for Vec<TextOrInlineElement> {
     fn into_notedown(self) -> ASTNode {
@@ -16,9 +17,7 @@ impl ToNotedown for TextOrInlineElement {
             TextOrInlineElement::String(s) => ASTKind::text(*s, None),
             TextOrInlineElement::Emphasis(v) => ASTKind::emphasis(v.children().clone().into_notedown_list(), None),
             TextOrInlineElement::Strong(v) => ASTKind::strong(v.children().clone().into_notedown_list(), None),
-            TextOrInlineElement::Literal(_) => {
-                unimplemented!()
-            }
+            TextOrInlineElement::Literal(v) => v.into_notedown(),
             TextOrInlineElement::Reference(_) => {
                 unimplemented!()
             }
@@ -70,5 +69,11 @@ impl ToNotedown for TextOrInlineElement {
 impl ToNotedown for Inline {
     fn into_notedown(self) -> ASTNode {
         todo!()
+    }
+}
+
+impl ToNotedown for Literal {
+    fn into_notedown(self) -> ASTNode {
+        ASTKind::text(self.children().join(""), None)
     }
 }

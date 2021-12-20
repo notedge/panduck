@@ -1,5 +1,6 @@
 use super::*;
-use document_tree::{Comment, LiteralBlock, Paragraph, Target, Warning};
+use document_tree::{BulletList, Comment, ExtraAttributes, Image, LiteralBlock, Note, Paragraph, Target, Warning};
+use notedown_ast::nodes::ImageLink;
 
 impl ToNotedown for BodyElement {
     fn into_notedown(self) -> ASTNode {
@@ -26,18 +27,14 @@ impl ToNotedown for BodyElement {
             Self::Raw(v) => {
                 unimplemented!("{:#?}", v)
             }
-            Self::Image(v) => {
-                unimplemented!("{:#?}", v)
-            }
+            Self::Image(v) => v.into_notedown(),
             Self::Compound(v) => {
                 unimplemented!("{:#?}", v)
             }
             Self::Container(v) => {
                 unimplemented!("{:#?}", v)
             }
-            Self::BulletList(v) => {
-                unimplemented!("{:#?}", v)
-            }
+            Self::BulletList(v) => v.into_notedown(),
             Self::EnumeratedList(v) => {
                 unimplemented!("{:#?}", v)
             }
@@ -65,9 +62,7 @@ impl ToNotedown for BodyElement {
             Self::Hint(v) => {
                 unimplemented!("{:#?}", v)
             }
-            Self::Note(v) => {
-                unimplemented!("{:#?}", v)
-            }
+            Self::Note(v) => v.into_notedown(),
             Self::Caution(v) => {
                 unimplemented!("{:#?}", v)
             }
@@ -130,6 +125,38 @@ impl ToNotedown for LiteralBlock {
 }
 
 impl ToNotedown for Warning {
+    fn into_notedown(self) -> ASTNode {
+        // todo
+        ASTNode::default()
+    }
+}
+
+impl ToNotedown for Note {
+    fn into_notedown(self) -> ASTNode {
+        // todo
+        ASTNode::default()
+    }
+}
+
+impl ToNotedown for Image {
+    fn into_notedown(self) -> ASTNode {
+        let image = self.extra();
+        let size = Default::default();
+        // let a = image.height;
+        ImageLink {
+            source: image.uri.to_string(),
+            description: image.alt.to_owned(),
+            link: None,
+            force_caption: None,
+            layout: None,
+            size: Some(size),
+            options: None,
+        }
+        .into_node(None)
+    }
+}
+
+impl ToNotedown for BulletList {
     fn into_notedown(self) -> ASTNode {
         // todo
         ASTNode::default()

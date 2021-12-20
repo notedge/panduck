@@ -4,7 +4,7 @@ mod inline;
 use crate::{ExtensionHandler, ExtensionRegistrar, Result, ToNotedown};
 use document_tree::{
     element_categories::{BodyElement, StructuralSubElement, SubStructure, TextOrInlineElement},
-    Decoration, Docinfo, Document, HasChildren, Inline, Math, Section, Subtitle, Title,
+    Decoration, Docinfo, Document, HasChildren, Inline, Math, Section,
 };
 use notedown_ast::{ASTKind, ASTNode, ASTNodes};
 use std::{collections::BTreeSet, iter::FromIterator};
