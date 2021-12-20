@@ -19,7 +19,7 @@ pub type Result<T> = std::result::Result<T, PanduckError>;
 
 #[derive(Debug)]
 pub struct PanduckError {
-    kind: PanduckErrorKind,
+    kind: Box<PanduckErrorKind>,
     file: Option<Url>,
     range: Option<Range<usize>>,
 }
@@ -60,13 +60,16 @@ impl PanduckError {
 
 impl PanduckError {
     pub fn unsupported_file(msg: impl Into<String>) -> Self {
-        Self { kind: UnsupportedFormat(msg.into()), file: None, range: None }
+        Self { kind: box UnsupportedFormat(msg.into()), file: None, range: None }
+    }
+    pub fn parse_error(msg: impl Into<String>) -> Self {
+        Self { kind: box ParseError(msg.into()), file: None, range: None }
     }
 }
 
 impl Default for PanduckError {
     fn default() -> Self {
-        Self { kind: Unknown, file: None, range: None }
+        Self { kind: box Unknown, file: None, range: None }
     }
 }
 

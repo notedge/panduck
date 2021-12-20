@@ -64,7 +64,7 @@ fn jupyter_markdown(dict: &Value) -> Vec<ASTNode> {
         _ => vec![],
     };
     if let Ok(o) = parse_common_markdown(&lines.join("\n")) {
-        match o.kind {
+        match o.value {
             ASTKind::Statements(v) => {
                 return v;
             }

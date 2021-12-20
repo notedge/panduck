@@ -2,12 +2,12 @@
 #![allow(clippy::needless_return)]
 
 pub mod convert;
+mod errors;
 #[cfg(test)]
 pub mod for_test;
-mod shared;
 pub mod utils;
 
 // pub use notedown_ast;
 pub use convert::ToNotedown;
-pub use shared::{PanduckError, Result};
+pub use errors::{PanduckError, Result};
 pub use utils::{ExtensionHandler, ExtensionRegistrar};

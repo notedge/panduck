@@ -3,7 +3,7 @@ use html_parser::Error;
 
 impl From<Error> for PanduckError {
     fn from(e: Error) -> Self {
-        let kind = match e {
+        let kind = box match e {
             Error::Parsing(e) => PanduckErrorKind::ParseError(e),
             Error::IO(e) => PanduckErrorKind::IOError(e),
             Error::Cli(_) => {
