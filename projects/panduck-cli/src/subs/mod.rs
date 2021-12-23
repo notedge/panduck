@@ -7,21 +7,27 @@ use crate::PanduckConfig;
 use clap::Parser;
 use notedown_ast::Result;
 
+// todo: sort commands
 #[derive(Debug, Parser)]
 pub enum SubCommands {
     Install(InstallCommand),
+    Update(InstallCommand),
     HTML(HTMLCommand),
+    PDF(HTMLCommand),
+    LATEX(HTMLCommand),
+    CommonMD(HTMLCommand),
+    GithubMD(HTMLCommand),
+    PandocJSON(HTMLCommand),
+    Notedown(HTMLCommand),
 }
 
 impl SubCommands {
-    pub fn dispatch(&self, cfg: &PanduckConfig) -> Result<()> {
-        let mut cfg = cfg.to_owned();
-
+    pub fn dispatch(&self, cfg: &mut PanduckConfig) -> Result<()> {
         match self {
             Self::Install(_) => Ok(()),
             Self::HTML(v) => {
-                v.apply_args(&mut cfg);
-                v.dispatch(&cfg)
+                v.apply_args(cfg);
+                v.dispatch(cfg)
             }
             _ => {
                 println!("{:#?}", self);

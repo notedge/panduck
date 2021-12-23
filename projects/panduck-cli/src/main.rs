@@ -8,29 +8,31 @@ pub use notedown_ast::Result;
 #[derive(Parser)]
 #[clap(version = env!("CARGO_PKG_VERSION"), author = env!("CARGO_PKG_AUTHORS"))]
 struct Arguments {
-    /// Sets a custom config file. Could have been an Option<T> with no default too
-    #[clap(short, long, default_value = "panduck.toml")]
-    config: String,
+    /// Sets a custom config file, derault name is `panduck.toml`.
+    /// Then search following extensions: `json5`, `json`, `yaml`
+    #[clap(short, long)]
+    config: Option<String>,
     /// A level of verbosity, and can be used multiple times
     #[clap(short, long, parse(from_occurrences))]
     verbose: u32,
+    /// Warning without output, notice still do effects like downloads
+    #[clap(short('r'), long)]
+    dry_run: bool,
+    /// Record running time, and can be used multiple times
+    #[clap(short, long, parse(from_occurrences))]
+    timing: u32,
     #[clap(subcommand)]
-    sub_cmd: SubCommands,
+    cmd: SubCommands,
 }
 
 fn main() -> Result<()> {
     let args: Arguments = Arguments::parse();
-    // Gets a value for config if supplied by user, or defaults to "default.conf"
-    println!("Value for config: {}", args.config);
-    // Vary the output based on how many times the user used the "verbose" flag
-    // (i.e. 'myprog -v -v -v' or 'myprog -vvv' vs 'myprog -v'
-    match args.verbose {
-        0 => println!("No verbose info"),
-        1 => println!("Some verbose info"),
-        2 => println!("Tons of verbose info"),
-        3 | _ => println!("Don't be crazy"),
-    }
-    let mut config = PanduckConfig::default();
+    let mut config = match args.config {
+        None => PanduckConfig::default(),
+        Some(_) => {
+            todo!()
+        }
+    };
     config.verbose = args.verbose;
-    args.sub_cmd.dispatch(&config)
+    args.cmd.dispatch(&mut config)
 }
