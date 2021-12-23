@@ -1,6 +1,8 @@
+mod config;
 mod subs;
 
 use clap::Parser;
+use notedown_ast::Result;
 use subs::SubCommands;
 
 #[derive(Parser)]
@@ -16,7 +18,7 @@ struct Arguments {
     sub_cmd: SubCommands,
 }
 
-fn main() {
+fn main() -> Result<()> {
     let opts: Arguments = Arguments::parse();
 
     // Gets a value for config if supplied by user, or defaults to "default.conf"
@@ -40,5 +42,5 @@ fn main() {
         }
     }
 
-    // more program logic goes here...
+    Ok(())
 }

@@ -11,16 +11,16 @@ edition = "2018"
 [dependencies]
 notedown_ast = "0.14.0"
 # read configs
-serde = "1.0.132"
+serde = {version = "1.0.132", features = ["derive"]}
 serde_json = "1.0.73"
 serde_yaml = "0.8.23"
 
 panduck-html = {version = "0.1", path = "../panduck-html"}
-
+panduck-sycamore = {version = "0.7", path = "../panduck-sycamore"}
 
 [dependencies.clap]
 version = "3.0.0-rc.7"
-features = ["derive"]
+features = ["derive", "unicode"]
 
 [dev-dependencies.panduck-core]
 version = "0.1.3"

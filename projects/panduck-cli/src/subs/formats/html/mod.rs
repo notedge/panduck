@@ -9,4 +9,6 @@ pub struct HTMLCommand {
     input: String,
     #[clap(short, long)]
     output: Option<String>,
+    #[clap(short, long)]
+    pretty_print: bool,
 }
