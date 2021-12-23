@@ -3,6 +3,9 @@ mod syntect;
 #[cfg(feature = "syntect")]
 use self::syntect::SyntectConfig;
 
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CodeConfig {
     #[cfg(feature = "syntect")]
     pub syntect_config: SyntectConfig,

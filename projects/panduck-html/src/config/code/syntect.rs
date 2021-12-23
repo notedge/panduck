@@ -1,4 +1,5 @@
 use notedown_ast::{nodes::CodeNode, Result};
+use serde::{Deserialize, Serialize};
 use syntect::{
     easy::HighlightLines,
     highlighting::{Color, Theme, ThemeSet},
@@ -7,6 +8,7 @@ use syntect::{
     util::LinesWithEndings,
 };
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SyntectConfig {
     syntax_set: SyntaxSet,
     theme: Theme,

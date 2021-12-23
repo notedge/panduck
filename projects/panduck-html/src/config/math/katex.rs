@@ -3,7 +3,9 @@ use notedown_ast::{
     nodes::{MathKind, MathNode},
     NoteError, Result,
 };
+use serde::{Deserialize, Serialize};
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct KatexConfig {}
 
 impl Default for KatexConfig {

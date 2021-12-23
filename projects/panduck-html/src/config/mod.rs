@@ -11,7 +11,7 @@ pub struct HTMLBuilder {
     context: HTMLContext,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct HTMLConfig {
     pub trust_raw_html: bool,
     pub image_config: ImageConfig,

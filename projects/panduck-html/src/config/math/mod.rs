@@ -2,7 +2,9 @@
 mod katex;
 
 use self::katex::KatexConfig;
+use serde::{Deserialize, Serialize};
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MathConfig {
     pub katex_config: KatexConfig,
 }

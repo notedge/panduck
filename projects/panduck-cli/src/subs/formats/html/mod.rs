@@ -1,14 +1,29 @@
+use crate::{PanduckConfig, Result};
 use clap::Parser;
 
-/// A subcommand for controlling testing
+/// Generate html file from given file
 #[derive(Debug, Parser)]
 pub struct HTMLCommand {
-    /// Print debug info
     #[clap(short, long)]
-    /// Some input. Because this isn't an Option<T> it's required to be used
+    /// Original file to be converted
     input: String,
+    /// The location and name of the output file
     #[clap(short, long)]
     output: Option<String>,
+    /// Whether to format the output
     #[clap(short, long)]
     pretty_print: bool,
+    /// Whether to trust the html dangerous field in the file
+    #[clap(short, long)]
+    trust_html: bool,
+}
+
+impl HTMLCommand {
+    pub fn apply_args(&self, cfg: &mut PanduckConfig) {
+        cfg.html.trust_raw_html = self.trust_html;
+    }
+
+    pub fn dispatch(&self, cfg: &PanduckConfig) -> Result<()> {
+        Ok(())
+    }
 }
