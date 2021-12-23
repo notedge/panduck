@@ -1,5 +1,5 @@
 [package]
-name = "panduck-html"
+name = "panduck"
 version = "0.1.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "use panduck to generate pdfs"
@@ -10,26 +10,16 @@ edition = "2018"
 
 [dependencies]
 notedown_ast = "0.14.0"
-html-escape = "0.2.9"
-pretty = "0.11.2"
-serde = "*"
+serde = "1.0.132"
+serde_json = "1.0.73"
+serde_yaml = "0.8.23"
 
-[dependencies.katex]
-version = "0.4.2"
-optional = true
-default-features = false
-features = ["duktape"]
-
-
-[dependencies.syntect]
-version = "4.6.0"
-optional = true
-
+[dependencies.clap]
+version = "3.0.0-rc.7"
+features = ["derive"]
 
 [dev-dependencies.panduck-core]
-version = "*"
+version = "0.1.3"
 path = "../panduck-core"
 features = ["markdown"]
 
-[features]
-default = ["katex", "syntect"]
