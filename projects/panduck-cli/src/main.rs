@@ -1,9 +1,11 @@
-mod config;
-mod subs;
-
-use self::{config::PanduckConfig, subs::SubCommands};
 use clap::Parser;
 pub use notedown_ast::Result;
+
+use self::{config::PanduckConfig, subs::SubCommands};
+
+mod config;
+mod subs;
+mod sync;
 
 #[derive(Parser)]
 #[clap(version = env!("CARGO_PKG_VERSION"), author = env!("CARGO_PKG_AUTHORS"))]
@@ -21,6 +23,9 @@ struct Arguments {
     /// Record running time, and can be used multiple times
     #[clap(short, long, parse(from_occurrences))]
     timing: u32,
+    /// Record running time, and can be used multiple times
+    #[clap(long)]
+    ignore_global: bool,
     #[clap(subcommand)]
     cmd: SubCommands,
 }

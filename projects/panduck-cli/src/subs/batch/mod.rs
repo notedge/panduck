@@ -1,9 +1,12 @@
 use super::*;
 
-/// A subcommand for controlling testing
+/// Format conversion in batch progressing
 #[derive(Debug, Parser)]
 pub struct BatchCommand {
-    /// Format conversion in batch
-    #[clap(short)]
+    /// path of the batch file
+    #[clap(short, long)]
     path: String,
+    /// format of the batch file
+    #[clap(short, long)]
+    format: Option<String>,
 }

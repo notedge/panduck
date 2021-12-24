@@ -1,13 +1,14 @@
+use clap::Parser;
+use notedown_ast::Result;
+
+use crate::PanduckConfig;
+
+pub use self::{formats::*, install::InstallCommand};
+
 mod batch;
 mod formats;
 mod install;
 mod update;
-
-pub use self::{formats::*, install::InstallCommand};
-
-use crate::PanduckConfig;
-use clap::Parser;
-use notedown_ast::Result;
 
 // todo: sort commands
 #[derive(Debug, Parser)]
@@ -36,7 +37,6 @@ impl SubCommands {
             }
             _ => {
                 println!("{:#?}", self);
-                println!("{:#?}", cfg);
                 Ok(())
             }
         }
