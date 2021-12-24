@@ -3,7 +3,7 @@ use clap::Parser;
 
 /// Generate html file from given file
 #[derive(Debug, Parser)]
-pub struct HTML {
+pub struct GithubFavoredMD {
     #[clap(short, long)]
     /// Original file to be converted
     input: String,
@@ -18,7 +18,7 @@ pub struct HTML {
     trust_html: bool,
 }
 
-impl HTML {
+impl GithubFavoredMD {
     pub fn apply_args(&self, cfg: &mut PanduckConfig) {
         cfg.html.trust_raw_html = self.trust_html;
     }

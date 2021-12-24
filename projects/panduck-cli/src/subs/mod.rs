@@ -1,7 +1,9 @@
+mod batch;
 mod formats;
 mod install;
+mod update;
 
-pub use self::{formats::HTMLCommand, install::InstallCommand};
+pub use self::{formats::*, install::InstallCommand};
 
 use crate::PanduckConfig;
 use clap::Parser;
@@ -12,13 +14,16 @@ use notedown_ast::Result;
 pub enum SubCommands {
     Install(InstallCommand),
     Update(InstallCommand),
-    HTML(HTMLCommand),
-    PDF(HTMLCommand),
-    LATEX(HTMLCommand),
-    CommonMD(HTMLCommand),
-    GithubMD(HTMLCommand),
-    PandocJSON(HTMLCommand),
-    Notedown(HTMLCommand),
+    Batch(InstallCommand),
+    HTML(HTML),
+    PDF(HTML),
+    #[clap(name = "latex")]
+    LaTeX(HTML),
+    CommonMD(CommonMD),
+    GithubMD(GithubFavoredMD),
+    #[clap(name = "pandoc")]
+    PandocJSON(HTML),
+    Notedown(HTML),
 }
 
 impl SubCommands {
