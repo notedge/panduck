@@ -21,7 +21,6 @@ path = "../panduck-core"
 features = ["markdown"]
 
 
-
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
 branch = "master"

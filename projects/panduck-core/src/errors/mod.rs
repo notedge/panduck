@@ -35,26 +35,22 @@ pub enum PanduckErrorKind {
 // noinspection ALL
 impl PanduckError {
     #[inline]
-    pub fn set_url(mut self, url: Url) -> Self {
+    pub fn set_url(&mut self, url: Url) {
         self.file = Some(url);
-        return self;
     }
     #[inline]
-    pub fn set_path(self, path: impl AsRef<Path>) -> Self {
-        match Url::from_directory_path(path) {
-            Ok(url) => self.set_url(url),
-            Err(_) => self,
+    pub fn set_path(&mut self, path: impl AsRef<Path>) {
+        if let Ok(url) = Url::from_directory_path(path) {
+            self.set_url(url)
         }
     }
     #[inline]
-    pub fn set_range(mut self, range: Range<usize>) -> Self {
+    pub fn set_range(&mut self, range: Range<usize>) {
         self.range = Some(range);
-        return self;
     }
     #[inline]
-    pub fn set_offset(mut self, start: usize, end: usize) -> Self {
+    pub fn set_offset(&mut self, start: usize, end: usize) {
         self.range = Some(Range { start, end });
-        return self;
     }
 }
 

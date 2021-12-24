@@ -3,6 +3,7 @@ mod image;
 mod math;
 
 pub use self::{code::CodeConfig, image::ImageConfig, math::MathConfig};
+use notedown_ast::ASTNode;
 
 use serde::{Deserialize, Serialize};
 
@@ -36,6 +37,12 @@ impl Default for HTMLContext {
     fn default() -> Self {
         Self {}
     }
+}
+
+impl HTMLBuilder {
+    // pub fn build_html(&mut self, tree: ASTNode) {
+    //     tree.into_sycamore(&self.context)
+    // }
 }
 
 impl HTMLConfig {

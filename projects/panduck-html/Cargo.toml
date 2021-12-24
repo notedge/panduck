@@ -13,6 +13,7 @@ notedown_ast = "0.14.0"
 html-escape = "0.2.9"
 pretty = "0.11.2"
 serde = {version = "1.0.132", features = ["derive"]}
+merge = "0.1.0"
 
 [dependencies.katex]
 version = "0.4.2"

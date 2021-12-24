@@ -56,7 +56,8 @@ impl ExtensionRegistrar {
                 Err(_) => continue,
             }
         }
-        let error = PanduckError::unsupported_file(ext).set_path(file);
+        let mut error = PanduckError::unsupported_file(ext);
+        error.set_path(file);
         return Err(error);
     }
 }
