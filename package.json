@@ -1,7 +1,8 @@
 {
     "private": true,
     "scripts": {
-        "u": "git pull && cargo upgrade --allow-prerelease --skip-compatible --workspace ",
+        "u": "git pull && cargo upgrade --allow-prerelease --skip-compatible --workspace",
+        "notedown": "cargo upgrade  --workspace notedown_ast",
         "p": "cargo-publish-all --yes --allow-dirty --no-verify1 --verbose",
         "test": "cargo test --release",
         "fmt": "cargo fmt --all",

@@ -1,2 +1,2 @@
-mod builder;
+mod config;
 mod traits;

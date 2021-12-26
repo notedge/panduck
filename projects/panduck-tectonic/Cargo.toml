@@ -9,10 +9,8 @@ license = "MPL-2.0"
 edition = "2018"
 
 [dependencies]
-notedown_ast = "0.14.0"
-
-[dependencies.tectonic]
-version = "0.8.0"
+notedown_ast = "0.14.11"
+tectonic= "0.8.0"
 # git = "https://github.com/crlf0710/tectonic"
 
 [dev-dependencies.panduck-core]

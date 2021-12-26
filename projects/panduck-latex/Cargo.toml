@@ -2,17 +2,17 @@
 name = "panduck-latex"
 version = "0.1.0"
 authors = ["Aster <192607617@qq.com>"]
-description = "use panduck to generate pdfs"
+description = "Use panduck to generate XeLaTeX"
 repository = "https://github.com/oovm/panduck"
 readme = "../../readme.md"
 license = "MPL-2.0"
 edition = "2018"
 
 [dependencies]
-notedown_ast = "0.14.0"
+notedown_ast = "0.14.11"
 
 [dev-dependencies.panduck-core]
-version = "0.1.3"
+version = "0.1"
 path = "../panduck-core"
 features = ["markdown"]
 

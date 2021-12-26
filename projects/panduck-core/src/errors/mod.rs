@@ -1,3 +1,14 @@
+use std::{
+    error::Error,
+    fmt::{self, Display, Formatter},
+    ops::Range,
+    path::Path,
+};
+
+use yggdrasil_shared::records::Url;
+
+use self::PanduckErrorKind::*;
+
 mod basic;
 #[cfg(feature = "docx-rs")]
 mod docx;
@@ -5,15 +16,6 @@ mod docx;
 mod html;
 #[cfg(feature = "serde_json")]
 mod json;
-
-use self::PanduckErrorKind::*;
-use std::{
-    error::Error,
-    fmt::{self, Display, Formatter},
-    ops::Range,
-    path::Path,
-};
-use yggdrasil_shared::records::Url;
 
 pub type Result<T> = std::result::Result<T, PanduckError>;
 
@@ -27,7 +29,7 @@ pub struct PanduckError {
 #[derive(Debug)]
 pub enum PanduckErrorKind {
     IOError(std::io::Error),
-    ParseError(String),
+    SyntaxError(String),
     UnsupportedFormat(String),
     Unknown,
 }
@@ -59,7 +61,7 @@ impl PanduckError {
         Self { kind: box UnsupportedFormat(msg.into()), file: None, range: None }
     }
     pub fn parse_error(msg: impl Into<String>) -> Self {
-        Self { kind: box ParseError(msg.into()), file: None, range: None }
+        Self { kind: box SyntaxError(msg.into()), file: None, range: None }
     }
 }
 
@@ -89,7 +91,7 @@ impl Display for PanduckErrorKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             IOError(e) => Display::fmt(e, f),
-            ParseError(_) => {
+            SyntaxError(_) => {
                 unimplemented!()
             }
             UnsupportedFormat(_) => {

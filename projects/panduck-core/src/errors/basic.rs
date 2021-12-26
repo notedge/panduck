@@ -1,6 +1,8 @@
-use super::*;
-use notedown_ast::{NoteError, NoteErrorKind};
 use std::string::FromUtf8Error;
+
+use notedown_ast::{NoteError, NoteErrorKind};
+
+use super::*;
 
 impl From<std::io::Error> for PanduckError {
     fn from(e: std::io::Error) -> Self {
@@ -16,7 +18,7 @@ impl From<()> for PanduckError {
 
 impl From<FromUtf8Error> for PanduckError {
     fn from(e: FromUtf8Error) -> Self {
-        Self { kind: box PanduckErrorKind::ParseError(e.to_string()), file: None, range: None }
+        Self { kind: box PanduckErrorKind::SyntaxError(e.to_string()), file: None, range: None }
     }
 }
 
@@ -24,10 +26,12 @@ impl From<NoteError> for PanduckError {
     fn from(e: NoteError) -> Self {
         let kind = box match *e.kind {
             NoteErrorKind::IOError(e) => PanduckErrorKind::IOError(e),
-            NoteErrorKind::FormatError(e) => PanduckErrorKind::ParseError(e.to_string()),
-            NoteErrorKind::TypeMismatch(e) => PanduckErrorKind::ParseError(e.to_string()),
-            NoteErrorKind::RuntimeError(e) => PanduckErrorKind::ParseError(e.to_string()),
+            NoteErrorKind::FormatError(e) => PanduckErrorKind::SyntaxError(e.to_string()),
+            NoteErrorKind::TypeMismatch(e) => PanduckErrorKind::SyntaxError(e.to_string()),
+            NoteErrorKind::RuntimeError(e) => PanduckErrorKind::SyntaxError(e.to_string()),
             NoteErrorKind::Unreachable => PanduckErrorKind::Unknown,
+            NoteErrorKind::SyntaxError(s) => PanduckErrorKind::SyntaxError(s),
+            NoteErrorKind::UndefinedVariable { name } => PanduckErrorKind::SyntaxError(name),
         };
         Self { kind, file: e.file, range: e.range }
     }
