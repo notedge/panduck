@@ -22,14 +22,14 @@ pub fn node_list<'a>(_: NodeList, nodes: ASTNodes) -> ASTNode {
         1 => nodes.get(0).unwrap().to_owned(),
         _ => {
             let mut nodes = nodes.iter();
-            let mut view = match nodes.next().unwrap().as_list_view() {
+            let mut view = match nodes.next().and_then(|f| f.as_list_view()) {
                 Some(s) => s,
                 None => return ASTNode::default(),
             };
-            let children = &mut view.children;
+            let children = view.children_mut();
             for i in nodes {
                 if let Some(s) = i.as_list_view() {
-                    children.extend_from_slice(&s.children)
+                    children.extend_from_slice(&s.children())
                 }
             }
             return view.into();
