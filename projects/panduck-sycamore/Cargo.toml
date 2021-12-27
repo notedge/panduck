@@ -9,7 +9,7 @@ license = "MPL-2.0"
 edition = "2018"
 
 [dependencies]
-notedown_ast = "0.14.11"
+notedown_ast = "0.14.14"
 
 [dependencies.panduck-html]
 version = "0.1.0"
