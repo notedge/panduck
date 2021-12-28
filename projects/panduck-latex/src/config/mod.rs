@@ -1,7 +1,5 @@
 use notedown_ast::{ASTNode, Result};
-use pretty::RcDoc;
-
-use panduck_core::NoteVM;
+use notedown_rt::NoteVM;
 
 use crate::traits::IntoLaTeX;
 
@@ -19,7 +17,7 @@ impl LaTeXBuilder {
     pub fn render_latex(&mut self, ast: &ASTNode) -> Result<String> {
         let cfg = &self.config;
         let ctx = &mut self.context;
-        let doc = ast.clone().into_latex(cfg, ctx);
+        let doc = ast.into_latex(cfg, ctx);
         let mut out = String::new();
         doc.render_fmt(cfg.width, &mut out)?;
         Ok(out)

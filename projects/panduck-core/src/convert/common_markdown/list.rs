@@ -1,5 +1,5 @@
 use comrak::nodes::{ListType, NodeDescriptionItem, NodeList};
-use notedown_ast::nodes::{ListItem, ListPrefixSymbol, ListView, Literal, QuoteBlock};
+use notedown_ast::nodes::{ListItem, ListPrefixMark, ListView, Literal, QuoteBlock};
 
 use super::*;
 
@@ -9,10 +9,10 @@ impl ToNotedown for NodeDescriptionItem {
     }
 }
 
-fn node_prefix(kind: &NodeList) -> ListPrefixSymbol {
+fn node_prefix(kind: &NodeList) -> ListPrefixMark {
     match kind.list_type {
-        ListType::Bullet => ListPrefixSymbol::Hyphen,
-        ListType::Ordered => ListPrefixSymbol::ArabicNest { prefix_number: vec![], number: kind.start },
+        ListType::Bullet => ListPrefixMark::Hyphen,
+        ListType::Ordered => ListPrefixMark::ArabicNest { prefix_number: vec![], number: kind.start },
     }
 }
 
@@ -57,7 +57,7 @@ pub fn block_quote<'a>(node: &'a AstNode<'a>) -> ASTNode {
         }
         _ => {
             let item = ListItem {
-                prefix: Literal { value: ListPrefixSymbol::Quote, range: None },
+                prefix: Literal { value: ListPrefixMark::Quote, range: None },
                 rest: node.children().into_notedown_list(),
             };
             unimplemented!("{:#?}", item)
