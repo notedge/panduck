@@ -12,6 +12,7 @@ edition = "2021"
 [dependencies]
 serde = "1.0.132"
 notedown_ast = "0.15.2"
+notedown-rt = "0.1.0"
 yggdrasil-shared = "0.1.5"
 
 # notedown

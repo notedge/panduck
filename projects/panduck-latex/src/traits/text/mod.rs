@@ -55,15 +55,13 @@ impl IntoLaTeX for StyleNode {
             StyleKind::ItalicBold => {
                 unimplemented!()
             }
-            StyleKind::Underline => {
-                RcDoc::text("\\underline{")
-                    .append(
-                        RcDoc::intersperse(self.children.into_iter().map(|x| x.into_latex(cfg, ctx)), RcDoc::softline_())
-                            .nest(1)
-                            .group(),
-                    )
-                    .append(RcDoc::text("}")),
-            }
+            StyleKind::Underline => RcDoc::text("\\underline{")
+                .append(
+                    RcDoc::intersperse(self.children.into_iter().map(|x| x.into_latex(cfg, ctx)), RcDoc::softline_())
+                        .nest(1)
+                        .group(),
+                )
+                .append(RcDoc::text("}")),
             StyleKind::Undercover => {
                 unimplemented!()
             }
