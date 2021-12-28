@@ -11,9 +11,9 @@ fn render_markdown(src: &str) -> Result<String> {
 #[test]
 fn test() {
     let text = r#"
-    # This is a test
-    
-    some text *here* and **here**
+# This is a test
+
+some text *here* and **here**
     "#;
     let out = render_markdown(text);
     println!("{:#?}", out);

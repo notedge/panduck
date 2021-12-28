@@ -5,10 +5,8 @@ use super::*;
 impl IntoLaTeX for TextSpan {
     fn into_latex<'a>(&'a self, _: &LaTeXConfig, _: &mut LaTeXContext) -> RcDoc<'a, ()> {
         match self {
-            TextSpan::Empty => RcDoc::text(""),
-            TextSpan::Normal(_) => {
-                unimplemented!()
-            }
+            TextSpan::Empty => empty(),
+            TextSpan::Normal(s) => text(s),
             TextSpan::Raw(_) => {
                 unimplemented!()
             }
@@ -37,7 +35,9 @@ impl IntoLaTeX for TextSpan {
 impl IntoLaTeX for StyleNode {
     fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> RcDoc<'a, ()> {
         let inner =
-            RcDoc::intersperse(self.children.iter().map(|x| x.into_latex(cfg, ctx)), RcDoc::softline_()).nest(1).group();
+            RcDoc::intersperse(self.children.iter().map(|x| x.into_latex(cfg, ctx)), block_break())
+                .nest(1)
+                .group();
         match self.kind {
             StyleKind::Plain => {
                 unimplemented!()
