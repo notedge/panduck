@@ -1,3 +1,5 @@
-pub use hans::检讨生成器;
+#![doc = include_str!("../Readme.md")]
+
+pub use hans::废话生成器;
 
 mod hans;
