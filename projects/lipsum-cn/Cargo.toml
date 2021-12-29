@@ -9,4 +9,5 @@ license = "MPL-2.0"
 edition = "2018"
 
 [dependencies]
-tinytemplate = "*"
+rand = { version = "0.8.4", features = ["small_rng"] }
+dynfmt = { version = "0.1.5", features = ["curly"] }
