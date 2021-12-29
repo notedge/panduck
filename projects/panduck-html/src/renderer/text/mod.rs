@@ -1,49 +1,56 @@
 use notedown_ast::nodes::{StyleNode, TextSpan};
-use pretty::RcDoc;
 
 use super::*;
 
-impl PrettyHTML for TextSpan {
-    fn pretty_html(&self, cfg: &mut PrettyRenderer) -> RcDoc<()> {
+impl IntoHTML for TextSpan {
+    fn into_html<'a>(&'a self, cfg: &HTMLConfig, ctx: &mut HTMLContext) -> PrettyPrint<'a> {
         match self {
-            TextSpan::HTMLRawInline(_) => match cfg.config.trust_raw_html {
+            TextSpan::HTMLRawInline(_) => match cfg.trust_raw_html {
                 true => {
                     todo!()
                 }
-                false => RcDoc::as_string(""),
+                false => PrettyPrint::nil(),
             },
-            TextSpan::Normal(v) => RcDoc::as_string(v),
-            TextSpan::Emoji(v) => RcDoc::as_string(v),
-            TextSpan::Escaped(v) => RcDoc::as_string(v),
+            TextSpan::Normal(v) => text(v),
+            TextSpan::Emoji(v) => text(*v),
+            TextSpan::Escaped(v) => text(v.to_string()),
             TextSpan::SoftNewline => {
                 unimplemented!()
             }
             TextSpan::HardNewline => match cfg.xhtml {
-                true => RcDoc::as_string("<br/>"),
-                false => RcDoc::as_string("<br>"),
+                true => text("<br/>"),
+                false => text("<br>"),
             },
             TextSpan::CheckBox(_) => {
                 unimplemented!()
             }
-            TextSpan::Empty => RcDoc::as_string(""),
+            TextSpan::Empty => text(""),
             TextSpan::Raw(_) => {
                 unimplemented!()
             }
         }
     }
 }
-impl PrettyHTML for StyleNode {
-    fn pretty_html(&self, f: &mut PrettyRenderer) -> RcDoc<()> {
+impl IntoHTML for StyleNode {
+    fn into_html<'a>(&'a self, cfg: &HTMLConfig, ctx: &mut HTMLContext) -> PrettyPrint<'a> {
         match self.kind {
             StyleKind::Plain => {
                 unimplemented!()
             }
-            StyleKind::Emphasis => RcDoc::text("<em>")
-                .append(RcDoc::intersperse(self.children.iter().map(|x| x.pretty_html(f)), RcDoc::line()).nest(1).group())
-                .append(RcDoc::text("</em>")),
-            StyleKind::Strong => RcDoc::text("<strong>")
-                .append(RcDoc::intersperse(self.children.iter().map(|x| x.pretty_html(f)), RcDoc::line()).nest(1).group())
-                .append(RcDoc::text("</strong>")),
+            StyleKind::Emphasis => text("<em>")
+                .append(
+                    PrettyPrint::intersperse(self.children.iter().map(|x| x.into_html(cfg, ctx)), PrettyPrint::line())
+                        .nest(1)
+                        .group(),
+                )
+                .append(text("</em>")),
+            StyleKind::Strong => text("<strong>")
+                .append(
+                    PrettyPrint::intersperse(self.children.iter().map(|x| x.into_html(cfg, ctx)), PrettyPrint::line())
+                        .nest(1)
+                        .group(),
+                )
+                .append(text("</strong>")),
             StyleKind::ItalicBold => {
                 unimplemented!()
             }

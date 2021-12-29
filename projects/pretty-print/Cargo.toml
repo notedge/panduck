@@ -1,5 +1,5 @@
 [package]
-name = "panduck-rcdoc"
+name = "panduck-pp"
 version = "0.1.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "use panduck to generate pdfs"

@@ -1,14 +1,14 @@
-use pretty::RcDoc;
-
 use super::*;
 
-impl PrettyHTML for ASTNode {
-    fn pretty_html(&self, f: &mut PrettyRenderer) -> RcDoc<()> {
+impl IntoHTML for ASTNode {
+    fn into_html<'a>(&'a self, cfg: &HTMLConfig, ctx: &mut HTMLContext) -> PrettyPrint<'a> {
         match &self.value {
-            ASTKind::Statements(v) => RcDoc::intersperse(v.iter().map(|x| x.pretty_html(f)), RcDoc::line()).nest(1).group(),
-            ASTKind::Paragraph(v) => RcDoc::text("<p>")
-                .append(RcDoc::intersperse(v.iter().map(|x| x.pretty_html(f)), RcDoc::line()).nest(1).group())
-                .append(RcDoc::text("</p>")),
+            ASTKind::Statements(v) => {
+                PrettyPrint::intersperse(v.iter().map(|x| x.into_html(cfg, ctx)), nil_or_newline()).nest(1).group()
+            }
+            ASTKind::Paragraph(v) => PrettyPrint::text("<p>")
+                .append(PrettyPrint::intersperse(v.iter().map(|x| x.into_html(cfg, ctx)), nil_or_newline()).nest(1).group())
+                .append(text("</p>")),
             ASTKind::Delimiter(_) => {
                 unimplemented!()
             }
@@ -30,8 +30,8 @@ impl PrettyHTML for ASTNode {
             ASTKind::LinkNode(_) => {
                 unimplemented!()
             }
-            ASTKind::TextSpan(v) => v.pretty_html(f),
-            ASTKind::StyledSpan(v) => v.pretty_html(f),
+            ASTKind::TextSpan(v) => v.into_html(cfg, ctx),
+            ASTKind::StyledSpan(v) => v.into_html(cfg, ctx),
             ASTKind::Command(_) => {
                 unimplemented!()
             }

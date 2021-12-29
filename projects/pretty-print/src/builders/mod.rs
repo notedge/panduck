@@ -1,14 +1,16 @@
+use std::borrow::Cow;
+
 use pretty::RcDoc;
 
 use crate::PrettyPrint;
 
 /// nothing output
-pub fn empty<'a>() -> PrettyPrint<'a> {
+pub fn nil<'a>() -> PrettyPrint<'a> {
     RcDoc::nil()
 }
 
 /// text
-pub fn text(s: &str) -> PrettyPrint {
+pub fn text<'a, S: Into<Cow<'a, str>>>(s: S) -> PrettyPrint<'a> {
     RcDoc::text(s)
 }
 
@@ -24,7 +26,7 @@ pub fn newline<'a>() -> PrettyPrint<'a> {
 
 /// - `NIL` if inline
 /// - `\n` if break
-pub fn empty_or_newline<'a>() -> PrettyPrint<'a> {
+pub fn nil_or_newline<'a>() -> PrettyPrint<'a> {
     RcDoc::hardline().flat_alt(RcDoc::nil())
 }
 

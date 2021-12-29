@@ -49,18 +49,5 @@ pub fn node_item<'a>(kind: NodeList, nodes: ASTNodes) -> ASTNode {
 
 pub fn block_quote<'a>(node: &'a AstNode<'a>) -> ASTNode {
     let nodes = node.children().into_notedown_list();
-    match &nodes.len() {
-        0 => unimplemented!("{:#?}", nodes),
-        1 => {
-            let node = nodes.get(0);
-            unimplemented!("{:#?}", node)
-        }
-        _ => {
-            let item = ListItem {
-                prefix: Literal { value: ListPrefixMark::Quote, range: None },
-                rest: node.children().into_notedown_list(),
-            };
-            unimplemented!("{:#?}", item)
-        }
-    }
+    ASTKind::quote(nodes, None)
 }

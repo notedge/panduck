@@ -1,4 +1,7 @@
+use notedown_ast::{ASTNode, Result};
 use serde::{Deserialize, Serialize};
+
+use crate::IntoHTML;
 
 pub use self::{code::CodeConfig, image::ImageConfig, math::MathConfig};
 
@@ -11,8 +14,18 @@ pub struct HTMLBuilder {
     context: HTMLContext,
 }
 
+impl HTMLBuilder {
+    pub fn render(&mut self, node: &ASTNode) -> Result<String> {
+        let mut buffer = String::with_capacity(1000);
+        node.into_html(&self.config, &mut self.context).render_fmt(self.config.max_width, &mut buffer)?;
+        Ok(buffer.to_owned())
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct HTMLConfig {
+    pub xhtml: bool,
+    pub max_width: usize,
     pub trust_raw_html: bool,
     pub image_config: ImageConfig,
     pub code_config: CodeConfig,
@@ -24,6 +37,8 @@ pub struct HTMLContext {}
 impl Default for HTMLConfig {
     fn default() -> Self {
         Self {
+            xhtml: false,
+            max_width: 100,
             trust_raw_html: true,
             image_config: Default::default(),
             code_config: Default::default(),

@@ -13,6 +13,7 @@ mod text;
 mod utils;
 
 pub trait IntoLaTeX {
+    //noinspection RsSelfConvention
     fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> RcDoc<'a, ()>;
 }
 

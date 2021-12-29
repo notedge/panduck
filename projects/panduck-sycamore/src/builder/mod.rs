@@ -1,8 +1,6 @@
 use notedown_ast::ASTNode;
 use sycamore::{prelude::GenericNode, render_to_string, view::View, SsrNode};
 
-use panduck_html::HTMLConfig;
-
 use crate::traits::IntoSycamore;
 
 pub use self::{config::SycamoreConfig, context::SycamoreContext};
@@ -12,8 +10,8 @@ mod context;
 
 #[derive(Default)]
 pub struct SycamoreBuilder {
-    pub config: SycamoreConfig,
-    pub context: SycamoreContext,
+    config: SycamoreConfig,
+    context: SycamoreContext,
 }
 
 impl SycamoreBuilder {

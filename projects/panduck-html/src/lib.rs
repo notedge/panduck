@@ -1,5 +1,5 @@
 pub use builder::*;
-pub use renderer::{PrettyHTML, PrettyRenderer};
+pub use renderer::IntoHTML;
 
 mod builder;
 mod renderer;

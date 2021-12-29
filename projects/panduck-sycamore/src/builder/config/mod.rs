@@ -3,10 +3,10 @@ use panduck_html::{CodeConfig, ImageConfig, MathConfig};
 use super::*;
 
 pub struct SycamoreConfig {
-    pub(crate) trust_raw_html: bool,
-    pub(crate) image_config: ImageConfig,
-    pub(crate) code_config: CodeConfig,
-    pub(crate) math_config: MathConfig,
+    pub trust_raw_html: bool,
+    pub image_config: ImageConfig,
+    pub code_config: CodeConfig,
+    pub math_config: MathConfig,
 }
 
 impl Default for SycamoreConfig {
