@@ -47,7 +47,15 @@ pub fn space_or_newline<'a>() -> PrettyPrint<'a> {
 /// ```
 ///
 ///
-pub struct OpenClosedGroup {}
+pub struct OpenClosedGroup {
+    ident: usize,
+}
+
+impl Default for OpenClosedGroup {
+    fn default() -> Self {
+        Self { ident: 4 }
+    }
+}
 
 impl OpenClosedGroup {
     pub fn print<'a, S, I>(&self, start: S, end: S, items: I) -> PrettyPrint<'a>
@@ -56,20 +64,8 @@ impl OpenClosedGroup {
         I: IntoIterator,
         I::Item: Pretty<'a, RcAllocator, ()>,
     {
-        let middle = PrettyPrint::intersperse(items, PrettyPrint::line()).nest(1).group();
-        text(start).append(middle).append(text(end))
+        let middle = PrettyPrint::intersperse(items, PrettyPrint::line());
+        let middle = nil_or_newline().append(middle).nest(self.ident as isize).group();
+        text(start).append(middle).append(nil_or_newline()).append(text(end))
     }
-}
-
-/// ```js
-/// [1, 2, 3]
-/// ```
-fn grouped_comma_space_or_newline<'a, S, I>(start: S, end: S, items: I) -> PrettyPrint<'a>
-where
-    S: Into<Cow<'a, str>>,
-    I: IntoIterator,
-    I::Item: Pretty<'a, RcAllocator, ()>,
-{
-    let middle = PrettyPrint::intersperse(items, PrettyPrint::line()).nest(1).group();
-    text(start).append(middle).append(text(end))
 }
