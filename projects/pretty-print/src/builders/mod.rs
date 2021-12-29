@@ -51,11 +51,13 @@ pub struct OpenClosedGroup<'a> {
     ident: usize,
     inline: &'a str,
     newline: &'a str,
+    inline_end_mark: bool,
+    block_end_mark: bool,
 }
 
 impl Default for OpenClosedGroup<'static> {
     fn default() -> Self {
-        Self { ident: 4, inline: ", ", newline: "\n" }
+        Self { ident: 4, inline: ", ", newline: ",", inline_end_mark: true, block_end_mark: true }
     }
 }
 
@@ -67,9 +69,20 @@ impl<'a> OpenClosedGroup<'a> {
         I::Item: Pretty<'i, RcAllocator, ()>, // life time of input items
     {
         let inline = RcDoc::as_string(&self.inline);
-        let newline = inline.clone().append(RcDoc::text("\n"));
-        let middle = PrettyPrint::intersperse(items, inline.flat_alt(newline));
-        let middle = nil_or_newline().append(middle).nest(self.ident as isize).append(nil_or_newline()).group();
+        let newline = RcDoc::as_string(&self.newline).append(RcDoc::hardline());
+        let separator = newline.flat_alt(inline);
+        let middle = RcDoc::intersperse(items, separator);
+        let mut middle = nil_or_newline().append(middle);
+        if self.inline_end_mark && self.block_end_mark {
+            middle = middle.append(RcDoc::as_string(&self.newline));
+        }
+        else if self.block_end_mark {
+            todo!()
+        }
+        else if self.inline_end_mark {
+            todo!()
+        }
+        let middle = middle.nest(self.ident as isize).append(nil_or_newline()).group();
         text(start).append(middle).append(text(end))
     }
 }
