@@ -1,0 +1,1 @@
+tectonic -X compile markdown/basic.tex

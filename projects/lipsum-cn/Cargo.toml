@@ -1,9 +1,10 @@
 [package]
 name = "lipsum-cn"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Aster <192607617@qq.com>"]
 description = "Pseudo-Chinese lorem ipsum generator"
-repository = "https://github.com/oovm/panduck"
+repository = "https://github.com/notedge/panduck/tree/master/projects/lipsum-cn"
+documentation = "https://docs.rs/lipsum-cn"
 readme = "../../readme.md"
 license = "MPL-2.0"
 edition = "2018"

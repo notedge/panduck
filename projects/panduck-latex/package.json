@@ -1,0 +1,7 @@
+{
+    "private": true,
+    "scripts": {
+        "p": "cargo publish --allow-dirty",
+        "c": "cd tests && bash compile.sh"
+    }
+}
