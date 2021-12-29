@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use notedown_ast::nodes::{StyleNode, TextSpan};
 
 use super::*;
@@ -9,7 +11,7 @@ impl IntoHTML for TextSpan {
                 true => {
                     todo!()
                 }
-                false => PrettyPrint::nil(),
+                false => nil(),
             },
             TextSpan::Normal(v) => text(v),
             TextSpan::Emoji(v) => text(*v),
@@ -17,10 +19,7 @@ impl IntoHTML for TextSpan {
             TextSpan::SoftNewline => {
                 unimplemented!()
             }
-            TextSpan::HardNewline => match cfg.xhtml {
-                true => text("<br/>"),
-                false => text("<br>"),
-            },
+            TextSpan::HardNewline => text(cfg.xhtml.tag("br")),
             TextSpan::CheckBox(_) => {
                 unimplemented!()
             }
@@ -33,24 +32,13 @@ impl IntoHTML for TextSpan {
 }
 impl IntoHTML for StyleNode {
     fn into_html<'a>(&'a self, cfg: &HTMLConfig, ctx: &mut HTMLContext) -> PrettyPrint<'a> {
+        let group = OpenClosedGroup {};
         match self.kind {
             StyleKind::Plain => {
                 unimplemented!()
             }
-            StyleKind::Emphasis => text("<em>")
-                .append(
-                    PrettyPrint::intersperse(self.children.iter().map(|x| x.into_html(cfg, ctx)), PrettyPrint::line())
-                        .nest(1)
-                        .group(),
-                )
-                .append(text("</em>")),
-            StyleKind::Strong => text("<strong>")
-                .append(
-                    PrettyPrint::intersperse(self.children.iter().map(|x| x.into_html(cfg, ctx)), PrettyPrint::line())
-                        .nest(1)
-                        .group(),
-                )
-                .append(text("</strong>")),
+            StyleKind::Emphasis => group.print("<em>", "</em>", self.children.iter().map(|x| x.into_html(cfg, ctx))),
+            StyleKind::Strong => group.print("<strong>", "</strong>", self.children.iter().map(|x| x.into_html(cfg, ctx))),
             StyleKind::ItalicBold => {
                 unimplemented!()
             }
