@@ -1,0 +1,16 @@
+[package]
+name = "panduck-rcdoc"
+version = "0.1.0"
+authors = ["Aster <192607617@qq.com>"]
+description = "use panduck to generate pdfs"
+repository = "https://github.com/oovm/panduck"
+documentation = "https://github.com/oovm/panduck"
+readme = "../../readme.md"
+license = "MPL-2.0"
+edition = "2018"
+
+[dependencies]
+pretty = "0.11.2"
+
+[features]
+default = []

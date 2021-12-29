@@ -20,7 +20,7 @@ where
 {
     fn into_sycamore(self, ctx: &SycamoreBuilder) -> G {
         let item: G = GenericNode::element("ol");
-        push_nodes(&item, v.children, ctx);
+        push_nodes(&item, self.children, ctx);
         return item;
     }
 }
@@ -31,7 +31,7 @@ where
 {
     fn into_sycamore(self, ctx: &SycamoreBuilder) -> G {
         let item: G = GenericNode::element("ul");
-        push_nodes(&item, v.children, ctx);
+        push_nodes(&item, self.children, ctx);
         return item;
     }
 }
@@ -51,11 +51,9 @@ impl<G> IntoSycamore<G> for QuoteBlock
 where
     G: GenericNode,
 {
-    fn into_sycamore(self, _: &SycamoreBuilder) -> G {
+    fn into_sycamore(self, cfg: &SycamoreBuilder) -> G {
         let item: G = GenericNode::element("blockquote");
-        for i in v.children {
-            push_nodes(&item, i.rest, ctx);
-        }
+        push_nodes(&item, self.body, cfg);
         return item;
     }
 }

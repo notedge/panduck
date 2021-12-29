@@ -24,6 +24,9 @@ where
                 unimplemented!()
             }
             Self::Empty => GenericNode::marker(),
+            Self::Raw(_) => {
+                unimplemented!()
+            }
         }
     }
 }

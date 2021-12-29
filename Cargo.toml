@@ -12,3 +12,6 @@ default-members = [
 [profile.release]
 lto = true
 opt-level = "s"
+
+[workspace.metadata.release]
+push = false
