@@ -47,25 +47,29 @@ pub fn space_or_newline<'a>() -> PrettyPrint<'a> {
 /// ```
 ///
 ///
-pub struct OpenClosedGroup {
+pub struct OpenClosedGroup<'a> {
     ident: usize,
+    inline: &'a str,
+    newline: &'a str,
 }
 
-impl Default for OpenClosedGroup {
+impl Default for OpenClosedGroup<'static> {
     fn default() -> Self {
-        Self { ident: 4 }
+        Self { ident: 4, inline: ", ", newline: "\n" }
     }
 }
 
-impl OpenClosedGroup {
-    pub fn print<'a, S, I>(&self, start: S, end: S, items: I) -> PrettyPrint<'a>
+impl<'a> OpenClosedGroup<'a> {
+    pub fn print<'i, T, I>(&self, start: T, end: T, items: I) -> PrettyPrint<'i>
     where
-        S: Into<Cow<'a, str>>,
+        T: Into<Cow<'i, str>>,
         I: IntoIterator,
-        I::Item: Pretty<'a, RcAllocator, ()>,
+        I::Item: Pretty<'i, RcAllocator, ()>, // life time of input items
     {
-        let middle = PrettyPrint::intersperse(items, PrettyPrint::line());
-        let middle = nil_or_newline().append(middle).nest(self.ident as isize).group();
-        text(start).append(middle).append(nil_or_newline()).append(text(end))
+        let inline = RcDoc::as_string(&self.inline);
+        let newline = inline.clone().append(RcDoc::text("\n"));
+        let middle = PrettyPrint::intersperse(items, inline.flat_alt(newline));
+        let middle = nil_or_newline().append(middle).nest(self.ident as isize).append(nil_or_newline()).group();
+        text(start).append(middle).append(text(end))
     }
 }
