@@ -12,21 +12,23 @@ mod context;
 
 #[derive(Default)]
 pub struct SycamoreBuilder {
-    pub cfg: SycamoreConfig,
-    pub ctx: SycamoreContext,
+    pub config: SycamoreConfig,
+    pub context: SycamoreContext,
 }
 
 impl SycamoreBuilder {
     /// the html fragment
-    pub fn render(&self, ast: ASTNode) -> String {
-        let view = View::<SsrNode>::new_node(ast.into_sycamore(self));
+    pub fn render(&mut self, ast: ASTNode) -> String {
+        let node = ast.into_sycamore(&self.config, &mut self.context);
+        let view = View::<SsrNode>::new_node(node);
         render_to_string(|| view)
     }
     /// a complete html
-    pub fn render_standalone(&self, ast: ASTNode) -> String {
+    pub fn render_standalone(&mut self, ast: ASTNode) -> String {
+        let node = ast.into_sycamore(&self.config, &mut self.context);
         let html = SsrNode::element("html");
         html.append_child(&self.html_head());
-        html.append_child(&ast.into_sycamore(self));
+        html.append_child(&node);
         render_to_string(|| View::new_node(html))
     }
 

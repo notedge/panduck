@@ -2,13 +2,13 @@
 charset = utf-8
 end_of_line = lf
 
-[*.pest]
+[*.yaml]
 indent_style = space
-indent_size = 4
+indent_size = 2
 
 [*.html]
 trim_trailing_whitespace = false
 
-[*.toml]
+[*.{json,toml}]
 indent_style = space
 indent_size = 4

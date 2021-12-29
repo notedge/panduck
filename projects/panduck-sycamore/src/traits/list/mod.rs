@@ -42,7 +42,7 @@ where
 {
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         let item: G = GenericNode::element("li");
-        push_nodes(&item, self.rest, ctx);
+        push_nodes(&item, self.rest, cfg, ctx);
         return item;
     }
 }
@@ -53,7 +53,7 @@ where
 {
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         let item: G = GenericNode::element("blockquote");
-        push_nodes(&item, self.body, cfg);
+        push_nodes(&item, self.body, cfg, ctx);
         return item;
     }
 }

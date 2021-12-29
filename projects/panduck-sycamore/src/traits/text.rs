@@ -9,7 +9,7 @@ where
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         match self {
             Self::Normal(s) => GenericNode::text_node(&s),
-            Self::HTMLRawInline(s) => match cfg.config.trust_raw_html {
+            Self::HTMLRawInline(s) => match cfg.trust_raw_html {
                 true => phantom_node(Ok(s)),
                 false => GenericNode::marker(),
             },

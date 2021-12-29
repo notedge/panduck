@@ -1,21 +1,27 @@
-use panduck_html::ImageConfig;
+use panduck_html::{CodeConfig, ImageConfig, MathConfig};
 
 use super::*;
 
 pub struct SycamoreConfig {
-    pub trust_raw_html: bool,
-    pub image_config: ImageConfig,
-    pub code_config: CodeConfig,
+    pub(crate) trust_raw_html: bool,
+    pub(crate) image_config: ImageConfig,
+    pub(crate) code_config: CodeConfig,
+    pub(crate) math_config: MathConfig,
 }
 
 impl Default for SycamoreConfig {
     fn default() -> Self {
-        Self { trust_raw_html: false, image_config: Default::default() }
+        Self {
+            trust_raw_html: false,
+            image_config: Default::default(),
+            code_config: Default::default(),
+            math_config: Default::default(),
+        }
     }
 }
 
 impl SycamoreConfig {
     pub fn into_builder(self) -> SycamoreBuilder {
-        SycamoreBuilder { cfg: self, ctx: Default::default() }
+        SycamoreBuilder { config: self, context: Default::default() }
     }
 }

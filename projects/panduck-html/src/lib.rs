@@ -1,5 +1,5 @@
+pub use builder::*;
+pub use renderer::{PrettyHTML, PrettyRenderer};
+
 mod builder;
 mod renderer;
-
-pub use builder::{HTMLConfig, ImageConfig};
-pub use renderer::{PrettyHTML, PrettyRenderer};

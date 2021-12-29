@@ -39,26 +39,26 @@ where
             Self::Statements(children) => {
                 let root: G = GenericNode::element("div");
                 root.set_class_name("notedown");
-                push_nodes(&root, children, cfg);
+                push_nodes(&root, children, cfg, ctx);
                 return root;
             }
             Self::Paragraph(children) => {
                 let p = GenericNode::element("p");
-                push_nodes(&p, children, ctx);
+                push_nodes(&p, children, cfg, ctx);
                 return p;
             }
-            Self::Header(inner) => inner.into_sycamore(ctx),
-            Self::Delimiter(inner) => inner.into_sycamore(ctx),
-            Self::TableView(inner) => inner.into_sycamore(ctx),
-            Self::ListView(inner) => inner.into_sycamore(ctx),
-            Self::QuoteNode(inner) => inner.into_sycamore(ctx),
-            Self::CodeNode(inner) => inner.into_sycamore(ctx),
-            Self::MathNode(inner) => inner.into_sycamore(ctx),
-            Self::LinkNode(inner) => inner.into_sycamore(ctx),
-            Self::TextSpan(inner) => inner.into_sycamore(ctx),
-            Self::StyledSpan(inner) => inner.into_sycamore(ctx),
-            Self::Command(inner) => inner.into_sycamore(ctx),
-            Self::Value(inner) => inner.into_sycamore(ctx),
+            Self::Header(inner) => inner.into_sycamore(cfg, ctx),
+            Self::Delimiter(inner) => inner.into_sycamore(cfg, ctx),
+            Self::TableView(inner) => inner.into_sycamore(cfg, ctx),
+            Self::ListView(inner) => inner.into_sycamore(cfg, ctx),
+            Self::QuoteNode(inner) => inner.into_sycamore(cfg, ctx),
+            Self::CodeNode(inner) => inner.into_sycamore(cfg, ctx),
+            Self::MathNode(inner) => inner.into_sycamore(cfg, ctx),
+            Self::LinkNode(inner) => inner.into_sycamore(cfg, ctx),
+            Self::TextSpan(inner) => inner.into_sycamore(cfg, ctx),
+            Self::StyledSpan(inner) => inner.into_sycamore(cfg, ctx),
+            Self::Command(inner) => inner.into_sycamore(cfg, ctx),
+            Self::Value(inner) => inner.into_sycamore(cfg, ctx),
         }
     }
 }

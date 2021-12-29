@@ -9,10 +9,10 @@ where
     G: GenericNode,
 {
     #[cfg(feature = "server")]
-    fn into_sycamore(self, builder: &SycamoreBuilder) -> G {
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         match self.format {
             MathBackend::LaTeX => {
-                let html = builder.config.math_config.katex_config.render_html(&self);
+                let html = cfg.math_config.katex_config.render_html(&self);
                 phantom_node(html)
             }
             MathBackend::AsciiMath => {
