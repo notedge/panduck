@@ -1,19 +1,20 @@
+use notedown_ast::{
+    nodes::{CodeNode, Delimiter, Header, ListView, Literal, MathNode, StyleKind, StyleNode, TableView, TextSpan},
+    ASTKind,
+};
+use sycamore::generic_node::GenericNode;
+
+use crate::{
+    builder::SycamoreBuilder,
+    shared::{error_inline, push_nodes},
+};
+
 mod blocks;
 mod command;
 mod link;
 mod list;
 mod table;
 mod text;
-
-use crate::{
-    builder::SycamoreBuilder,
-    shared::{error_inline, push_nodes},
-};
-use notedown_ast::{
-    nodes::{CodeNode, Delimiter, Header, ListView, Literal, MathNode, StyleKind, StyleNode, TableView, TextNode},
-    ASTKind,
-};
-use sycamore::generic_node::GenericNode;
 
 pub trait IntoSycamore<G: GenericNode> {
     fn into_sycamore(self, context: &SycamoreBuilder) -> G;
@@ -50,6 +51,7 @@ where
             Self::Delimiter(inner) => inner.into_sycamore(ctx),
             Self::TableView(inner) => inner.into_sycamore(ctx),
             Self::ListView(inner) => inner.into_sycamore(ctx),
+            Self::QuoteNode(inner) => inner.into_sycamore(ctx),
             Self::CodeNode(inner) => inner.into_sycamore(ctx),
             Self::MathNode(inner) => inner.into_sycamore(ctx),
             Self::LinkNode(inner) => inner.into_sycamore(ctx),

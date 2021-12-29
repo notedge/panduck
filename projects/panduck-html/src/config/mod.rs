@@ -1,11 +1,10 @@
+use serde::{Deserialize, Serialize};
+
+pub use self::{code::CodeConfig, image::ImageConfig, math::MathConfig};
+
 mod code;
 mod image;
 mod math;
-
-pub use self::{code::CodeConfig, image::ImageConfig, math::MathConfig};
-use notedown_ast::ASTNode;
-
-use serde::{Deserialize, Serialize};
 
 pub struct HTMLBuilder {
     config: HTMLConfig,

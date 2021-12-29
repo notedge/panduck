@@ -1,9 +1,7 @@
-use crate::HTMLConfig;
-use notedown_ast::{
-    nodes::{StyleKind, TextNode},
-    ASTKind, ASTNode, Result,
-};
+use notedown_ast::{nodes::StyleKind, ASTKind, ASTNode, Result};
 use pretty::RcDoc;
+
+use crate::HTMLConfig;
 
 mod nodes;
 mod text;

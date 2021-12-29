@@ -1,6 +1,7 @@
-use super::*;
 use document_tree::{BulletList, Comment, ExtraAttributes, Image, LiteralBlock, Note, Paragraph, Target, Warning};
-use notedown_ast::nodes::ImageLink;
+use notedown_ast::{nodes::ImageLink, traits::IntoASTNode};
+
+use super::*;
 
 impl ToNotedown for BodyElement {
     fn into_notedown(self) -> ASTNode {

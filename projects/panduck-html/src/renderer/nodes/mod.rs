@@ -1,5 +1,6 @@
-use super::*;
 use pretty::RcDoc;
+
+use super::*;
 
 impl PrettyHTML for ASTNode {
     fn pretty_html(&self, f: &mut PrettyRenderer) -> RcDoc<()> {
@@ -35,6 +36,9 @@ impl PrettyHTML for ASTNode {
                 unimplemented!()
             }
             ASTKind::Value(_) => {
+                unimplemented!()
+            }
+            ASTKind::QuoteNode(_) => {
                 unimplemented!()
             }
         }

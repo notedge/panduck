@@ -1,7 +1,8 @@
-use super::*;
 use crate::shared::phantom_node;
 
-impl<G> IntoSycamore<G> for TextNode
+use super::*;
+
+impl<G> IntoSycamore<G> for TextSpan
 where
     G: GenericNode,
 {

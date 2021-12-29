@@ -16,11 +16,11 @@ impl Default for KatexConfig {
 
 impl KatexConfig {
     pub fn render_html(&self, math: &MathNode) -> Result<String> {
-        match math.get_kind() {
-            MathKind::Inline => katex_inline(&math.get_text()),
-            MathKind::Display => katex_display(&math.get_text()),
-            MathKind::BlockInline => katex_inline(&math.get_text()),
-            MathKind::BlockDisplay => katex_display(&math.get_text()),
+        match math.kind {
+            MathKind::Inline => katex_inline(&math.raw),
+            MathKind::Display => katex_display(&math.raw),
+            MathKind::BlockInline => katex_inline(&math.raw),
+            MathKind::BlockDisplay => katex_display(&math.raw),
         }
     }
 }

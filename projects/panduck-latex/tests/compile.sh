@@ -1,1 +1,1 @@
-tectonic -X compile markdown/basic.tex
+tectonic -X compile markdown/basic.tex --keep-intermediates

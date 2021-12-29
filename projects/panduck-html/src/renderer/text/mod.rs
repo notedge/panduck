@@ -1,30 +1,34 @@
-use super::*;
-use notedown_ast::nodes::StyleNode;
+use notedown_ast::nodes::{StyleNode, TextSpan};
 use pretty::RcDoc;
 
-impl PrettyHTML for TextNode {
+use super::*;
+
+impl PrettyHTML for TextSpan {
     fn pretty_html(&self, cfg: &mut PrettyRenderer) -> RcDoc<()> {
         match self {
-            TextNode::HTMLRawInline(_) => match cfg.config.trust_raw_html {
+            TextSpan::HTMLRawInline(_) => match cfg.config.trust_raw_html {
                 true => {
                     todo!()
                 }
                 false => RcDoc::as_string(""),
             },
-            TextNode::Normal(v) => RcDoc::as_string(v),
-            TextNode::Emoji(v) => RcDoc::as_string(v),
-            TextNode::Escaped(v) => RcDoc::as_string(v),
-            TextNode::SoftNewline => {
+            TextSpan::Normal(v) => RcDoc::as_string(v),
+            TextSpan::Emoji(v) => RcDoc::as_string(v),
+            TextSpan::Escaped(v) => RcDoc::as_string(v),
+            TextSpan::SoftNewline => {
                 unimplemented!()
             }
-            TextNode::HardNewline => match cfg.xhtml {
+            TextSpan::HardNewline => match cfg.xhtml {
                 true => RcDoc::as_string("<br/>"),
                 false => RcDoc::as_string("<br>"),
             },
-            TextNode::CheckBox(_) => {
+            TextSpan::CheckBox(_) => {
                 unimplemented!()
             }
-            TextNode::Empty => RcDoc::as_string(""),
+            TextSpan::Empty => RcDoc::as_string(""),
+            TextSpan::Raw(_) => {
+                unimplemented!()
+            }
         }
     }
 }

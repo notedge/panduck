@@ -7,7 +7,7 @@ repository = "https://github.com/notedge/panduck/tree/master/projects/lipsum-cn"
 documentation = "https://docs.rs/lipsum-cn"
 readme = "../../readme.md"
 license = "MPL-2.0"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 rand = { version = "0.8.4", features = ["small_rng"] }

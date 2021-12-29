@@ -1,5 +1,6 @@
-use super::*;
 use crate::shared::phantom_node;
+
+use super::*;
 
 impl<G> IntoSycamore<G> for MathNode
 where
@@ -7,7 +8,7 @@ where
 {
     #[cfg(feature = "local")]
     fn into_sycamore(self, builder: &SycamoreBuilder) -> G {
-        match self.get_format().to_ascii_lowercase().as_str() {
+        match self.format.to_ascii_lowercase().as_str() {
             "tex" | "latex" => {
                 let html = builder.config.math_config.katex_config.render_html(&self);
                 phantom_node(html)
