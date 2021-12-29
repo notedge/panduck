@@ -30,7 +30,7 @@ path = "../panduck-core"
 features = ["markdown", "html", "rst"]
 
 [features]
-default = ["local"]
-local = ["panduck-html/katex", "panduck-html/syntect", ]
+default = ["server"]
+server = ["panduck-html/katex", "panduck-html/syntect", ]
 
 

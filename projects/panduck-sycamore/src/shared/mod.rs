@@ -1,6 +1,10 @@
-use crate::{builder::SycamoreBuilder, traits::IntoSycamore};
 use notedown_ast::Result;
 use sycamore::prelude::GenericNode;
+
+use crate::{
+    builder::{SycamoreBuilder, SycamoreConfig, SycamoreContext},
+    traits::IntoSycamore,
+};
 
 pub fn error_inline<G: GenericNode>(msg: &str) -> G {
     let node: G = GenericNode::element("span");
@@ -16,13 +20,13 @@ pub fn error_inline<G: GenericNode>(msg: &str) -> G {
 //     return node;
 // }
 
-pub fn push_nodes<T, G>(node: &G, children: Vec<T>, ctx: &SycamoreBuilder)
+pub fn push_nodes<T, G>(node: &G, children: Vec<T>, cfg: &SycamoreConfig, ctx: &mut SycamoreContext)
 where
     G: GenericNode,
     T: IntoSycamore<G>,
 {
     for i in children {
-        node.append_child(&i.into_sycamore(ctx))
+        node.append_child(&i.into_sycamore(cfg, ctx))
     }
 }
 

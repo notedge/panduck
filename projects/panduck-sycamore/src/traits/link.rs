@@ -1,18 +1,19 @@
-use super::*;
 use notedown_ast::nodes::{EmailLink, HyperLink, ImageLink, ResourceDescriptor, SmartLink, TagReference, TwoWayLink};
+
+use super::*;
 
 impl<G> IntoSycamore<G> for SmartLink
 where
     G: GenericNode,
 {
-    fn into_sycamore(self, ctx: &SycamoreBuilder) -> G {
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         match self {
-            Self::EMail(v) => v.into_sycamore(ctx),
-            Self::Normal(v) => v.into_sycamore(ctx),
-            Self::Image(v) => v.into_sycamore(ctx),
-            Self::TwoWay(v) => v.into_sycamore(ctx),
-            Self::Reference(v) => v.into_sycamore(ctx),
-            Self::ExternalResource(v) => v.into_sycamore(ctx),
+            Self::EMail(v) => v.into_sycamore(cfg, ctx),
+            Self::Normal(v) => v.into_sycamore(cfg, ctx),
+            Self::Image(v) => v.into_sycamore(cfg, ctx),
+            Self::TwoWay(v) => v.into_sycamore(cfg, ctx),
+            Self::Reference(v) => v.into_sycamore(cfg, ctx),
+            Self::ExternalResource(v) => v.into_sycamore(cfg, ctx),
         }
     }
 }
@@ -21,7 +22,7 @@ impl<G> IntoSycamore<G> for ResourceDescriptor
 where
     G: GenericNode,
 {
-    fn into_sycamore(self, _: &SycamoreBuilder) -> G {
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         // <a href="mailto:someone@example.com">Send email</a>
         let a = GenericNode::element("a");
         return a;
@@ -33,7 +34,7 @@ where
     G: GenericNode,
 {
     /// <a href="mailto:someone@example.com">Send email</a>
-    fn into_sycamore(self, _: &SycamoreBuilder) -> G {
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         let a: G = GenericNode::element("a");
         a.set_attribute("href", "mailto:someone@example.com");
         a.update_inner_text("mailto:someone@example.com");
@@ -54,8 +55,9 @@ where
     /// <img class="fit-picture"
     //      src="/media/cc0-images/grapefruit-slice-332-332.jpg"
     //      alt="Grapefruit slice atop a pile of other slices">
-    fn into_sycamore(self, builder: &SycamoreBuilder) -> G {
-        let cfg = &builder.config.image_config;
+
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
+        let cfg = &cfg.image_config;
         let img: G = GenericNode::element("img");
         img.set_attribute("src", &self.source);
         if let Some(s) = self.description {
@@ -83,7 +85,7 @@ impl<G> IntoSycamore<G> for HyperLink
 where
     G: GenericNode,
 {
-    fn into_sycamore(self, _: &SycamoreBuilder) -> G {
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         let a: G = GenericNode::element("a");
         a.set_attribute("href", &self.src);
         self.text.map(|f| a.update_inner_text(&f));
@@ -95,7 +97,7 @@ impl<G> IntoSycamore<G> for TwoWayLink
 where
     G: GenericNode,
 {
-    fn into_sycamore(self, _: &SycamoreBuilder) -> G {
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         todo!()
     }
 }
@@ -103,7 +105,7 @@ impl<G> IntoSycamore<G> for TagReference
 where
     G: GenericNode,
 {
-    fn into_sycamore(self, _: &SycamoreBuilder) -> G {
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         todo!()
     }
 }

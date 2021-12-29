@@ -5,7 +5,7 @@ use notedown_ast::{
 use sycamore::generic_node::GenericNode;
 
 use crate::{
-    builder::SycamoreBuilder,
+    builder::{SycamoreBuilder, SycamoreConfig, SycamoreContext},
     shared::{error_inline, push_nodes},
 };
 
@@ -17,7 +17,7 @@ mod table;
 mod text;
 
 pub trait IntoSycamore<G: GenericNode> {
-    fn into_sycamore(self, context: &SycamoreBuilder) -> G;
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G;
 }
 
 impl<T, G> IntoSycamore<G> for Literal<T>
@@ -25,8 +25,8 @@ where
     T: IntoSycamore<G>,
     G: GenericNode,
 {
-    fn into_sycamore(self, ctx: &SycamoreBuilder) -> G {
-        self.value.into_sycamore(ctx)
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
+        self.value.into_sycamore(cfg, ctx)
     }
 }
 
@@ -34,12 +34,12 @@ impl<G> IntoSycamore<G> for ASTKind
 where
     G: GenericNode,
 {
-    fn into_sycamore(self, ctx: &SycamoreBuilder) -> G {
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         match self {
             Self::Statements(children) => {
                 let root: G = GenericNode::element("div");
                 root.set_class_name("notedown");
-                push_nodes(&root, children, ctx);
+                push_nodes(&root, children, cfg);
                 return root;
             }
             Self::Paragraph(children) => {

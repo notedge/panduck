@@ -1,9 +1,9 @@
 use clap::Parser;
 pub use notedown_ast::Result;
 
-use self::{config::PanduckConfig, subs::SubCommands};
+use self::{builder::PanduckConfig, subs::SubCommands};
 
-mod config;
+mod builder;
 mod subs;
 mod sync;
 

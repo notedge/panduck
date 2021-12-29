@@ -6,10 +6,7 @@ impl<G> IntoSycamore<G> for TextSpan
 where
     G: GenericNode,
 {
-    fn into_sycamore(self, cfg: &SycamoreBuilder) -> G
-    where
-        G: GenericNode,
-    {
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         match self {
             Self::Normal(s) => GenericNode::text_node(&s),
             Self::HTMLRawInline(s) => match cfg.config.trust_raw_html {
@@ -35,12 +32,12 @@ impl<G> IntoSycamore<G> for StyleNode
 where
     G: GenericNode,
 {
-    fn into_sycamore(self, ctx: &SycamoreBuilder) -> G {
-        let node: G = self.kind.into_sycamore(ctx);
+    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
+        let node: G = self.kind.into_sycamore(cfg, ctx);
         // for i in self.children {
         //     node.append_child(&i.value.into_sycamore())
         // }
-        push_nodes(&node, self.children, ctx);
+        push_nodes(&node, self.children, cfg, ctx);
         return node;
     }
 }
@@ -49,7 +46,7 @@ impl<G> IntoSycamore<G> for StyleKind
 where
     G: GenericNode,
 {
-    fn into_sycamore(self, _: &SycamoreBuilder) -> G {
+    fn into_sycamore(self, _: &SycamoreConfig, _: &mut SycamoreContext) -> G {
         match self {
             Self::Plain => GenericNode::element("span"),
             Self::Emphasis => GenericNode::element("em"),
@@ -59,7 +56,7 @@ where
             Self::Delete => GenericNode::element("del"),
             Self::Insert => GenericNode::element("ins"),
             Self::ItalicBold => {
-                unimplemented!()
+                unreachable!()
             }
             Self::Marking => {
                 unimplemented!()

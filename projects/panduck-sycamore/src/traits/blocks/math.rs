@@ -8,7 +8,7 @@ impl<G> IntoSycamore<G> for MathNode
 where
     G: GenericNode,
 {
-    #[cfg(feature = "local")]
+    #[cfg(feature = "server")]
     fn into_sycamore(self, builder: &SycamoreBuilder) -> G {
         match self.format {
             MathBackend::LaTeX => {

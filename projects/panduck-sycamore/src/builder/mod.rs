@@ -1,16 +1,19 @@
-use crate::traits::IntoSycamore;
 use notedown_ast::ASTNode;
-use panduck_html::HTMLConfig;
 use sycamore::{prelude::GenericNode, render_to_string, view::View, SsrNode};
 
-pub struct SycamoreBuilder {
-    pub config: HTMLConfig,
-}
+use panduck_html::HTMLConfig;
 
-impl Default for SycamoreBuilder {
-    fn default() -> Self {
-        Self { config: Default::default() }
-    }
+use crate::traits::IntoSycamore;
+
+pub use self::{config::SycamoreConfig, context::SycamoreContext};
+
+mod config;
+mod context;
+
+#[derive(Default)]
+pub struct SycamoreBuilder {
+    pub cfg: SycamoreConfig,
+    pub ctx: SycamoreContext,
 }
 
 impl SycamoreBuilder {
