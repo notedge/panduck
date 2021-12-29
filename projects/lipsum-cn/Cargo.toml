@@ -1,6 +1,6 @@
 [package]
 name = "lipsum-cn"
-version = "0.13.0"
+version = "1.0.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "Pseudo-Chinese lorem ipsum generator"
 repository = "https://github.com/oovm/panduck"
@@ -9,4 +9,4 @@ license = "MPL-2.0"
 edition = "2018"
 
 [dependencies]
-handlebars = "*"
+tinytemplate = "*"
