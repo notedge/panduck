@@ -4,6 +4,12 @@ use pretty::{RcAllocator, RcDoc};
 
 use crate::PrettyPrint;
 
+pub use self::prefix_group::PrefixGroup;
+
+mod open_closed_group;
+mod prefix_group;
+mod surround_group;
+
 /// nothing output
 pub fn nil<'a>() -> PrettyPrint<'a> {
     RcDoc::nil()
@@ -36,6 +42,8 @@ pub fn space_or_newline<'a>() -> PrettyPrint<'a> {
     RcDoc::hardline().flat_alt(RcDoc::nil())
 }
 
+/// ## OpenClosedGroup
+/// Pretty print things like list
 /// ```js
 /// [1, 2, 3]
 ///
@@ -45,7 +53,6 @@ pub fn space_or_newline<'a>() -> PrettyPrint<'a> {
 /// />
 ///
 /// ```
-///
 ///
 pub struct OpenClosedGroup {
     ident: usize,
@@ -92,7 +99,7 @@ impl OpenClosedGroup {
         I: IntoIterator,
         I::Item: pretty::Pretty<'i, RcAllocator, ()>,
     {
-        println!("{}", self.pretty_render(start, end, items, width))
+        println!("{}", self.pretty_render(start, end, items, width));
     }
     #[inline]
     pub fn pretty_render<'i, T, I>(&self, start: T, end: T, items: I, width: usize) -> String
@@ -110,6 +117,10 @@ impl OpenClosedGroup {
         I: IntoIterator,
         I::Item: pretty::Pretty<'i, RcAllocator, ()>, // life time of input items
     {
+        let start = start.into();
+        let end = end.into();
+        assert!(!start.contains('\n'), "start part must in one line");
+        assert!(!end.contains('\n'), "end part must in one line");
         let inline = RcDoc::as_string(&self.inline);
         let newline = RcDoc::as_string(&self.newline).append(RcDoc::hardline());
         let separator = newline.flat_alt(inline);
