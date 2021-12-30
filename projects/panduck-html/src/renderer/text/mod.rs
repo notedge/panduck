@@ -37,8 +37,8 @@ impl IntoHTML for StyleNode {
             StyleKind::Plain => {
                 unimplemented!()
             }
-            StyleKind::Emphasis => group.print("<em>", "</em>", self.children.iter().map(|x| x.into_html(cfg, ctx))),
-            StyleKind::Strong => group.print("<strong>", "</strong>", self.children.iter().map(|x| x.into_html(cfg, ctx))),
+            StyleKind::Emphasis => group.build("<em>", "</em>", self.children.iter().map(|x| x.into_html(cfg, ctx))),
+            StyleKind::Strong => group.build("<strong>", "</strong>", self.children.iter().map(|x| x.into_html(cfg, ctx))),
             StyleKind::ItalicBold => {
                 unimplemented!()
             }
