@@ -24,3 +24,20 @@ impl Default for SurroundGroup {
         }
     }
 }
+
+impl SurroundGroup {
+    pub fn set_ident(&mut self, ident: usize) -> &mut Self {
+        self.ident = ident;
+        self
+    }
+    pub fn set_inline<S: Into<String>>(&mut self, start: S, end: S) -> &mut Self {
+        self.inline_start = start.into();
+        self.inline_end = end.into();
+        self
+    }
+    pub fn set_multiline<S: Into<String>>(&mut self, start: S, end: S) -> &mut Self {
+        self.multiline_start = start.into();
+        self.multiline_end = end.into();
+        self
+    }
+}

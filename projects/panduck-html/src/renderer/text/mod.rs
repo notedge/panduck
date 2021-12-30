@@ -1,30 +1,28 @@
-use std::borrow::Cow;
-
 use notedown_ast::nodes::{StyleNode, TextSpan};
 
 use super::*;
 
 impl IntoHTML for TextSpan {
-    fn into_html<'a>(&'a self, cfg: &HTMLConfig, ctx: &mut HTMLContext) -> PrettyPrint<'a> {
+    fn into_html<'a>(&'a self, cfg: &HTMLConfig, _: &mut HTMLContext) -> PrettyPrint<'a> {
         match self {
-            TextSpan::HTMLRawInline(_) => match cfg.trust_raw_html {
+            Self::Empty => nil(),
+            Self::HTMLRawInline(_) => match cfg.trust_raw_html {
                 true => {
                     todo!()
                 }
                 false => nil(),
             },
-            TextSpan::Normal(v) => text(v),
-            TextSpan::Emoji(v) => text(*v),
-            TextSpan::Escaped(v) => text(v.to_string()),
-            TextSpan::SoftNewline => {
+            Self::Raw(_) => {
                 unimplemented!()
             }
-            TextSpan::HardNewline => text(cfg.xhtml.tag("br")),
-            TextSpan::CheckBox(_) => {
+            Self::Normal(v) => text(v),
+            Self::Emoji(v) => text(*v),
+            Self::Escaped(v) => text(v.to_string()),
+            Self::SoftNewline => {
                 unimplemented!()
             }
-            TextSpan::Empty => text(""),
-            TextSpan::Raw(_) => {
+            Self::HardNewline => text(cfg.xhtml.tag("br")),
+            Self::CheckBox(_) => {
                 unimplemented!()
             }
         }
@@ -32,7 +30,8 @@ impl IntoHTML for TextSpan {
 }
 impl IntoHTML for StyleNode {
     fn into_html<'a>(&'a self, cfg: &HTMLConfig, ctx: &mut HTMLContext) -> PrettyPrint<'a> {
-        let group = OpenClosedGroup {};
+        let mut group = OpenClosedGroup::default();
+        group.set_indent(cfg.indent).set_mark("", "");
         match self.kind {
             StyleKind::Plain => {
                 unimplemented!()

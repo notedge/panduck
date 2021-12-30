@@ -1,0 +1,19 @@
+[package]
+name = "panduck-derive"
+version = "0.13.0"
+authors = ["Aster <192607617@qq.com>"]
+description = "use panduck to generate pdfs"
+categories = ["development-tools::procedural-macro-helpers"]
+repository = "https://github.com/oovm/panduck"
+readme = "../../readme.md"
+license = "MPL-2.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1"
+syn = "1"
+proc-macro2 = { version = "1", default-features = false }
+proc-macro-error = "1.0"

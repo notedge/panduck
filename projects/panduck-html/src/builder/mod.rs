@@ -26,6 +26,7 @@ impl HTMLBuilder {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct HTMLConfig {
     pub xhtml: XHtml,
+    pub indent: usize,
     pub max_width: usize,
     pub trust_raw_html: bool,
     pub image_config: ImageConfig,
@@ -39,6 +40,7 @@ impl Default for HTMLConfig {
     fn default() -> Self {
         Self {
             xhtml: XHtml::False,
+            indent: 4,
             max_width: 100,
             trust_raw_html: true,
             image_config: Default::default(),
