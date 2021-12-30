@@ -9,8 +9,8 @@ readme = "../../readme.md"
 license = "MPL-2.0"
 edition = "2021"
 
-[lib]
-proc-macro = true
+#[lib]
+#proc-macro = true
 
 [dependencies]
 quote = "1"

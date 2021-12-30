@@ -5,6 +5,8 @@ use std::{
     ops::Deref,
 };
 
+pub use self::field::ConfigField;
+
 mod field;
 
 pub struct ConfigList<T> {

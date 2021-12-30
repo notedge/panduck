@@ -3,7 +3,8 @@ use std::mem::swap;
 use super::*;
 
 pub struct ConfigField<T> {
-    // none: not set, use default
+    // None: not set, use default
+    // Some:
     inner: Option<T>,
 }
 
@@ -20,32 +21,45 @@ impl<T> ConfigField<T> {
     {
         match &self.inner {
             None => Cow::Owned(T::default()),
-            Some(v) => Cow::Borrowed(&v),
+            Some(v) => Cow::Borrowed(v),
         }
     }
     pub fn get_mut(&mut self) -> &mut T
     where
         T: Default,
     {
-        if let None = &self.inner {
+        if self.inner.is_none() {
             self.inner = Some(T::default())
         }
         self.inner.as_mut().unwrap()
     }
-    pub fn set(&mut self, value: T) -> Option<&mut T>
+    pub fn set(&mut self, value: T) -> Option<T>
     where
         T: Default,
     {
-        match &mut self.inner {
-            Some(s) => {
-                let mut new = value;
-                swap(&mut new, s);
-                return Some(s);
+        let have_value = self.inner.is_some();
+        match have_value {
+            true => {
+                let mut new = Some(value);
+                swap(&mut new, &mut self.inner);
+                new
             }
-            None => {
+            false => {
                 self.inner = Some(value);
                 None
             }
+        }
+    }
+    pub fn merge(&mut self, rhs: ConfigField<T>) {
+        match (&mut self.inner, rhs.inner) {
+            // left side config have have been override by right
+            (Some(lhs), Some(rhs)) => *lhs = rhs,
+            // nothing changed because rhs not set
+            (Some(_), None) => {}
+            // use rhs config
+            (None, Some(rhs)) => self.inner = Some(rhs),
+            // skip
+            (None, None) => {}
         }
     }
 }
