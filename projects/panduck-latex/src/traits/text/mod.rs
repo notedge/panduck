@@ -42,12 +42,12 @@ impl IntoLaTeX for StyleNode {
             StyleKind::Plain => {
                 unimplemented!()
             }
-            StyleKind::Emphasis => tex_inline_text("emph", inner),
-            StyleKind::Strong => tex_inline_text("textbf", inner),
+            StyleKind::Emphasis => tex_inline_macro("emph", inner),
+            StyleKind::Strong => tex_inline_macro("textbf", inner),
             StyleKind::ItalicBold => {
                 unimplemented!()
             }
-            StyleKind::Underline => tex_inline_text("underline", inner),
+            StyleKind::Underline => tex_inline_macro("underline", inner),
             StyleKind::Undercover => {
                 unimplemented!()
             }

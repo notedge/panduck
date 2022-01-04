@@ -1,6 +1,6 @@
 use notedown_ast::ASTNode;
 use notedown_error::Result;
-use notedown_rt::NoteVM;
+use notedown_rt::{NoteDocument, NoteVM};
 
 use crate::traits::IntoLaTeX;
 
@@ -15,7 +15,7 @@ pub struct LaTeXBuilder {
 }
 
 impl LaTeXBuilder {
-    pub fn render_latex(&mut self, ast: &ASTNode) -> Result<String> {
+    pub fn render_ast(&mut self, ast: &ASTNode) -> Result<String> {
         let cfg = &self.config;
         let ctx = &mut self.context;
         let doc = ast.into_latex(cfg, ctx);

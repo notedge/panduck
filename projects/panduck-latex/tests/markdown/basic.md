@@ -4,6 +4,16 @@ author: Panduck
 date: \today(runtime = true)
 ---
 
-# This is a test
+## Basic style tests
 
 some text *here* and **here**
+
+## Basic list test
+
+- orderless items
+- item2
+- item3
+
+1. ordered items
+2. item2
+3. item3

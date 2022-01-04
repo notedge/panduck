@@ -1,7 +1,10 @@
+use std::borrow::Borrow;
+
 use notedown_ast::{
     nodes::{Header, *},
     ASTKind, ASTNode, Command, Value,
 };
+use notedown_rt::NoteDocument;
 
 use panduck_pp::*;
 
@@ -9,12 +12,12 @@ use crate::{LaTeXConfig, LaTeXContext};
 
 pub use self::utils::*;
 
+mod blocks;
 mod cmd;
 mod code;
 mod link;
 mod list;
 mod math;
-mod node;
 mod quote;
 mod table;
 mod text;
@@ -23,6 +26,12 @@ mod utils;
 pub trait IntoLaTeX {
     //noinspection RsSelfConvention
     fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a>;
+}
+
+impl IntoLaTeX for NoteDocument {
+    fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
+        todo!()
+    }
 }
 
 impl IntoLaTeX for ASTNode {

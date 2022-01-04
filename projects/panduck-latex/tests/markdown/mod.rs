@@ -4,8 +4,9 @@ use panduck_latex::LaTeXConfig;
 pub fn check_markdown(source: &str, target: &str) -> Result<()> {
     let mut builder = LaTeXConfig::default().into_builder();
     let ast = parse_common_markdown(source)?;
-    let out = builder.render_latex(&ast)?;
-    Ok(assert_eq!(out, target))
+    let out = builder.render_ast(&ast)?;
+    assert_eq!(out, target);
+    Ok(())
 }
 
 #[test]

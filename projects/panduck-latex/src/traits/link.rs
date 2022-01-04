@@ -12,3 +12,39 @@ impl IntoLaTeX for SmartLink {
         }
     }
 }
+
+impl IntoLaTeX for ResourceDescriptor {
+    fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
+        todo!()
+    }
+}
+
+impl IntoLaTeX for EmailLink {
+    fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
+        todo!()
+    }
+}
+
+impl IntoLaTeX for HyperLink {
+    fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
+        todo!()
+    }
+}
+
+impl IntoLaTeX for ImageLink {
+    fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
+        todo!()
+    }
+}
+
+impl IntoLaTeX for TagReference {
+    fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
+        todo!()
+    }
+}
+
+impl IntoLaTeX for TwoWayLink {
+    fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
+        todo!()
+    }
+}

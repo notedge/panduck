@@ -29,3 +29,9 @@ impl IntoLaTeX for Header {
         return header;
     }
 }
+
+impl IntoLaTeX for Delimiter {
+    fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
+        todo!()
+    }
+}
