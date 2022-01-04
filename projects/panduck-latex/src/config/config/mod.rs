@@ -1,14 +1,12 @@
 use super::*;
 
-// static info
-#[derive(Debug, Clone)]
-pub struct LaTeXConfig {
-    pub width: usize,
-}
+pub use self::list::ListConfig;
+
+mod list;
 
 impl Default for LaTeXConfig {
     fn default() -> Self {
-        Self { width: 144 }
+        Self { width: 144, list_config: Default::default() }
     }
 }
 

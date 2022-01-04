@@ -35,6 +35,11 @@ pub fn newline<'a>() -> PrettyPrint<'a> {
     RcDoc::text("\n")
 }
 
+/// ` ` in any cases
+pub fn space<'a>() -> PrettyPrint<'a> {
+    RcDoc::space()
+}
+
 /// - `NIL` if inline
 /// - `\n` if break
 pub fn nil_or_newline<'a>() -> PrettyPrint<'a> {

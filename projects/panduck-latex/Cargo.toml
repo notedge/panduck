@@ -12,6 +12,7 @@ edition = "2018"
 notedown_ast = "0.16.1"
 notedown-error = "1.1.2"
 notedown-rt = "0.3.0"
+serde = {version = "1.0.133", features = ["derive"]}
 
 [dependencies.panduck-pp]
 version = "0"

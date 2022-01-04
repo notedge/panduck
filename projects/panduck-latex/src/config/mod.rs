@@ -1,10 +1,11 @@
 use notedown_ast::ASTNode;
 use notedown_error::Result;
 use notedown_rt::{NoteDocument, NoteVM};
+use serde::{Deserialize, Serialize};
 
 use crate::traits::IntoLaTeX;
 
-pub use self::{config::LaTeXConfig, context::LaTeXContext};
+pub use self::{config::ListConfig, context::LaTeXContext};
 
 mod config;
 mod context;
@@ -12,6 +13,13 @@ mod context;
 pub struct LaTeXBuilder {
     config: LaTeXConfig,
     context: LaTeXContext,
+}
+
+// static info
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LaTeXConfig {
+    pub width: usize,
+    pub list_config: ListConfig,
 }
 
 impl LaTeXBuilder {
