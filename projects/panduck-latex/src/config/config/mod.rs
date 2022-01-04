@@ -21,6 +21,6 @@ impl Default for LaTeXConfig {
 
 impl LaTeXConfig {
     pub fn into_builder(self) -> LaTeXBuilder {
-        LaTeXBuilder { config: self, context: LaTeXContext { vm: Default::default() } }
+        LaTeXBuilder { config: self, context: Default::default() }
     }
 }
