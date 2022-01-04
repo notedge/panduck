@@ -10,6 +10,7 @@ edition = "2018"
 
 [dependencies]
 notedown_ast = "0.16.1"
+notedown-error = "1.1.2"
 
 [dependencies.panduck-html]
 version = "0.1.0"

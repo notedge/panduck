@@ -1,13 +1,13 @@
 [package]
 name = "panduck-pp"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Aster <192607617@qq.com>"]
-description = "use panduck to generate pdfs"
+description = "Pretty print utils for [Panduck](https://github.com/oovm/panduck)."
 repository = "https://github.com/oovm/panduck"
-documentation = "https://github.com/oovm/panduck"
-readme = "../../readme.md"
+documentation = "https://docs.rs/panduck-pp"
+readme = "Readme.md"
 license = "MPL-2.0"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 pretty = "0.11.2"

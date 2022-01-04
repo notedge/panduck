@@ -8,7 +8,7 @@ impl IntoHTML for ASTNode {
             }
             ASTKind::Paragraph(v) => PrettyPrint::text("<p>")
                 .append(PrettyPrint::intersperse(v.iter().map(|x| x.into_html(cfg, ctx)), nil_or_newline()).nest(1).group())
-                .append(text("</p>")),
+                .append(text_ref("</p>")),
             ASTKind::Delimiter(_) => {
                 unimplemented!()
             }

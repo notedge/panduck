@@ -1,7 +1,4 @@
-use std::{
-    borrow::{Borrow, BorrowMut, Cow},
-    lazy::SyncLazy,
-};
+use std::{borrow::Cow, fmt::Display};
 
 use pretty::{RcAllocator, RcDoc};
 
@@ -19,8 +16,13 @@ pub fn nil<'a>() -> PrettyPrint<'a> {
 }
 
 /// text
-pub fn text<'a, S: Into<Cow<'a, str>>>(s: S) -> PrettyPrint<'a> {
+pub fn text_ref<'a, S: Into<Cow<'a, str>>>(s: S) -> PrettyPrint<'a> {
     RcDoc::text(s)
+}
+
+/// text
+pub fn text_own<'a, S: Display>(s: S) -> PrettyPrint<'a> {
+    RcDoc::as_string(s)
 }
 
 /// skip one line

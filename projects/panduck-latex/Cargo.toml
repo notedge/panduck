@@ -10,8 +10,14 @@ edition = "2018"
 
 [dependencies]
 notedown_ast = "0.16.1"
-pretty = "0.11.2"
+notedown-error = "1.1.2"
 notedown-rt = "0.3.0"
+
+[dependencies.panduck-pp]
+version = "0"
+path = "../pretty-print"
+features = []
+
 
 [dev-dependencies.panduck-core]
 version = "0.1"

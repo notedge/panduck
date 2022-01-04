@@ -9,7 +9,7 @@ impl<G> IntoSycamore<G> for Delimiter
 where
     G: GenericNode,
 {
-    fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
+    fn into_sycamore(self, cfg: &SycamoreConfig, _: &mut SycamoreContext) -> G {
         match self {
             Self::HorizontalRule => GenericNode::element("hr"),
             Self::HTMLRawBlock(s) => match cfg.trust_raw_html {

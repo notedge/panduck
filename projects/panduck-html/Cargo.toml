@@ -10,6 +10,7 @@ edition = "2018"
 
 [dependencies]
 notedown_ast = "0.16.1"
+notedown-error = "1.1.2"
 html-escape = "0.2.9"
 serde = {version = "1.0.132", features = ["derive"]}
 merge = "0.1.0"
@@ -27,7 +28,7 @@ optional = true
 
 
 [dependencies.panduck-pp]
-version = "0.1"
+version = "0"
 path = "../pretty-print"
 features = []
 

@@ -1,0 +1,7 @@
+{
+    "private": true,
+    "scripts": {
+        "u": "cargo upgrade --allow-prerelease",
+        "p": "cargo publish --allow-dirty"
+    }
+}

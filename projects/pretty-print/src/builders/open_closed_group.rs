@@ -96,6 +96,6 @@ impl OpenClosedGroup {
             // do nothing
         }
         let middle = middle.nest(self.ident as isize).append(nil_or_newline()).group();
-        text(start).append(middle).append(text(end))
+        text_ref(start).append(middle).append(text_ref(end))
     }
 }

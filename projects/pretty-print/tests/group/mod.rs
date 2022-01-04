@@ -1,4 +1,4 @@
-use panduck_pp::{text, OpenClosedGroup};
+use panduck_pp::{text_ref, OpenClosedGroup};
 
 #[test]
 fn test_tailing_comma() {
@@ -8,10 +8,10 @@ fn test_tailing_comma() {
         "]",
         vec![
             //
-            text("1"),
-            text("2"),
-            text("3"),
-            text("4"),
+            text_ref("1"),
+            text_ref("2"),
+            text_ref("3"),
+            text_ref("4"),
         ],
         5,
     );
@@ -22,10 +22,10 @@ fn test_tailing_comma() {
         "]",
         vec![
             //
-            text("1"),
-            text("2"),
-            text("3"),
-            text("4"),
+            text_ref("1"),
+            text_ref("2"),
+            text_ref("3"),
+            text_ref("4"),
         ],
         5,
     );

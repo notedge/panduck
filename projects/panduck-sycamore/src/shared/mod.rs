@@ -1,4 +1,4 @@
-use notedown_ast::Result;
+use notedown_error::Result;
 use sycamore::prelude::GenericNode;
 
 use crate::{
@@ -10,7 +10,7 @@ pub fn error_inline<G: GenericNode>(msg: &str) -> G {
     let node: G = GenericNode::element("span");
     node.set_class_name("debug-error");
     node.update_inner_text(msg);
-    return node;
+    node
 }
 
 // pub fn error_block<G: GenericNode>(msg: &str) -> G {

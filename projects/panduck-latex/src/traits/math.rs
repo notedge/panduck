@@ -1,7 +1,7 @@
 use super::*;
 
 impl IntoLaTeX for MathNode {
-    fn into_latex<'a>(&'a self, _: &LaTeXConfig, _: &mut LaTeXContext) -> RcDoc<'a, ()> {
+    fn into_latex<'a>(&'a self, _: &LaTeXConfig, _: &mut LaTeXContext) -> PrettyPrint<'a> {
         match self.format {
             MathBackend::LaTeX => render_latex(&self.kind, &self.raw),
             MathBackend::AsciiMath => {
@@ -14,15 +14,15 @@ impl IntoLaTeX for MathNode {
     }
 }
 
-fn render_latex<'a>(kind: &MathKind, tex: &'a str) -> RcDoc<'a, ()> {
+fn render_latex<'a>(kind: &MathKind, tex: &'a str) -> PrettyPrint<'a> {
     match kind {
         MathKind::Inline => {
-            RcDoc::text("$") //
+            text_ref("$") //
                 .append(tex)
                 .append("$")
         }
         MathKind::Display => {
-            RcDoc::text("$") //
+            text_ref("$") //
                 .append("\\displaystyle")
                 .append("{")
                 .append(tex)
@@ -30,7 +30,7 @@ fn render_latex<'a>(kind: &MathKind, tex: &'a str) -> RcDoc<'a, ()> {
                 .append("$")
         }
         MathKind::BlockInline => {
-            RcDoc::text("$$") //
+            text_ref("$$") //
                 .append("\\textstyle")
                 .append("{")
                 .append(tex)
@@ -38,7 +38,7 @@ fn render_latex<'a>(kind: &MathKind, tex: &'a str) -> RcDoc<'a, ()> {
                 .append("$$")
         }
         MathKind::BlockDisplay => {
-            RcDoc::text("$$") //
+            text_ref("$$") //
                 .append(tex)
                 .append("$$")
         }

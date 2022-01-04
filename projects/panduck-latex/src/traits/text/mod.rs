@@ -1,12 +1,10 @@
-use pretty::{Pretty, RcAllocator};
-
 use super::*;
 
 impl IntoLaTeX for TextSpan {
-    fn into_latex<'a>(&'a self, _: &LaTeXConfig, _: &mut LaTeXContext) -> RcDoc<'a, ()> {
+    fn into_latex<'a>(&'a self, _: &LaTeXConfig, _: &mut LaTeXContext) -> PrettyPrint<'a> {
         match self {
-            TextSpan::Empty => empty(),
-            TextSpan::Normal(s) => text(s),
+            TextSpan::Empty => nil(),
+            TextSpan::Normal(s) => text_ref(s),
             TextSpan::Raw(_) => {
                 unimplemented!()
             }
@@ -33,21 +31,23 @@ impl IntoLaTeX for TextSpan {
 }
 
 impl IntoLaTeX for StyleNode {
-    fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> RcDoc<'a, ()> {
-        let inner =
-            RcDoc::intersperse(self.children.iter().map(|x| x.into_latex(cfg, ctx)), block_break())
-                .nest(1)
-                .group();
+    fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
+        let inner = PrettyPrint::intersperse(
+            self.children.iter().map(|x| x.into_latex(cfg, ctx)),
+            block_break(),
+        )
+        .nest(1)
+        .group();
         match self.kind {
             StyleKind::Plain => {
                 unimplemented!()
             }
-            StyleKind::Emphasis => inline_style("emph", inner),
-            StyleKind::Strong => inline_style("textbf", inner),
+            StyleKind::Emphasis => tex_inline_text("emph", inner),
+            StyleKind::Strong => tex_inline_text("textbf", inner),
             StyleKind::ItalicBold => {
                 unimplemented!()
             }
-            StyleKind::Underline => inline_style("underline", inner),
+            StyleKind::Underline => tex_inline_text("underline", inner),
             StyleKind::Undercover => {
                 unimplemented!()
             }
@@ -71,11 +71,4 @@ impl IntoLaTeX for StyleNode {
             }
         }
     }
-}
-
-fn inline_style<'a, A, D>(cmd: &str, inner: D) -> RcDoc<'a, A>
-where
-    D: Pretty<'a, RcAllocator, A>,
-{
-    RcDoc::text(format!("\\{}", cmd)).append("{").append(inner).append(RcDoc::text("}"))
 }

@@ -15,13 +15,13 @@ impl IntoHTML for TextSpan {
             Self::Raw(_) => {
                 unimplemented!()
             }
-            Self::Normal(v) => text(v),
-            Self::Emoji(v) => text(*v),
-            Self::Escaped(v) => text(v.to_string()),
+            Self::Normal(v) => text_ref(v),
+            Self::Emoji(v) => text_ref(*v),
+            Self::Escaped(v) => text_ref(v.to_string()),
             Self::SoftNewline => {
                 unimplemented!()
             }
-            Self::HardNewline => text(cfg.xhtml.tag("br")),
+            Self::HardNewline => text_ref(cfg.xhtml.tag("br")),
             Self::CheckBox(_) => {
                 unimplemented!()
             }

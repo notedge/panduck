@@ -1,4 +1,5 @@
-use notedown_ast::{nodes::CodeNode, Result};
+use notedown_ast::nodes::CodeNode;
+use notedown_error::Result;
 use serde::{Deserialize, Serialize};
 use syntect::{
     easy::HighlightLines,

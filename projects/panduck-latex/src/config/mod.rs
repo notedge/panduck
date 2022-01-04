@@ -1,4 +1,5 @@
-use notedown_ast::{ASTNode, Result};
+use notedown_ast::ASTNode;
+use notedown_error::Result;
 use notedown_rt::NoteVM;
 
 use crate::traits::IntoLaTeX;

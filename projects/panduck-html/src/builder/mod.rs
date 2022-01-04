@@ -1,4 +1,5 @@
-use notedown_ast::{ASTNode, Result};
+use notedown_ast::ASTNode;
+use notedown_error::Result;
 use serde::{Deserialize, Serialize};
 
 use crate::IntoHTML;
