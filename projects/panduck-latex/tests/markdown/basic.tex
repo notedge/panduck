@@ -2,11 +2,15 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{blindtext}
-\usepackage{listings} % used for [Codeblock]
-\usepackage{hyperref}
+\usepackage{listings} % used for `Codeblock`
+\usepackage{hyperref} % used for `SmarkLink`
+\usepackage{csquotes} % used for `QuoteBlock`
 
 \title{Sections and Chapters}
-\author{Panduck}
+\author{
+     User1 \\ email \href{mailto:me@somewhere.com}{me@somewhere.com}
+\and User2 \\ email \href{mailto:someone@somewhere.com}{someone@somewhere.com}
+}
 \date{\today}
 
 \begin{document}
@@ -27,5 +31,13 @@ some text \emph{here} and \textbf{here}
     \item item2
     \item item3
 \end{enumerate}
+
+\begin{displayquote}
+quote items
+
+item2
+
+item3
+\end{displayquote}
 
 \end{document}

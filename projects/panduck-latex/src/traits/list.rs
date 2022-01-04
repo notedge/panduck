@@ -11,6 +11,14 @@ impl IntoLaTeX for ListView {
 
 impl IntoLaTeX for OrderedList {
     /// https://www.overleaf.com/learn/latex/Lists#The_enumerate_environment_for_numbered_.28ordered.29_lists
+    ///
+    /// ```tex
+    /// \begin{itemize}
+    ///     \item[-] ordered items
+    ///     \item[-] item2
+    ///     \item[-] item3
+    /// \end{itemize}
+    /// ```
     fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
         let mut enumerate = text_ref("\\begin{enumerate}")
             .append(cfg.list_config.ordered_style.as_str())
@@ -27,6 +35,14 @@ impl IntoLaTeX for OrderedList {
 
 impl IntoLaTeX for OrderlessList {
     /// https://www.overleaf.com/learn/latex/Lists#The_itemize_environment_for_bulleted_.28unordered.29_lists
+    ///
+    /// ```tex
+    /// \begin{enumerate}[-]
+    ///     \item ordered items
+    ///     \item item2
+    ///     \item item3
+    /// \end{enumerate}
+    /// ```
     fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
         let mut itemize = text_ref("\\begin{itemize}").append(hard_break(1));
         ctx.is_orderless_env = true;
@@ -42,6 +58,11 @@ impl IntoLaTeX for OrderlessList {
 }
 
 impl IntoLaTeX for ListItem {
+    /// https://www.overleaf.com/learn/latex/Lists#Customizing_lists
+    ///
+    /// ```tex
+    /// \item[?] text
+    /// ```
     fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
         let mut item = text_ref("\\item");
         if ctx.is_orderless_env {

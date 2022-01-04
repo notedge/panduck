@@ -4,6 +4,14 @@ pub use self::list::ListConfig;
 
 mod list;
 
+pub const USED_PACKAGES: &str = r#"
+\usepackage[utf8]{inputenc}
+\usepackage{blindtext}
+\usepackage{listings} % used for `Codeblock`
+\usepackage{hyperref} % used for `SmarkLink`
+\usepackage{csquotes} % used for `QuoteBlock`
+"#;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TitleConfig {}
 

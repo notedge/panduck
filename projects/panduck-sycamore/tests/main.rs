@@ -18,7 +18,7 @@ pub fn html_fragment_builder(parser: fn(&str) -> Result<ASTNode>) -> impl FnOnce
     move |source, target| {
         let mut builder = SycamoreConfig::default().into_builder();
         let ast = parser(source)?;
-        assert_eq!(builder.render(ast).to_string(), target);
+        assert_eq!(builder.render(ast), target);
         Ok(())
     }
 }
@@ -27,7 +27,7 @@ pub fn html_standalone_builder(parser: fn(&str) -> Result<ASTNode>) -> impl FnOn
     move |source, target| {
         let mut builder = SycamoreConfig::default().into_builder();
         let ast = parser(source)?;
-        assert_eq!(builder.render_standalone(ast).to_string(), target);
+        assert_eq!(builder.render_standalone(ast), target);
         Ok(())
     }
 }
