@@ -1,5 +1,3 @@
-use crate::{PanduckError, Result};
-use notedown_ast::ASTNode;
 use std::{
     cmp::Ordering,
     collections::{BTreeMap, BTreeSet},
@@ -7,6 +5,10 @@ use std::{
     path::Path,
     rc::Rc,
 };
+
+use notedown_ast::ASTNode;
+
+use crate::{NoteError, Result};
 
 pub struct ExtensionRegistrar {
     arena: Vec<Rc<ExtensionHandler>>,
@@ -56,7 +58,7 @@ impl ExtensionRegistrar {
                 Err(_) => continue,
             }
         }
-        let mut error = PanduckError::unsupported_file(ext);
+        let mut error = NoteError::runtime_error(ext);
         error.set_path(file);
         return Err(error);
     }

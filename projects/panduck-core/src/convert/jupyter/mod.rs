@@ -1,8 +1,11 @@
-use super::*;
-use crate::{ExtensionHandler, ExtensionRegistrar, PanduckError, Result};
+use std::{collections::BTreeSet, iter::FromIterator};
+
 use notedown_ast::ASTKind;
 use serde_json::{Map, Value};
-use std::{collections::BTreeSet, iter::FromIterator};
+
+use crate::{ExtensionHandler, ExtensionRegistrar, NoteError, Result};
+
+use super::*;
 
 pub fn register_jupyter(r: &mut ExtensionRegistrar) {
     let ext = vec!["ipynb"];
@@ -22,7 +25,7 @@ pub fn parse_jupyter(text: &str) -> Result<ASTNode> {
 pub fn jupyter_from_json(root: &Value) -> Result<ASTNode> {
     match root {
         Value::Object(o) => Ok(jupyter_root(o)),
-        _ => Err(PanduckError::parse_error("Not a valid jupyter json")),
+        _ => Err(NoteError::syntax_error("Not a valid jupyter json")),
     }
 }
 
