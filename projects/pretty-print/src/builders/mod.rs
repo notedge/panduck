@@ -15,29 +15,24 @@ pub fn nil<'a>() -> PrettyPrint<'a> {
     RcDoc::nil()
 }
 
-/// text
+/// a text ref, e.g. [`&str`], [`&String`]
 pub fn text_ref<'a, S: Into<Cow<'a, str>>>(s: S) -> PrettyPrint<'a> {
     RcDoc::text(s)
 }
 
-/// text
+/// a owned text, e.g. [`Cow::Owned`], [`String`]
 pub fn text_own<'a, S: Display>(s: S) -> PrettyPrint<'a> {
     RcDoc::as_string(s)
 }
 
-/// skip one line
-pub fn block_break<'a>() -> PrettyPrint<'a> {
-    RcDoc::text("\n\n")
+/// break the line in any cases
+pub fn hard_break<'a>(n: usize) -> PrettyPrint<'a> {
+    RcDoc::text("\n".repeat(n))
 }
 
-/// skip one line
-pub fn newline<'a>() -> PrettyPrint<'a> {
-    RcDoc::text("\n")
-}
-
-/// ` ` in any cases
-pub fn space<'a>() -> PrettyPrint<'a> {
-    RcDoc::space()
+/// add ` ` in any cases
+pub fn space<'a>(n: usize) -> PrettyPrint<'a> {
+    RcDoc::text(" ".repeat(n))
 }
 
 /// - `NIL` if inline

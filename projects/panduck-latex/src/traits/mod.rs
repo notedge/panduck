@@ -44,7 +44,7 @@ impl IntoLaTeX for ASTKind {
     fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
         match self {
             Self::Statements(s) => {
-                PrettyPrint::intersperse(s.iter().map(|x| x.into_latex(cfg, ctx)), block_break())
+                PrettyPrint::intersperse(s.iter().map(|x| x.into_latex(cfg, ctx)), hard_break(2))
                     .group()
             }
             Self::Paragraph(s) => {

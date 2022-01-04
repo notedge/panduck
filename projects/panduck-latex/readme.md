@@ -7,3 +7,10 @@ https://github.com/lbeckman314/md2tex/blob/master/src/lib.rs
 
 https://www.overleaf.com/learn/latex/Bold%2C_italics_and_underlining#Italicized_text
 
+
+```tex
+\usepackage[utf8]{inputenc}
+\usepackage{blindtext} %
+\usepackage{listings}  % used for [`CodeBlock`]
+\usepackage{hyperref}  % used for [`SmarkLink`]
+```

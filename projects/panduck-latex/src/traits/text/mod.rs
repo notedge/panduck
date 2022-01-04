@@ -34,7 +34,7 @@ impl IntoLaTeX for StyleNode {
     fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
         let inner = PrettyPrint::intersperse(
             self.children.iter().map(|x| x.into_latex(cfg, ctx)),
-            block_break(),
+            hard_break(1),
         )
         .nest(1)
         .group();

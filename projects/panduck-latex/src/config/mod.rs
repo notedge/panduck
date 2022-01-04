@@ -5,7 +5,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::traits::IntoLaTeX;
 
-pub use self::{config::ListConfig, context::LaTeXContext};
+pub use self::{
+    config::{ListConfig, TitleConfig},
+    context::LaTeXContext,
+};
 
 mod config;
 mod context;
@@ -19,6 +22,7 @@ pub struct LaTeXBuilder {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LaTeXConfig {
     pub width: usize,
+    pub title_config: TitleConfig,
     pub list_config: ListConfig,
 }
 
