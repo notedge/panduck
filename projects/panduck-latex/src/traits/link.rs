@@ -21,8 +21,8 @@ impl IntoLaTeX for ResourceDescriptor {
 
 impl IntoLaTeX for EmailLink {
     /// `\href{mailto:name@example.org}{name@example.org}`
-    fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
-        todo!()
+    fn into_latex<'a>(&'a self, _: &LaTeXConfig, _: &mut LaTeXContext) -> PrettyPrint<'a> {
+        text_ref("\\href{mailto:").append(&self.text).append("]{").append(&self.text).append("}")
     }
 }
 

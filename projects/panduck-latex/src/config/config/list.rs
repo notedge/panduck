@@ -24,7 +24,6 @@ pub enum OrderlessStyle {
     BlackSquare,
 }
 
-#[allow(clippy::derivable_impls)]
 impl Default for ListConfig {
     fn default() -> Self {
         Self { ordered_style: Default::default(), orderless_style: Default::default() }
