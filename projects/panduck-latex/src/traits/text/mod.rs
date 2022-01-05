@@ -42,11 +42,13 @@ impl IntoLaTeX for StyleNode {
             StyleKind::Plain => {
                 unimplemented!()
             }
+            // https://www.overleaf.com/learn/latex/Bold%2C_italics_and_underlining#Emphasising_text
             StyleKind::Emphasis => tex_inline_macro("emph", inner),
             StyleKind::Strong => tex_inline_macro("textbf", inner),
             StyleKind::ItalicBold => {
                 unimplemented!()
             }
+            // https://www.overleaf.com/learn/latex/Bold%2C_italics_and_underlining#Underlined_text
             StyleKind::Underline => tex_inline_macro("underline", inner),
             StyleKind::Undercover => {
                 unimplemented!()

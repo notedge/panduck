@@ -25,3 +25,7 @@ some text *here* and **here**
 > 
 > item3
 
+## Basic Math Support
+
+$a$
+

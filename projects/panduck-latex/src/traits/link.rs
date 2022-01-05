@@ -27,6 +27,7 @@ impl IntoLaTeX for EmailLink {
 }
 
 impl IntoLaTeX for HyperLink {
+    /// https://www.overleaf.com/learn/latex/Hyperlinks
     fn into_latex<'a>(&'a self, cfg: &LaTeXConfig, ctx: &mut LaTeXContext) -> PrettyPrint<'a> {
         todo!()
     }
