@@ -1,0 +1,110 @@
+<html><head><meta charset="UTF-8"/><meta name="viewport-8" content="'width=device-width, initial-scale=1.0'"/><link rel="stylesheet" href="https://latex.now.sh/style.css"/></head><div class="notedown"><h1>markdown-mode Test Cases</h1><h2>1. Lists</h2><p>Unordered lists:</p><ul><li><p>This is a bullet point.</p><ul><li><p>This is a sub bullet point.</p></li></ul></li><li><p>This is another bullet point.</p></li></ul><p>Ordered lists:</p><ol><li><p>This is an ordered list</p></li><li><p>With a second element.</p></li><li><p>And a forty-fourth element.</p></li><li><p>Remember, Markdown doesn’t care which number you use.</p></li></ol><p>List items with bold and italic:</p><blockquote><ul><li><p>This is a list item <em>in italics</em>, just a test.</p></li><li><p><em>List item in italics.</em></p></li><li><p>This is a list item <strong>in bold</strong>, just a test.</p></li><li><p><strong>List item in bold.</strong></p></li></ul></blockquote><p>Bold and italic phrases at the beginning of lines:</p><p><em>not a list</em>
+<strong>also not a list</strong></p><h2>2. Blockquotes</h2><blockquote><p>this is a test
+of the blockquote mechanism</p></blockquote><h2>3. Two Inline Links on One Line</h2><p><em>Contributed by Ryan Barrett on 2007-07-02</em></p><p>thanks! the new version 1.4 works great. very cool.</p><p>i did notice a minor bug. if there are two inline links in the same line, e.g.
+<a href="bar"></a> baz <a href="bar"></a>, it colors the text between the links (baz) as well.</p><p>i’m guessing this is because the inline link regexp is greedy. if you switch
+it to non-greedy - if elisp can do that - or to something like ‘[<a href="http://jblevins.org/">And this is a valid reference definition!</a>]+]’ if
+not, that might do the trick.</p><h2>4. Empty Inline Links</h2><p><a href=""></a>
+<a href="asdf"></a>
+<a href=""></a></p><h2>5. Bold and Italics on the Same Line</h2><p><em>Contributed by Conal Elliott on 2007-08-27</em></p><p>By the way, here are two syntax-highlighting glitches I’ve seen so far:</p><p><strong>foo and doo</strong> or <em>ziddle zop</em>
+Oh – what’s happening here?</p><h2>6. Reverse Order Italic then Bold</h2><p>Why doesn’t the bold part get picked up?
+<em>ziddle zop</em> or <strong>foo and doo</strong></p><h2>7. Two Inline Links in One Line</h2><p><em>Contributed by Alastair Rankine on 2007-09-10</em></p><p>Thanks for this, I have been waiting for an emacs markdown mode for ages!</p><p>One minor quibble is in the highlighting of inline links. As currently
+(1.4) implemented the presence of a close paren on the same line as an
+inline link will highlight the link and the subsequent text:</p><p>[blah](this bit will be highlighted) and so (will this bit)</p><p>I think this is because of greedy regexes. Here is a simple patch to address.</p><h2>8. Reference-Style Link with a Space</h2><p>Here’s a [link] <a href="http://daringfireball.net/projects/markdown/syntax"></a> with a space between the components.</p><h2>9. Inline Code</h2><p>Single <code><span style="color:#323232;">backtick code</span></code> fragments as well as <code><span style="color:#323232;">double`backtick</span></code> fragments are
+supported.</p><h2>10. Single Underscore and Asterisk</h2><p>This is a _ single underscore and a * single asterisk.
+They should not trigger font locking.</p><h2>11. Double Underscores and Asterisks</h2><p>Neither should a double **asterisk and double__ underscore!</p><h2>12. List-Like Strings in Preformatted Text</h2><p>To make lists look nice, you can wrap items with hanging indents:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">*   Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+</span><span style="color:#323232;">    Aliquam hendrerit mi posuere lectus. Vestibulum enim wisi,
+</span><span style="color:#323232;">    viverra nec, fringilla in, laoreet vitae, risus.
+</span><span style="color:#323232;">*   Donec sit amet nisl. Aliquam semper ipsum sit amet velit.
+</span><span style="color:#323232;">    Suspendisse id sem consectetuer libero luctus adipiscing.
+</span></pre>
+<h2>13. Multi-Line Italic and Bold</h2><p>bold <strong>phrase spanning
+two lines</strong> asdf <strong>same line</strong> test</p><p>italic <em>phrase spanning
+two lines</em> italic <em>same line</em> test</p><h2>14. Reference Links</h2><p>This document was created in GNU Emacs using <a href="http://jrblevin.freeshell.org/software/markdown-mode"></a>.  It provides
+syntax highlighting for <a href="http://daringfireball.net/projects/markdown">Markdown Homepage</a> documents which allows reference-style
+links like these.  The reference definitions can even contain alternate
+text such as <a href="http://reference-link.com/with/alt">Alternate Text</a>.</p><h2>15. Escaping</h2><p>ab *literal asterisks* asdf <em>inside * literal asterisks</em> asd lkj</p><p>ab *<em>this should be italic*</em> yz<br/>ab *<em>this should be italic</em>* yz<br/>ab <em>*this should be italic*</em> yz<br/>ab <em>*this should be italic</em>* yz</p><h2>16. Single Letter and Word on Same Line</h2><p>a single <strong>a</strong> bold letter and bold word <strong>test</strong> asdf<br/>a single <em>a</em> italic letter and italic word <em>test</em> asdf<br/>a single <strong>a</strong> bold letter and bold word <strong>test</strong> asdf<br/>a single <em>a</em> italic letter italic word <em>test</em> asdf</p><h2>17. Hanging Indents</h2><ul><li><p>An exclamation mark: <code><span style="color:#323232;">!</span></code>;</p></li><li><p>followed by a set of square brackets, containing the <code><span style="color:#323232;">alt</span></code>
+attribute text for the image;</p></li></ul><h2>18. Links in Preformatted Text</h2><p>Here’s an example of reference links in action:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">This document was created in GNU Emacs using [markdown-mode][].  It
+</span><span style="color:#323232;">provides syntax highlighting for [Markdown][] documents which allows
+</span><span style="color:#323232;">reference-style links like these.  The reference definitions can even
+</span><span style="color:#323232;">contain alternate text such as [this one][id].
+</span><span style="color:#323232;">
+</span><span style="color:#323232;"> [markdown-mode]: http://jrblevin.freeshell.org/software/markdown-mode
+</span><span style="color:#323232;"> [Markdown]:      http://daringfireball.net/projects/markdown
+</span><span style="color:#323232;"> [id]:            http://reference-link.com/with/alt &quot;Alternate Text&quot;
+</span></pre>
+<h2>19. Slash-Star in Preformatted Text</h2><pre style="background-color:#ffffff;">
+<span style="color:#323232;">svn commit -m &quot;Imported RCS project&quot;
+</span><span style="color:#323232;">svn add image.png binaries/*
+</span><span style="color:#323232;">svn commit -m &quot;Imported additional project files&quot;
+</span></pre>
+<p>This text gets counted as part of the block quote too.  But it can be ended
+by a star-slash: */ It is as if <code><span style="color:#323232;">markdown-mode</span></code> is using C++ style comments.</p><p>Fixed by commit d81138d.</p><h2>20. Underscores in Code Blocks</h2><p><em>Contributed by shindo on 2008-01-20</em></p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">get_something_by_name()
+</span></pre>
+<h2>21. Escaped Characters</h2><p>Escaped backticks: `not code`</p><p>Escaped underscores: don’t_italicize_this</p><p>Escaped asterisks: *also not italic*</p><p>Escaped hash marks:<br/># This is not a heading</p><h2>22. Adjacent Wiki Links</h2><p>[[Two]] [[WikiLinks]] [[InARow]]</p><h2>23. SmartyPants</h2><p>This is a test of “SmartyPants,” a progrm written by John Gruber for
+generating typographically correct HTML entities–ones such as
+the em-dash and ellipsis…</p><h2>24. Horizontal Rules</h2><hr/><hr/><hr/><h2>25. Asterisks and Underscores Across Blocks</h2><p>Asterisks *should</p><p>not match across* block boundaries.</p><p>Underscores _should</p><p>not match across_ block boundaries.</p><p>Double Asterisks **should</p><p>not match across** block boundaries.</p><p>Double underscores __should</p><p>not match across__ block boundaries.</p><p>But, <em>this should still match</em>.</p><p>So should <em>this</em>.</p><p>Addressed by commit d81138d.</p><h2>26. Underscores Within Words</h2><p>Code fragments <code><span style="color:#323232;">can_have_underscores_inside_like</span></code> this.</p><h2>27. Code Blocks Spanning Lines</h2><p>Markdown allows <code><span style="color:#323232;">code fragments</span></code> to span across lines.</p><p>Let’s make sure that <code><span style="color:#323232;">double` backtick`code fragments</span></code> work
+this way too.</p><p>However, they should `not</p><p>match` across blocks.</p><p>Here’s another <code><span style="color:#323232;">valid</span></code> one.</p><h2>28. Pre Blocks and Nested Lists</h2><ul><li><p>List level 1 item 1</p></li><li><p>List level 1 item 2</p><p>This is a second paragraph, part of item 2.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">This nested pre block should match
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">    So should this
+</span></pre>
+<p>Now we move back to the list.</p></li><li><p>List level 1 item 3</p><ul><li><p>List level 2 item 1</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">Nested pre block
+</span></pre>
+</li><li><p>List level 2 item 2</p><ul><li><p>List level 3 item 1</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">Nested pre block
+</span></pre>
+</li></ul></li></ul></li></ul><h2>29. Colon After Wiki Link</h2><p>[[AnotherLink]]:note</p><h2>30. Incorrect Parsing of List Paragraph</h2><p><em>Contributed by Luciano Gerber <a href="mailto:garopaba_uk@yahoo.co.uk"></a> on April 4, 2012.</em></p><p>It is interesting to see what happens when one queries
+<code><span style="color:#323232;">social upheaval</span></code> and <code><span style="color:#323232;">protopalatial era</span></code>.</p><ul><li><p><code><span style="color:#323232;">social upheaval</span></code>: the following queries have been tried:</p><p>social upheaval subClassOf</p></li></ul><p>The preceding text should not be matched as a preformatted block.</p><h2>31. Footnotes</h2><p>This is a footnote marker,[^1] but this is not.<a href="http://jblevins.org/">And this is a valid reference definition!</a></p><h2>32. Carat as Implicit Reference Link</h2><p>This is a valid markdown link: <a href="http://jblevins.org/">And this is a valid reference definition!</a></p><h2>33. Email Address Inside Bold and Italic Spans</h2><p><em>Lorem <a href="mailto:ipsum@dolor.sit"></a> amet.</em></p><p><strong>Lorem <a href="mailto:ipsum@dolor.sit"></a> amet.</strong></p><h2>34. URL Inside Bold and Italic Spans</h2><p><em>markdown-mode homepage <a href="http://jblevins.org/projects/markdown-mode/"></a></em></p><p><strong>markdown-mode homepage <a href="http://jblevins.org/projects/markdown-mode/"></a></strong></p><h2>35. Complex Preformatted Code Block</h2><pre style="background-color:#ffffff;">
+<span style="color:#323232;">class Employee &lt; ActiveRecord::Base
+</span><span style="color:#323232;">  attr_accessible :github_username, :name
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">  def self.syncify!
+</span><span style="color:#323232;">    begin
+</span><span style="color:#323232;">      employee_sync = GitOrganized::GithubEmployeeSync.new(
+</span><span style="color:#323232;">        GitOrganized::Organization.new(
+</span><span style="color:#323232;">          GitOrganized.config.default_org,
+</span><span style="color:#323232;">          [&quot;employees-pull&quot;, &quot;employees-push&quot;]
+</span><span style="color:#323232;">        ),
+</span><span style="color:#323232;">        Sources.new
+</span><span style="color:#323232;">      )
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">      employee_sync.sync
+</span><span style="color:#323232;">    rescue Github::Error::ServiceError =&gt; e
+</span><span style="color:#323232;">      retry
+</span><span style="color:#323232;">    end
+</span><span style="color:#323232;">  end
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">  after_save do |employee| Employee.syncify! end
+</span><span style="color:#323232;">  after_destroy do |employee| Employee.syncify! end
+</span><span style="color:#323232;">end
+</span></pre>
+<h2>36. Fenced Code Blocks</h2><p>Fenced code blocks begin with three or more tildes and end with a line
+with at least as many tildes.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">program hello
+</span><span style="color:#323232;">  implicit none
+</span><span style="color:#323232;">  print &#39;(a)&#39;, &#39;Hello, world!&#39;
+</span><span style="color:#323232;">end program hello
+</span></pre>
+<p>They may also have a <code><span style="color:#323232;">lang</span></code> attribute.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">program hello
+</span><span style="color:#323232;">  implicit none
+</span><span style="color:#323232;">  print &#39;(a)&#39;, &#39;Hello, world!&#39;
+</span><span style="color:#323232;">end program hello
+</span></pre>
+<p>In Kramdown, one specifies the language identifier as follows:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">program hello
+</span><span style="color:#323232;">  implicit none
+</span><span style="color:#323232;">  print &#39;(a)&#39;, &#39;Hello, world!&#39;
+</span><span style="color:#323232;">end program hello
+</span></pre>
+<p>or with a Maruku-style inline attribute list</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">program hello
+</span><span style="color:#323232;">  implicit none
+</span><span style="color:#323232;">  print &#39;(a)&#39;, &#39;Hello, world!&#39;
+</span><span style="color:#323232;">end program hello
+</span></pre>
+<p>{: .language-fortran}</p></div></html>

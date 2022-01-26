@@ -10,9 +10,9 @@ edition = "2021"
 
 [dependencies]
 notedown_ast = "0.16.1"
-notedown-error = "1.1.2"
-notedown-rt = "0.3.0"
-serde = {version = "1.0.133", features = ["derive"]}
+notedown-error = "1.1.4"
+notedown-rt = "0.3.1"
+serde = { version = "1.0.133", features = ["derive"] }
 
 [dependencies.panduck-pp]
 version = "0"

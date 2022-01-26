@@ -1,0 +1,33 @@
+[package]
+name = "panduck-dioxus"
+version = "0.1.0"
+authors = ["Aster <192607617@qq.com>"]
+description = "use panduck to generate dioxus vdom"
+repository = "https://github.com/oovm/panduck"
+readme = "../../readme.md"
+license = "MPL-2.0"
+edition = "2018"
+
+[dependencies]
+notedown_ast = "0.16.1"
+notedown-error = "1.1.2"
+
+[dependencies.panduck-html]
+version = "0.1.0"
+path = "../panduck-html"
+default-features = false
+
+[dependencies.dioxus]
+version = "0.1.7"
+features = ["ssr"]
+
+[dev-dependencies.panduck-core]
+version = "0.1"
+path = "../panduck-core"
+features = ["markdown", "html", "rst"]
+
+[features]
+default = ["server"]
+server = ["panduck-html/katex", "panduck-html/syntect", ]
+
+

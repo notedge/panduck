@@ -1,0 +1,176 @@
+<html><head><meta charset="UTF-8"/><meta name="viewport-8" content="'width=device-width, initial-scale=1.0'"/><link rel="stylesheet" href="https://latex.now.sh/style.css"/></head><div class="notedown"><value>Null</value><p><h1>Example .rst File</h1><p>If you work with edX documentation source files, you might find this file helpful as a reference. This file contains examples of .rst formatting.</p><p>Explanations and more context for each type of element are provided in :ref:`Work with edX Documentation Source Files`.</p><p>This file covers the following topics.</p><value>Null</value><p>  :local:   :depth: 1</p><p><h1>Heading Levels</h1><p>#############
+Heading 1
+#############
+
+*************
+Heading 2
+*************
+
+===========
+Heading 3
+===========
+
+Heading 4
+************
+
+Heading 5
+===========
+
+Heading 6
+~~~~~~~~~~~
+</p></p><p><h1>Paragraph Text and Commented Text</h1><p>This is an example of regular text in paragraph form. There are no indents. As a best practice, break lines at about 80 characters, so that each line has its own line number for commenting in reviews.</p><value>Null</value><p>Boldface is used for labels that are visible in the user interface. The UI text is surrounded by double asterisks. For example, <strong>bold</strong>.</p><p>Italics are rarely used. Text surrounded by single asterisks is rendered in <em>italics</em>.</p><p>Monospace text is used for code examples. Text surrounded by double grave accent characters is rendered in monospace font.</p><p>.. comments can be added in a file by starting a line with 2 periods and a space.</p><p>In English source files, look for comments addressed to translators from writers.</p><p>.. Translators:  In this code example, do not translate such and such.</p></p><p><h1>Ordered and Unordered Lists</h1><p>Use hash symbols for ordered lists.</p><p>::</p><p>#. Select <strong>Advanced Settings</strong>. #. Find the <strong>Course Advertised Start Date</strong> policy key. #. Enter the value you want to display.</p><value>Null</value><p> Ordered lists usually use numerals. Nested ordered lists (ordered lists inside  other ordered lists) use letters.</p><p>Use asterisks for unordered (bulleted) lists.</p><p>::</p><value>Null</value><p><h1>Nested Lists or Content</h1><p>You can include content including additional lists and code examples inside lists.</p><p><h1>Unordered List inside Ordered List</h1><p>To include an unordered list inside an ordered list, indent the unordered list three spaces. The first bullet in the unordered list must be flush with the text in the ordered list.</p><p>#. Review your entry to verify that the key is accurate and that it is
+   surrounded by quotation marks. If there is a list of keys, they must be
+   comma separated.
+
+   * In this example, the key for the Annotation Problem tool is the only
+     value in the list.
+
+   * In this example, the key for the Annotation Problem tool is added at
+     the beginning of a list of other keys.
+
+#. Select **Save Changes**.
+</p><img src="/Images/Lists_UL_inside_OL.png"/><p> :width: 500  :alt: An unordered (bulleted) list inside an ordered (numbered) list.</p></p><p><h1>Ordered List inside Unordered List</h1><p>To include an ordered list inside an unordered list, indent the ordered list two spaces. The first number or letter of the ordered list must be flush with the text in the unordered list.</p><p>* Review your entry to verify that the key is accurate and that it is
+  surrounded by quotation marks. If there is a list of keys, they must be comma
+  separated.
+
+  #. In this example, the key for the Annotation Problem tool is the only
+     value in the list.
+
+  #. In this example, the key for the Annotation Problem tool is added at the
+     beginning of a list of other keys.
+
+* Select **Save Changes**.
+</p><value>Null</value><value>Null</value><value>Null</value></p><p><h1>Unordered List inside Unordered List</h1><p>To include an unordered list inside another unordered list, indent the second unordered list two spaces. The first bullet of the second unordered list must be flush with the text in the unordered list.</p><p>* Review your entry to verify that the key is accurate and that it is
+  surrounded by quotation marks. If there is a list of keys, they must be
+  comma separated.
+
+  #. In this example, the key for the Annotation Problem tool is the only
+     value in the list.
+
+  #. In this example, the key for the Annotation Problem tool is added at the
+     beginning of a list of other keys.
+
+* Select **Save Changes**.
+</p><img src="/Images/Lists_UL_inside_UL.png"/><p> :width: 500  :alt: An ordered (numbered) list inside an unordered (bulleted) list.</p></p><p><h1>Ordered List inside Ordered List</h1><p>To include another ordered list inside an ordered list, indent the second ordered list three spaces. The second ordered list must be flush with the text in the numbered list. The first ordered list uses numerals, and the second uses letters.</p><p>#. Review your entry to verify that the key is accurate and that it is
+   surrounded by quotation marks. If there is a list of keys, they must be
+   comma separated.
+
+   #. In this example, the key for the Annotation Problem tool is the only
+      value in the list.
+
+   #. In this example, the key for the Annotation Problem tool is added at
+      the beginning of a list of other keys.
+
+#. Select **Save Changes**.
+</p><value>Null</value><value>Null</value><value>Null</value></p><p><h1>Code, Images, and Other Content inside Lists</h1><p>To include content such as code or an image inside a list, position the code or image directive flush with the text in the list. That is, indent three spaces for ordered lists and two spaces for unordered lists.</p><p>#. In the ``lms.yml`` and ``studio.yml`` files, set the value of
+   ``CERTIFICATES_HTML_VIEW`` within the ``FEATURES`` object  to ``true``.
+
+   .. code-block:: bash
+
+     "FEATURES": {
+         ...
+         'CERTIFICATES_HTML_VIEW': true,
+         ...
+     }
+
+#. Save the ``lms.yml`` and ``studio.yml`` files.
+</p></p></p></p><p><h1>Conditional Text</h1><p>To conditionalize a single paragraph, use either the only:: Partners or the only:: Open_edX directive, and indent the paragraph under the directive. You can add the conditional text as regular text or as a note.</p><p>Make sure to indent the paragraph under the directive.</p><p>.. only:: Partners
+
+ Data about course enrollment is available from edX Insights. You can access
+ Insights from the instructor dashboard for your live course: after you select
+ **Instructor**, follow the link in the banner at the top of each page. For
+ more information, see `Using edX Insights`_.
+
+.. only:: Open_edX
+
+    .. note::
+      If you want to require an entrance exam for your course, you also create
+      the exam in the course outline. Before you can create an exam, you must
+      set your course to require an entrance exam in Studio. For more
+      information, see :ref:`Require an Entrance Exam`.
+</p><p>To conditionalize more than a paragraph, use either the only:: Partners or the only:: Open_edX directive, and then use an include:: directive indented under the only directive.</p><p>.. only:: Open_edX
+
+   .. include:: ../../../shared/building_and_running_chapters/running_course/Section_course_student.rst
+</p></p><p><h1>Notes and Warnings</h1><p>.. note::
+   This is note text. If note text runs over a line, make sure the lines wrap
+   and are indented to the same level as the note tag. If formatting is
+   incorrect, part of the note might not render in the HTML output.
+
+   Notes can have more than one paragraph. Successive paragraphs must indent
+   to the same level as the rest of the note.
+</p><value>Null</value><p>   Notes can have more than one paragraph. Successive paragraphs must indent to    the same level as the rest of the note.</p><p>.. warning::
+   Warnings are formatted in the same way as notes. In the same way, lines
+   must be broken and indented under the warning tag.
+</p><value>Null</value></p><p><h1>Cross-References</h1><p>In edX documents, you can include cross-references to other locations in the same edX document, to locations in other edX documents (such as a cross- reference from a location in the <em>Building and Running an edX Course</em> guide to a location in the <em>EdX Learner's Guide</em>), to JIRA stories, and to external websites. In this section, "EdX documents" refers to the resources, including guides and tutorials, that are listed on docs.edx.org.</p><p>For more information about creating cross-references using RST and Sphinx, see <value>Null</value> in the online Sphinx documentation.</p><p><h1>Cross-References to Locations in the Same Document</h1><p>Cross-references to locations in the same document use anchors that are located above the heading for each topic or section. Anchors can contain numbers, letters, spaces, underscores, and hyphens, but cannot include punctuation. Anchors use the following syntax.</p><p>.. _Anchor Text:
+</p><p>The following example shows an anchor for a section, followed by the heading for that section. SFD SN Keyboard Shortcuts is the anchor text.</p><p>.. _SFD SN Keyboard Shortcuts:
+
+******************************
+Keyboard Shortcuts for Notes
+******************************
+</p><p>To create cross-references to locations in the same document, you can use the anchor only, or you can use your own text. The anchor text is never visible in output. It is replaced by the text of the heading that follows the anchor or the text that you specify.</p><p><h1>Cross-References Using the Anchor Only</h1><p>To add a cross-reference to a specific location in a document and use the text of the heading for that location as link text, use :ref:`Anchor Text` syntax, as in the following example.</p><p>For more information about using keyboard shortcuts, see :ref:`SFD SN
+Keyboard Shortcuts`.
+</p><p>In this example, "SFD SN Keyboard Shortcuts" is the anchor text for a section that is titled "Keyboard Shortcuts for Notes". Readers will see the following text, and "Keyboard Shortcuts for Notes" will be an active link.</p><p>For more information about using keyboard shortcuts, see Keyboard Shortcuts
+for Notes.
+</p></p><p><h1>Cross-References Using Specified Link Text</h1><p>For internal cross-references that use text other than the heading for the section that you're linking to, use :ref:`specified text&lt;Anchor Text>` syntax, as in the following example.</p><p>If you want to, you can use :ref:`keyboard shortcuts&lt;SFD SN Keyboard
+Shortcuts>` to create, edit, and view notes.
+</p><value>Null</value><p>  Do not include a space between the last word of the link text and the opening   angle bracket for the anchor text.</p><p>In this example, "keyboard shortcuts" is the link text, and "SFD SN Keyboard Shortcuts" is the anchor text for a section that is titled "Keyboard Shortcuts for Notes". Readers will see the following text, and "keyboard shortcuts" will be an active link.</p><p>If you want to, you can use keyboard shortcuts to create, edit, and view your
+notes.
+</p></p></p><p><h1>Cross-References to Locations in Different edX Documents</h1><p>You can create cross-references between different edX documents. For example, you can create a link in <em>Building and Running an edX Course</em> to a topic in the <em>EdX Learner's Guide</em>. To do this, you use the intersphinx map ID of the document that you want to link to and the anchor text for the section you want. The cross-reference uses the following syntax.</p><p>:ref:`intersphinx_map_ID:Anchor Name`
+</p><p>For example:</p><p>:ref:`partnercoursestaff:Release Dates`
+</p><p>To find the intersphinx map ID for the document that you want, follow these steps.</p><p>#. Open the conf.py file in the <value>Null</value> folder, and then    locate the following line.</p><p>   intersphinx_mapping = {</p><p>#. In the list that follows this line, find the ID for the document that you    want. The text between the single quotation marks (') at the beginning of    each line is the intersphinx map ID for the document.</p><p>The following intersphinx map IDs are the most frequently used.</p><value>Null</value><p>  * - Map ID     - Document   * - partnercoursestaff     - <em>Building and Running an edX Course</em>   * - opencoursestaff     - <em>Building and Running an Open edX Course</em>   * - learners     - <em>EdX Learner's Guide</em>   * - openlearners     - <em>Open edX Learner's Guide</em>   * - data     - <em>EdX Research Guide</em>   * - insights     - <em>Using edX Insights</em>   * - installation     - <em>Installing, Configuring, and Running the Open edX Platform</em>   * - opendevelopers     - <em>Open edX Developer's Guide</em>   * - partnerreleasenotes     - Partner release notes   * - openreleasenotes     - Open edX release notes</p></p><p><h1>Cross-References to JIRA</h1><p>For cross-references to JIRA tickets, use the :jira:`PROJECT-ticketnumber` syntax, as in the following example.</p><p>For more information, see :jira:`DOC-2316`.
+</p><p>Note that jira replaces ref for these links.</p><p>Readers will see the following text, and "DOC-2316" will be an active link.</p><p>For more information, see DOC-2316.</p></p><p><h1>Cross-References to External Web Pages</h1><p>A cross-reference to an external web page has several elements.</p><value>Null</value><value>Null</value><p>To create an external cross-reference, follow these steps.</p><p>#. In the paragraph where you want the cross-reference, add the text that you    want to use for the link, formatted as follows (where "Release Pages" is the    link text). This creates an anchor out of that text.</p><p>   ::</p><p>      The edX engineering wiki <value>Null</value> provide access to detailed       information about every change made to the edx-platform GitHub       repository.</p><p>#. In the file that contains the cross-reference, add an include directive    for the edx-documentation/en_us/links/links.rst file if one does not    already exist. These include directives are typically at the end of the    file.</p><p>   ::</p><p>      .. include:: ../../links/links.rst</p><p>   .. note::</p><p>      The path to the links.rst file depends on the location of the file where       you are creating the link. For example, the path might be       ../../../links/links.rst or ../links/links.rst.</p><p>#. In the edx-documentation/en_us/links/links.rst file, add an entry for    the anchor text and the URL of the external website, formatted as follows.    Make sure that the anchor text in this file matches the anchor text in the    file that contains the cross-reference exactly, including capitalization.</p><p>    ::</p><p>      .. _Release Pages: <value>Null</value></p><p>Readers will see the following text. "Release Pages" will be an active link.</p><p>The edX engineering wiki Release Pages provide access to detailed
+information about every change made to the edx-platform GitHub
+repository.
+</p></p></p><p><h1>Image References</h1><p><h1>Image references look like this.</h1><p>  .. image:: /Images/Course_Outline_LMS.png      :width: 100      :alt: A screen capture showing the elements of the course outline in the LMS.</p><p>Image links can include optional specifications such as height, width, or scale. Alternative text for screen readers is required for each image. Provide text that is useful to someone who might not be able to see the image.</p><value>Null</value></p></p><p><h1>Tables</h1><p>Each example in this section shows the raw formatting for the table followed by the table as it would render (if you are viewing this file as part of the Style Guide).</p><p><h1>Example of a table with an empty cell</h1><p><h1>The empty cell is the second column in the first row of this table.</h1><p>  .. list-table::      :widths: 25 25 50</p><p>   * - Annotation Problem      -      - Annotation problems ask students to respond to questions about a        specific block of text. The question appears above the text when the        student hovers the mouse over the highlighted text so that students can        think about the question as they read.    * - Example Poll      - Conditional Module      - You can create a conditional module to control versions of content that         groups of students see. For example, students who answer "Yes" to a         poll question then see a different block of text from the students who         answer "No" to that question.    * - Example JavaScript Problem      - Custom JavaScript      - Custom JavaScript display and grading problems (also called *custom        JavaScript problems* or <em>JS input problems</em>) allow you to create a        custom problem or tool that uses JavaScript and then add the problem or        tool directly into Studio.</p><value>Null</value></p></p><p><h1>Example of a table with a header row</h1><p>.. list-table::
+   :widths: 15 15 70
+   :header-rows: 1
+
+   * - First Name
+     - Last Name
+     - Residence
+   * - Elizabeth
+     - Bennett
+     - Longbourne
+   * - Fitzwilliam
+     - Darcy
+     - Pemberley
+</p><value>Null</value></p><p><h1>Example of a table with a boldface first column</h1><p>.. list-table::
+   :widths: 15 15 70
+   :stub-columns: 1
+
+   * - First Name
+     - Elizabeth
+     - Fitzwilliam
+   * - Last Name
+     - Bennett
+     - Darcy
+   * - Residence
+     - Longboure
+     - Pemberley
+</p><value>Null</value></p><p><h1>Example of a table with a cell that includes an unordered list</h1><p>The blank lines before and after the unordered list are critical for the list to render correctly.</p><p>.. list-table::
+   :widths: 15 15 60
+   :header-rows: 1
+
+   * - Field
+     - Type
+     - Details
+   * - ``correct_map``
+     - dict
+     - For each problem ID value listed by ``answers``, provides:
+
+       * ``correctness``: string; 'correct', 'incorrect'
+       * ``hint``: string; Gives optional hint. Nulls allowed.
+       * ``hintmode``: string; None, 'on_request', 'always'. Nulls allowed.
+       * ``msg``: string; Gives extra message response.
+       * ``npoints``: integer; Points awarded for this ``answer_id``. Nulls allowed.
+       * ``queuestate``: dict; None when not queued, else ``{key:'', time:''}``
+         where ``key`` is a secret string dump of a DateTime object in the form
+         '%Y%m%d%H%M%S'. Nulls allowed.
+
+   * - ``grade``
+     - integer
+     - Current grade value.
+   * - ``max_grade``
+     - integer
+     - Maximum possible grade value.
+</p><value>Null</value></p></p><p><h1>Code Formatting</h1><p><h1>Inline code</h1><p>In inline text, any text can be formatted as code (monospace font) by enclosing the selection within a pair of double "grave accent" characters (`). For example, ``these words`` are formatted in a monospace font when the documentation is output as PDF or HTML.</p></p><p><h1>Code blocks</h1><p>To set text in a code block, end the previous paragaph with 2 colons, leave one line before the intended code block, and make sure the code block is indented beyond the first colon. ::</p><p> For example, this is the introductory paragraph  ::</p><p>  &lt;p>and this is the code block following.&lt;/p></p><p>Alternatively, use the code-block tag. Optionally, indicate the type of code after the 2 colons in the tag, which results in the tags within the code block being displayed in different colors. ::</p><p> .. code-block:: xml</p><p>          &lt;problem>               &lt;annotationresponse>                   &lt;annotationinput>                     &lt;text>PLACEHOLDER: Text of annotation&lt;/text>                       &lt;comment>PLACEHOLDER: Text of question&lt;/comment>                       &lt;comment_prompt>PLACEHOLDER: Type your response below:&lt;/comment_prompt>                       &lt;tag_prompt>PLACEHOLDER: In your response to this question, which tag below                       do you choose?&lt;/tag_prompt>                     &lt;options>                       &lt;option choice="incorrect">PLACEHOLDER: Incorrect answer (to make this                       option a correct or partially correct answer, change choice="incorrect"                       to choice="correct" or choice="partially-correct")&lt;/option>                       &lt;option choice="correct">PLACEHOLDER: Correct answer (to make this option                       an incorrect or partially correct answer, change choice="correct" to                       choice="incorrect" or choice="partially-correct")&lt;/option>                       &lt;option choice="partially-correct">PLACEHOLDER: Partially correct answer                       (to make this option a correct or partially correct answer,                       change choice="partially-correct" to choice="correct" or choice="incorrect")                       &lt;/option>                     &lt;/options>                   &lt;/annotationinput>               &lt;/annotationresponse>               &lt;solution>                 &lt;p>PLACEHOLDER: Detailed explanation of solution&lt;/p>               &lt;/solution>             &lt;/problem></p><value>Null</value></p></p></p></div></html>

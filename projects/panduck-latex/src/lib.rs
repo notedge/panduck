@@ -1,6 +1,6 @@
 #![allow(clippy::derivable_impls)]
 
-pub use config::{LaTeXBuilder, LaTeXConfig, LaTeXContext, *};
+pub use builder::{LaTeXBuilder, LaTeXConfig, LaTeXContext, *};
 
-mod config;
+mod builder;
 mod traits;

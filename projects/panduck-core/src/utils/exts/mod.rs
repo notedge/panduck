@@ -59,7 +59,7 @@ impl ExtensionRegistrar {
             }
         }
         let mut error = NoteError::runtime_error(ext);
-        error.set_path(file);
+        // error.set_path(file);
         return Err(error);
     }
 }

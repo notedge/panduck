@@ -1,0 +1,292 @@
+<html><head><meta charset="UTF-8"/><meta name="viewport-8" content="'width=device-width, initial-scale=1.0'"/><link rel="stylesheet" href="https://latex.now.sh/style.css"/></head><div class="notedown"><h3>Regression tests</h3><p>Issue #113: EOL character weirdness on Windows
+(Important: first line ends with CR + CR + LF)</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">line1
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">line2
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;line1&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;line2&lt;/p&gt;
+</span></pre>
+<p>Issue #114: cmark skipping first character in line
+(Important: the blank lines around “Repeatedly” contain a tab.)</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">By taking it apart
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">- alternative solutions
+</span><span style="color:#323232;">→
+</span><span style="color:#323232;">Repeatedly solving
+</span><span style="color:#323232;">→
+</span><span style="color:#323232;">- how techniques
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;By taking it apart&lt;/p&gt;
+</span><span style="color:#323232;">&lt;ul&gt;
+</span><span style="color:#323232;">&lt;li&gt;alternative solutions&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ul&gt;
+</span><span style="color:#323232;">&lt;p&gt;Repeatedly solving&lt;/p&gt;
+</span><span style="color:#323232;">&lt;ul&gt;
+</span><span style="color:#323232;">&lt;li&gt;how techniques&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ul&gt;
+</span></pre>
+<p>Issue jgm/CommonMark#430:  h2..h6 not recognized as block tags.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">&lt;h1&gt;lorem&lt;/h1&gt;
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&lt;h2&gt;lorem&lt;/h2&gt;
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&lt;h3&gt;lorem&lt;/h3&gt;
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&lt;h4&gt;lorem&lt;/h4&gt;
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&lt;h5&gt;lorem&lt;/h5&gt;
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&lt;h6&gt;lorem&lt;/h6&gt;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;h1&gt;lorem&lt;/h1&gt;
+</span><span style="color:#323232;">&lt;h2&gt;lorem&lt;/h2&gt;
+</span><span style="color:#323232;">&lt;h3&gt;lorem&lt;/h3&gt;
+</span><span style="color:#323232;">&lt;h4&gt;lorem&lt;/h4&gt;
+</span><span style="color:#323232;">&lt;h5&gt;lorem&lt;/h5&gt;
+</span><span style="color:#323232;">&lt;h6&gt;lorem&lt;/h6&gt;
+</span></pre>
+<p>Issue jgm/commonmark.js#109 - tabs after setext header line</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">hi
+</span><span style="color:#323232;">--→
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;h2&gt;hi&lt;/h2&gt;
+</span></pre>
+<p>Issue #177 - incorrect emphasis parsing</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">a***b* c*
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;a*&lt;em&gt;&lt;em&gt;b&lt;/em&gt; c&lt;/em&gt;&lt;/p&gt;
+</span></pre>
+<p>Issue #193 - unescaped left angle brackets in link destination</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">[a]
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[a]: &lt;te&lt;st&gt;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;[a]&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;[a]: &amp;lt;te&lt;st&gt;&lt;/p&gt;
+</span></pre>
+<p>Issue #192 - escaped spaces in link destination</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">[a](te\ st)
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;[a](te\ st)&lt;/p&gt;
+</span></pre>
+<p>Issue github/github#76615:  multiple delimiter combinations gets sketchy</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">~~**_`this`_**~~  
+</span><span style="color:#323232;">~~***`this`***~~  
+</span><span style="color:#323232;">~~___`this`___~~
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">**_`this`_**  
+</span><span style="color:#323232;">***`this`***  
+</span><span style="color:#323232;">___`this`___
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">~~**_this_**~~  
+</span><span style="color:#323232;">~~***this***~~  
+</span><span style="color:#323232;">~~___this___~~
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">**_this_**  
+</span><span style="color:#323232;">***this***  
+</span><span style="color:#323232;">___this___
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;&lt;del&gt;&lt;strong&gt;&lt;em&gt;&lt;code&gt;this&lt;/code&gt;&lt;/em&gt;&lt;/strong&gt;&lt;/del&gt;&lt;br /&gt;
+</span><span style="color:#323232;">&lt;del&gt;&lt;em&gt;&lt;strong&gt;&lt;code&gt;this&lt;/code&gt;&lt;/strong&gt;&lt;/em&gt;&lt;/del&gt;&lt;br /&gt;
+</span><span style="color:#323232;">&lt;del&gt;&lt;em&gt;&lt;strong&gt;&lt;code&gt;this&lt;/code&gt;&lt;/strong&gt;&lt;/em&gt;&lt;/del&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;strong&gt;&lt;em&gt;&lt;code&gt;this&lt;/code&gt;&lt;/em&gt;&lt;/strong&gt;&lt;br /&gt;
+</span><span style="color:#323232;">&lt;em&gt;&lt;strong&gt;&lt;code&gt;this&lt;/code&gt;&lt;/strong&gt;&lt;/em&gt;&lt;br /&gt;
+</span><span style="color:#323232;">&lt;em&gt;&lt;strong&gt;&lt;code&gt;this&lt;/code&gt;&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;del&gt;&lt;strong&gt;&lt;em&gt;this&lt;/em&gt;&lt;/strong&gt;&lt;/del&gt;&lt;br /&gt;
+</span><span style="color:#323232;">&lt;del&gt;&lt;em&gt;&lt;strong&gt;this&lt;/strong&gt;&lt;/em&gt;&lt;/del&gt;&lt;br /&gt;
+</span><span style="color:#323232;">&lt;del&gt;&lt;em&gt;&lt;strong&gt;this&lt;/strong&gt;&lt;/em&gt;&lt;/del&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;&lt;strong&gt;&lt;em&gt;this&lt;/em&gt;&lt;/strong&gt;&lt;br /&gt;
+</span><span style="color:#323232;">&lt;em&gt;&lt;strong&gt;this&lt;/strong&gt;&lt;/em&gt;&lt;br /&gt;
+</span><span style="color:#323232;">&lt;em&gt;&lt;strong&gt;this&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+</span></pre>
+<p>Issue #527 - meta tags in inline contexts</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">City:
+</span><span style="color:#323232;">&lt;span itemprop=&quot;contentLocation&quot; itemscope itemtype=&quot;https://schema.org/City&quot;&gt;
+</span><span style="color:#323232;">  &lt;meta itemprop=&quot;name&quot; content=&quot;Springfield&quot;&gt;
+</span><span style="color:#323232;">&lt;/span&gt;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;City:
+</span><span style="color:#323232;">&lt;span itemprop=&quot;contentLocation&quot; itemscope itemtype=&quot;https://schema.org/City&quot;&gt;
+</span><span style="color:#323232;">&lt;meta itemprop=&quot;name&quot; content=&quot;Springfield&quot;&gt;
+</span><span style="color:#323232;">&lt;/span&gt;&lt;/p&gt;
+</span></pre>
+<p>cmark-gfm strikethrough rules</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">~Hi~ Hello, world!
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;&lt;del&gt;Hi&lt;/del&gt; Hello, world!&lt;/p&gt;
+</span></pre>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">This ~text~ ~~is~~ ~~~curious~~~.
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;This &lt;del&gt;text&lt;/del&gt; &lt;del&gt;is&lt;/del&gt; ~~~curious~~~.&lt;/p&gt;
+</span></pre>
+<p><code><span style="color:#323232;">~</span></code> should not be escaped in href — <a href="https://github.com/github/markup/issues/311"></a></p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">[x](http://members.aon.at/~nkehrer/ibm_5110/emu5110.html)
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;&lt;a href=&quot;http://members.aon.at/~nkehrer/ibm_5110/emu5110.html&quot;&gt;x&lt;/a&gt;&lt;/p&gt;
+</span></pre>
+<p>Footnotes in tables</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">A footnote in a paragraph[^1]
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">| Column1   | Column2 |
+</span><span style="color:#323232;">| --------- | ------- |
+</span><span style="color:#323232;">| foot [^1] | note    |
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^1]: a footnote
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;A footnote in a paragraph&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-1&quot; id=&quot;fnref-1&quot; data-footnote-ref&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;table&gt;
+</span><span style="color:#323232;">&lt;thead&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;th&gt;Column1&lt;/th&gt;
+</span><span style="color:#323232;">&lt;th&gt;Column2&lt;/th&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/thead&gt;
+</span><span style="color:#323232;">&lt;tbody&gt;
+</span><span style="color:#323232;">&lt;tr&gt;
+</span><span style="color:#323232;">&lt;td&gt;foot &lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-1&quot; id=&quot;fnref-1-2&quot; data-footnote-ref&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/td&gt;
+</span><span style="color:#323232;">&lt;td&gt;note&lt;/td&gt;
+</span><span style="color:#323232;">&lt;/tr&gt;
+</span><span style="color:#323232;">&lt;/tbody&gt;
+</span><span style="color:#323232;">&lt;/table&gt;
+</span><span style="color:#323232;">&lt;section class=&quot;footnotes&quot; data-footnotes&gt;
+</span><span style="color:#323232;">&lt;ol&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-1&quot;&gt;
+</span><span style="color:#323232;">&lt;p&gt;a footnote &lt;a href=&quot;#fnref-1&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt; &lt;a href=&quot;#fnref-1-2&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;sup class=&quot;footnote-ref&quot;&gt;2&lt;/sup&gt;&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ol&gt;
+</span><span style="color:#323232;">&lt;/section&gt;
+</span></pre>
+<p>Issue #527 - meta tags in inline contexts</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">City:
+</span><span style="color:#323232;">&lt;span itemprop=&quot;contentLocation&quot; itemscope itemtype=&quot;https://schema.org/City&quot;&gt;
+</span><span style="color:#323232;">  &lt;meta itemprop=&quot;name&quot; content=&quot;Springfield&quot;&gt;
+</span><span style="color:#323232;">&lt;/span&gt;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;City:
+</span><span style="color:#323232;">&lt;span itemprop=&quot;contentLocation&quot; itemscope itemtype=&quot;https://schema.org/City&quot;&gt;
+</span><span style="color:#323232;">&lt;meta itemprop=&quot;name&quot; content=&quot;Springfield&quot;&gt;
+</span><span style="color:#323232;">&lt;/span&gt;&lt;/p&gt;
+</span></pre>
+<p>Issue #530 - link parsing corner cases</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">[a](\ b)
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[a](&lt;&lt;b)
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[a](&lt;b
+</span><span style="color:#323232;">)
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;[a](\ b)&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;[a](&amp;lt;&amp;lt;b)&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;[a](&amp;lt;b
+</span><span style="color:#323232;">)&lt;/p&gt;
+</span></pre>
+<p>Issue commonmark#526 - unescaped ( in link title</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">[link](url ((title))
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;[link](url ((title))&lt;/p&gt;
+</span></pre>
+<p>Issue commonamrk#517 - script, pre, style close tag without
+opener.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">&lt;/script&gt;
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&lt;/pre&gt;
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&lt;/style&gt;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;/script&gt;
+</span><span style="color:#323232;">&lt;/pre&gt;
+</span><span style="color:#323232;">&lt;/style&gt;
+</span></pre>
+<p>Issue #289.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">[a](&lt;b) c&gt;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;[a](&amp;lt;b) c&amp;gt;&lt;/p&gt;
+</span></pre>
+<p>Pull request #128 - Buffer overread in tables extension</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">|
+</span><span style="color:#323232;">-|
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;|
+</span><span style="color:#323232;">-|&lt;/p&gt;
+</span></pre>
+<p>Footnotes may be nested inside other footnotes.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">This is some text. It has a citation.[^citation]
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^another-citation]: My second citation.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^citation]: This is a long winded parapgraph that also has another citation.[^another-citation]
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;This is some text. It has a citation.&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-citation&quot; id=&quot;fnref-citation&quot; data-footnote-ref&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;section class=&quot;footnotes&quot; data-footnotes&gt;
+</span><span style="color:#323232;">&lt;ol&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-citation&quot;&gt;
+</span><span style="color:#323232;">&lt;p&gt;This is a long winded parapgraph that also has another citation.&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-another-citation&quot; id=&quot;fnref-another-citation&quot; data-footnote-ref&gt;2&lt;/a&gt;&lt;/sup&gt; &lt;a href=&quot;#fnref-citation&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-another-citation&quot;&gt;
+</span><span style="color:#323232;">&lt;p&gt;My second citation. &lt;a href=&quot;#fnref-another-citation&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ol&gt;
+</span><span style="color:#323232;">&lt;/section&gt;
+</span></pre>
+<p>Footnotes are similar to, but should not be confused with, link references</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">This is some text. It has two footnotes references, side-by-side without any spaces,[^footnote1][^footnote2] which are definitely not link references.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^footnote1]: Hello.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^footnote2]: Goodbye.
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;This is some text. It has two footnotes references, side-by-side without any spaces,&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-footnote1&quot; id=&quot;fnref-footnote1&quot; data-footnote-ref&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-footnote2&quot; id=&quot;fnref-footnote2&quot; data-footnote-ref&gt;2&lt;/a&gt;&lt;/sup&gt; which are definitely not link references.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;section class=&quot;footnotes&quot; data-footnotes&gt;
+</span><span style="color:#323232;">&lt;ol&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-footnote1&quot;&gt;
+</span><span style="color:#323232;">&lt;p&gt;Hello. &lt;a href=&quot;#fnref-footnote1&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-footnote2&quot;&gt;
+</span><span style="color:#323232;">&lt;p&gt;Goodbye. &lt;a href=&quot;#fnref-footnote2&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ol&gt;
+</span><span style="color:#323232;">&lt;/section&gt;
+</span></pre>
+<p>Footnotes may begin with or have a ‘w’ or a ‘_’ in their reference label.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">This is some text. Sometimes the autolinker splits up text into multiple nodes, hoping it will find a hyperlink, so this text has a footnote whose reference label begins with a `w`.[^widely-cited]
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">It has another footnote that contains many different characters (the autolinker was also breaking on `_`).[^sphinx-of-black-quartz_judge-my-vow-0123456789]
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^sphinx-of-black-quartz_judge-my-vow-0123456789]: so does this.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^widely-cited]: this renders properly.
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;This is some text. Sometimes the autolinker splits up text into multiple nodes, hoping it will find a hyperlink, so this text has a footnote whose reference label begins with a &lt;code&gt;w&lt;/code&gt;.&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-widely-cited&quot; id=&quot;fnref-widely-cited&quot; data-footnote-ref&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;It has another footnote that contains many different characters (the autolinker was also breaking on &lt;code&gt;_&lt;/code&gt;).&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn-sphinx-of-black-quartz_judge-my-vow-0123456789&quot; id=&quot;fnref-sphinx-of-black-quartz_judge-my-vow-0123456789&quot; data-footnote-ref&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;section class=&quot;footnotes&quot; data-footnotes&gt;
+</span><span style="color:#323232;">&lt;ol&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-widely-cited&quot;&gt;
+</span><span style="color:#323232;">&lt;p&gt;this renders properly. &lt;a href=&quot;#fnref-widely-cited&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;li id=&quot;fn-sphinx-of-black-quartz_judge-my-vow-0123456789&quot;&gt;
+</span><span style="color:#323232;">&lt;p&gt;so does this. &lt;a href=&quot;#fnref-sphinx-of-black-quartz_judge-my-vow-0123456789&quot; class=&quot;footnote-backref&quot; data-footnote-backref aria-label=&quot;Back to content&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+</span><span style="color:#323232;">&lt;/li&gt;
+</span><span style="color:#323232;">&lt;/ol&gt;
+</span><span style="color:#323232;">&lt;/section&gt;
+</span></pre>
+<p>Footnotes interacting with strikethrough should not lead to a use-after-free</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">|Tot.....[^_a_]|
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;|Tot.....[^_a_]|&lt;/p&gt;
+</span></pre>
+<p>Footnotes interacting with strikethrough should not lead to a use-after-free pt2</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">[^~~is~~1]
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;[^~~is~~1]&lt;/p&gt;
+</span></pre>
+<p>Adjacent unused footnotes definitions should not lead to a use after free</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">Hello world
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">[^a]:[^b]:
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;Hello world&lt;/p&gt;
+</span></pre>
+</div></html>

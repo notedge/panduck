@@ -1,0 +1,137 @@
+<html><head><meta charset="UTF-8"/><meta name="viewport-8" content="'width=device-width, initial-scale=1.0'"/><link rel="stylesheet" href="https://latex.now.sh/style.css"/></head><div class="notedown"><h2>Smart punctuation</h2><p>Open quotes are matched with closed quotes.
+The same method is used for matching openers and closers
+as is used in emphasis parsing:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">&quot;Hello,&quot; said the spider.
+</span><span style="color:#323232;">&quot;&#39;Shelob&#39; is my name.&quot;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;“Hello,” said the spider.
+</span><span style="color:#323232;">“‘Shelob’ is my name.”&lt;/p&gt;
+</span></pre>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">&#39;A&#39;, &#39;B&#39;, and &#39;C&#39; are letters.
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;‘A’, ‘B’, and ‘C’ are letters.&lt;/p&gt;
+</span></pre>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">&#39;Oak,&#39; &#39;elm,&#39; and &#39;beech&#39; are names of trees.
+</span><span style="color:#323232;">So is &#39;pine.&#39;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;‘Oak,’ ‘elm,’ and ‘beech’ are names of trees.
+</span><span style="color:#323232;">So is ‘pine.’&lt;/p&gt;
+</span></pre>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">&#39;He said, &quot;I want to go.&quot;&#39;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;‘He said, “I want to go.”’&lt;/p&gt;
+</span></pre>
+<p>A single quote that isn’t an open quote matched
+with a close quote will be treated as an
+apostrophe:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">Were you alive in the 70&#39;s?
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;Were you alive in the 70’s?&lt;/p&gt;
+</span></pre>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">Here is some quoted &#39;`code`&#39; and a &quot;[quoted link](url)&quot;.
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;Here is some quoted ‘&lt;code&gt;code&lt;/code&gt;’ and a “&lt;a href=&quot;url&quot;&gt;quoted link&lt;/a&gt;”.&lt;/p&gt;
+</span></pre>
+<p>Here the first <code><span style="color:#323232;">&#39;</span></code> is treated as an apostrophe, not
+an open quote, because the final single quote is matched
+by the single quote before <code><span style="color:#323232;">jolly</span></code>:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">&#39;tis the season to be &#39;jolly&#39;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;’tis the season to be ‘jolly’&lt;/p&gt;
+</span></pre>
+<p>Multiple apostrophes should not be marked as open/closing quotes.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">&#39;We&#39;ll use Jane&#39;s boat and John&#39;s truck,&#39; Jenna said.
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;‘We’ll use Jane’s boat and John’s truck,’ Jenna said.&lt;/p&gt;
+</span></pre>
+<p>An unmatched double quote will be interpreted as a
+left double quote, to facilitate this style:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">&quot;A paragraph with no closing quote.
+</span><span style="color:#323232;">
+</span><span style="color:#323232;">&quot;Second paragraph by same speaker, in fiction.&quot;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;“A paragraph with no closing quote.&lt;/p&gt;
+</span><span style="color:#323232;">&lt;p&gt;“Second paragraph by same speaker, in fiction.”&lt;/p&gt;
+</span></pre>
+<p>A quote following a <code><span style="color:#323232;">]</span></code> or <code><span style="color:#323232;">)</span></code> character cannot
+be an open quote:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">[a]&#39;s b&#39;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;[a]’s b’&lt;/p&gt;
+</span></pre>
+<p>Quotes that are escaped come out as literal straight
+quotes:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">\&quot;This is not smart.\&quot;
+</span><span style="color:#323232;">This isn\&#39;t either.
+</span><span style="color:#323232;">5\&#39;8\&quot;
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;&amp;quot;This is not smart.&amp;quot;
+</span><span style="color:#323232;">This isn&#39;t either.
+</span><span style="color:#323232;">5&#39;8&amp;quot;&lt;/p&gt;
+</span></pre>
+<p>Two hyphens form an en-dash, three an em-dash.</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">Some dashes:  em---em
+</span><span style="color:#323232;">en--en
+</span><span style="color:#323232;">em --- em
+</span><span style="color:#323232;">en -- en
+</span><span style="color:#323232;">2--3
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;Some dashes:  em—em
+</span><span style="color:#323232;">en–en
+</span><span style="color:#323232;">em — em
+</span><span style="color:#323232;">en – en
+</span><span style="color:#323232;">2–3&lt;/p&gt;
+</span></pre>
+<p>A sequence of more than three hyphens is
+parsed as a sequence of em and/or en dashes,
+with no hyphens. If possible, a homogeneous
+sequence of dashes is used (so, 10 hyphens
+= 5 en dashes, and 9 hyphens = 3 em dashes).
+When a heterogeneous sequence must be used,
+the em dashes come first, followed by the en
+dashes, and as few en dashes as possible are
+used (so, 7 hyphens = 2 em dashes an 1 en
+dash).</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">one-
+</span><span style="color:#323232;">two--
+</span><span style="color:#323232;">three---
+</span><span style="color:#323232;">four----
+</span><span style="color:#323232;">five-----
+</span><span style="color:#323232;">six------
+</span><span style="color:#323232;">seven-------
+</span><span style="color:#323232;">eight--------
+</span><span style="color:#323232;">nine---------
+</span><span style="color:#323232;">thirteen-------------.
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;one-
+</span><span style="color:#323232;">two–
+</span><span style="color:#323232;">three—
+</span><span style="color:#323232;">four––
+</span><span style="color:#323232;">five—–
+</span><span style="color:#323232;">six——
+</span><span style="color:#323232;">seven—––
+</span><span style="color:#323232;">eight––––
+</span><span style="color:#323232;">nine———
+</span><span style="color:#323232;">thirteen———––.&lt;/p&gt;
+</span></pre>
+<p>Hyphens can be escaped:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">Escaped hyphens: \-- \-\-\-.
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;Escaped hyphens: -- ---.&lt;/p&gt;
+</span></pre>
+<p>Three periods form an ellipsis:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">Ellipses...and...and....
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;Ellipses…and…and….&lt;/p&gt;
+</span></pre>
+<p>Periods can be escaped if ellipsis-formation
+is not wanted:</p><pre style="background-color:#ffffff;">
+<span style="color:#323232;">No ellipses\.\.\.
+</span><span style="color:#323232;">.
+</span><span style="color:#323232;">&lt;p&gt;No ellipses...&lt;/p&gt;
+</span></pre>
+</div></html>
