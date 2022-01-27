@@ -1,19 +1,21 @@
-use dioxus::{
-    core::{DioxusElement, NodeFactory, VNode},
-    prelude::dioxus_elements::{h1, h2, h3, h4, h5, h6},
-};
-
 use super::*;
 
 impl IntoDioxus for Header {
     fn into_dioxus(self, cx: Scope<DioxusBuilder>) -> Element {
-        cx.render(LazyNodes::new(move |f| match self.level {
-            1 => f.element(h1, &[], &[], &[], None),
-            2 => f.element(h2, &[], &[], &[], None),
-            3 => f.element(h3, &[], &[], &[], None),
-            4 => f.element(h4, &[], &[], &[], None),
-            5 => f.element(h5, &[], &[], &[], None),
-            _ => f.element(h6, &[], &[], &[], None),
+        let level = self.level;
+        let id = self.id.as_str();
+        let children = self.children.into_iter().map(|e| e.into_dioxus(cx));
+        cx.render(LazyNodes::new_some(move |f: NodeFactory| -> VNode {
+            let attributes = f.bump().alloc([f.attr("id", format_args!("{}", id), None, false)]);
+            let children = f.bump().alloc([f.fragment_from_iter(children)]);
+            match level {
+                1 => f.element(dioxus_elements::h1, &[], attributes, children, None),
+                2 => f.element(dioxus_elements::h2, &[], attributes, children, None),
+                3 => f.element(dioxus_elements::h3, &[], attributes, children, None),
+                4 => f.element(dioxus_elements::h4, &[], attributes, children, None),
+                5 => f.element(dioxus_elements::h5, &[], attributes, children, None),
+                _ => f.element(dioxus_elements::h6, &[], attributes, children, None),
+            }
         }))
     }
 }

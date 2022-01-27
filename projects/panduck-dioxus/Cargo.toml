@@ -9,7 +9,7 @@ license = "MPL-2.0"
 edition = "2018"
 
 [dependencies]
-notedown_ast = "0.16.1"
+notedown_ast = "0.16.2"
 notedown-error = "1.1.2"
 
 [dependencies.panduck-html]
@@ -30,4 +30,6 @@ features = ["markdown", "html", "rst"]
 default = ["server"]
 server = ["panduck-html/katex", "panduck-html/syntect", ]
 
-
+[package.metadata.wee]
+test = "cargo test"
+t = "wee test -t"

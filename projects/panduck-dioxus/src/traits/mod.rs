@@ -1,6 +1,6 @@
 use dioxus::{
-    core::{Element, LazyNodes, NodeFactory, Scope},
-    prelude::VNode,
+    core::{DioxusElement, Element, LazyNodes, NodeFactory, Scope},
+    prelude::{VNode, *},
 };
 use notedown_ast::{
     nodes::{CodeNode, Delimiter, Header, ListView, Literal, MathNode, StyleKind, StyleNode, TableView, TextSpan},
