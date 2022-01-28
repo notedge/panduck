@@ -31,5 +31,5 @@ default = ["server"]
 server = ["panduck-html/katex", "panduck-html/syntect", ]
 
 [package.metadata.wee]
-test = "cargo test"
-t = "wee test -t"
+t = "cargo test"
+p = "cargo publish --allow-dirty"

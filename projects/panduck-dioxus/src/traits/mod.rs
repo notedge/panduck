@@ -7,7 +7,7 @@ use notedown_ast::{
     ASTKind,
 };
 
-use crate::{DioxusBuilder, SycamoreConfig, SycamoreContext};
+use crate::{DioxusBuilder, DioxusConfig, DioxusContext};
 
 mod header;
 

@@ -1,8 +1,8 @@
 use super::*;
 
-pub struct SycamoreContext {}
+pub struct DioxusContext {}
 
-impl Default for SycamoreContext {
+impl Default for DioxusContext {
     fn default() -> Self {
         Self {}
     }

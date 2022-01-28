@@ -3,15 +3,15 @@ use notedown_ast::ASTNode;
 
 use crate::traits::IntoDioxus;
 
-pub use self::{config::SycamoreConfig, context::SycamoreContext};
+pub use self::{config::DioxusConfig, context::DioxusContext};
 
 mod config;
 mod context;
 
 #[derive(Default)]
 pub struct DioxusBuilder {
-    config: SycamoreConfig,
-    context: SycamoreContext,
+    config: DioxusConfig,
+    context: DioxusContext,
 }
 
 impl DioxusBuilder {
