@@ -9,10 +9,10 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-notedown_ast = "0.16.1"
-notedown-error = "1.1.4"
+notedown_ast = "0.16.2"
+notedown-error = "1.1.7"
 notedown-rt = "0.3.1"
-serde = { version = "1.0.133", features = ["derive"] }
+serde = { version = "1.0.137", features = ["derive"] }
 
 [dependencies.panduck-pp]
 version = "0"
@@ -21,7 +21,6 @@ features = []
 
 
 [dev-dependencies.panduck-core]
-version = "0.1"
-path = "../panduck-core"
+version = "0.1.3"
 features = ["markdown"]
 

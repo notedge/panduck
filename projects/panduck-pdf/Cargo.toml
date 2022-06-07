@@ -9,9 +9,8 @@ license = "MPL-2.0"
 edition = "2018"
 
 [dependencies]
-notedown_ast = "0.16.1"
+notedown_ast = "0.16.2"
 
 [dev-dependencies.panduck-core]
 version = "0.1.3"
-path = "../panduck-core"
 features = ["markdown"]

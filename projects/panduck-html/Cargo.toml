@@ -9,21 +9,21 @@ license = "MPL-2.0"
 edition = "2018"
 
 [dependencies]
-notedown_ast = "0.16.1"
-notedown-error = "1.1.2"
-html-escape = "0.2.9"
-serde = {version = "1.0.132", features = ["derive"]}
+notedown_ast = "0.16.2"
+notedown-error = "1.1.7"
+html-escape = "0.2.11"
+serde = { version = "1.0.137", features = ["derive"] }
 merge = "0.1.0"
 
 [dependencies.katex]
-version = "0.4.2"
+version = "0.4.4"
 optional = true
 default-features = false
 features = ["duktape"]
 
 
 [dependencies.syntect]
-version = "4.6.0"
+version = "5.0.0"
 optional = true
 
 
@@ -33,8 +33,7 @@ path = "../pretty-print"
 features = []
 
 [dev-dependencies.panduck-core]
-version = "0.1"
-path = "../panduck-core"
+version = "0.1.3"
 features = ["markdown"]
 
 [features]

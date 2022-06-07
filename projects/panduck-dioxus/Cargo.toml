@@ -10,7 +10,7 @@ edition = "2018"
 
 [dependencies]
 notedown_ast = "0.16.2"
-notedown-error = "1.1.2"
+notedown-error = "1.1.7"
 
 [dependencies.panduck-html]
 version = "0.1.0"
@@ -18,12 +18,11 @@ path = "../panduck-html"
 default-features = false
 
 [dependencies.dioxus]
-version = "0.1.7"
+version = "0.2.4"
 features = ["ssr"]
 
 [dev-dependencies.panduck-core]
-version = "0.1"
-path = "../panduck-core"
+version = "0.1.3"
 features = ["markdown", "html", "rst"]
 
 [features]

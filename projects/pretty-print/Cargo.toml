@@ -10,7 +10,7 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-pretty = "0.11.2"
+pretty = "0.11.3"
 
 [features]
 default = []

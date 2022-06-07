@@ -9,8 +9,8 @@ license = "MPL-2.0"
 edition = "2018"
 
 [dependencies]
-notedown_ast = "0.16.1"
-notedown-error = "1.1.2"
+notedown_ast = "0.16.2"
+notedown-error = "1.1.7"
 
 [dependencies.panduck-html]
 version = "0.1.0"
@@ -23,11 +23,10 @@ git = "https://github.com/sycamore-rs/sycamore.git"
 features = ["ssr"]
 
 [dev-dependencies]
-docx-rs = "0.3.2"
+docx-rs = "0.4.1"
 
 [dev-dependencies.panduck-core]
-version = "0.1"
-path = "../panduck-core"
+version = "0.1.3"
 features = ["markdown", "html", "rst"]
 
 [features]
