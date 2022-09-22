@@ -34,20 +34,20 @@ impl DioxusBuilder {
 
     fn html_head(&self) -> LazyNodes {
         todo!()
-        // let head: G = GenericNode::element("head");
+        // let head: G = GenericNode::element_from_tag("head");
         // head.append_child(&{
-        //     let meta: G = GenericNode::element("meta");
+        //     let meta: G = GenericNode::element_from_tag("meta");
         //     meta.set_attribute("charset", "UTF-8");
         //     meta
         // });
         // head.append_child(&{
-        //     let meta: G = GenericNode::element("meta");
+        //     let meta: G = GenericNode::element_from_tag("meta");
         //     meta.set_attribute("name", "viewport-8");
         //     meta.set_attribute("content", "'width=device-width, initial-scale=1.0'");
         //     meta
         // });
         // head.append_child(&{
-        //     let meta: G = GenericNode::element("link");
+        //     let meta: G = GenericNode::element_from_tag("link");
         //     meta.set_attribute("rel", "stylesheet");
         //     meta.set_attribute("href", "https://latex.now.sh/style.css");
         //     meta

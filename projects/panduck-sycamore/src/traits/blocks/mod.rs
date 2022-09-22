@@ -11,7 +11,7 @@ where
 {
     fn into_sycamore(self, cfg: &SycamoreConfig, _: &mut SycamoreContext) -> G {
         match self {
-            Self::HorizontalRule => GenericNode::element("hr"),
+            Self::HorizontalRule => GenericNode::element_from_tag("hr"),
             Self::HTMLRawBlock(s) => match cfg.trust_raw_html {
                 true => phantom_node(Ok(s)),
                 false => GenericNode::marker(),
@@ -26,12 +26,12 @@ where
 {
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         let node = match self.level {
-            1 => GenericNode::element("h1"),
-            2 => GenericNode::element("h2"),
-            3 => GenericNode::element("h3"),
-            4 => GenericNode::element("h4"),
-            5 => GenericNode::element("h5"),
-            _ => GenericNode::element("h6"),
+            1 => GenericNode::element_from_tag("h1"),
+            2 => GenericNode::element_from_tag("h2"),
+            3 => GenericNode::element_from_tag("h3"),
+            4 => GenericNode::element_from_tag("h4"),
+            5 => GenericNode::element_from_tag("h5"),
+            _ => GenericNode::element_from_tag("h6"),
         };
         push_nodes(&node, self.children, cfg, ctx);
         return node;

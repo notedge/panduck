@@ -37,13 +37,13 @@ where
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         match self {
             Self::Statements(children) => {
-                let root: G = GenericNode::element("div");
+                let root: G = GenericNode::element_from_tag("div");
                 root.set_class_name("notedown");
                 push_nodes(&root, children, cfg, ctx);
                 return root;
             }
             Self::Paragraph(children) => {
-                let p = GenericNode::element("p");
+                let p = GenericNode::element_from_tag("p");
                 push_nodes(&p, children, cfg, ctx);
                 return p;
             }

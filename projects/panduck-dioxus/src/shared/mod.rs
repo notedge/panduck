@@ -7,14 +7,14 @@ use crate::{
 };
 
 pub fn error_inline<G: GenericNode>(msg: &str) -> G {
-    let node: G = GenericNode::element("span");
+    let node: G = GenericNode::element_from_tag("span");
     node.set_class_name("debug-error");
     node.update_inner_text(msg);
     node
 }
 
 // pub fn error_block<G: GenericNode>(msg: &str) -> G {
-//     let node: G = GenericNode::element("p");
+//     let node: G = GenericNode::element_from_tag("p");
 //     node.set_class_name("debug-error");
 //     node.update_inner_text(msg);
 //     return node;
@@ -41,7 +41,7 @@ pub fn unwrap_inner<G: GenericNode>(node: G) -> G {
 }
 
 pub fn phantom_node<G: GenericNode>(html: Result<String>) -> G {
-    let g: G = GenericNode::element("Phantom");
+    let g: G = GenericNode::element_from_tag("Phantom");
     match html {
         Ok(o) => g.dangerously_set_inner_html(&o),
         #[cfg(debug_assertions)]

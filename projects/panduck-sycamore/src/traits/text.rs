@@ -16,7 +16,7 @@ where
             Self::Escaped(c) => GenericNode::text_node(c.to_string().as_str()),
             Self::Emoji(c) => GenericNode::text_node(c.to_string().as_str()),
             Self::SoftNewline => GenericNode::text_node("\n"),
-            Self::HardNewline => GenericNode::element("br"),
+            Self::HardNewline => GenericNode::element_from_tag("br"),
             Self::CheckBox(_) => {
                 unimplemented!()
             }
@@ -48,24 +48,26 @@ where
 {
     fn into_sycamore(self, _: &SycamoreConfig, _: &mut SycamoreContext) -> G {
         match self {
-            Self::Plain => GenericNode::element("span"),
-            Self::Emphasis => GenericNode::element("em"),
-            Self::Underline => GenericNode::element("u"),
-            Self::Undercover => GenericNode::element("u"),
-            Self::Strong => GenericNode::element("strong"),
-            Self::Delete => GenericNode::element("del"),
-            Self::Insert => GenericNode::element("ins"),
+            Self::Plain => GenericNode::element_from_tag("span"),
+            Self::Emphasis => GenericNode::element_from_tag("em"),
+            Self::Underline => GenericNode::element_from_tag("u"),
+            Self::Undercover => GenericNode::element_from_tag("u"),
+            Self::Strong => GenericNode::element_from_tag("strong"),
+            Self::Delete => GenericNode::element_from_tag("del"),
+            Self::Insert => GenericNode::element_from_tag("ins"),
             Self::ItalicBold => {
                 unreachable!()
             }
             Self::Marking => {
                 unimplemented!()
             }
-            Self::Color(_, _, _, _) => {
-                unimplemented!()
+            Self::Color(r, g, b, a) => {
+                let node: G = GenericNode::element_from_tag("font");
+                node.set_attribute("color", &format!("#{:X}{:X}{:X}{:X}", r, g, b, a));
+                node
             }
-            Self::Subscript => GenericNode::element("sub"),
-            Self::Superscript => GenericNode::element("sup"),
+            Self::Subscript => GenericNode::element_from_tag("sub"),
+            Self::Superscript => GenericNode::element_from_tag("sup"),
         }
     }
 }

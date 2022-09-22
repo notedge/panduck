@@ -1,5 +1,5 @@
 use notedown_ast::ASTNode;
-use sycamore::{prelude::GenericNode, render_to_string, view::View, SsrNode};
+use sycamore::{prelude::GenericNode, render_to_string, view::View, web::SsrNode};
 
 use crate::traits::IntoSycamore;
 
@@ -19,32 +19,32 @@ impl SycamoreBuilder {
     pub fn render(&mut self, ast: ASTNode) -> String {
         let node = ast.into_sycamore(&self.config, &mut self.context);
         let view = View::<SsrNode>::new_node(node);
-        render_to_string(|| view)
+        render_to_string(|_| view)
     }
     /// a complete html
     pub fn render_standalone(&mut self, ast: ASTNode) -> String {
         let node = ast.into_sycamore(&self.config, &mut self.context);
-        let html = SsrNode::element("html");
+        let html = SsrNode::element_from_tag("html");
         html.append_child(&self.html_head());
         html.append_child(&node);
-        render_to_string(|| View::new_node(html))
+        render_to_string(|_| View::new_node(html))
     }
 
     fn html_head<G: GenericNode>(&self) -> G {
-        let head: G = GenericNode::element("head");
+        let head: G = GenericNode::element_from_tag("head");
         head.append_child(&{
-            let meta: G = GenericNode::element("meta");
+            let meta: G = GenericNode::element_from_tag("meta");
             meta.set_attribute("charset", "UTF-8");
             meta
         });
         head.append_child(&{
-            let meta: G = GenericNode::element("meta");
+            let meta: G = GenericNode::element_from_tag("meta");
             meta.set_attribute("name", "viewport-8");
             meta.set_attribute("content", "'width=device-width, initial-scale=1.0'");
             meta
         });
         head.append_child(&{
-            let meta: G = GenericNode::element("link");
+            let meta: G = GenericNode::element_from_tag("link");
             meta.set_attribute("rel", "stylesheet");
             meta.set_attribute("href", "https://latex.now.sh/style.css");
             meta

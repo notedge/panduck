@@ -24,7 +24,7 @@ where
 {
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         // <a href="mailto:someone@example.com">Send email</a>
-        let a = GenericNode::element("a");
+        let a = GenericNode::element_from_tag("a");
         return a;
     }
 }
@@ -35,7 +35,7 @@ where
 {
     /// <a href="mailto:someone@example.com">Send email</a>
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
-        let a: G = GenericNode::element("a");
+        let a: G = GenericNode::element_from_tag("a");
         a.set_attribute("href", "mailto:someone@example.com");
         a.update_inner_text("mailto:someone@example.com");
         return a;
@@ -58,7 +58,7 @@ where
 
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
         let cfg = &cfg.image_config;
-        let img: G = GenericNode::element("img");
+        let img: G = GenericNode::element_from_tag("img");
         img.set_attribute("src", &self.source);
         if let Some(s) = self.description {
             img.set_attribute("alt", &s)
@@ -70,7 +70,7 @@ where
         let link = match self.link {
             None => return img,
             Some(s) => {
-                let link: G = GenericNode::element("a");
+                let link: G = GenericNode::element_from_tag("a");
                 link.append_child(&img);
                 link.set_attribute("src", &s);
                 link
@@ -86,7 +86,7 @@ where
     G: GenericNode,
 {
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
-        let a: G = GenericNode::element("a");
+        let a: G = GenericNode::element_from_tag("a");
         a.set_attribute("href", &self.src);
         self.text.map(|f| a.update_inner_text(&f));
         return a;

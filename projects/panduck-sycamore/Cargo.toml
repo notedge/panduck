@@ -1,6 +1,6 @@
 [package]
 name = "panduck-sycamore"
-version = "0.7.0"
+version = "0.8.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "use panduck to generate pdfs"
 repository = "https://github.com/oovm/panduck"
@@ -18,8 +18,7 @@ path = "../panduck-html"
 default-features = false
 
 [dependencies.sycamore]
-version = "0.7.1"
-git = "https://github.com/sycamore-rs/sycamore.git"
+version = "0.8.1"
 features = ["ssr"]
 
 [dev-dependencies]

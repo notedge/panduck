@@ -19,7 +19,7 @@ where
     G: GenericNode,
 {
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
-        let item: G = GenericNode::element("ol");
+        let item: G = GenericNode::element_from_tag("ol");
         push_nodes(&item, self.children, cfg, ctx);
         return item;
     }
@@ -30,7 +30,7 @@ where
     G: GenericNode,
 {
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
-        let item: G = GenericNode::element("ul");
+        let item: G = GenericNode::element_from_tag("ul");
         push_nodes(&item, self.children, cfg, ctx);
         return item;
     }
@@ -41,7 +41,7 @@ where
     G: GenericNode,
 {
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
-        let item: G = GenericNode::element("li");
+        let item: G = GenericNode::element_from_tag("li");
         push_nodes(&item, self.rest, cfg, ctx);
         return item;
     }
@@ -52,7 +52,7 @@ where
     G: GenericNode,
 {
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
-        let item: G = GenericNode::element("blockquote");
+        let item: G = GenericNode::element_from_tag("blockquote");
         push_nodes(&item, self.body, cfg, ctx);
         return item;
     }

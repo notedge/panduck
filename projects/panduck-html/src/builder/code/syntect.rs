@@ -54,7 +54,7 @@ impl SyntectConfig {
         let bg = self.theme.settings.background.unwrap_or(Color::WHITE);
         for line in LinesWithEndings::from(&code.code) {
             let regions = highlighter.highlight(line, ss);
-            append_highlighted_html_for_styled_line(&regions[..], IncludeBackground::IfDifferent(bg), &mut output);
+            append_highlighted_html_for_styled_line(&regions[..], IncludeBackground::IfDifferent(bg), &mut output).unwrap();
         }
         output.push_str("</code>");
         return Ok(output);

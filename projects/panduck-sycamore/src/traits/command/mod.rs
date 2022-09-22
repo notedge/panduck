@@ -7,7 +7,7 @@ where
     G: GenericNode,
 {
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
-        let a: G = GenericNode::element("cmd");
+        let a: G = GenericNode::element_from_tag("cmd");
         a.update_inner_text(&format!("{:?}", self));
         return a;
     }
@@ -18,7 +18,7 @@ where
     G: GenericNode,
 {
     fn into_sycamore(self, cfg: &SycamoreConfig, ctx: &mut SycamoreContext) -> G {
-        let a: G = GenericNode::element("value");
+        let a: G = GenericNode::element_from_tag("value");
         a.update_inner_text(&format!("{:?}", self));
         return a;
     }
