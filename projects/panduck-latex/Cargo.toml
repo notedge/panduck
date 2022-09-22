@@ -9,10 +9,10 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-notedown_ast = "0.16.2"
-notedown-error = "1.1.7"
-notedown-rt = "0.3.1"
-serde = { version = "1.0.137", features = ["derive"] }
+notedown_ast = "0.16.3"
+notedown-error = "1.1.10"
+notedown-rt = "0.3.2"
+serde = { version = "1.0.144", features = ["derive"] }
 
 [dependencies.panduck-pp]
 version = "0"
