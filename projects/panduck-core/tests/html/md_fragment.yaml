@@ -51,6 +51,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 1,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"h1 Heading 😎\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -65,6 +69,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 2,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"h2 Heading\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -79,6 +87,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 3,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"h3 Heading\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -93,6 +105,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 4,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"h4 Heading\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -107,6 +123,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 5,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"h5 Heading\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -121,6 +141,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 6,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"h6 Heading\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -135,6 +159,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 2,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"Horizontal Rules\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -164,6 +192,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 2,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"Typographic replacements\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -233,6 +265,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 2,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"Emphasis\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -347,6 +383,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 2,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"Blockquotes\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -366,6 +406,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 2,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"Lists\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -428,6 +472,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 2,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"Code\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -506,6 +554,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 2,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"Tables\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -541,6 +593,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 2,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"Links\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -598,6 +654,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 2,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"Images\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -661,6 +721,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 2,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: TextSpan(\n    \"Plugins\",\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: TextSpan(
@@ -706,6 +770,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 3,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: Value(\n    Null,\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: Value(
@@ -746,6 +814,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 3,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: Value(\n    Null,\n)-Slugify: TextSpan(\n    \"/ \",\n)-Slugify: Value(\n    Null,\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: Value(
@@ -775,6 +847,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 3,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: Value(\n    Null,\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: Value(
@@ -809,6 +885,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 3,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: Value(\n    Null,\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: Value(
@@ -834,6 +914,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 3,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: Value(\n    Null,\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: Value(
@@ -932,6 +1016,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 3,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: Value(\n    Null,\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: Value(
@@ -976,6 +1064,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 3,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: Value(\n    Null,\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: Value(
@@ -1032,6 +1124,10 @@ ASTNode {
                 kind: Header(
                     Header {
                         level: 3,
+                        hide_in_toc: false,
+                        id: Some(
+                            "Slugify: Value(\n    Null,\n)",
+                        ),
                         children: [
                             ASTNode {
                                 kind: Value(
