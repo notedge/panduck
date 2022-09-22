@@ -42,7 +42,7 @@ impl SyntectConfig {
     fn render_block(&self, code: &CodeNode) -> Result<String> {
         let ss = &self.syntax_set;
         let sr = ss.find_syntax_by_extension(&code.language).unwrap_or(ss.find_syntax_plain_text());
-        let html = highlighted_html_for_string(&code.code, ss, sr, &self.theme);
+        let html = highlighted_html_for_string(&code.code, ss, sr, &self.theme).unwrap();
         return Ok(html);
     }
     fn render_inline(&self, code: &CodeNode) -> Result<String> {

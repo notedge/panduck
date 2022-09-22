@@ -22,5 +22,6 @@ features = []
 
 [dev-dependencies.panduck-core]
 version = "0.1.3"
+path = "../panduck-core"
 features = ["markdown"]
 
