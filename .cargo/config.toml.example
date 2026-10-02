@@ -4,7 +4,7 @@ acorn-diagnostic = { path = "../acorn.rs/projects/acorn-diagnostic" }
 acorn-core = { path = "../acorn.rs/projects/acorn-core" }
 acorn-source = { path = "../acorn.rs/projects/acorn-source" }
 
-[patch."https://github.com/yggdrasil-language/oaks.git"]
+[patch."https://github.com/yggdrasil-language/oak.rs.git"]
 oak-core = { path = "../oaks/projects/oak-core" }
 oak-navigation = { path = "../oaks/projects/oak-navigation" }
 oak-markdown = { path = "../oaks/examples/oak-markdown" }
