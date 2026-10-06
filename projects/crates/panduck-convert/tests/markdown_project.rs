@@ -1,5 +1,7 @@
 use std::fs;
 
+use notedown_formats::import::markdown::import_markdown_bytes;
+use notedown_ir::{Block, Inline};
 use panduck_convert::convert_to_markdown_project;
 
 fn stored_zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
@@ -113,6 +115,21 @@ fn docx_to_markdown_project_writes_index_assets_and_report() {
     assert_eq!(asset_bytes, b"\x89PNG\r\n");
     assert!(published.report_path.exists());
     assert!(published.report_path.ends_with("panduck.report.json"));
+
+    let reopened = import_markdown_bytes("index.md", &index).expect("oak markdown reopen");
+    assert!(reopened.validate().is_valid());
+    assert!(reopened.blocks.iter().any(|node| matches!(
+        &node.block,
+        Block::Paragraph { content }
+            if content.iter().any(|inline| matches!(
+                inline,
+                Inline::Styled { style, children }
+                    if style == "image"
+                        && children.len() >= 2
+                        && matches!(&children[0], Inline::Text { text } if text == "Logo")
+                        && matches!(&children[1], Inline::Text { text } if text == "assets/logo.png")
+            ))
+    )));
 
     let _ = fs::remove_dir_all(&output_dir);
 }

@@ -260,8 +260,28 @@ fn build_convert_project_output(
     }
 }
 
-fn supports_markdown_project_source(from: &str) -> bool {
-    matches!(from, "docx" | "doc" | "pdf" | "epub" | "html" | "markdown" | "notedown")
+/// Returns whether Panduck can emit a Markdown project from this source format.
+pub fn supports_markdown_project_source(from: &str) -> bool {
+    matches!(
+        from.to_ascii_lowercase().as_str(),
+        "docx" | "doc" | "pdf" | "epub" | "html" | "markdown" | "notedown"
+    )
+}
+
+/// Converts a file on disk into a Markdown project directory.
+pub fn convert_markdown_project_file(
+    from: &str,
+    input: impl AsRef<Path>,
+    output_dir: impl AsRef<Path>,
+) -> Result<(ConvertProjectOutput, PublishedMarkdownProject)> {
+    let input = input.as_ref();
+    let bytes = match fs::read(input) {
+        Ok(bytes) => bytes,
+        Err(source) => {
+            return format_error::fail(AdapterError::io(source, Some(input.display().to_string())));
+        }
+    };
+    convert_to_markdown_project(from, &input.display().to_string(), bytes, output_dir)
 }
 
 /// Converts a file on disk.
