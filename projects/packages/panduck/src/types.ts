@@ -10,6 +10,7 @@ export type ConvertProjectResponse = {
     exitCode: number;
     indexMarkdown: string;
     publishedAssets: string[];
+    publishedChapters: string[];
     unresolvedAssets: string[];
     outputDir: string;
     reportJson: string;
