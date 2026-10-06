@@ -16,3 +16,14 @@ fn notedown_to_markdown_route() {
     assert!(output.markdown.contains("# Route"));
     assert!(output.report_json.contains("panduck.report/v1"));
 }
+
+#[test]
+fn notedown_to_html_route_preserves_semantic_blocks() {
+    let source = b"# Route\n\nBody text.\n".to_vec();
+    let output = convert_bytes("notedown", "html", "route.nd", source).expect("convert");
+    let html = output.html.expect("html output");
+    assert!(html.contains("<h1>Route</h1>"));
+    assert!(html.contains("<p>Body text."));
+    assert!(html.contains("</p>"));
+    assert!(output.report_json.contains("\"format\":\"html\""));
+}
