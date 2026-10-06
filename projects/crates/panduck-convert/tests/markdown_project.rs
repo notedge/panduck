@@ -200,3 +200,133 @@ fn epub_to_markdown_project_writes_index_and_reopens_semantics() {
 
     let _ = fs::remove_dir_all(&output_dir);
 }
+
+fn multi_chapter_epub_zip() -> Vec<u8> {
+    let container = br#"<?xml version="1.0" encoding="UTF-8"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+  <rootfiles>
+    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+  </rootfiles>
+</container>"#;
+    let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Sample Book</dc:title>
+    <dc:language>en</dc:language>
+  </metadata>
+  <manifest>
+    <item id="ch1" href="chapter-one.xhtml" media-type="application/xhtml+xml"/>
+    <item id="ch2" href="chapter-two.xhtml" media-type="application/xhtml+xml"/>
+  </manifest>
+  <spine>
+    <itemref idref="ch1"/>
+    <itemref idref="ch2"/>
+  </spine>
+</package>"#;
+    stored_zip(&[
+        ("mimetype", b"application/epub+zip"),
+        ("META-INF/container.xml", container),
+        ("OEBPS/content.opf", opf),
+        (
+            "OEBPS/chapter-one.xhtml",
+            br#"<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <body>
+    <h1>Chapter One</h1>
+    <p>First chapter body.</p>
+  </body>
+</html>"#,
+        ),
+        (
+            "OEBPS/chapter-two.xhtml",
+            br#"<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <body>
+    <h1>Chapter Two</h1>
+    <p>Second chapter body.</p>
+  </body>
+</html>"#,
+        ),
+    ])
+}
+
+#[test]
+fn epub_to_markdown_project_splits_spine_into_chapters() {
+    let output_dir = std::env::temp_dir().join(format!("panduck-epub-chapters-{}", std::process::id()));
+    let (output, published) = convert_to_markdown_project(
+        "epub",
+        "book.epub",
+        multi_chapter_epub_zip(),
+        &output_dir,
+    )
+    .expect("convert epub project");
+
+    assert_eq!(output.published_chapters.len(), 2);
+    assert!(output.index_markdown.contains("# Sample Book"));
+    assert!(output.index_markdown.contains("chapters/000-chapter-one.md"));
+    assert!(!output.index_markdown.contains("First chapter body."));
+
+    let chapter_one = fs::read_to_string(output_dir.join("chapters/000-chapter-one.md")).expect("chapter one");
+    assert!(chapter_one.contains("# Chapter One"));
+    let reopened = import_markdown_bytes("chapters/000-chapter-one.md", &chapter_one).expect("reopen chapter");
+    assert!(reopened.blocks.iter().any(|node| matches!(
+        &node.block,
+        Block::Section { title, .. }
+            if title.iter().any(|inline| matches!(inline, Inline::Text { text } if text == "Chapter One"))
+    )));
+    assert_eq!(published.chapter_paths.len(), 2);
+
+    let _ = fs::remove_dir_all(&output_dir);
+}
+
+#[test]
+fn html_to_markdown_project_writes_index_and_reopens_semantics() {
+    assert!(supports_markdown_project_source("html"));
+    let output_dir = std::env::temp_dir().join(format!("panduck-html-project-{}", std::process::id()));
+    let html = br#"<html><body><h1>Title</h1><p>Hello HTML.</p></body></html>"#.to_vec();
+    let (output, published) =
+        convert_to_markdown_project("html", "page.html", html, &output_dir).expect("convert html project");
+
+    assert!(output.index_markdown.contains("# Title"));
+    assert!(output.published_chapters.is_empty());
+    assert!(published.index_path.exists());
+
+    let index = fs::read_to_string(published.index_path).expect("read index.md");
+    let reopened = import_markdown_bytes("index.md", &index).expect("reopen markdown");
+    assert!(reopened.blocks.iter().any(|node| matches!(
+        &node.block,
+        Block::Paragraph { content }
+            if content.iter().any(|inline| matches!(inline, Inline::Text { text } if text == "Hello HTML."))
+    )));
+
+    let _ = fs::remove_dir_all(&output_dir);
+}
+
+#[test]
+fn pdf_to_markdown_project_writes_index_and_reopens_text() {
+    use panduck_convert::convert_bytes;
+
+    assert!(supports_markdown_project_source("pdf"));
+    let pdf = convert_bytes("markdown", "pdf", "sample.md", b"# Heading\n\nBody text.\n".to_vec())
+        .expect("write pdf")
+        .binary
+        .expect("pdf bytes");
+
+    let output_dir = std::env::temp_dir().join(format!("panduck-pdf-project-{}", std::process::id()));
+    let (output, published) =
+        convert_to_markdown_project("pdf", "sample.pdf", pdf, &output_dir).expect("convert pdf project");
+
+    assert!(output.index_markdown.contains("Heading"));
+    assert!(output.index_markdown.contains("Body text."));
+    assert!(published.index_path.exists());
+
+    let index = fs::read_to_string(published.index_path).expect("read index.md");
+    let reopened = import_markdown_bytes("index.md", &index).expect("reopen markdown");
+    assert!(reopened.blocks.iter().any(|node| matches!(
+        &node.block,
+        Block::Paragraph { content }
+            if content.iter().any(|inline| matches!(inline, Inline::Text { text } if text.contains("Body text.")))
+    )));
+
+    let _ = fs::remove_dir_all(&output_dir);
+}
