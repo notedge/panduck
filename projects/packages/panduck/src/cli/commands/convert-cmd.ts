@@ -23,7 +23,12 @@ import {
 import { createReport } from "../report.js";
 import { isStdoutPath } from "../paths.js";
 import { configureConsoleBackend } from "../console-backend.js";
-import { emitPipelineResult, hasPipeline, runConversionPipeline } from "../pipeline.js";
+import {
+    emitPipelineResult,
+    hasPipeline,
+    runConversionPipeline,
+    runMarkdownProjectPipeline,
+} from "../pipeline.js";
 
 export function registerConvertCommand(cli: Cli): void {
     cli.command("convert", "cli.cmd.convert")
@@ -77,6 +82,12 @@ async function runConvert(options: ParsedOptions): Promise<number> {
 
         if (isStdoutPath(outputPath) && !shared.to) {
             console.error("writing to stdout requires an explicit --to format");
+            return ExitCode.InvalidArgs;
+        }
+
+        const markdownProjectTarget = shared.to === "markdown-project";
+        if (markdownProjectTarget && (!outputPath || isStdoutPath(outputPath))) {
+            console.error("markdown-project requires an output directory via -o or --output-dir");
             return ExitCode.InvalidArgs;
         }
 
@@ -166,9 +177,14 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             return ExitCode.InputUnsupported;
         }
 
-        const routeReady = hasPipeline(ctx.bindings, resolved.from, resolved.to);
+        const routeReady = markdownProjectTarget
+            ? Boolean(
+                  ctx.bindings?.supportsMarkdownProject?.(resolved.from ?? "") &&
+                      ctx.bindings?.convertMarkdownProject,
+              )
+            : hasPipeline(ctx.bindings, resolved.from, resolved.to);
 
-        if (resolved.from === "doc") {
+        if (resolved.from === "doc" && !markdownProjectTarget) {
             const report = buildBlockedReport(
                 ctx,
                 "convert",
@@ -235,15 +251,25 @@ async function runConvert(options: ParsedOptions): Promise<number> {
 
         if (routeReady && ctx.bindings) {
             try {
-                const result = await runConversionPipeline({
-                    ctx,
-                    bindings: ctx.bindings,
-                    inputPath,
-                    outputPath,
-                    resolved,
-                    shared,
-                    toolVersion: ctx.toolVersion,
-                });
+                const result = markdownProjectTarget
+                    ? await runMarkdownProjectPipeline({
+                          ctx,
+                          bindings: ctx.bindings,
+                          inputPath,
+                          outputDir: outputPath!,
+                          resolved,
+                          shared,
+                          toolVersion: ctx.toolVersion,
+                      })
+                    : await runConversionPipeline({
+                          ctx,
+                          bindings: ctx.bindings,
+                          inputPath,
+                          outputPath,
+                          resolved,
+                          shared,
+                          toolVersion: ctx.toolVersion,
+                      });
                 return emitPipelineResult(result, shared);
             } catch (error) {
                 const message = error instanceof Error ? error.message : String(error);

@@ -84,6 +84,13 @@ function containerFormat(
 export function baseFormatRegistry(): FormatRecord[] {
     return [
         textFormat("markdown", "partial", "ready", ["paragraph", "heading", "code_block", "link"], ["table", "footnote"]),
+        textFormat(
+            "markdown-project",
+            "unavailable",
+            "partial",
+            [],
+            ["index", "assets", "report"],
+        ),
         textFormat("notedown", "partial", "planned", ["paragraph", "heading", "list", "link"], ["macro", "table"]),
         textFormat("org", "partial", "partial", ["headline", "paragraph"], ["drawer", "babel"]),
         textFormat("rst", "partial", "partial", ["paragraph", "directive"], ["table"]),
@@ -110,8 +117,8 @@ export function baseFormatRegistry(): FormatRecord[] {
         containerFormat(
             "pdf",
             ["pdf"],
-            "planned",
-            "planned",
+            "partial",
+            "partial",
             [],
             ["page", "text_run", "image"],
             ["annotation", "form", "encryption"],
@@ -119,7 +126,7 @@ export function baseFormatRegistry(): FormatRecord[] {
         containerFormat(
             "doc",
             ["ole"],
-            "planned",
+            "partial",
             "unavailable",
             ["oak-xml"],
             ["paragraph"],
