@@ -16,7 +16,7 @@
         "restructuredtext",
         "agent-skills",
         "skills",
-        "cursor"
+        "agents"
     ],
     "license": "MPL-2.0",
     "bin": {

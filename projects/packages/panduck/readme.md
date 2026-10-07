@@ -1,89 +1,141 @@
 # @notedge/panduck
 
-Node 20+ package for Panduck: CLI commands, `loadPanduckNode()`, and WASM format discovery. Use it when you need to convert a local file between supported formats and read a `panduck.report/v1` JSON result.
+[![npm version](https://img.shields.io/npm/v/@notedge/panduck.svg)](https://www.npmjs.com/package/@notedge/panduck) [![License](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](https://www.mozilla.org/MPL/2.0/) [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-339933)](https://nodejs.org/)
 
-File conversion runs through the native binding on Node. The WASM export lists formats and version metadata only—do not expect `convertDocument` in the browser build for this release.
+Panduck turns Word files, Markdown, EPUB, and related documents into another format—and shows you what got lost along
+the way. Footnotes, tables, images, and fancy Word styles often come through only partly; you get a JSON report saying
+what happened instead of a silent bad export.
 
-## 🤖 Agent instructions
+You can output a single file, or a folder ready for git: `index.md` (or `chapters/*.md`), copied images under `assets/`,
+and `panduck.report.json`.
 
-`@notedge/panduck-skills` teaches coding agents to check routes before converting. It installs instructions, not this runtime.
+## Install
 
-```bash
-npx @notedge/panduck-skills
-```
-
-## 📦 Install
-
-```bash
-npm install @notedge/panduck
-npx panduck doctor
-```
-
-Platform `.node` binaries install through optional dependencies (`@notedge/panduck-win32-x64`, `@notedge/panduck-linux-x64`, `@notedge/panduck-darwin-arm64`, and siblings).
-
-## 🔄 Convert one file
-
-Always write to a **new** path and keep the source unchanged:
+Put the `panduck` command on your PATH:
 
 ```bash
-npx panduck plan ./draft.docx --to markdown
-npx panduck convert ./draft.docx --to markdown -o ./draft.md --report ./draft.report.json
+npm install -g @notedge/panduck
+panduck doctor
 ```
 
-Check what the binding actually supports:
+If `doctor` prints an error, Panduck did not load on your OS. On Windows, Linux, and macOS the right native helper
+installs automatically with `@notedge/panduck`—you normally do not install `@notedge/panduck-win32-x64` and friends by
+hand.
+
+Prefer a one-off run? `npx @notedge/panduck …` works without `-g`.
+
+## Using the CLI
+
+**See which formats Panduck knows about on your computer:**
 
 ```bash
-npx panduck formats --json
+panduck formats --json
 ```
 
-## 🔌 Node API
+**Check one file before a big batch** (will this docx become markdown without surprises?):
+
+```bash
+panduck plan ./draft.docx --to markdown
+```
+
+**Word → Markdown**, writing new files and leaving the original alone:
+
+```bash
+panduck convert ./draft.docx --to markdown -o ./draft.md --report ./draft.report.json
+```
+
+**EPUB or Word → a whole Markdown project** (text + images in `assets/`):
+
+```bash
+panduck convert ./book.epub --to markdown-project -o ./book-md
+```
+
+**Dry-run validation** (no output file):
+
+```bash
+panduck check ./draft.docx --format markdown
+```
+
+**Look inside a DOCX package** (parts and paths, not full body semantics):
+
+```bash
+panduck inspect ./draft.docx --stage index --json
+```
+
+Handy options: `--strict` fails when anything was lost; `--overwrite` replaces an existing output; `--batch` with
+`--output-dir` for many files at once. Panduck will not write to the same path as the input.
+
+## What converts reliably today
+
+These paths are the ones to count on right now:
+
+| You have       | You want              |
+|----------------|-----------------------|
+| Word (`.docx`) | Markdown              |
+| Word (`.docx`) | Word (normalized)     |
+| Markdown       | Markdown (cleaned up) |
+| Markdown       | Word                  |
+| Notedown       | Markdown              |
+| EPUB           | Markdown              |
+
+**Markdown project** (folder with `assets/`) works from: Word, legacy `.doc`, PDF, EPUB, HTML, Markdown, and Notedown:
+
+```bash
+panduck convert ./paper.docx --to markdown-project -o ./paper-md
+```
+
+The `formats` command may list other names (Org, TeX, HTML export, and so on). Seeing a name there does not mean every
+direction works—run `plan` on a real file before you script a pipeline.
+
+## The report file
+
+Pass `--report ./something.report.json` or read `panduck.report.json` inside a markdown project folder.
+
+Worth reading before you publish the converted files:
+
+- Did it finish, or finish with losses? (`status`)
+- What was dropped or guessed? (`losses`)
+- What files were actually written? (`outputs`)
+
+Exit code `0` can still mean content was lost. Open the report.
+
+## Use from Node
 
 ```ts
-import { loadPanduckNode } from "@notedge/panduck/node";
+import {loadPanduckNode} from "@notedge/panduck/node";
 
 const panduck = loadPanduckNode();
-if (!panduck.supportsConversion?.("docx", "markdown")) {
-  throw new Error("route not available on this build");
-}
-const result = panduck.convertDocument!("docx", "markdown", "./draft.docx");
-console.log(result.reportJson);
+const {reportJson} = panduck.convertDocument!("docx", "markdown", "./draft.docx");
 ```
 
-Exports:
+Markdown project from code:
 
-- `@notedge/panduck` — package metadata
-- `@notedge/panduck/node` — `loadPanduckNode()`
-- `@notedge/panduck/wasm` — format discovery (no file conversion here)
-- `@notedge/panduck/cli` — programmatic CLI builder
+```ts
+panduck.convertMarkdownProject!("epub", "./book.epub", "./book-md");
+```
 
-## 📊 Read the report
+Subpaths: `@notedge/panduck/node` (convert files), `@notedge/panduck/wasm` (browser: list formats only, no file
+conversion yet), `@notedge/panduck/cli` (run the CLI from code).
 
-Open `panduck.report/v1` JSON for `status`, `coverage`, `losses`, `diagnostics`, and `outputs`. A successful exit can still be `success_with_loss`—read losses before publishing converted content.
+## Coding agents
 
-`panduck inspect` helps audit container structure (for example DOCX package index) without promising a full semantic read.
+`@notedge/panduck-skills` teaches coding agents how to run Panduck safely. It does not install Panduck itself.
 
-## ✅ Verified routes (native)
+```bash
+npm install -g @notedge/panduck-skills
+panduck-skills -y
+```
 
-When `supportsConversion(from, to)` is true:
+## When things go wrong
 
-| From | To |
-|------|-----|
-| `docx` | `markdown`, `docx` |
-| `markdown` | `markdown`, `docx` |
-| `notedown` | `markdown` |
-| `epub` | `markdown` |
+| You see                                            | Try                                                        |
+|----------------------------------------------------|------------------------------------------------------------|
+| `Unsupported platform for Panduck native bindings` | Different machine, or reinstall without `--omit=optional`  |
+| `conversion pipeline is not wired yet`             | That conversion is not implemented—run `plan` on your file |
+| Markdown looks wrong but command succeeded         | Open the report; tables and footnotes are often partial    |
+| Images missing in a markdown project               | Check the report for `unresolved` assets                   |
+| Browser import has no `convertDocument`            | Use Node; WASM only lists formats for now                  |
 
-Registered format names beyond these pairs may read or list without a working writer. Plan before batch jobs.
-
-## 🔧 Troubleshooting
-
-| Symptom | Check |
-|---------|-------|
-| `Unsupported platform for Panduck native bindings` | OS/CPU mismatch or missing optional platform package |
-| `conversion pipeline is not wired yet` | Route not implemented—use `plan` / `supportsConversion` |
-| Output exists but quality is wrong | Report `losses` for tables, footnotes, images |
-| Browser bundle cannot convert | Use Node native path for file conversion |
-
-Repository: https://github.com/notedge/panduck
+More background: https://github.com/notedge/panduck
 
 License: MPL-2.0

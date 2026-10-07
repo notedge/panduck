@@ -1,27 +1,16 @@
 # panduck-napi
 
-Node-API bindings for Panduck. Built with `@napi-rs/cli` and published through `@notedge/panduck-<platform>` optional dependencies.
+Rust crate that exposes Panduck to Node through N-API. The npm tarballs (`@notedge/panduck` plus per-platform optional
+packages) are built from here.
 
-## 📤 Exported operations
-
-| Area | Binding surface |
-|------|-----------------|
-| Discovery | `supportedFormats`, `supportedConversions`, `supportsConversion` |
-| Conversion | `convertDocument(from, to, path)` with `reportJson` |
-| Inspection | Container-stage reports for packages like DOCX |
-
-File conversion requires the native `.node` binary for the host OS/CPU.
-
-## 🔧 Build
-
-From the repository root:
+If you are not hacking bindings, install the CLI instead:
 
 ```bash
-pnpm run build:napi
+npm install -g @notedge/panduck
+panduck doctor
 ```
 
-## 🌐 WASM sibling
-
-`panduck-wasm` exposes format discovery only in current releases. Do not expect `convertDocument` from the WASM build.
+Exported to JS today: format discovery, `convertDocument`, `convertMarkdownProject`, DOCX-style `inspectIndex` /
+`inspectDecode`, each returning `reportJson` where applicable.
 
 License: MPL-2.0

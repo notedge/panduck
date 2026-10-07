@@ -1,21 +1,12 @@
 # @notedge/panduck-linux-x64
 
-Prebuilt Node-API binary for **Linux x64**. `@notedge/panduck` loads this package automatically on `linux` + `x64` through an optional dependency.
+Native Node-API binary for Panduck on **Linux x86_64**.
 
-## 📦 Install
+This tarball exists so `@notedge/panduck` can ship prebuilt conversion speed on typical Linux desktops, CI runners, and
+servers without compiling Rust locally. Consumers should depend on `@notedge/panduck`, not on this package name.
 
-```bash
-npm install @notedge/panduck
-```
-
-npm pulls `@notedge/panduck-linux-x64` when the host matches `os: linux` and `cpu: x64`.
-
-## 🔧 Mismatch diagnosis
-
-| Symptom | Likely cause |
-|---------|----------------|
-| `Unsupported platform for Panduck native bindings` | Wrong OS/CPU or optional dependency not installed |
-| Binding loads but convert fails | Run `npx panduck doctor` and check `supportsConversion` |
+After `npm install -g @notedge/panduck`, verify the binding with `panduck doctor`. Conversion examples and route
+matrices live on the main package readme.
 
 Main package: https://www.npmjs.com/package/@notedge/panduck
 

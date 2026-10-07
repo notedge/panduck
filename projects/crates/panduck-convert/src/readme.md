@@ -1,3 +1,3 @@
-# panduck-convert
+# panduck-convert (library root)
 
-Panduck conversion routes over `notedown-ir::DocumentGraph`.
+Implementation modules for conversion routes and report assembly. Public API is `lib.rs`.

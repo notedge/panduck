@@ -1,57 +1,39 @@
 # @notedge/panduck-skills
 
-Agent skill pack for **people who use Panduck** to convert documents—not for contributors hacking the Rust repository.
+[![npm version](https://img.shields.io/npm/v/@notedge/panduck-skills.svg)](https://www.npmjs.com/package/@notedge/panduck-skills) [![License](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](https://www.mozilla.org/MPL/2.0/) [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-339933)](https://nodejs.org/)
 
-Install once so coding agents know how to install `@notedge/panduck`, verify a conversion route, write outputs safely, and explain partial or failed conversions in plain language.
+Agent skill pack for **people who use Panduck** with coding agents—not for contributors hacking the Rust repository.
+
+Install once so agents know how to install `@notedge/panduck`, verify a conversion route, write outputs safely, and explain partial or failed conversions in plain language.
 
 **Scope:** instructions only. The installer does not add conversion routes, platform binaries, or WASM file conversion.
 
-## 📥 Install
+```bash
+npm install -g @notedge/panduck-skills
+panduck-skills -y
+```
+
+Pass `-a <agent>` when your skills CLI requires a host name.
+
+Install Panduck too:
 
 ```bash
-npx @notedge/panduck-skills
+npm install -g @notedge/panduck
+panduck doctor
 ```
 
-```bash
-npx @notedge/panduck-skills -g
-npx @notedge/panduck-skills -a cursor -y
-```
-
-## 💬 Example prompts
+Example prompt:
 
 ```text
-Use Panduck to check whether ./notes/paper.docx can convert to Markdown.
-If supported, write ./notes/paper.md and ./notes/paper.report.json without modifying the source.
-List semantic losses from the report.
-```
-
-```text
-Write a Node script with @notedge/panduck that calls supportsConversion for docx→markdown
-on this machine and converts one sample file.
+Can ./notes/paper.docx become Markdown with panduck?
+If yes, write ./notes/paper.md and a report file next to it. Do not edit the original.
+Tell me what the report says was lost.
 ```
 
 ```text
-I have a folder of Markdown files. Plan panduck batch conversion to docx and flag any
-unsupported paths before running.
+Turn ./report.docx into a markdown-project folder at ./report-md and summarize missing images from panduck.report.json.
 ```
 
-## ✅ What the agent checks
-
-- `panduck doctor` and native binding load
-- `plan`, `formats`, or `supportsConversion` before promising a target format
-- Separate read vs write capability—registered names are not full matrices
-- New output paths and `--report` for `panduck.report/v1`
-- Asset handling (embedded vs linked vs omitted) from report losses
-- WASM vs Node: discovery in browser, conversion on Node for this release
-
-## 📎 Full skill
-
-See [`skills/panduck/SKILL.md`](skills/panduck/SKILL.md) for the complete workflow.
-
-Install the runtime separately:
-
-```bash
-npm install @notedge/panduck
-```
+Full skill text: [`skills/panduck/SKILL.md`](skills/panduck/SKILL.md)
 
 License: MPL-2.0
