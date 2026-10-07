@@ -3,7 +3,7 @@ resolver = "2"
 members = ["projects/crates/*"]
 
 [workspace.package]
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Aster <192607617@qq.com>"]
 license = "MPL-2.0"
 edition = "2021"
