@@ -1,6 +1,6 @@
 {
     "name": "@notedge/panduck-unknown-wasm32",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "description": "Panduck wasm-pack artifact for wasm32-unknown-unknown",
     "type": "module",
     "license": "MPL-2.0",
