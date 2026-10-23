@@ -22,6 +22,12 @@ import type { RulePlan } from "./rule-builder.js";
 import { RuleBuilder } from "./rule-builder.js";
 import type { ReplaceHandlerFn } from "./rule-builder.js";
 import { executePlan } from "./rule-executor.js";
+import type {
+    ConverterConfig,
+    MarkdownPolicy,
+    PolicyHandler,
+    PolicyHandlerResult,
+} from "./renderer-policy.js";
 
 // ---------------------------------------------------------------------------
 // Diagnostic record (shared shape with Pandark Crawler)
@@ -152,18 +158,47 @@ export class Converter {
         this.binding = loadPanduckNode();
     }
 
+    // -----------------------------------------------------------------------
+    // Overloads — 两个入口并存。
+    // -----------------------------------------------------------------------
+
+    /** Legacy entry: RuleBuilder / RulePlan 链式配置。向后兼容。 */
+    async toMarkdown(input: ConverterInput, options?: ToMarkdownOptions): Promise<ConverterResult>;
+    /** New entry: Profile 化 ConverterConfig（含 RendererPolicy）。 */
+    async toMarkdown(input: ConverterInput, config: ConverterConfig): Promise<ConverterResult>;
+
+    // -----------------------------------------------------------------------
+    // Implementation — 通过 presence of `rendererPolicy` 分流。
+    // -----------------------------------------------------------------------
+
+    async toMarkdown(
+        input: ConverterInput,
+        arg?: ToMarkdownOptions | ConverterConfig,
+    ): Promise<ConverterResult> {
+        if (arg && isConverterConfig(arg)) {
+            return this.toMarkdownWithPolicy(input, arg);
+        }
+        return this.toMarkdownLegacy(input, arg as ToMarkdownOptions | undefined);
+    }
+
+    // -----------------------------------------------------------------------
+    // Legacy path — RuleBuilder.input().transform().output()
+    // -----------------------------------------------------------------------
+
     /**
-     * Convert HTML (or any Panduck-supported reader format) to Markdown.
-     *
+     * Legacy entry — 保持 RuleBuilder 链式不变。
      * Pipeline:
      *   1. Materialize input → HTML string (for Rule executor) + bytes (for Rust)
      *   2. Execute RulePlan via linkedom DOM executor: input/transform/output ops
-     *      modify the working document; handler callbacks embed sentinels
-     *   3. Serialize post-plan DOM → HTML → convert to bytes → send to Rust
-     *   4. Rust lowering → parse report → post-process Markdown (sentinel substitution)
-     *   5. Derive status from executor diags + Rust report + requireNoLoss flag
+     *      modify the working document.
+     *   3. Serialize post-plan DOM → HTML → bytes → send to Rust.
+     *   4. Rust lowering + handler dispatch.
+     *   5. Derive status from executor diags + Rust report + requireNoLoss flag.
      */
-    async toMarkdown(input: ConverterInput, options?: ToMarkdownOptions): Promise<ConverterResult> {
+    private async toMarkdownLegacy(
+        input: ConverterInput,
+        options?: ToMarkdownOptions,
+    ): Promise<ConverterResult> {
         const from = options?.from ?? "html";
         const { html: inputHtml, bytes, label, urlHint } = await materializeInput(input, options?.label);
 
@@ -187,8 +222,6 @@ export class Converter {
         }
 
         // (3) Rule-executor pass — DOM-level input/transform/output ops.
-        //     This is where `.select()`, `.require()`, `.remove()`, `.unwrap()`,
-        //     and `.replace()` callbacks actually run against the document.
         let planHtmlForRust = inputHtml;
         let requireNoLoss = false;
         if (plan) {
@@ -196,17 +229,8 @@ export class Converter {
             diagnostics.push(...exec.diagnostics);
             planHtmlForRust = exec.html;
             requireNoLoss = exec.requireNoLoss;
-            // Handler registry from RuleBuilder — Rust lowering consumes these
-            // to execute custom `.replace()` handlers. We do NOT post-process
-            // Markdown with sentinel regex here anymore.
-            const registeredHandlers = exec.handlers;
 
-            // Build JSON-serializable RuleDescriptor for the Rust N-API layer.
-            // The closures themselves can't cross the TS↔Rust boundary, but
-            // their keys and step structure travel as JSON — this is the wire-
-            // level bridge that lets a future Rust-native dispatch host see
-            // which handlers were registered for this conversion.
-            const handlerKeys = Object.keys(registeredHandlers);
+            const handlerKeys = Object.keys(exec.handlers);
             const handlersJson =
                 handlerKeys.length > 0
                     ? JSON.stringify({
@@ -219,94 +243,150 @@ export class Converter {
             // (4) Convert the post-plan HTML to bytes for Rust.
             const planBytes = new TextEncoder().encode(planHtmlForRust);
 
-            // (5) Rust conversion — NEVER throws.
-            const fn = this.binding.convertBytesMemory;
-            if (!fn) {
-                diagnostics.push({
-                    code: "panduck.convert.binding-missing",
-                    fallback: "Panduck binding does not expose convertBytesMemory — rebuild @notedge/panduck-native",
-                    messageKey: "panduck.diagnostic.bindingMissing",
-                    origin: { namespace: "panduck", component: "convert" },
-                    severity: "error",
-                    stage: "convert",
-                    url: urlHint,
-                });
-                return makeResult("failed", "", diagnostics, label, urlHint);
-            }
-
-            let response: { exitCode: number; markdown?: string; reportJson: string } | undefined = undefined;
-            let nativePanic: unknown = undefined;
-            try {
-                response = fn(from, "markdown", label, planBytes, handlersJson);
-            } catch (err) {
-                nativePanic = err;
-            }
-
-            if (nativePanic !== undefined || !response) {
-                const msg = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
-                diagnostics.push({
-                    code: "panduck.convert.native-panic",
-                    fallback: `Panduck native binary panicked for ${label}: ${msg}`,
-                    args: { message: msg },
-                    origin: { namespace: "panduck", component: "convert" },
-                    severity: "error",
-                    stage: "convert",
-                    url: urlHint,
-                });
-                return makeResult("failed", "", diagnostics, label, urlHint);
-            }
-
-            // (6) Parse Rust report + accumulate loss/warn diags.
-            const parsedReport = safeParseReport(response.reportJson);
-            diagnostics.push(...parsedReport.diagnostics);
-
-            const rustStatus = parsedReport.rawStatus;
-            const hasRustLoss = parsedReport.losses.length > 0;
-            if (hasRustLoss) {
-                diagnostics.push({
-                    code: "panduck.convert.rust-loss",
-                    fallback: `Rust reported ${parsedReport.losses.length} known structural loss(es) for ${label}`,
-                    args: { count: parsedReport.losses.length },
-                    origin: { namespace: "panduck", component: "convert" },
-                    severity: "warn",
-                    stage: "loss",
-                    url: urlHint,
-                });
-            }
-
-            // (7) No sentinel post-process — handler dispatch happens on Rust side.
-            const markdown = response.markdown ?? "";
-
-            // (8) Derive status. requireNoLoss from RuleBuilder overrides the
-            //     default "warn" policy — it is equivalent to loss policy "deny".
-            const status = deriveStatus(diagnostics, {
-                rustStatus,
-                hasRustLoss,
-                exitCode: response.exitCode,
+            return this.runRustConversion({
+                from,
+                bytes: planBytes,
+                label,
+                urlHint,
+                diagnostics,
+                handlersJson,
                 requireNoLoss,
             });
-
-            return { status, markdown, diagnostics, reportJson: response.reportJson };
         }
 
         // --- No RulePlan path — direct Rust conversion, no DOM executor ---
-        const fn = this.binding.convertBytesMemory;
-        if (!fn) {
+        return this.runRustConversion({
+            from,
+            bytes,
+            label,
+            urlHint,
+            diagnostics,
+            handlersJson: undefined,
+            requireNoLoss: false,
+        });
+    }
+
+    // -----------------------------------------------------------------------
+    // Policy path — ConverterConfig + RendererPolicy
+    // -----------------------------------------------------------------------
+
+    /**
+     * New entry — Profile 化 ConverterConfig。
+     *
+     * 关键差异：
+     *   - **不跑 RuleBuilder DOM executor**。没有 `.select()/.remove()/.unwrap()`
+     *     这些 DOM 级动作。scope 选择（如果有）将来会由 Pandark ExtractionProfile
+     *     在进入 Panduck 之前就做掉；renderer 这边只读 Notedown IR。
+     *   - `handlers` 挂在 MarkdownPolicy 上，在 writer 阶段触发，接受 IR block
+     *     kind + attributes，返回 Markdown writer fragment。
+     *   - 当前 Rust 侧还没有真正调用 policy handlers —— 我们把 policy 序列化成
+     *     handlersJson 传给 Rust，让 wire contract 先就位，handler 真正执行留待
+     *     Rust 端落地。TS 端在这里先 **模拟** 一遍 handlers，以便 e2e 能跑。
+     */
+    private async toMarkdownWithPolicy(
+        input: ConverterInput,
+        config: ConverterConfig,
+    ): Promise<ConverterResult> {
+        const from = "html"; // policy 入口只服务于 Pandark 场景，输入是 HTML page
+        const policy = config.rendererPolicy;
+        const { bytes, label, urlHint } = await materializeInput(input, undefined);
+
+        const diagnostics: DiagnosticRecord[] = [];
+
+        if (bytes.length === 0) {
             diagnostics.push({
-                code: "panduck.convert.binding-missing",
-                fallback: "Panduck binding does not expose convertBytesMemory — rebuild @notedge/panduck-native",
+                code: "panduck.convert.empty-input",
+                fallback: `Empty input for ${label}`,
+                messageKey: "panduck.diagnostic.emptyInput",
                 origin: { namespace: "panduck", component: "convert" },
                 severity: "error",
-                stage: "convert",
+                stage: "input",
                 url: urlHint,
             });
             return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
+        // Build handlersJson from MarkdownPolicy — 把 handlerKeys 传给 Rust，
+        // 让 wire contract 就位。TS 侧保留 handlers closure 用于后续 writer 模拟。
+        const policyHandlers = (policy.handlers ?? {}) as Record<string, PolicyHandler>;
+        const handlerKeys = Object.keys(policyHandlers);
+        const handlersJson =
+            handlerKeys.length > 0
+                ? JSON.stringify({
+                      version: "panduck-policy-v0",
+                      policyName: policy.name,
+                      handlers: handlerKeys,
+                      config: {
+                          heading: policy.heading,
+                          bullet: policy.bullet,
+                          fencedCode: policy.fencedCode,
+                          unsupported: policy.unsupported,
+                      },
+                  })
+                : undefined;
+
+        diagnostics.push({
+            code: "panduck.convert.policy-active",
+            fallback: `Using RendererPolicy "${policy.name}" with ${handlerKeys.length} handler(s)`,
+            args: { policyName: policy.name, handlerCount: handlerKeys.length },
+            origin: { namespace: "panduck", component: "convert" },
+            severity: "info",
+            stage: "convert",
+            url: urlHint,
+        });
+
+        const result = await this.runRustConversion({
+            from,
+            bytes,
+            label,
+            urlHint,
+            diagnostics,
+            handlersJson,
+            requireNoLoss: false,
+        });
+
+        // --- TS 侧 writer 模拟：在 markdown 输出上跑一遍 policy handlers ---
+        // 这不是最终形态（最终在 Rust writer 里触发），但能让 policy
+        // 的 handlers 在 TS 端先产生可见效果，让 e2e 能跑。
+        if (handlerKeys.length > 0 && result.markdown) {
+            result.markdown = applyPolicyHandlers(result.markdown, policyHandlers, diagnostics, urlHint);
+        }
+
+        return result;
+    }
+
+    // -----------------------------------------------------------------------
+    // Shared — Rust conversion
+    // -----------------------------------------------------------------------
+
+    private runRustConversion(ctx: {
+        from: string;
+        bytes: Uint8Array;
+        label: string;
+        urlHint?: string;
+        diagnostics: DiagnosticRecord[];
+        handlersJson?: string;
+        requireNoLoss: boolean;
+    }): Promise<ConverterResult> {
+        const { from, bytes, label, urlHint, diagnostics, handlersJson, requireNoLoss } = ctx;
+        const fn = this.binding.convertBytesMemory;
+        if (!fn) {
+            diagnostics.push({
+                code: "panduck.convert.binding-missing",
+                fallback: "Panduck binding does not expose convertBytesMemory — rebuild @notedge/panduck-native",
+                messageKey: "panduck.diagnostic.bindingMissing",
+                origin: { namespace: "panduck", component: "convert" },
+                severity: "error",
+                stage: "convert",
+                url: urlHint,
+            });
+            return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
+        }
+
         let response: { exitCode: number; markdown?: string; reportJson: string } | undefined = undefined;
         let nativePanic: unknown = undefined;
         try {
-            response = fn(from, "markdown", label, bytes);
+            response = fn(from, "markdown", label, bytes, handlersJson);
         } catch (err) {
             nativePanic = err;
         }
@@ -322,12 +402,15 @@ export class Converter {
                 stage: "convert",
                 url: urlHint,
             });
-            return makeResult("failed", "", diagnostics, label, urlHint);
+            return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
         }
 
         const parsedReport = safeParseReport(response.reportJson);
         diagnostics.push(...parsedReport.diagnostics);
-        if (parsedReport.losses.length > 0) {
+
+        const rustStatus = parsedReport.rawStatus;
+        const hasRustLoss = parsedReport.losses.length > 0;
+        if (hasRustLoss) {
             diagnostics.push({
                 code: "panduck.convert.rust-loss",
                 fallback: `Rust reported ${parsedReport.losses.length} known structural loss(es) for ${label}`,
@@ -341,19 +424,124 @@ export class Converter {
 
         const markdown = response.markdown ?? "";
         const status = deriveStatus(diagnostics, {
-            rustStatus: parsedReport.rawStatus,
-            hasRustLoss: parsedReport.losses.length > 0,
+            rustStatus,
+            hasRustLoss,
             exitCode: response.exitCode,
-            requireNoLoss: false,
+            requireNoLoss,
         });
 
-        return { status, markdown, diagnostics, reportJson: response.reportJson };
+        return Promise.resolve({ status, markdown, diagnostics, reportJson: response.reportJson });
     }
 }
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/** Type guard: true if arg is a ConverterConfig (has `rendererPolicy`). */
+function isConverterConfig(arg: object): arg is ConverterConfig {
+    return "rendererPolicy" in arg && (arg as { rendererPolicy?: unknown }).rendererPolicy != null;
+}
+
+/**
+ * 在 TS 侧模拟 writer-level policy handler 执行。
+ *
+ * 不是最终形态（Rust writer 会直接在 IR block 上触发 handlers），但在
+ * Rust 端真正落地之前，它能让自定义 handler 在 markdown 输出里产生
+ * 可见效果，让 e2e 能跑。
+ *
+ * 做法：Rust HTML→Markdown lowering 会保留 HTML 注释作为文本。我们约定
+ * 一个哨兵格式：`<!-- panduck-policy:block-kind -->`，然后在 markdown 里
+ * 找到这些哨兵，对每个跑一遍对应 handler。
+ *
+ * 输入 HTML 如果想触发某个 handler，写：
+ *   <div><!-- panduck-policy:highlight -->important</div>
+ * Rust 会把注释当普通文本带进 markdown。TS 端在这里替换。
+ */
+function applyPolicyHandlers(
+    markdown: string,
+    handlers: Record<string, PolicyHandler>,
+    diagnostics: DiagnosticRecord[],
+    urlHint?: string,
+): string {
+    const handlerKeys = Object.keys(handlers);
+    if (handlerKeys.length === 0) return markdown;
+
+    // Match a policy sentinel comment and capture both the kind and the text following it
+    // until the next sentinel or end of string.
+    //  pattern: <!-- panduck-policy:<kind> --> followed by anything up to the next sentinel or EOF
+    const sentinelRe = /<!--\s*panduck-policy:([A-Za-z0-9_\-\.]+)\s*-->/g;
+
+    let out = markdown;
+    const matches: Array<{ idx: number; key: string; matchLength: number }> = [];
+    let m: RegExpExecArray | null;
+    while ((m = sentinelRe.exec(out)) !== null) {
+        matches.push({ idx: m.index, key: m[1], matchLength: m[0].length });
+    }
+
+    if (matches.length === 0) return out;
+
+    // Walk from end to start so offsets stay stable.
+    for (let i = matches.length - 1; i >= 0; i--) {
+        const match = matches[i];
+        const handler = handlers[match.key];
+        if (!handler) {
+            diagnostics.push({
+                code: "panduck.convert.policy-handler-missing",
+                fallback: `Policy handler "${match.key}" not found — pass-through default behavior applies`,
+                args: { key: match.key },
+                origin: { namespace: "panduck", component: "convert" },
+                severity: "info",
+                stage: "convert",
+                url: urlHint,
+            });
+            continue;
+        }
+
+        // Sentinel 之后到下一个 sentinel（或 EOF）的内容，当作 "原始 markdown 片段" 传给 handler。
+        const nextSentinelStart = i > 0 ? matches[i - 1].idx + matches[i - 1].matchLength : out.length;
+        // 注意：matches 按正向记录，i = matches.length - 1 是最后一个 sentinel，
+        // 它之后的文本跑到 EOF。我们需要下一个 **更晚** 的 sentinel，即 matches[i+1]。
+        // 修正：matches 数组是正序的；当前元素 match 之后的下一个 sentinel 是 matches[i+1]。
+        // 这里的循环是倒序的，所以正确的边界是：
+        const endBoundary = i + 1 < matches.length ? matches[i + 1].idx : out.length;
+
+        const rawFragment = out.substring(match.idx + match.matchLength, endBoundary);
+
+        let result: PolicyHandlerResult;
+        try {
+            result = handler({ blockKind: match.key });
+        } catch (err) {
+            diagnostics.push({
+                code: "panduck.convert.policy-handler-threw",
+                fallback: `Policy handler "${match.key}" threw: ${err instanceof Error ? err.message : String(err)}`,
+                args: { key: match.key },
+                origin: { namespace: "panduck", component: "convert" },
+                severity: "error",
+                stage: "convert",
+                url: urlHint,
+            });
+            continue;
+        }
+
+        const replacement = (() => {
+            switch (result.kind) {
+                case "suppress":
+                    return "";
+                case "fragment":
+                    return result.markdown;
+                case "pass-through":
+                default:
+                    // 去掉 sentinel，保留原始片段
+                    return rawFragment;
+            }
+        })();
+
+        out = out.substring(0, match.idx) + replacement + out.substring(endBoundary);
+    }
+
+    return out;
+}
 
 type ResolvedRules = {
     plan: RulePlan | null;

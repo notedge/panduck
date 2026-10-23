@@ -4,7 +4,7 @@ export { loadPanduckWeb, loadPanduckWasm } from "./wasm/index.js";
 export { buildPanduckCli, runCli, getFormatRegistry, ExitCode, REPORT_SCHEMA_VERSION } from "./cli/index.js";
 export type { FormatRecord, PanduckReport, CapabilityState } from "./cli/index.js";
 
-// Public authoring surface — Converter + RuleBuilder.
+// Public authoring surface — Converter + RuleBuilder + RendererPolicy.
 export { Converter } from "./converter.js";
 export type {
     ConverterInput,
@@ -32,6 +32,22 @@ export type {
     ReplaceHandlerFn,
     MarkdownHelper,
 } from "./rule-builder.js";
+
+// RendererPolicy — writer-level 策略层（RuleBuilder.output.replace 的继任者）。
+export {
+    defineMarkdownPolicy,
+    withHandlers,
+} from "./renderer-policy.js";
+export type {
+    HandlerContext,
+    PolicyHandlerResult,
+    PolicyHandler,
+    MarkdownPolicy,
+    ConverterConfig,
+} from "./renderer-policy.js";
+
+// PassDescriptor — pass 的 I/O / capability 声明。
+export type { Capability, PassDescriptor } from "./pass-descriptor.js";
 
 /** @deprecated Use `loadPanduckNode` or `loadPanduckNative`. */
 export type PanduckNative = import("./types.js").PanduckBindings;
