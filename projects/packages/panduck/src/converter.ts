@@ -351,7 +351,8 @@ function resolveRules(rules: RulePlan | RuleBuilder | undefined): ResolvedRules 
     if (rules instanceof RuleBuilder) {
         return { plan: rules.build(), handlers: { ...rules.handlers } };
     }
-    return { plan: rules, handlers: {} };
+    // Direct RulePlan — handlers are attached on the plan itself.
+    return { plan: rules, handlers: { ...rules.handlers } };
 }
 
 async function materializeInput(
