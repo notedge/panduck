@@ -28,7 +28,7 @@ pub struct ConvertProjectResponse {
     pub unresolved_assets: Vec<String>,
     /// Output directory root.
     pub output_dir: String,
-    /// Serialized `panduck.report/v1` JSON payload.
+    /// Serialized `panduck.report/v0` JSON payload.
     pub report_json: String,
 }
 
@@ -43,7 +43,7 @@ pub struct ConvertResponse {
     pub html: Option<String>,
     /// Binary output for container targets such as `docx`.
     pub binary: Option<Buffer>,
-    /// Serialized `panduck.report/v1` JSON payload.
+    /// Serialized `panduck.report/v0` JSON payload.
     pub report_json: String,
 }
 
@@ -58,7 +58,7 @@ pub struct InspectIndexResponse {
     pub inner: String,
     /// OPC member paths discovered in the package.
     pub parts: Vec<String>,
-    /// Serialized `panduck.report/v1` JSON payload.
+    /// Serialized `panduck.report/v0` JSON payload.
     pub report_json: String,
 }
 
@@ -88,7 +88,7 @@ pub struct InspectDecodeResponse {
     pub inner: String,
     /// Per-member decode summaries for the package.
     pub parts: Vec<InspectDecodedPart>,
-    /// Serialized `panduck.report/v1` JSON payload.
+    /// Serialized `panduck.report/v0` JSON payload.
     pub report_json: String,
 }
 

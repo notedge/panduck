@@ -103,7 +103,7 @@ fn crc32(data: &[u8]) -> u32 {
     crc ^ 0xFFFF_FFFF
 }
 
-/// Assert `panduck.report/v1` matches IR loss, on-disk report, and project output fields.
+/// Assert `panduck.report/v0` matches IR loss, on-disk report, and project output fields.
 pub fn assert_convert_project_report(output: &ConvertProjectOutput, published: &PublishedMarkdownProject) {
     let report = parse_report_json(&output.report_json);
     let disk = fs::read_to_string(&published.report_path).expect("read panduck.report.json");

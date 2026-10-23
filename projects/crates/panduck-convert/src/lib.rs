@@ -81,7 +81,7 @@ pub struct ConvertProjectOutput {
     pub published_chapters: Vec<String>,
     /// Image sources left unresolved in the Markdown body.
     pub unresolved_assets: Vec<String>,
-    /// Serialized `panduck.report/v1` JSON payload.
+    /// Serialized `panduck.report/v0` JSON payload.
     pub report_json: String,
     /// Number of semantic loss markers recorded in the report.
     pub loss_count: usize,
@@ -98,7 +98,7 @@ pub struct ConvertOutput {
     /// Binary output for container targets such as `docx`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub binary: Option<Vec<u8>>,
-    /// Serialized `panduck.report/v1` JSON payload.
+    /// Serialized `panduck.report/v0` JSON payload.
     pub report_json: String,
     /// Number of semantic loss markers recorded in the report.
     pub loss_count: usize,

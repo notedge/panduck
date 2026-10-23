@@ -16,7 +16,7 @@ test("formats emits markdown capability json", () => {
 test("plan blocks unsupported ready pipeline with report schema", () => {
     const plan = runPanduck(["plan", "package.json", "--from", "markdown", "--to", "epub", "--json"]);
     assert.equal(plan.code, 3);
-    assert.match(plan.stdout, /panduck\.report\/v1/);
+    assert.match(plan.stdout, /panduck\.report\/v0/);
 });
 
 test("global --log-file installs native console sink without breaking commands", () => {
