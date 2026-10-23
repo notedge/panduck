@@ -87,6 +87,127 @@ fn docx_to_markdown_project_writes_index_assets_and_report() {
     let _ = fs::remove_dir_all(&output_dir);
 }
 
+#[test]
+fn docx_to_markdown_project_materializes_jpeg_embedded_image() {
+    let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+  <w:body>
+    <w:p>
+      <w:r>
+        <w:drawing>
+          <wp:inline>
+            <wp:docPr descr="Photo"/>
+            <a:graphic>
+              <a:graphicData>
+                <a:blip r:embed="rId7"/>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </wp:inline>
+      </w:drawing>
+    </w:r>
+  </w:p>
+</w:body>
+</w:document>"#;
+    let rels_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId7"
+    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
+    Target="media/photo.jpg"/>
+</Relationships>"#;
+    let jpeg_bytes = b"\xFF\xD8\xFF\xE0\x00\x10JFIF\x00photo";
+    let zip = stored_zip(&[
+        ("word/document.xml", document_xml),
+        ("word/_rels/document.xml.rels", rels_xml),
+        ("word/media/photo.jpg", jpeg_bytes),
+    ]);
+
+    let output_dir = std::env::temp_dir().join(format!("panduck-docx-jpeg-{}", std::process::id()));
+    let (output, published) = convert_to_markdown_project("docx", "jpeg.docx", zip, &output_dir).expect("convert");
+
+    assert_eq!(output.published_assets.len(), 1);
+    let asset_path = &output.published_assets[0];
+    assert_content_addressed(asset_path, "jpg");
+    assert!(output.index_markdown.contains(&format!("![Photo]({asset_path})")));
+    assert!(output.unresolved_assets.is_empty());
+
+    let asset_on_disk = fs::read(output_dir.join(asset_path)).expect("read jpeg asset");
+    assert_eq!(asset_on_disk, jpeg_bytes);
+
+    let index = fs::read_to_string(published.index_path).expect("read index");
+    let reopened = import_markdown_bytes("index.md", &index).expect("oak markdown reopen");
+    assert!(reopened.validate().is_valid());
+    assert!(reopened.blocks.iter().any(|node| matches!(
+        &node.block,
+        Block::Paragraph { content }
+            if content.iter().any(|inline| matches!(
+                inline,
+                Inline::Image { source, alt, .. }
+                    if source == asset_path
+                        && alt.iter().any(|child| matches!(child, Inline::Text { text } if text == "Photo"))
+            ))
+    )));
+
+    let _ = fs::remove_dir_all(&output_dir);
+}
+
+#[test]
+fn docx_to_markdown_project_is_deterministic_across_repeated_runs() {
+    let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+  <w:body>
+    <w:p><w:r><w:t>Hello DOCX</w:t></w:r></w:p>
+    <w:p>
+      <w:r>
+        <w:drawing>
+          <wp:inline>
+            <wp:docPr descr="Banner"/>
+            <a:graphic><a:graphicData><a:blip r:embed="rId1"/></a:graphicData></a:graphic>
+          </wp:inline>
+        </wp:inline>
+      </w:drawing>
+    </w:r>
+  </w:p>
+</w:body>
+</w:document>"#;
+    let rels_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1"
+    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
+    Target="media/banner.png"/>
+</Relationships>"#;
+    let zip = stored_zip(&[
+        ("word/document.xml", document_xml),
+        ("word/_rels/document.xml.rels", rels_xml),
+        ("word/media/banner.png", b"\x89PNG\x01\x02\x03"),
+    ]);
+
+    let base = std::env::temp_dir().join(format!("panduck-docx-deterministic-{}", std::process::id()));
+    let dir_a = base.join("a");
+    let dir_b = base.join("b");
+
+    let (output_a, published_a) = convert_to_markdown_project("docx", "same.docx", zip.clone(), &dir_a).expect("a");
+    let (output_b, published_b) = convert_to_markdown_project("docx", "same.docx", zip, &dir_b).expect("b");
+
+    // Content-addressed asset paths must be identical across runs.
+    assert_eq!(output_a.published_assets, output_b.published_assets);
+    // Index markdown body must be byte-identical.
+    assert_eq!(output_a.index_markdown, output_b.index_markdown);
+    // Report JSON must be identical (no timestamps or nondeterministic fields).
+    assert_eq!(output_a.report_json, output_b.report_json);
+    assert_eq!(published_a.index_path, dir_a.join("index.md"));
+    assert_eq!(fs::read_to_string(&published_a.index_path).expect("a"),
+               fs::read_to_string(&published_b.index_path).expect("b"));
+
+    let _ = fs::remove_dir_all(&base);
+}
+
 fn minimal_epub_zip() -> Vec<u8> {
     let container = br#"<?xml version="1.0" encoding="UTF-8"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
