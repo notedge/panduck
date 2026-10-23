@@ -126,7 +126,7 @@ export type ToMarkdownOptions = {
  * caller should inspect. Only `success` means no required structures were
  * missing and no known loss was detected.
  */
-export type ConverterStatus = "success" | "success_with_loss" | "failed";
+export type ConverterStatus = "success" | "success_with_loss" | "success_unvalidated" | "failed";
 
 /** Result of a Panduck conversion — consumed directly by Pandark Crawler. */
 export type ConverterResult = {
@@ -535,11 +535,34 @@ function deriveStatus(
     if (ctx.exitCode !== 0) return "failed";
     if (ctx.rustStatus === "failed") return "failed";
     if (diags.some((d) => d.severity === "error")) return "failed";
-    const hasAnyLoss = ctx.hasRustLoss || diags.some((d) =>
-        /loss|required-missing|sentinel-lost|replace-missing-handler|not-validated|unsupported/i.test(d.code),
+
+    // v0 only — no regex. Loss via severity + explicit prefix.
+    const hasLoss = ctx.hasRustLoss || diags.some((d) =>
+        d.severity === "warn" && isLossCode(d.code),
     );
-    if (!hasAnyLoss) return "success";
-    // requireNoLoss elevates any known loss to a hard failure.
-    if (ctx.requireNoLoss) return "failed";
-    return "success_with_loss";
+    if (hasLoss) {
+        if (ctx.requireNoLoss) return "failed";
+        return "success_with_loss";
+    }
+
+    // Not-validated via explicit prefix.
+    const hasUnvalidated = diags.some((d) =>
+        d.severity === "warn" && isNotValidatedCode(d.code),
+    );
+    if (hasUnvalidated) return "success_unvalidated";
+
+    return "success";
+}
+
+function isLossCode(code: string): boolean {
+    if (code.endsWith(".loss")) return true;
+    if (code.includes(".loss.")) return true;
+    if (code === "panduck.convert.structure-loss") return true;
+    return false;
+}
+
+function isNotValidatedCode(code: string): boolean {
+    if (code.endsWith(".not-validated")) return true;
+    if (code.includes(".not-validated.")) return true;
+    return false;
 }
