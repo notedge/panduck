@@ -447,6 +447,111 @@ fn html_to_markdown_project_reports_unsupported_elements_in_panduck_report() {
     let _ = fs::remove_dir_all(&output_dir);
 }
 
+#[test]
+fn docx_to_markdown_project_deduplicates_identical_image_bytes() {
+    // Two drawings in the DOCX body both embed the *same* PNG bytes —
+    // `dedupe_assets::dedupe_markdown_project` must collapse them to a
+    // single content-addressed path so we materialize one file on disk and
+    // both Markdown image links point at it.
+    let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+  <w:body>
+    <w:p>
+      <w:r>
+        <w:drawing><wp:inline><wp:docPr descr="First"/><a:graphic><a:graphicData><a:blip r:embed="rId1"/></a:graphicData></a:graphic></wp:inline></w:drawing>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:drawing><wp:inline><wp:docPr descr="Second"/><a:graphic><a:graphicData><a:blip r:embed="rId2"/></a:graphicData></a:graphic></wp:inline></w:drawing>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>"#;
+    let rels_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/alpha.png"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/beta.png"/>
+</Relationships>"#;
+    let same_png = b"\x89PNG\r\n\x1a\x00same";
+    let zip = stored_zip(&[
+        ("word/document.xml", document_xml),
+        ("word/_rels/document.xml.rels", rels_xml),
+        ("word/media/alpha.png", same_png),
+        ("word/media/beta.png", same_png),
+    ]);
+
+    let output_dir = std::env::temp_dir().join(format!("panduck-docx-dedupe-{}", std::process::id()));
+    let (output, published) = convert_to_markdown_project("docx", "dup.docx", zip, &output_dir).expect("convert");
+
+    // Dedupe → exactly one published asset, no unresolved.
+    assert_eq!(output.published_assets.len(), 1, "identical bytes must dedupe to one asset");
+    let asset_path = &output.published_assets[0];
+    assert_content_addressed(asset_path, "png");
+    assert!(output.unresolved_assets.is_empty());
+
+    // Both image references in the index must point at the *same* deduped path.
+    let index = fs::read_to_string(published.index_path).expect("read index");
+    let first_ref = format!("![First]({asset_path})");
+    let second_ref = format!("![Second]({asset_path})");
+    assert!(index.contains(&first_ref), "missing first image ref → {index}");
+    assert!(index.contains(&second_ref), "missing second image ref → {index}");
+
+    // Only one asset file on disk.
+    assert!(fs::read(output_dir.join(asset_path)).is_ok());
+
+    let _ = fs::remove_dir_all(&output_dir);
+}
+
+#[test]
+fn docx_to_markdown_project_missing_relationship_target_yields_unresolved_asset() {
+    let document_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+  <w:body>
+    <w:p>
+      <w:r>
+        <w:drawing><wp:inline><wp:docPr descr="Missing"/><a:graphic><a:graphicData><a:blip r:embed="rId3"/></a:graphicData></a:graphic></wp:inline></wp:inline></w:drawing>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>"#;
+    // rId3 points at a member that does NOT exist in the zip.
+    let rels_xml = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/missing.png"/>
+</Relationships>"#;
+    let zip = stored_zip(&[
+        ("word/document.xml", document_xml),
+        ("word/_rels/document.xml.rels", rels_xml),
+        // NOTE: no word/media/missing.png member — broken relationship.
+    ]);
+
+    let output_dir = std::env::temp_dir().join(format!("panduck-docx-broken-rel-{}", std::process::id()));
+    let (output, published) = convert_to_markdown_project("docx", "broken.docx", zip, &output_dir).expect("convert");
+
+    assert!(output.published_assets.is_empty(), "no asset bytes available to materialize");
+    assert!(
+        !output.unresolved_assets.is_empty(),
+        "broken relationship must surface an unresolved asset source in the report"
+    );
+    assert_convert_project_report(&output, &published);
+    assert_report_contains_loss_codes(&output.report_json, &["import.docx.partial_coverage"]);
+
+    // Markdown reopen must still validate and the image must remain in the
+    // IR as Unresolved so we don't silently drop it.
+    let index = fs::read_to_string(published.index_path).expect("read index");
+    let reopened = import_markdown_bytes("index.md", &index).expect("oak markdown reopen");
+    assert!(reopened.validate().is_valid());
+
+    let _ = fs::remove_dir_all(&output_dir);
+}
+
 fn legacy_plain_doc_fixture() -> &'static [u8] {
     notedown_fixtures::acorn::doc::LEGACY_PLAIN_DOC
 }
