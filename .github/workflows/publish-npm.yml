@@ -42,9 +42,34 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
         run: node scripts/ci/bind-publish-tag.mjs
 
+  typecheck:
+    name: TypeScript typecheck gate
+    needs: provenance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.provenance.outputs.tag }}
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: pnpm install --filter '!@notedge/homepage'
+
+      - name: Typecheck workspace
+        run: pnpm typecheck
+
   build-native:
     name: Native ${{ matrix.short }}
-    needs: provenance
+    needs: [provenance, typecheck]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -132,7 +157,7 @@ jobs:
 
   build-wasm:
     name: Build wasm32 package
-    needs: provenance
+    needs: [provenance, typecheck]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -177,7 +202,7 @@ jobs:
 
   publish:
     name: Publish packages
-    needs: [provenance, build-native, build-wasm]
+    needs: [provenance, typecheck, build-native, build-wasm]
     runs-on: ubuntu-latest
     environment: NPM_PUBLISH
     steps:
