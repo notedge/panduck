@@ -1,6 +1,6 @@
 {
     "name": "@notedge/panduck-linux-arm64",
-    "version": "0.0.13",
+    "version": "0.0.14",
     "description": "Panduck Node-API binary for Linux arm64",
     "type": "module",
     "license": "MPL-2.0",
