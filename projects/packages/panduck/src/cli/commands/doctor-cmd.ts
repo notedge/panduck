@@ -61,7 +61,7 @@ async function runDoctor(options: ParsedOptions): Promise<number> {
 
     const ok = checks.every((check) => check.ok);
     const payload = {
-        schema_version: "panduck.doctor/v1",
+        schema_version: "panduck.doctor/v0",
         status: ok ? "ok" : "issues",
         checks,
     };

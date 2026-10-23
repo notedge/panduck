@@ -1,6 +1,6 @@
 import type { CapabilityState } from "./format-registry.js";
 
-export const REPORT_SCHEMA_VERSION = "panduck.report/v1";
+export const REPORT_SCHEMA_VERSION = "panduck.report/v0";
 
 export type ReportStatus =
     | "success"

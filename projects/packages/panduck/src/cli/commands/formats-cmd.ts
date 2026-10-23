@@ -36,7 +36,7 @@ function runFormats(options: ParsedOptions): number {
 
     if (shared.json || options.json === true) {
         emitJson({
-            schema_version: "panduck.formats/v1",
+            schema_version: "panduck.formats/v0",
             formats: payload,
             conversions: ctx.bindings?.supportedConversions?.() ?? [],
         });
