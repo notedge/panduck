@@ -73,9 +73,14 @@ export function executePlan(
             }
             case "output": {
                 const result = executeOutputStep(
-                    stepIdx, ops as OutputOp[], currentScope, document, diagnostics, urlHint,
+                    stepIdx, ops as OutputOp[], currentScope, document, handlers, diagnostics, urlHint,
                 );
                 if (result.requireNoLoss) requireNoLoss = true;
+                if (result.domMutated) {
+                    // Re-resolve scope roots after handler-driven DOM replacement
+                    // so subsequent (if any) input/transform steps see the new tree.
+                    currentScope = currentScope.filter((el) => el.isConnected);
+                }
                 // output ops do not change the selection scope — only input/transform do.
                 break;
             }
@@ -217,33 +222,115 @@ function executeTransformStep(
 }
 
 // ---------------------------------------------------------------------------
-// Output scope — deferred handler registration + loss flags.
+// Output scope — handler execution + loss flags.
 //
-// CRITICAL: We do NOT execute handlers here. We do NOT modify the DOM.
-// We do NOT embed sentinels. Those responsibilities belong to the Rust
-// Notedown/Oak lowering + handler dispatch host.
+// NOTE: The v0 design doc describes handler dispatch as deferred to the Rust
+// Notedown/Oak lowering host. The Rust side does **not** yet accept a handler
+// registry, so we bridge here in TS: find matches, call the user-supplied
+// ReplaceHandlerFn, and replace each matched node with a text span carrying
+// the handler-produced markdown. Rust HTML→Markdown lowering then naturally
+// promotes that markdown text into the final output.
 // ---------------------------------------------------------------------------
+
+type OutputStepResult = {
+    requireNoLoss: boolean;
+    /** Whether any `replace` handler actually mutated the DOM (caller may want to refresh scope roots). */
+    domMutated: boolean;
+};
 
 function executeOutputStep(
     stepIdx: number,
     ops: OutputOp[],
     scope: Element[],
     document: Document,
+    handlers: Record<string, ReplaceHandlerFn>,
     diagnostics: DiagnosticRecord[],
     urlHint?: string,
-): { requireNoLoss: boolean } {
+): OutputStepResult {
     let requireNoLoss = false;
+    let domMutated = false;
 
     for (let opIdx = 0; opIdx < ops.length; opIdx++) {
         const op = ops[opIdx];
         switch (op.op) {
             case "replace": {
-                // Only log that a replace rule was registered. Handler lookup
-                // + execution happens on the Rust side with the handler map.
+                const handler = handlers[op.handlerKey];
+                if (!handler) {
+                    diagnostics.push({
+                        code: "panduck.executor.replace-handler-missing",
+                        fallback: `Replace handler "${op.handlerKey}" not found in registry for selector "${op.selector}"`,
+                        args: { step: stepIdx, op: opIdx, handlerKey: op.handlerKey, selector: op.selector },
+                        origin: { namespace: "panduck", component: "executor" },
+                        severity: "error",
+                        stage: "rule",
+                        url: urlHint,
+                    });
+                    break;
+                }
+
+                const matches = querySelectorAllWithin(scope, op.selector, diagnostics, urlHint);
+                if (matches.length === 0) {
+                    diagnostics.push({
+                        code: "panduck.executor.replace-no-match",
+                        fallback: `Replace handler "${op.handlerKey}" found nothing for selector "${op.selector}"`,
+                        args: { step: stepIdx, op: opIdx, handlerKey: op.handlerKey, selector: op.selector },
+                        origin: { namespace: "panduck", component: "executor" },
+                        severity: "warn",
+                        stage: "rule",
+                        url: urlHint,
+                    });
+                    break;
+                }
+
+                const mdHelper: MarkdownHelper = makeMarkdownHelper(document);
+
+                // Walk backwards so removals don't shift indices.
+                for (let i = matches.length - 1; i >= 0; i--) {
+                    const node = matches[i];
+                    let markdown: string;
+                    try {
+                        markdown = handler(node, mdHelper);
+                    } catch (err) {
+                        diagnostics.push({
+                            code: "panduck.executor.replace-handler-threw",
+                            fallback: `Handler "${op.handlerKey}" threw for selector "${op.selector}": ${err instanceof Error ? err.message : String(err)}`,
+                            args: { step: stepIdx, op: opIdx, handlerKey: op.handlerKey, selector: op.selector },
+                            origin: { namespace: "panduck", component: "executor" },
+                            severity: "error",
+                            stage: "rule",
+                            url: urlHint,
+                        });
+                        continue;
+                    }
+
+                    if (typeof markdown !== "string") {
+                        diagnostics.push({
+                            code: "panduck.executor.replace-handler-non-string",
+                            fallback: `Handler "${op.handlerKey}" did not return a string`,
+                            args: { step: stepIdx, op: opIdx, handlerKey: op.handlerKey },
+                            origin: { namespace: "panduck", component: "executor" },
+                            severity: "error",
+                            stage: "rule",
+                            url: urlHint,
+                        });
+                        continue;
+                    }
+
+                    // Replace the original node with a span carrying the
+                    // handler-produced markdown as plain text (not HTML).
+                    // Rust lowering extracts text content, so this markdown
+                    // flows straight through to the final Markdown output.
+                    const wrapper = document.createElement("span");
+                    wrapper.setAttribute("data-panduck-replaced", op.handlerKey);
+                    wrapper.textContent = markdown;
+                    node.replaceWith(wrapper);
+                    domMutated = true;
+                }
+
                 diagnostics.push({
-                    code: "panduck.executor.replace-registered",
-                    fallback: `Registered replace handler "${op.handlerKey}" for selector "${op.selector}" (deferred to Rust lowering)`,
-                    args: { step: stepIdx, op: opIdx, handlerKey: op.handlerKey, selector: op.selector },
+                    code: "panduck.executor.replace-executed",
+                    fallback: `Ran replace handler "${op.handlerKey}" on ${matches.length} node(s) matching "${op.selector}"`,
+                    args: { step: stepIdx, op: opIdx, handlerKey: op.handlerKey, selector: op.selector, count: matches.length },
                     origin: { namespace: "panduck", component: "executor" },
                     severity: "info",
                     stage: "rule",
@@ -267,7 +354,26 @@ function executeOutputStep(
         }
     }
 
-    return { requireNoLoss };
+    return { requireNoLoss, domMutated };
+}
+
+function makeMarkdownHelper(document: Document): MarkdownHelper {
+    return {
+        children(node: unknown): string {
+            const el = node as Element | null;
+            if (!el || !("innerText" in el)) return "";
+            return el.textContent ?? "";
+        },
+        quote(text: string): string {
+            return `> ${text.split(/\r?\n/).join("\n> ")}`;
+        },
+        emphasis(text: string): string {
+            return `*${text}*`;
+        },
+        strong(text: string): string {
+            return `**${text}**`;
+        },
+    };
 }
 
 // ---------------------------------------------------------------------------
