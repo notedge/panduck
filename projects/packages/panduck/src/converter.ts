@@ -8,9 +8,10 @@
  *   - FetchArtifact (from Pandark Crawler.fetch())
  *   - string | Uint8Array
  *
- * All three enter: Rule-executor (TS, linkedom) → Notedown Rust lowering →
- * sentinel post-process (TS). Panduck does NOT ship its own HTML parser or
- * Markdown writer — linkedom is the structural pass, Rust owns the lowering.
+ * All three enter: Rule-executor (TS, linkedom — scope selection only, NO
+ * handler execution) → Notedown Rust lowering + handler dispatch.
+ * Panduck does NOT ship its own HTML parser or Markdown writer — linkedom is
+ * the structural scope-select pass, Rust owns the lowering + handler dispatch.
  *
  * Converter produces a structured DiagnosticRecord[] that the Pandark Crawler
  * can aggregate into the run report without parsing free-form message text.
@@ -20,7 +21,7 @@ import { loadPanduckNode } from "./node/load.js";
 import type { RulePlan } from "./rule-builder.js";
 import { RuleBuilder } from "./rule-builder.js";
 import type { ReplaceHandlerFn } from "./rule-builder.js";
-import { executePlan, postProcessMarkdown } from "./rule-executor.js";
+import { executePlan } from "./rule-executor.js";
 
 // ---------------------------------------------------------------------------
 // Diagnostic record (shared shape with Pandark Crawler)
@@ -195,9 +196,10 @@ export class Converter {
             diagnostics.push(...exec.diagnostics);
             planHtmlForRust = exec.html;
             requireNoLoss = exec.requireNoLoss;
-            // Keep sentinel map alive — we post-process after Rust returns.
-            // Use a local closure capture instead of a module-level variable.
-            const sentinels = exec.sentinels;
+            // Handler registry from RuleBuilder — Rust lowering consumes these
+            // to execute custom `.replace()` handlers. We do NOT post-process
+            // Markdown with sentinel regex here anymore.
+            const registeredHandlers = exec.handlers;
 
             // (4) Convert the post-plan HTML to bytes for Rust.
             const planBytes = new TextEncoder().encode(planHtmlForRust);
@@ -257,9 +259,8 @@ export class Converter {
                 });
             }
 
-            // (7) Post-process Markdown — substitute handler sentinels.
-            let markdown = response.markdown ?? "";
-            markdown = postProcessMarkdown(markdown, sentinels, diagnostics, urlHint);
+            // (7) No sentinel post-process — handler dispatch happens on Rust side.
+            const markdown = response.markdown ?? "";
 
             // (8) Derive status. requireNoLoss from RuleBuilder overrides the
             //     default "warn" policy — it is equivalent to loss policy "deny".
