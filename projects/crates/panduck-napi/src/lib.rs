@@ -8,7 +8,8 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use panduck_convert::{
     READERS, WRITERS, convert_bytes, convert_file, convert_markdown_project_file, empty_diagnostic_envelope,
-    inspect_docx_decode, inspect_docx_index, supported_routes, supports_markdown_project_source, supports_route,
+    from_adapter_error, inspect_docx_decode, inspect_docx_index, supported_routes, supports_markdown_project_source,
+    supports_route,
 };
 use panduck_types::AdapterError;
 
@@ -331,17 +332,17 @@ fn build_project_error_report(from: &str, input_path: &str, output_dir: &str, er
 }
 
 fn map_adapter_error(error: AdapterError) -> Error {
-    // Preserve the structured diagnostic identity for JS consumers instead of
-    // collapsing everything into a free-form string. When the AdapterError
-    // wraps a Diagnostic (from the notedown formats layer via map_format_error)
-    // we extract the stable code and fallback message directly. For legacy
-    // variants we fall back to the error's Display impl.
-    let (code, fallback) = match &error {
-        AdapterError::Diagnostic { diagnostic } => (
-            diagnostic.code().to_string(),
-            diagnostic.message().fallback().map(|s| s.to_string()).unwrap_or_else(|| diagnostic.code().to_string()),
-        ),
-        _ => ("panduck.adapter.error".to_string(), error.to_string()),
-    };
+    // Use `panduck_convert::from_adapter_error` to get the authoritative
+    // `panduck.adapter.*` or `notedown.format.*` wire code instead of the
+    // previous fallback `panduck.adapter.error` string literal that was not
+    // in the DiagnosticCode enum and silently flattened every non-
+    // Diagnostic AdapterError variant.
+    let diag = from_adapter_error(&error);
+    let code = diag.code().to_string();
+    let fallback = diag
+        .message()
+        .fallback()
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| code.clone());
     Error::from_reason(format!("[code={code}] {fallback}"))
 }
