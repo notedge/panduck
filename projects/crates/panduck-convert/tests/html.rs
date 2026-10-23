@@ -12,6 +12,7 @@ fn html_routes_are_registered_and_reopen_as_markdown() {
         "markdown",
         "source.html",
         br#"<html><body><h1>Title</h1><p>Hello <strong>world</strong>.</p></body></html>"#.to_vec(),
+        None,
     )
     .expect("convert html");
     assert_convert_report(&output, "markdown");
@@ -23,7 +24,7 @@ fn html_routes_are_registered_and_reopen_as_markdown() {
 #[test]
 fn html_routes_preserve_image_loss_as_reported_semantics() {
     let output =
-        convert_bytes("html", "html", "image.html", br#"<body><p><img src="picture.png" alt="Picture"></p></body>"#.to_vec())
+        convert_bytes("html", "html", "image.html", br#"<body><p><img src="picture.png" alt="Picture"></p></body>"#.to_vec(), None)
             .expect("convert html");
     assert_convert_report(&output, "html");
     assert!(output.html.expect("html output").contains(r#"<img alt="Picture" src="picture.png">"#));

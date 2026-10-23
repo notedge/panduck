@@ -58,7 +58,7 @@ fn markdown_shortcut_link_to_docx_reopens_with_same_target() {
 
 #[test]
 fn docx_to_html_route_preserves_reopened_semantics() {
-    let source = convert_bytes("markdown", "docx", "source.md", b"# Title\n\nBody.\n".to_vec())
+    let source = convert_bytes("markdown", "docx", "source.md", b"# Title\n\nBody.\n".to_vec(), None)
         .expect("create source docx")
         .binary
         .expect("source docx bytes");

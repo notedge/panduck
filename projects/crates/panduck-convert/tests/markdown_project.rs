@@ -56,7 +56,7 @@ fn docx_to_markdown_project_writes_index_assets_and_report() {
     ]);
 
     let output_dir = std::env::temp_dir().join(format!("panduck-md-project-{}", std::process::id()));
-    let (output, published) = convert_to_markdown_project("docx", "image.docx", zip, &output_dir), None).expect("convert project");
+    let (output, published) = convert_to_markdown_project("docx", "image.docx", zip, &output_dir, None).expect("convert project");
 
     assert_eq!(output.published_assets.len(), 1);
     let asset_path = &output.published_assets[0];
@@ -126,7 +126,7 @@ fn docx_to_markdown_project_materializes_jpeg_embedded_image() {
     ]);
 
     let output_dir = std::env::temp_dir().join(format!("panduck-docx-jpeg-{}", std::process::id()));
-    let (output, published) = convert_to_markdown_project("docx", "jpeg.docx", zip, &output_dir), None).expect("convert");
+    let (output, published) = convert_to_markdown_project("docx", "jpeg.docx", zip, &output_dir, None).expect("convert");
 
     assert_eq!(output.published_assets.len(), 1);
     let asset_path = &output.published_assets[0];
@@ -192,8 +192,8 @@ fn docx_to_markdown_project_is_deterministic_across_repeated_runs() {
     let dir_a = base.join("a");
     let dir_b = base.join("b");
 
-    let (output_a, published_a) = convert_to_markdown_project("docx", "same.docx", zip.clone(), &dir_a).expect("a");
-    let (output_b, published_b) = convert_to_markdown_project("docx", "same.docx", zip, &dir_b), None).expect("b");
+    let (output_a, published_a) = convert_to_markdown_project("docx", "same.docx", zip.clone(), &dir_a, None).expect("a");
+    let (output_b, published_b) = convert_to_markdown_project("docx", "same.docx", zip, &dir_b, None).expect("b");
 
     // Content-addressed asset paths must be identical across runs.
     assert_eq!(output_a.published_assets, output_b.published_assets);
@@ -250,7 +250,7 @@ fn epub_to_markdown_project_writes_index_and_reopens_semantics() {
     assert!(supports_markdown_project_source("epub"));
     let output_dir = std::env::temp_dir().join(format!("panduck-epub-project-{}", std::process::id()));
     let (output, published) =
-        convert_to_markdown_project("epub", "book.epub", minimal_epub_zip(), &output_dir).expect("convert epub project");
+        convert_to_markdown_project("epub", "book.epub", minimal_epub_zip(), &output_dir, None).expect("convert epub project");
 
     assert!(output.index_markdown.contains("# Chapter One"));
     assert!(output.index_markdown.contains("Hello EPUB"));
@@ -319,7 +319,7 @@ fn epub_with_image_zip() -> Vec<u8> {
 fn epub_to_markdown_project_materializes_chapter_image() {
     let output_dir = std::env::temp_dir().join(format!("panduck-epub-image-project-{}", std::process::id()));
     let (output, published) =
-        convert_to_markdown_project("epub", "image.epub", epub_with_image_zip(), &output_dir).expect("convert epub project");
+        convert_to_markdown_project("epub", "image.epub", epub_with_image_zip(), &output_dir, None).expect("convert epub project");
 
     assert!(output.published_chapters.is_empty());
     assert_eq!(output.published_assets.len(), 1);
@@ -387,7 +387,7 @@ fn multi_chapter_epub_zip() -> Vec<u8> {
 fn epub_to_markdown_project_splits_spine_into_chapters() {
     let output_dir = std::env::temp_dir().join(format!("panduck-epub-chapters-{}", std::process::id()));
     let (output, published) =
-        convert_to_markdown_project("epub", "book.epub", multi_chapter_epub_zip(), &output_dir).expect("convert epub project");
+        convert_to_markdown_project("epub", "book.epub", multi_chapter_epub_zip(), &output_dir, None).expect("convert epub project");
 
     assert_eq!(output.published_chapters.len(), 2);
     assert!(output.index_markdown.contains("# Sample Book"));
@@ -415,7 +415,7 @@ fn html_to_markdown_project_writes_index_and_reopens_semantics() {
     let output_dir = std::env::temp_dir().join(format!("panduck-html-project-{}", std::process::id()));
     let html = br#"<html><body><h1>Title</h1><p>Hello HTML.</p></body></html>"#.to_vec();
     let (output, published) =
-        convert_to_markdown_project("html", "page.html", html, &output_dir), None).expect("convert html project");
+        convert_to_markdown_project("html", "page.html", html, &output_dir, None).expect("convert html project");
 
     assert!(output.index_markdown.contains("# Title"));
     assert!(output.published_chapters.is_empty());
@@ -439,7 +439,7 @@ fn html_to_markdown_project_reports_unsupported_elements_in_panduck_report() {
     let output_dir = std::env::temp_dir().join(format!("panduck-html-loss-project-{}", std::process::id()));
     let html = br#"<html><body><h1>Title</h1><p>Before script.</p><script>alert(1)</script></body></html>"#.to_vec();
     let (output, published) =
-        convert_to_markdown_project("html", "page.html", html, &output_dir), None).expect("convert html project");
+        convert_to_markdown_project("html", "page.html", html, &output_dir, None).expect("convert html project");
 
     assert_convert_project_report(&output, &published);
     assert_report_contains_loss_codes(&output.report_json, &["import.html.partial_coverage", "import.html.unsupported_script"]);
@@ -485,7 +485,7 @@ fn docx_to_markdown_project_deduplicates_identical_image_bytes() {
     ]);
 
     let output_dir = std::env::temp_dir().join(format!("panduck-docx-dedupe-{}", std::process::id()));
-    let (output, published) = convert_to_markdown_project("docx", "dup.docx", zip, &output_dir), None).expect("convert");
+    let (output, published) = convert_to_markdown_project("docx", "dup.docx", zip, &output_dir, None).expect("convert");
 
     // Dedupe → exactly one published asset, no unresolved.
     assert_eq!(output.published_assets.len(), 1, "identical bytes must dedupe to one asset");
@@ -533,7 +533,7 @@ fn docx_to_markdown_project_missing_relationship_target_yields_unresolved_asset(
     ]);
 
     let output_dir = std::env::temp_dir().join(format!("panduck-docx-broken-rel-{}", std::process::id()));
-    let (output, published) = convert_to_markdown_project("docx", "broken.docx", zip, &output_dir), None).expect("convert");
+    let (output, published) = convert_to_markdown_project("docx", "broken.docx", zip, &output_dir, None).expect("convert");
 
     assert!(output.published_assets.is_empty(), "no asset bytes available to materialize");
     assert!(
@@ -562,7 +562,7 @@ fn doc_to_markdown_project_writes_index_and_reopens_text() {
     let output_dir = std::env::temp_dir().join(format!("panduck-doc-project-{}", std::process::id()));
     let bytes = legacy_plain_doc_fixture();
     let (output, published) =
-        convert_to_markdown_project("doc", "sample.doc", bytes.to_vec(), &output_dir).expect("convert doc project");
+        convert_to_markdown_project("doc", "sample.doc", bytes.to_vec(), &output_dir, None).expect("convert doc project");
 
     assert!(output.index_markdown.contains("Hello legacy DOC"));
     assert!(output.published_chapters.is_empty());
@@ -586,13 +586,13 @@ fn pdf_to_markdown_project_writes_index_and_reopens_text() {
     use panduck_convert::convert_bytes;
 
     assert!(supports_markdown_project_source("pdf"));
-    let pdf = convert_bytes("markdown", "pdf", "sample.md", b"# Heading\n\nBody text.\n".to_vec())
+    let pdf = convert_bytes("markdown", "pdf", "sample.md", b"# Heading\n\nBody text.\n".to_vec(), None)
         .expect("write pdf")
         .binary
         .expect("pdf bytes");
 
     let output_dir = std::env::temp_dir().join(format!("panduck-pdf-project-{}", std::process::id()));
-    let (output, published) = convert_to_markdown_project("pdf", "sample.pdf", pdf, &output_dir), None).expect("convert pdf project");
+    let (output, published) = convert_to_markdown_project("pdf", "sample.pdf", pdf, &output_dir, None).expect("convert pdf project");
 
     assert!(output.index_markdown.contains("Heading"));
     assert!(output.index_markdown.contains("Body text."));

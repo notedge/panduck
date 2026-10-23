@@ -11,6 +11,7 @@ fn html_to_markdown_convert_report_matches_ir_loss() {
         "markdown",
         "page.html",
         br#"<html><body><h1>Title</h1><p>Hello.</p><script>alert(1)</script></body></html>"#.to_vec(),
+        None,
     )
     .expect("convert html to markdown");
 
@@ -26,7 +27,7 @@ fn docx_field_to_markdown_convert_report_lists_field_loss() {
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:body><w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r><w:r><w:t>visible fallback</w:t></w:r></w:p></w:body>
 </w:document>"#;
-    let output = convert_bytes("docx", "markdown", "field.docx", docx_zip(document_xml)).expect("convert docx with field");
+    let output = convert_bytes("docx", "markdown", "field.docx", docx_zip(document_xml), None).expect("convert docx with field");
 
     assert_convert_report(&output, "markdown");
     assert_report_contains_loss_codes(&output.report_json, &["reader.docx.fields", "import.docx.partial_coverage"]);
@@ -45,7 +46,7 @@ fn docx_unresolved_footnote_to_markdown_convert_report_lists_footnote_loss() {
     </w:p>
   </w:body>
 </w:document>"#;
-    let output = convert_bytes("docx", "markdown", "footnote.docx", docx_zip(document_xml))
+    let output = convert_bytes("docx", "markdown", "footnote.docx", docx_zip(document_xml), None)
         .expect("convert docx with unresolved footnote");
 
     assert_convert_report(&output, "markdown");
@@ -72,7 +73,7 @@ fn docx_resolved_footnote_to_markdown_convert_report_omits_footnote_body_loss() 
   </w:footnote>
 </w:footnotes>"#;
     let output =
-        convert_bytes("docx", "markdown", "footnote-resolved.docx", docx_zip_with_footnotes(document_xml, footnotes_xml))
+        convert_bytes("docx", "markdown", "footnote-resolved.docx", docx_zip_with_footnotes(document_xml, footnotes_xml), None)
             .expect("convert docx with resolved footnote");
 
     assert_convert_report(&output, "markdown");
@@ -269,7 +270,7 @@ fn epub_styled_to_markdown_convert_report_lists_css_and_inline_style_losses() {
 
 #[test]
 fn doc_to_markdown_convert_report_lists_partial_coverage() {
-    let output = convert_bytes("doc", "markdown", "legacy.doc", notedown_fixtures::acorn::doc::LEGACY_PLAIN_DOC.to_vec())
+    let output = convert_bytes("doc", "markdown", "legacy.doc", notedown_fixtures::acorn::doc::LEGACY_PLAIN_DOC.to_vec(), None)
         .expect("convert doc to markdown");
 
     assert_convert_report(&output, "markdown");
@@ -278,7 +279,7 @@ fn doc_to_markdown_convert_report_lists_partial_coverage() {
 
 #[test]
 fn pdf_to_markdown_convert_report_lists_partial_coverage() {
-    let pdf = convert_bytes("markdown", "pdf", "sample.md", b"# Heading\n\nBody text.\n".to_vec())
+    let pdf = convert_bytes("markdown", "pdf", "sample.md", b"# Heading\n\nBody text.\n".to_vec(), None)
         .expect("write PDF")
         .binary
         .expect("PDF bytes");

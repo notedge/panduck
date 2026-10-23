@@ -23,7 +23,7 @@ fn unsupported_route_emits_diagnostic_log_event() {
     boost_log::set_global_sink(Box::new(SharedSink(sink.clone())));
     boost_log::set_global_filter(Filter::new(Level::Trace));
 
-    let result = convert_bytes("xlsx", "markdown", "sheet.xlsx", Vec::new());
+    let result = convert_bytes("xlsx", "markdown", "sheet.xlsx", Vec::new(), None);
     assert!(result.is_err());
 
     let guard = sink.lock().expect("vec sink mutex poisoned");
@@ -44,7 +44,7 @@ fn unsupported_route_writes_json_lines_log_file() {
     let path = std::env::temp_dir().join(format!("panduck-convert-logger-failure-{}.jsonl", std::process::id()));
     boost_log::install_global_file_sink(&path).expect("install global file sink");
 
-    let result = convert_bytes("xlsx", "markdown", "sheet.xlsx", Vec::new());
+    let result = convert_bytes("xlsx", "markdown", "sheet.xlsx", Vec::new(), None);
     assert!(result.is_err());
 
     clear_global_sink();
