@@ -34,24 +34,42 @@ pub struct PublishedMarkdownProject {
 }
 
 /// Writes `index.md`, optional `chapters/*`, `assets/*`, and `panduck.report.json` under `output_dir`.
+///
+/// Atomicity: each individual file is written via a staging-file-and-rename
+/// round-trip.  The project layout as a whole is produced into a sibling
+/// temporary directory first, then atomically renamed into `output_dir` so a
+/// failure during chapter or asset writing never leaves the target directory
+/// in a half-published state.
 pub fn publish_markdown_project(
     output_dir: impl AsRef<Path>,
     project: &MarkdownProject,
     report_json: &str,
 ) -> Result<PublishedMarkdownProject> {
     let output_dir = output_dir.as_ref();
-    fs::create_dir_all(output_dir).map_err(|error| AdapterError::io(error, Some(output_dir.display().to_string())))?;
-    let assets_dir = output_dir.join("assets");
-    fs::create_dir_all(&assets_dir).map_err(|error| AdapterError::io(error, Some(assets_dir.display().to_string())))?;
 
-    let index_path = output_dir.join("index.md");
+    // Stage everything into a sibling temp directory so any mid-flow failure
+    // (bad asset path, disk full, …) does not leave `output_dir` dirty.
+    let staging_dir = staging_dir_path(output_dir);
+    if staging_dir.exists() {
+        fs::remove_dir_all(&staging_dir)
+            .map_err(|error| AdapterError::io(error, Some(staging_dir.display().to_string())))?;
+    }
+    fs::create_dir_all(&staging_dir)
+        .map_err(|error| AdapterError::io(error, Some(staging_dir.display().to_string())))?;
+
+    let assets_dir = staging_dir.join("assets");
+    fs::create_dir_all(&assets_dir)
+        .map_err(|error| AdapterError::io(error, Some(assets_dir.display().to_string())))?;
+
+    let index_path = staging_dir.join("index.md");
     publish_text(&index_path, &project.index_markdown)?;
 
     let mut chapter_paths = Vec::with_capacity(project.chapters.len());
     for chapter in &project.chapters {
-        let chapter_path = output_dir.join(&chapter.relative_path);
+        let chapter_path = staging_dir.join(&chapter.relative_path);
         if let Some(parent) = chapter_path.parent() {
-            fs::create_dir_all(parent).map_err(|error| AdapterError::io(error, Some(parent.display().to_string())))?;
+            fs::create_dir_all(parent)
+                .map_err(|error| AdapterError::io(error, Some(parent.display().to_string())))?;
         }
         publish_text(&chapter_path, &chapter.markdown)?;
         chapter_paths.push(chapter.relative_path.clone());
@@ -67,10 +85,60 @@ pub fn publish_markdown_project(
         asset_paths.push(asset.relative_path.clone());
     }
 
-    let report_path = output_dir.join("panduck.report.json");
+    let report_path = staging_dir.join("panduck.report.json");
     publish_text(&report_path, report_json)?;
 
-    Ok(PublishedMarkdownProject { output_dir: output_dir.to_path_buf(), index_path, chapter_paths, asset_paths, report_path })
+    // Whole-directory atomic swap: remove any pre-existing output dir, then
+    // rename the staging dir into place.  If the rename fails we still clean
+    // up the staging dir to avoid leaking temp artefacts.
+    let result = replace_project_dir(&staging_dir, output_dir);
+    // Always drop the staging dir if it is still there — rename should have
+    // moved it; failure here is a best-effort cleanup.
+    let _ = fs::remove_dir_all(&staging_dir);
+    result?;
+
+    Ok(PublishedMarkdownProject {
+        output_dir: output_dir.to_path_buf(),
+        index_path: output_dir.join("index.md"),
+        chapter_paths,
+        asset_paths,
+        report_path: output_dir.join("panduck.report.json"),
+    })
+}
+
+fn staging_dir_path(output_dir: &Path) -> PathBuf {
+    let file_name = output_dir
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("output");
+    let parent = output_dir.parent().unwrap_or_else(|| Path::new("."));
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    parent.join(format!(".{}.{}.{}.staging", file_name, std::process::id(), nanos))
+}
+
+fn replace_project_dir(staging_dir: &Path, output_dir: &Path) -> Result<()> {
+    match fs::rename(staging_dir, output_dir) {
+        Ok(()) => Ok(()),
+        // Windows: `rename` fails when the destination is a non-empty dir.
+        // Other platforms: `rename` silently replaces the destination; still,
+        // an explicit remove-before-rename keeps semantics identical.
+        Err(_) => {
+            if output_dir.exists() {
+                fs::remove_dir_all(output_dir).map_err(|error| {
+                    AdapterError::io(error, Some(output_dir.display().to_string()))
+                })?;
+            }
+            fs::rename(staging_dir, output_dir)
+                .map_err(|e| {
+                    let msg = e.to_string();
+                    AdapterError::io(e, Some(msg))
+                })?;
+            Ok(())
+        }
+    }
 }
 
 fn publish_bytes_atomic(path: &Path, content: &[u8]) -> io::Result<()> {
