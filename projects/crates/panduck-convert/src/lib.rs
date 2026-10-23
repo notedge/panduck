@@ -1,19 +1,19 @@
 #![deny(missing_docs)]
 #![doc = include_str!("readme.md")]
 
+mod dedupe_assets;
 mod format_error;
 mod inspect;
 mod publish;
 mod readers;
 mod writers;
-mod dedupe_assets;
 
 use std::{fs, path::Path};
 
-use notedown_ir::DocumentGraph;
 use notedown_formats::import::{
     doc::import_doc_bytes, docx::import_docx_bytes, epub::import_epub_bytes, html::import_html_bytes, pdf::import_pdf_bytes,
 };
+use notedown_ir::DocumentGraph;
 use panduck_diagnostic::diagnostics_from_graph;
 use panduck_types::{AdapterError, Result};
 use serde::Serialize;

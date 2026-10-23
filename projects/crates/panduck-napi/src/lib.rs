@@ -276,7 +276,7 @@ pub fn convert_bytes_memory(from: String, to: String, label: String, bytes: Buff
 /// `Result<ConvertResponse>`, but every new convert entry must route through
 /// this helper instead of throwing.
 fn build_convert_error_report(from: &str, to: &str, label: &str, error: &AdapterError) -> ConvertResponse {
-    use boost_diagnostic::{DiagnosticSet, DiagnosticEnvelope};
+    use boost_diagnostic::{DiagnosticEnvelope, DiagnosticSet};
 
     let diagnostic = panduck_convert::from_adapter_error(error);
     let mut set = DiagnosticSet::new();
@@ -293,22 +293,11 @@ fn build_convert_error_report(from: &str, to: &str, label: &str, error: &Adapter
         "outputs": [],
     })
     .to_string();
-    ConvertResponse {
-        exit_code: 1,
-        markdown: None,
-        html: None,
-        binary: None,
-        report_json,
-    }
+    ConvertResponse { exit_code: 1, markdown: None, html: None, binary: None, report_json }
 }
 
-fn build_project_error_report(
-    from: &str,
-    input_path: &str,
-    output_dir: &str,
-    error: &AdapterError,
-) -> ConvertProjectResponse {
-    use boost_diagnostic::{DiagnosticSet, DiagnosticEnvelope};
+fn build_project_error_report(from: &str, input_path: &str, output_dir: &str, error: &AdapterError) -> ConvertProjectResponse {
+    use boost_diagnostic::{DiagnosticEnvelope, DiagnosticSet};
 
     let diagnostic = panduck_convert::from_adapter_error(error);
     let mut set = DiagnosticSet::new();
@@ -350,11 +339,7 @@ fn map_adapter_error(error: AdapterError) -> Error {
     let (code, fallback) = match &error {
         AdapterError::Diagnostic { diagnostic } => (
             diagnostic.code().to_string(),
-            diagnostic
-                .message()
-                .fallback()
-                .map(|s| s.to_string())
-                .unwrap_or_else(|| diagnostic.code().to_string()),
+            diagnostic.message().fallback().map(|s| s.to_string()).unwrap_or_else(|| diagnostic.code().to_string()),
         ),
         _ => ("panduck.adapter.error".to_string(), error.to_string()),
     };

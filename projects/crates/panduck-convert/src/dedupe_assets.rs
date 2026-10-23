@@ -71,11 +71,7 @@ fn blake3_hash(bytes: &[u8]) -> blake3::Hash {
 
 /// Build a content-addressed path like `assets/a1b2c3d4e5f6g7h8.png`.
 fn content_address_path(old_path: &str, fingerprint: &blake3::Hash) -> String {
-    let ext = old_path
-        .rsplit('.')
-        .next()
-        .filter(|e| !e.is_empty() && e.len() <= 8)
-        .unwrap_or("bin");
+    let ext = old_path.rsplit('.').next().filter(|e| !e.is_empty() && e.len() <= 8).unwrap_or("bin");
     let hex = fingerprint.to_hex();
     let prefix = hex.as_str().split_at(FINGERPRINT_PREFIX_LEN).0;
     format!("assets/{prefix}.{ext}")
@@ -101,12 +97,7 @@ fn rewrite_markdown_refs(body: &mut String, old_to_new: &HashMap<String, String>
         // Replace exact occurrences within Markdown link/image targets.
         // We match the path as it appears inside parentheses — either bare
         // `(assets/x.png)` or `(./assets/x.png)` or with a title suffix.
-        let patterns = [
-            format!("]({old})"),
-            format!("](./{old})"),
-            format!("]({old} "),
-            format!("](./{old} "),
-        ];
+        let patterns = [format!("]({old})"), format!("](./{old})"), format!("]({old} "), format!("](./{old} ")];
         for pattern in &patterns {
             let replacement = format!("]({new})");
             let replacement_with_space = format!("]({new} ");
@@ -126,10 +117,7 @@ mod tests {
         let mut project = MarkdownProject {
             index_markdown: "![a](assets/logo.png) ![b](assets/dup.png)".to_string(),
             chapters: Vec::new(),
-            assets: vec![
-                asset("assets/logo.png", bytes.clone()),
-                asset("assets/dup.png", bytes.clone()),
-            ],
+            assets: vec![asset("assets/logo.png", bytes.clone()), asset("assets/dup.png", bytes.clone())],
             unresolved_asset_sources: Vec::new(),
         };
 
@@ -149,10 +137,7 @@ mod tests {
         let mut project = MarkdownProject {
             index_markdown: "![a](assets/a.png) ![b](assets/b.jpg)".to_string(),
             chapters: Vec::new(),
-            assets: vec![
-                asset("assets/a.png", b"A".to_vec()),
-                asset("assets/b.jpg", b"B".to_vec()),
-            ],
+            assets: vec![asset("assets/a.png", b"A".to_vec()), asset("assets/b.jpg", b"B".to_vec())],
             unresolved_asset_sources: Vec::new(),
         };
 

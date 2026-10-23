@@ -1,4 +1,4 @@
-use notedown_formats::{from_format_error, FormatError};
+use notedown_formats::{FormatError, from_format_error};
 use panduck_types::{AdapterError, Result};
 
 pub(crate) fn fail<T>(error: AdapterError) -> Result<T> {

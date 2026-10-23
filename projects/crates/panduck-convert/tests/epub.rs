@@ -127,10 +127,7 @@ fn epub_to_markdown_route_reopens_with_ir_semantics_and_loss_report() {
     assert!(output.loss_count > 0);
     let report: serde_json::Value = serde_json::from_str(&output.report_json).expect("report");
     let status = report["status"].as_str().expect("status");
-    assert!(
-        status.contains("success") && status.contains("loss"),
-        "expected a success+loss status, got {status}"
-    );
+    assert!(status.contains("success") && status.contains("loss"), "expected a success+loss status, got {status}");
 }
 
 #[test]
@@ -155,9 +152,6 @@ fn epub_to_docx_route_reopens_semantic_content() {
     )));
     let report: serde_json::Value = serde_json::from_str(&output.report_json).expect("report");
     let status = report["status"].as_str().expect("status");
-    assert!(
-        status.contains("success") && status.contains("loss"),
-        "expected a success+loss status, got {status}"
-    );
+    assert!(status.contains("success") && status.contains("loss"), "expected a success+loss status, got {status}");
     assert!(report["losses"].as_array().expect("losses").iter().any(|loss| loss["code"] == "import.epub.partial_coverage"));
 }

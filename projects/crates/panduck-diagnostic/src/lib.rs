@@ -126,8 +126,7 @@ pub fn from_adapter_error(error: &AdapterError) -> Diagnostic {
         // original code, args, origin, and cause chain instead of remapping.
         AdapterError::Diagnostic { diagnostic } => diagnostic.clone(),
         AdapterError::Io { source, path } => {
-            let mut msg = Message::new("panduck.adapter.io")
-                .with_arg("source", MessageArg::Text(source.to_string()));
+            let mut msg = Message::new("panduck.adapter.io").with_arg("source", MessageArg::Text(source.to_string()));
             let fallback = match path {
                 Some(path) => {
                     msg = msg.with_arg("path", MessageArg::Text(path.clone()));
@@ -135,7 +134,12 @@ pub fn from_adapter_error(error: &AdapterError) -> Diagnostic {
                 }
                 None => format!("I/O error: {source}"),
             };
-            Diagnostic::new(DiagnosticCode::AdapterIo.wire_code(), DiagnosticSeverity::Error, origin, msg.with_fallback(fallback))
+            Diagnostic::new(
+                DiagnosticCode::AdapterIo.wire_code(),
+                DiagnosticSeverity::Error,
+                origin,
+                msg.with_fallback(fallback),
+            )
         }
         AdapterError::InvalidInput { message } => {
             let diag = Diagnostic::new(
@@ -148,17 +152,15 @@ pub fn from_adapter_error(error: &AdapterError) -> Diagnostic {
             );
             diag
         }
-        AdapterError::InvalidRange { offset, len } => {
-            Diagnostic::new(
-                DiagnosticCode::AdapterInvalidRange.wire_code(),
-                DiagnosticSeverity::Error,
-                origin,
-                Message::new("panduck.adapter.invalid-range")
-                    .with_arg("offset", MessageArg::U64(*offset as u64))
-                    .with_arg("len", MessageArg::U64(*len as u64))
-                    .with_fallback(format!("invalid source range at {offset} len {len}")),
-            )
-        }
+        AdapterError::InvalidRange { offset, len } => Diagnostic::new(
+            DiagnosticCode::AdapterInvalidRange.wire_code(),
+            DiagnosticSeverity::Error,
+            origin,
+            Message::new("panduck.adapter.invalid-range")
+                .with_arg("offset", MessageArg::U64(*offset as u64))
+                .with_arg("len", MessageArg::U64(*len as u64))
+                .with_fallback(format!("invalid source range at {offset} len {len}")),
+        ),
         AdapterError::NotImplemented { feature } => Diagnostic::new(
             DiagnosticCode::AdapterNotImplemented.wire_code(),
             DiagnosticSeverity::Error,
@@ -186,8 +188,7 @@ pub fn from_adapter_error(error: &AdapterError) -> Diagnostic {
                 .with_fallback(format!("{format} does not support {operation}")),
         ),
         AdapterError::Config { path, message } => {
-            let mut msg = Message::new("panduck.adapter.config")
-                .with_arg("message", MessageArg::Text(message.clone()));
+            let mut msg = Message::new("panduck.adapter.config").with_arg("message", MessageArg::Text(message.clone()));
             let fallback = match path {
                 Some(path) => {
                     msg = msg.with_arg("path", MessageArg::Text(path.clone()));
@@ -195,7 +196,12 @@ pub fn from_adapter_error(error: &AdapterError) -> Diagnostic {
                 }
                 None => format!("config error: {message}"),
             };
-            Diagnostic::new(DiagnosticCode::AdapterConfig.wire_code(), DiagnosticSeverity::Error, origin, msg.with_fallback(fallback))
+            Diagnostic::new(
+                DiagnosticCode::AdapterConfig.wire_code(),
+                DiagnosticSeverity::Error,
+                origin,
+                msg.with_fallback(fallback),
+            )
         }
     }
 }

@@ -19,10 +19,7 @@ pub fn assert_convert_report(output: &ConvertOutput, writer: &str) {
     // partial_capability suffix in practice; the important invariant is that
     // it is **not** a failure status.
     let status = report["status"].as_str().expect("status string");
-    assert!(
-        matches!(status, "success" | "success_with_loss"),
-        "unexpected report status {status}"
-    );
+    assert!(matches!(status, "success" | "success_with_loss"), "unexpected report status {status}");
 
     // coverage + diagnostics envelope must always be present.
     assert!(report["coverage"].is_object());
@@ -128,10 +125,7 @@ pub fn assert_convert_project_report(output: &ConvertProjectOutput, published: &
     }
 
     let status = report["status"].as_str().expect("status string");
-    assert!(
-        matches!(status, "success" | "success_with_loss"),
-        "unexpected report status {status}"
-    );
+    assert!(matches!(status, "success" | "success_with_loss"), "unexpected report status {status}");
 
     let outputs = report["outputs"].as_array().expect("outputs array");
     assert!(outputs.iter().any(|entry| entry["path"] == "index.md"));

@@ -6,12 +6,7 @@ impl Display for AdapterError {
         match self {
             AdapterError::Diagnostic { diagnostic } => match diagnostic.message().fallback() {
                 Some(fallback) => write!(f, "{fallback}"),
-                None => write!(
-                    f,
-                    "{}/{}",
-                    diagnostic.origin().namespace(),
-                    diagnostic.code()
-                ),
+                None => write!(f, "{}/{}", diagnostic.origin().namespace(), diagnostic.code()),
             },
             AdapterError::Io { source, path } => match path {
                 Some(path) => write!(f, "I/O error at {}: {}", path, source),
