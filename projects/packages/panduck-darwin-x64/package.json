@@ -1,11 +1,19 @@
 {
     "name": "@notedge/panduck-darwin-x64",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "description": "Panduck Node-API binary for macOS x64",
     "type": "module",
     "license": "MPL-2.0",
     "main": "./index.js",
-    "files": ["index.js", "lib", "readme.md"],
-    "os": ["darwin"],
-    "cpu": ["x64"]
+    "files": [
+        "index.js",
+        "lib",
+        "readme.md"
+    ],
+    "os": [
+        "darwin"
+    ],
+    "cpu": [
+        "x64"
+    ]
 }

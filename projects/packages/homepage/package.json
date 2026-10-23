@@ -1,6 +1,6 @@
 {
     "name": "@notedge/homepage",
-    "version": "0.0.2",
+    "version": "0.0.8",
     "private": true,
     "type": "module",
     "description": "Panduck marketing homepage (VMZ static site with @notedge/panduck probe)",
@@ -12,7 +12,7 @@
         "test:panduck": "pnpm --filter @notedge/panduck test:e2e"
     },
     "dependencies": {
-        "@notedge/panduck": "0.0.2",
+        "@notedge/panduck": "0.0.7",
         "@vmz/core": "0.2.7",
         "@vmz/ui": "0.2.7"
     },
