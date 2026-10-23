@@ -28,6 +28,8 @@ import type {
     PolicyHandler,
     PolicyHandlerResult,
 } from "./renderer-policy.js";
+import type { ConversionPlan } from "./conversion-plan.js";
+import { serializeConversionPlan } from "./conversion-plan.js";
 
 // ---------------------------------------------------------------------------
 // Diagnostic record (shared shape with Pandark Crawler)
@@ -159,22 +161,27 @@ export class Converter {
     }
 
     // -----------------------------------------------------------------------
-    // Overloads — 两个入口并存。
+    // Overloads — 三个入口并存。
     // -----------------------------------------------------------------------
 
     /** Legacy entry: RuleBuilder / RulePlan 链式配置。向后兼容。 */
     async toMarkdown(input: ConverterInput, options?: ToMarkdownOptions): Promise<ConverterResult>;
     /** New entry: Profile 化 ConverterConfig（含 RendererPolicy）。 */
     async toMarkdown(input: ConverterInput, config: ConverterConfig): Promise<ConverterResult>;
+    /** Newest entry: ConversionPlan — 面向 IR 的产品级转换编排。 */
+    async toMarkdown(input: ConverterInput, plan: ConversionPlan): Promise<ConverterResult>;
 
     // -----------------------------------------------------------------------
-    // Implementation — 通过 presence of `rendererPolicy` 分流。
+    // Implementation — 通过 arg shape 分流。
     // -----------------------------------------------------------------------
 
     async toMarkdown(
         input: ConverterInput,
-        arg?: ToMarkdownOptions | ConverterConfig,
+        arg?: ToMarkdownOptions | ConverterConfig | ConversionPlan,
     ): Promise<ConverterResult> {
+        if (arg && isConversionPlan(arg)) {
+            return this.toMarkdownWithPlan(input, arg);
+        }
         if (arg && isConverterConfig(arg)) {
             return this.toMarkdownWithPolicy(input, arg);
         }
@@ -356,6 +363,97 @@ export class Converter {
     }
 
     // -----------------------------------------------------------------------
+    // ConversionPlan path — 面向 IR 的产品级转换编排
+    // -----------------------------------------------------------------------
+
+    /**
+     * ConversionPlan 入口。
+     *
+     * 关键差异（与 Legacy RuleBuilder 的对比）：
+     *   - **不跑 HTML DOM executor**。没有 linkedom CSS selector / DOM mutation。
+     *     RuleBuilder 的 `.input.select()/.transform.remove()/.unwrap()` 这些
+     *     DOM 级动作在这里不出现。scope 选择（如果有）由 Pandark ExtractionProfile
+     *     在进入 Panduck 之前就做掉。
+     *   - **不跑 policy handler 哨兵模拟**。当前 v0 Rust writer 还没真正触发
+     *     handler —— 我们把 ConversionPlan 序列化成 handlersJson 传给 Rust，
+     *     让 wire contract 先就位。handler 真正执行留待 Rust 端落地。
+     *   - **transforms 只声明不执行**。Rust 侧有 notedown-ir walk_mut +
+     *     RewriteResult 基础设施，但尚未暴露到 Panduck TS。当前把 transforms
+     *     序列化到 handlersJson。
+     *
+     * 与 Policy 路径的对比：
+     *   - Policy 只有 output.policy，没有 input.format / transforms / publish。
+     *   - ConversionPlan 是完整的产品级转换合同，覆盖 input → transforms → output → publish。
+     */
+    private async toMarkdownWithPlan(
+        input: ConverterInput,
+        plan: ConversionPlan,
+    ): Promise<ConverterResult> {
+        const from = plan.input.format;
+        const { bytes, label, urlHint } = await materializeInput(input, plan.input.label);
+
+        const diagnostics: DiagnosticRecord[] = [];
+
+        if (bytes.length === 0) {
+            diagnostics.push({
+                code: "panduck.convert.empty-input",
+                fallback: `Empty input for ${label}`,
+                messageKey: "panduck.diagnostic.emptyInput",
+                origin: { namespace: "panduck", component: "convert" },
+                severity: "error",
+                stage: "input",
+                url: urlHint,
+            });
+            return makeResult("failed", "", diagnostics, label, urlHint);
+        }
+
+        // (1) 序列化 ConversionPlan → handlersJson。
+        const handlersJson = serializeConversionPlan(plan);
+        diagnostics.push({
+            code: "panduck.convert.conversion-plan-active",
+            fallback: `ConversionPlan "${plan.id}": ${from} → ${plan.output.format} (${plan.transforms.length} transform${plan.transforms.length === 1 ? "" : "s"}, publish: ${plan.publish.kind})`,
+            args: {
+                planId: plan.id,
+                fromFormat: from,
+                toFormat: plan.output.format,
+                transformCount: plan.transforms.length,
+                publishKind: plan.publish.kind,
+            },
+            origin: { namespace: "panduck", component: "convert" },
+            severity: "info",
+            stage: "convert",
+            url: urlHint,
+        });
+
+        // (2) 如果 output 带 RendererPolicy，也序列化进去。
+        const policyHandlers = (plan.output.policy?.handlers ?? {}) as Record<string, PolicyHandler>;
+        if (Object.keys(policyHandlers).length > 0) {
+            diagnostics.push({
+                code: "panduck.convert.policy-attached",
+                fallback: `ConversionPlan "${plan.id}" 附加 RendererPolicy "${plan.output.policy?.name}"`,
+                args: { planId: plan.id, policyName: plan.output.policy?.name },
+                origin: { namespace: "panduck", component: "convert" },
+                severity: "info",
+                stage: "output",
+                url: urlHint,
+            });
+        }
+
+        // (3) 确定 requireNoLoss（由 plan.output.lossPolicy 决定）。
+        const requireNoLoss = plan.output.lossPolicy === "deny";
+
+        return this.runRustConversion({
+            from,
+            bytes,
+            label,
+            urlHint: plan.input.sourceUrl ?? urlHint,
+            diagnostics,
+            handlersJson,
+            requireNoLoss,
+        });
+    }
+
+    // -----------------------------------------------------------------------
     // Shared — Rust conversion
     // -----------------------------------------------------------------------
 
@@ -441,6 +539,14 @@ export class Converter {
 /** Type guard: true if arg is a ConverterConfig (has `rendererPolicy`). */
 function isConverterConfig(arg: object): arg is ConverterConfig {
     return "rendererPolicy" in arg && (arg as { rendererPolicy?: unknown }).rendererPolicy != null;
+}
+
+/** Type guard: true if arg is a ConversionPlan (has `version: "panduck-conversion-v0"`). */
+function isConversionPlan(arg: object): arg is ConversionPlan {
+    return "version" in arg
+        && (arg as { version?: unknown }).version === "panduck-conversion-v0"
+        && "input" in arg
+        && "output" in arg;
 }
 
 /**

@@ -49,5 +49,18 @@ export type {
 // PassDescriptor — pass 的 I/O / capability 声明。
 export type { Capability, PassDescriptor } from "./pass-descriptor.js";
 
+// ConversionPlan — Panduck 产品级转换编排器（新合同，面向 notedown-ir）。
+export { defineConversion } from "./conversion-plan.js";
+export type {
+    ConversionPlan,
+    ConversionConfig,
+    InputRoute,
+    KnownInputFormat,
+    KnownOutputFormat,
+    OutputRoute,
+    PublishStrategy,
+    TransformPass,
+} from "./conversion-plan.js";
+
 /** @deprecated Use `loadPanduckNode` or `loadPanduckNative`. */
 export type PanduckNative = import("./types.js").PanduckBindings;

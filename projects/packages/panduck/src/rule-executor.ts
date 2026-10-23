@@ -1,6 +1,10 @@
 /**
  * RuleBuilder plan executor (TS-side, linkedom-based).
  *
+ * @deprecated RuleBuilder 整体 deprecated — 用 {@link defineConversion} +
+ *   {@link converter.ts} ConversionPlan path 替代。本文件保留至 Rust 侧
+ *   IR transform pass 落地后删除。
+ *
  * Flow:
  *   1. Parse input HTML into a linkedom document.
  *   2. Walk RulePlan steps in declaration order.

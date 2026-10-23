@@ -2,6 +2,13 @@
  * Panduck RuleBuilder — a declarative, domain-scoped plan builder for
  * document manipulation rules.
  *
+ * @deprecated 用 {@link defineConversion} 替代。
+ *
+ * RuleBuilder 面向 HTML DOM（linkedom CSS selector + DOM mutation），
+ * 是 Panduck 在 Notedown IR 还没就绪前的过渡方案。ConversionPlan 面向
+ * notedown-ir DocumentGraph，是正式的转换合同。当前 RuleBuilder 继续
+ * 可用但不接受新功能；等 IR transform pass 在 Rust 侧落地后删除。
+ *
  * Contract (per design doc):
  *   - `input`     — read / select / assert structure over the current scope.
  *   - `transform` — mutate the working document; subsequent `input` /
@@ -64,6 +71,8 @@ export type RuleStep = {
 /**
  * Full executable RulePlan — the `.build()` product.
  *
+ * @deprecated 用 {@link ConversionPlan} 替代。
+ *
  * v0 contract: `.build()` returns **everything needed to execute** this plan.
  * Handlers (closures) are NOT JSON-serializable but ARE carried intact —
  * Converter receives this shape and reads handlers from it directly.
@@ -93,7 +102,10 @@ export type RuleDescriptor = {
 // Scope classes — TS type gates for what's legal in each domain
 // ---------------------------------------------------------------------------
 
-/** Read / select / assert structure. No mutation, no output rule registration. */
+/**
+ * Read / select / assert structure. No mutation, no output rule registration.
+ * @deprecated RuleBuilder 整体 deprecated — 用 {@link defineConversion}。
+ */
 export class InputScope {
     private readonly _ops: InputOp[] = [];
     get ops(): readonly InputOp[] { return this._ops; }
@@ -109,7 +121,10 @@ export class InputScope {
     }
 }
 
-/** Mutate the working document — effects visible to subsequent steps. */
+/**
+ * Mutate the working document — effects visible to subsequent steps.
+ * @deprecated RuleBuilder 整体 deprecated — 用 {@link defineConversion}。
+ */
 export class TransformScope {
     private readonly _ops: TransformOp[] = [];
     get ops(): readonly TransformOp[] { return this._ops; }
@@ -127,6 +142,8 @@ export class TransformScope {
 
 /**
  * Register target-format output rules.
+ *
+ * @deprecated RuleBuilder 整体 deprecated — 用 {@link defineConversion}。
  *
  * `.replace()` records selector + handlerKey and registers the handler on
  * the owning RuleBuilder. **Does NOT execute, does NOT modify DOM, does NOT
@@ -155,6 +172,16 @@ export class OutputScope {
 // RuleBuilder — the public entry
 // ---------------------------------------------------------------------------
 
+/**
+ * Panduck RuleBuilder — 声明式 HTML DOM 级规则构建器。
+ *
+ * @deprecated 用 {@link defineConversion} 替代。
+ *
+ * RuleBuilder 面向 linkedom CSS selector + DOM mutation，是 Panduck 早期
+ * 在 Notedown IR 还没就绪前的过渡方案。ConversionPlan 面向 notedown-ir
+ * DocumentGraph，是正式的转换合同。当前 RuleBuilder 继续可用但不接受
+ * 新功能；等 IR transform pass 在 Rust 侧落地后删除。
+ */
 export class RuleBuilder {
     private readonly _steps: RuleStep[] = [];
     /** Collected ReplaceHandlerFn keyed by their stable opaque key. */
