@@ -16,7 +16,7 @@
         "placeholder:trust": "nifty trust"
     },
     "devDependencies": {
-        "@doki-land/nifty": "^0.0.12",
+        "@doki-land/nifty": "^0.1.9",
         "@notedge/panduck": "workspace:*",
         "@napi-rs/cli": "^3.10.9"
     }
