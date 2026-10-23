@@ -121,7 +121,7 @@ fn epub_to_markdown_convert_report_lists_epub_partial_coverage() {
         ),
     ]);
 
-    let output = convert_bytes("epub", "markdown", "book.epub", zip).expect("convert epub");
+    let output = convert_bytes("epub", "markdown", "book.epub", zip, None).expect("convert epub");
     assert_convert_report(&output, "markdown");
     assert_report_contains_loss_codes(&output.report_json, &["import.epub.partial_coverage"]);
 }
@@ -161,7 +161,7 @@ fn epub_missing_nav_member_convert_report_lists_navigation_missing() {
         ),
     ]);
 
-    let output = convert_bytes("epub", "markdown", "broken-nav.epub", zip).expect("convert epub");
+    let output = convert_bytes("epub", "markdown", "broken-nav.epub", zip, None).expect("convert epub");
     assert_convert_report(&output, "markdown");
     assert_report_contains_loss_codes(&output.report_json, &["import.epub.partial_coverage", "import.epub.navigation_missing"]);
 }
@@ -210,7 +210,7 @@ fn epub_with_nav_to_markdown_convert_report_omits_navigation_missing() {
         ),
     ]);
 
-    let output = convert_bytes("epub", "markdown", "nav.epub", zip).expect("convert epub with nav");
+    let output = convert_bytes("epub", "markdown", "nav.epub", zip, None).expect("convert epub with nav");
     assert_convert_report(&output, "markdown");
     let report = serde_json::from_str::<serde_json::Value>(&output.report_json).expect("report");
     let loss_codes =
@@ -259,7 +259,7 @@ fn epub_styled_to_markdown_convert_report_lists_css_and_inline_style_losses() {
         ),
     ]);
 
-    let output = convert_bytes("epub", "markdown", "styled.epub", zip).expect("convert styled epub");
+    let output = convert_bytes("epub", "markdown", "styled.epub", zip, None).expect("convert styled epub");
     assert_convert_report(&output, "markdown");
     assert_report_contains_loss_codes(
         &output.report_json,
@@ -282,7 +282,7 @@ fn pdf_to_markdown_convert_report_lists_partial_coverage() {
         .expect("write PDF")
         .binary
         .expect("PDF bytes");
-    let output = convert_bytes("pdf", "markdown", "sample.pdf", pdf).expect("convert pdf to markdown");
+    let output = convert_bytes("pdf", "markdown", "sample.pdf", pdf, None).expect("convert pdf to markdown");
 
     assert_convert_report(&output, "markdown");
     assert_report_contains_loss_codes(&output.report_json, &["import.pdf.partial_coverage"]);
@@ -291,7 +291,7 @@ fn pdf_to_markdown_convert_report_lists_partial_coverage() {
 #[test]
 fn markdown_reference_link_convert_report_matches_loss_count() {
     let source = b"Read [guide][docs].\n\n[docs]: https://example.com/guide \"Docs\"\n".to_vec();
-    let output = convert_bytes("markdown", "markdown", "reference.md", source).expect("convert");
+    let output = convert_bytes("markdown", "markdown", "reference.md", source, None).expect("convert");
 
     assert_convert_report(&output, "markdown");
     assert_eq!(output.loss_count, 1);

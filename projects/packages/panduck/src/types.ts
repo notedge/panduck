@@ -47,11 +47,27 @@ export type PanduckBindings = {
     isSupportedFormat: (name: string) => boolean;
     supportsConversion?: (from: string, to: string) => boolean;
     supportedConversions?: () => string[];
-    convertDocument?: (from: string, to: string, inputPath: string) => ConvertResponse;
+    convertDocument?: (
+        from: string,
+        to: string,
+        inputPath: string,
+        handlersJson?: string,
+    ) => ConvertResponse;
     /** Convert in-memory bytes — the path Pandark Engine takes when the page is already fetched. */
-    convertBytesMemory?: (from: string, to: string, label: string, bytes: Uint8Array) => ConvertResponse;
+    convertBytesMemory?: (
+        from: string,
+        to: string,
+        label: string,
+        bytes: Uint8Array,
+        handlersJson?: string,
+    ) => ConvertResponse;
     supportsMarkdownProject?: (from: string) => boolean;
-    convertMarkdownProject?: (from: string, inputPath: string, outputDir: string) => ConvertProjectResponse;
+    convertMarkdownProject?: (
+        from: string,
+        inputPath: string,
+        outputDir: string,
+        handlersJson?: string,
+    ) => ConvertProjectResponse;
     inspectIndex?: (inputPath: string) => InspectIndexResponse;
     inspectDecode?: (inputPath: string, partPath?: string) => InspectDecodeResponse;
     installLoggerLogFile?: (path: string) => void;

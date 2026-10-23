@@ -79,7 +79,7 @@ fn minimal_docx_zip() -> Vec<u8> {
 #[test]
 fn docx_to_docx_route() {
     let zip = minimal_docx_zip();
-    let output = convert_bytes("docx", "docx", "sample.docx", zip).expect("convert docx");
+    let output = convert_bytes("docx", "docx", "sample.docx", zip, None).expect("convert docx");
     let binary = output.binary.expect("docx bytes");
     assert!(binary.starts_with(b"PK\x03\x04"));
     let round = import_docx_bytes("round.docx", &binary).expect("re-import docx");

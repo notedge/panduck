@@ -214,9 +214,18 @@ pub fn supports_markdown_project(from: String) -> bool {
 /// Converts a document file into a Markdown project directory.
 ///
 /// **Never throws** — see `convert_bytes_memory` for rationale.
+///
+/// `handlers_json` is an optional JSON-serialized RuleDescriptor from the
+/// TS-side RuleBuilder. When provided, the handler registry is forwarded
+/// into the report pipeline.
 #[napi]
-pub fn convert_markdown_project(from: String, input_path: String, output_dir: String) -> ConvertProjectResponse {
-    match convert_markdown_project_file(&from, &input_path, &output_dir) {
+pub fn convert_markdown_project(
+    from: String,
+    input_path: String,
+    output_dir: String,
+    handlers_json: Option<String>,
+) -> ConvertProjectResponse {
+    match convert_markdown_project_file(&from, &input_path, &output_dir, handlers_json.as_deref()) {
         Ok((output, published)) => ConvertProjectResponse {
             exit_code: 0,
             index_markdown: output.index_markdown,
@@ -236,9 +245,18 @@ pub fn convert_markdown_project(from: String, input_path: String, output_dir: St
 /// JSON that carries the structured `DiagnosticEnvelope`. This avoids the
 /// `Error::from_reason("[code=...] ...")` string-construction path where
 /// structured diagnostic identity would be collapsed back into free-form text.
+///
+/// `handlers_json` is an optional JSON-serialized RuleDescriptor from the
+/// TS-side RuleBuilder. When provided, the handler registry is forwarded
+/// into the report pipeline.
 #[napi]
-pub fn convert_document(from: String, to: String, input_path: String) -> ConvertResponse {
-    match convert_file(&from, &to, &input_path) {
+pub fn convert_document(
+    from: String,
+    to: String,
+    input_path: String,
+    handlers_json: Option<String>,
+) -> ConvertResponse {
+    match convert_file(&from, &to, &input_path, handlers_json.as_deref()) {
         Ok(output) => ConvertResponse {
             exit_code: 0,
             markdown: if output.markdown.is_empty() { None } else { Some(output.markdown) },
@@ -256,9 +274,22 @@ pub fn convert_document(from: String, to: String, input_path: String) -> Convert
 /// always returns `exit_code: 1` with a report JSON that carries the full
 /// structured diagnostic identity (code, typed args, origin, severity) so
 /// downstream TS consumers never need to parse free-form error strings.
+///
+/// `handlers_json` is an optional JSON-serialized RuleDescriptor from the
+/// TS-side RuleBuilder. When provided, the handler registry is forwarded
+/// into the report pipeline. The Rust IR lowering does not execute handler
+/// closures (they are TS-only), but the parameter channel is fully open —
+/// this is the wire-level bridge that lets a future Rust-native handler
+/// dispatch host consume the same descriptor.
 #[napi]
-pub fn convert_bytes_memory(from: String, to: String, label: String, bytes: Buffer) -> ConvertResponse {
-    match convert_bytes(&from, &to, &label, bytes.to_vec()) {
+pub fn convert_bytes_memory(
+    from: String,
+    to: String,
+    label: String,
+    bytes: Buffer,
+    handlers_json: Option<String>,
+) -> ConvertResponse {
+    match convert_bytes(&from, &to, &label, bytes.to_vec(), handlers_json.as_deref()) {
         Ok(output) => ConvertResponse {
             exit_code: 0,
             markdown: if output.markdown.is_empty() { None } else { Some(output.markdown) },

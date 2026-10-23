@@ -21,7 +21,7 @@ fn notedown_loss_emits_semantic_diagnostic_log_event() {
     boost_log::set_global_filter(Filter::new(Level::Trace));
 
     let source = b"# Route\n\nBody.\n".to_vec();
-    let output = convert_bytes("notedown", "markdown", "route.nd", source).expect("convert");
+    let output = convert_bytes("notedown", "markdown", "route.nd", source, None).expect("convert");
     assert!(output.loss_count > 0);
 
     let guard = sink.lock().expect("vec sink mutex poisoned");

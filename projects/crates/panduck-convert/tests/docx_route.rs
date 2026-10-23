@@ -8,7 +8,7 @@ use common::assert_convert_report;
 #[test]
 fn markdown_to_docx_route() {
     let source = b"# Title\n\nHello world.\n".to_vec();
-    let output = convert_bytes("markdown", "docx", "sample.md", source).expect("convert");
+    let output = convert_bytes("markdown", "docx", "sample.md", source, None).expect("convert");
     assert!(output.markdown.is_empty());
     assert_convert_report(&output, "docx");
     let binary = output.binary.expect("docx bytes");
@@ -35,7 +35,7 @@ fn markdown_to_docx_route() {
 #[test]
 fn markdown_shortcut_link_to_docx_reopens_with_same_target() {
     let source = b"Read [Guide] now.\n\n[guide]: https://example.com/guide\n".to_vec();
-    let output = convert_bytes("markdown", "docx", "shortcut.md", source).expect("convert");
+    let output = convert_bytes("markdown", "docx", "shortcut.md", source, None).expect("convert");
     assert_convert_report(&output, "docx");
     assert_eq!(output.loss_count, 0);
     let binary = output.binary.expect("docx bytes");
@@ -62,7 +62,7 @@ fn docx_to_html_route_preserves_reopened_semantics() {
         .expect("create source docx")
         .binary
         .expect("source docx bytes");
-    let output = convert_bytes("docx", "html", "source.docx", source).expect("convert docx");
+    let output = convert_bytes("docx", "html", "source.docx", source, None).expect("convert docx");
     assert_convert_report(&output, "html");
     let html = output.html.expect("html output");
     assert!(html.contains("<h1>Title</h1>"));

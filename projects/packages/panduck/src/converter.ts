@@ -201,6 +201,21 @@ export class Converter {
             // Markdown with sentinel regex here anymore.
             const registeredHandlers = exec.handlers;
 
+            // Build JSON-serializable RuleDescriptor for the Rust N-API layer.
+            // The closures themselves can't cross the TS↔Rust boundary, but
+            // their keys and step structure travel as JSON — this is the wire-
+            // level bridge that lets a future Rust-native dispatch host see
+            // which handlers were registered for this conversion.
+            const handlerKeys = Object.keys(registeredHandlers);
+            const handlersJson =
+                handlerKeys.length > 0
+                    ? JSON.stringify({
+                          version: "panduck-rule-v0",
+                          steps: plan.steps,
+                          handlerKeys,
+                      })
+                    : undefined;
+
             // (4) Convert the post-plan HTML to bytes for Rust.
             const planBytes = new TextEncoder().encode(planHtmlForRust);
 
@@ -222,7 +237,7 @@ export class Converter {
             let response: { exitCode: number; markdown?: string; reportJson: string } | undefined = undefined;
             let nativePanic: unknown = undefined;
             try {
-                response = fn(from, "markdown", label, planBytes);
+                response = fn(from, "markdown", label, planBytes, handlersJson);
             } catch (err) {
                 nativePanic = err;
             }

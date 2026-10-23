@@ -8,7 +8,7 @@ type NativeBinding = {
     isSupportedFormat: (name: string) => boolean;
     supportsConversion?: (from: string, to: string) => boolean;
     supportedConversions?: () => string[];
-    convertDocument?: (from: string, to: string, inputPath: string) => {
+    convertDocument?: (from: string, to: string, inputPath: string, handlersJson?: string) => {
         exitCode: number;
         markdown?: string;
         html?: string;
@@ -20,6 +20,7 @@ type NativeBinding = {
         to: string,
         label: string,
         bytes: Uint8Array,
+        handlersJson?: string,
     ) => {
         exitCode: number;
         markdown?: string;
@@ -28,7 +29,12 @@ type NativeBinding = {
         reportJson: string;
     };
     supportsMarkdownProject?: (from: string) => boolean;
-    convertMarkdownProject?: (from: string, inputPath: string, outputDir: string) => {
+    convertMarkdownProject?: (
+        from: string,
+        inputPath: string,
+        outputDir: string,
+        handlersJson?: string,
+    ) => {
         exitCode: number;
         indexMarkdown: string;
         publishedAssets: string[];
@@ -89,8 +95,8 @@ export function loadPanduckNode(): PanduckBindings {
             ? () => binding.supportedConversions!()
             : undefined,
         convertDocument: binding.convertDocument
-            ? (from, to, inputPath) => {
-                  const response = binding.convertDocument!(from, to, inputPath);
+            ? (from, to, inputPath, handlersJson?) => {
+                  const response = binding.convertDocument!(from, to, inputPath, handlersJson);
                   return {
                       exitCode: response.exitCode,
                       markdown: response.markdown,
@@ -103,8 +109,8 @@ export function loadPanduckNode(): PanduckBindings {
               }
             : undefined,
         convertBytesMemory: binding.convertBytesMemory
-            ? (from, to, label, bytes) => {
-                  const response = binding.convertBytesMemory!(from, to, label, bytes);
+            ? (from, to, label, bytes, handlersJson?) => {
+                  const response = binding.convertBytesMemory!(from, to, label, bytes, handlersJson);
                   return {
                       exitCode: response.exitCode,
                       markdown: response.markdown,
@@ -120,8 +126,8 @@ export function loadPanduckNode(): PanduckBindings {
             ? (from) => binding.supportsMarkdownProject!(from)
             : undefined,
         convertMarkdownProject: binding.convertMarkdownProject
-            ? (from, inputPath, outputDir) => {
-                  const response = binding.convertMarkdownProject!(from, inputPath, outputDir);
+            ? (from, inputPath, outputDir, handlersJson?) => {
+                  const response = binding.convertMarkdownProject!(from, inputPath, outputDir, handlersJson);
                   return {
                       exitCode: response.exitCode,
                       indexMarkdown: response.indexMarkdown,

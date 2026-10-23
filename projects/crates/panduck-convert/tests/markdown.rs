@@ -23,7 +23,7 @@ fn markdown_reader_lowers_inline_styles_and_links() {
 #[test]
 fn markdown_to_markdown_route() {
     let source = b"# Route\n\nBody.\n".to_vec();
-    let output = convert_bytes("markdown", "markdown", "route.md", source).expect("convert");
+    let output = convert_bytes("markdown", "markdown", "route.md", source, None).expect("convert");
     assert!(output.markdown.contains("# Route"));
     assert!(output.report_json.contains(panduck_convert::SCHEMA_REPORT));
 }
@@ -31,7 +31,7 @@ fn markdown_to_markdown_route() {
 #[test]
 fn markdown_to_html_route() {
     let source = b"# <Route>\n\nHello **world**.\n".to_vec();
-    let output = convert_bytes("markdown", "html", "route.md", source).expect("convert");
+    let output = convert_bytes("markdown", "html", "route.md", source, None).expect("convert");
     let html = output.html.expect("html output");
     assert!(html.contains("<h1>"));
     assert!(html.contains("&lt;Route&gt;"));
@@ -42,7 +42,7 @@ fn markdown_to_html_route() {
 #[test]
 fn markdown_reference_link_route_reopens_semantically_and_reports_loss() {
     let source = b"Read [guide][docs].\n\n[docs]: https://example.com/guide \"Docs\"\n".to_vec();
-    let output = convert_bytes("markdown", "markdown", "reference.md", source).expect("convert");
+    let output = convert_bytes("markdown", "markdown", "reference.md", source, None).expect("convert");
     assert!(output.markdown.contains("[guide](https://example.com/guide)"));
     assert_eq!(output.loss_count, 1, "definition title must be reported as lossy");
     let reopened = read_markdown_bytes("reference-output.md", output.markdown.clone()).expect("reopen");

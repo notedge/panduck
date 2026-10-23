@@ -12,7 +12,7 @@ fn notedown_reader_lowers_heading_and_paragraph() {
 #[test]
 fn notedown_to_markdown_route() {
     let source = b"# Route\n\nBody.\n".to_vec();
-    let output = convert_bytes("notedown", "markdown", "route.nd", source).expect("convert");
+    let output = convert_bytes("notedown", "markdown", "route.nd", source, None).expect("convert");
     assert!(output.markdown.contains("# Route"));
     assert!(output.report_json.contains(panduck_convert::SCHEMA_REPORT));
 }
@@ -20,7 +20,7 @@ fn notedown_to_markdown_route() {
 #[test]
 fn notedown_to_html_route_preserves_semantic_blocks() {
     let source = b"# Route\n\nBody text.\n".to_vec();
-    let output = convert_bytes("notedown", "html", "route.nd", source).expect("convert");
+    let output = convert_bytes("notedown", "html", "route.nd", source, None).expect("convert");
     let html = output.html.expect("html output");
     assert!(html.contains("<h1>Route</h1>"));
     assert!(html.contains("<p>Body text."));

@@ -102,7 +102,7 @@ fn minimal_epub_zip() -> Vec<u8> {
 #[test]
 fn epub_to_markdown_route() {
     let zip = minimal_epub_zip();
-    let output = convert_bytes("epub", "markdown", "book.epub", zip).expect("convert epub");
+    let output = convert_bytes("epub", "markdown", "book.epub", zip, None).expect("convert epub");
     assert!(output.markdown.contains("# Chapter One"));
     assert!(output.markdown.contains("Hello EPUB"));
     assert!(output.report_json.contains(panduck_convert::SCHEMA_REPORT));

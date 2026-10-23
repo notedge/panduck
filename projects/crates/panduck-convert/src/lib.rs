@@ -10,6 +10,9 @@ mod writers;
 
 use std::{fs, path::Path};
 
+use boost_diagnostic::{
+    Diagnostic, DiagnosticCode, DiagnosticOrigin, DiagnosticSeverity, Message,
+};
 use notedown_formats::import::{
     doc::import_doc_bytes, docx::import_docx_bytes, epub::import_epub_bytes, html::import_html_bytes, pdf::import_pdf_bytes,
 };
@@ -105,7 +108,22 @@ pub struct ConvertOutput {
 }
 
 /// Converts bytes from `from` format to `to` format.
-pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>) -> Result<ConvertOutput> {
+///
+/// `handlers_json` is an optional JSON-serialized RuleDescriptor from the
+/// TS-side RuleBuilder. When provided, its handlerKeys and step structure are
+/// forwarded into the report `pipeline.handlers` field so downstream consumers
+/// can see which custom `.replace()` handlers were registered for this run.
+/// The Rust IR pipeline does NOT execute handler closures (they are TS-only),
+/// but the parameter channel is fully open — this is the wire-level bridge
+/// that lets a future Rust-native handler dispatch host consume the same
+/// descriptor.
+pub fn convert_bytes(
+    from: &str,
+    to: &str,
+    label: &str,
+    bytes: Vec<u8>,
+    handlers_json: Option<&str>,
+) -> Result<ConvertOutput> {
     let from = from.to_ascii_lowercase();
     let to = to.to_ascii_lowercase();
     if !supports_route(&from, &to) {
@@ -115,17 +133,29 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>) -> Resul
     let graph = format_error::propagate(read_source(&from, label, bytes))?;
     let (markdown, html, binary) = format_error::propagate(write_target(&to, &graph))?;
     let loss_count = graph.coverage.loss.len();
-    let diagnostic_set = diagnostics_from_graph(&graph);
+    let mut diagnostic_set = diagnostics_from_graph(&graph);
+
+    // Handler registry bridge — parse the TS-side descriptor, forward keys
+    // into the report pipeline, and emit an info diagnostic when present.
+    let (pipeline_handlers, handler_keys) = parse_handlers_descriptor(handlers_json);
+    if !handler_keys.is_empty() {
+        diagnostic_set.push(build_handler_info_diagnostic(&handler_keys));
+    }
+
     if loss_count > 0 {
         panduck_diagnostic::log_diagnostic_set(&diagnostic_set);
     }
     let diagnostic_envelope = DiagnosticEnvelope::from_set(&diagnostic_set);
+    let mut pipeline = serde_json::json!({ "reader": from, "writer": to, "stages": ["read", "ir", "write"] });
+    if let Some(handlers_val) = pipeline_handlers {
+        pipeline["handlers"] = handlers_val;
+    }
     let report_json = serde_json::json!({
         "schema_version": panduck_diagnostic::SCHEMA_REPORT,
         "operation": "convert",
         "status": if loss_count == 0 { "success" } else { "success_with_loss" },
         "inputs": [{ "path": label, "format": from }],
-        "pipeline": { "reader": from, "writer": to, "stages": ["read", "ir", "write"] },
+        "pipeline": pipeline,
         "coverage": graph.coverage,
         "losses": graph.coverage.loss,
         "diagnostics": diagnostic_envelope,
@@ -137,7 +167,12 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>) -> Resul
 }
 
 /// Converts bytes into a Markdown project description without writing disk.
-pub fn convert_to_markdown_project_bytes(from: &str, label: &str, bytes: Vec<u8>) -> Result<ConvertProjectOutput> {
+pub fn convert_to_markdown_project_bytes(
+    from: &str,
+    label: &str,
+    bytes: Vec<u8>,
+    handlers_json: Option<&str>,
+) -> Result<ConvertProjectOutput> {
     let from = from.to_ascii_lowercase();
     if !supports_markdown_project_source(&from) {
         return format_error::fail(AdapterError::unsupported_format(from, "markdown project"));
@@ -146,7 +181,7 @@ pub fn convert_to_markdown_project_bytes(from: &str, label: &str, bytes: Vec<u8>
     let graph = format_error::propagate(read_source(&from, label, bytes))?;
     let mut project = format_error::propagate(write_markdown_project(&graph))?;
     dedupe_assets::dedupe_markdown_project(&mut project);
-    Ok(build_convert_project_output(&from, label, &graph, &project))
+    Ok(build_convert_project_output(&from, label, &graph, &project, handlers_json))
 }
 
 /// Converts bytes and publishes a Markdown project directory.
@@ -155,6 +190,7 @@ pub fn convert_to_markdown_project(
     label: &str,
     bytes: Vec<u8>,
     output_dir: impl AsRef<Path>,
+    handlers_json: Option<&str>,
 ) -> Result<(ConvertProjectOutput, PublishedMarkdownProject)> {
     let from = from.to_ascii_lowercase();
     if !supports_markdown_project_source(&from) {
@@ -164,7 +200,7 @@ pub fn convert_to_markdown_project(
     let graph = format_error::propagate(read_source(&from, label, bytes))?;
     let mut project = format_error::propagate(write_markdown_project(&graph))?;
     dedupe_assets::dedupe_markdown_project(&mut project);
-    let output = build_convert_project_output(&from, label, &graph, &project);
+    let output = build_convert_project_output(&from, label, &graph, &project, handlers_json);
     let published = publish_markdown_project(output_dir, &project, &output.report_json)?;
     Ok((output, published))
 }
@@ -174,9 +210,17 @@ fn build_convert_project_output(
     label: &str,
     graph: &DocumentGraph,
     project: &notedown_formats::export::markdown_project::MarkdownProject,
+    handlers_json: Option<&str>,
 ) -> ConvertProjectOutput {
     let loss_count = graph.coverage.loss.len();
-    let diagnostic_set = diagnostics_from_graph(graph);
+    let mut diagnostic_set = diagnostics_from_graph(graph);
+
+    // Handler registry bridge — same pattern as convert_bytes.
+    let (pipeline_handlers, handler_keys) = parse_handlers_descriptor(handlers_json);
+    if !handler_keys.is_empty() {
+        diagnostic_set.push(build_handler_info_diagnostic(&handler_keys));
+    }
+
     if loss_count > 0 {
         panduck_diagnostic::log_diagnostic_set(&diagnostic_set);
     }
@@ -191,12 +235,16 @@ fn build_convert_project_output(
         outputs.push(serde_json::json!({ "path": chapter, "format": "markdown", "published": true }));
     }
     outputs.push(serde_json::json!({ "path": "panduck.report.json", "format": "report", "published": true }));
+    let mut pipeline = serde_json::json!({ "reader": from, "writer": "markdown-project", "stages": ["read", "ir", "write", "materialize"] });
+    if let Some(handlers_val) = pipeline_handlers {
+        pipeline["handlers"] = handlers_val;
+    }
     let report_json = serde_json::json!({
         "schema_version": panduck_diagnostic::SCHEMA_REPORT,
         "operation": "convert_project",
         "status": if loss_count == 0 { "success" } else { "success_with_loss" },
         "inputs": [{ "path": label, "format": from }],
-        "pipeline": { "reader": from, "writer": "markdown-project", "stages": ["read", "ir", "write", "materialize"] },
+        "pipeline": pipeline,
         "coverage": graph.coverage,
         "losses": graph.coverage.loss,
         "diagnostics": diagnostic_envelope,
@@ -225,6 +273,7 @@ pub fn convert_markdown_project_file(
     from: &str,
     input: impl AsRef<Path>,
     output_dir: impl AsRef<Path>,
+    handlers_json: Option<&str>,
 ) -> Result<(ConvertProjectOutput, PublishedMarkdownProject)> {
     let input = input.as_ref();
     let bytes = match fs::read(input) {
@@ -233,11 +282,16 @@ pub fn convert_markdown_project_file(
             return format_error::fail(AdapterError::io(source, Some(input.display().to_string())));
         }
     };
-    convert_to_markdown_project(from, &input.display().to_string(), bytes, output_dir)
+    convert_to_markdown_project(from, &input.display().to_string(), bytes, output_dir, handlers_json)
 }
 
 /// Converts a file on disk.
-pub fn convert_file(from: &str, to: &str, input: impl AsRef<Path>) -> Result<ConvertOutput> {
+pub fn convert_file(
+    from: &str,
+    to: &str,
+    input: impl AsRef<Path>,
+    handlers_json: Option<&str>,
+) -> Result<ConvertOutput> {
     let input = input.as_ref();
     let bytes = match fs::read(input) {
         Ok(bytes) => bytes,
@@ -245,7 +299,7 @@ pub fn convert_file(from: &str, to: &str, input: impl AsRef<Path>) -> Result<Con
             return format_error::fail(AdapterError::io(source, Some(input.display().to_string())));
         }
     };
-    convert_bytes(from, to, &input.display().to_string(), bytes)
+    convert_bytes(from, to, &input.display().to_string(), bytes, handlers_json)
 }
 
 fn read_source(from: &str, label: &str, bytes: Vec<u8>) -> Result<DocumentGraph> {
@@ -301,4 +355,62 @@ fn write_target(to: &str, graph: &DocumentGraph) -> Result<(String, Option<Strin
         }
         other => format_error::fail(AdapterError::unsupported_format(other, "write")),
     }
+}
+
+// ---------------------------------------------------------------------------
+// Handler registry bridge — JSON descriptor from TS RuleBuilder
+// ---------------------------------------------------------------------------
+
+/// Parse the optional JSON-serialized RuleDescriptor from the TS side.
+///
+/// Returns `(pipeline_value, handler_keys)`. The pipeline value is the full
+/// descriptor object ready to be embedded into `report.pipeline.handlers`.
+/// `handler_keys` is the extracted string array. Either side can be empty
+/// without affecting the other.
+///
+/// Silently ignores malformed input — a corrupt descriptor must never cause
+/// the main conversion pipeline to fail.
+fn parse_handlers_descriptor(handlers_json: Option<&str>) -> (Option<serde_json::Value>, Vec<String>) {
+    let Some(json_str) = handlers_json else {
+        return (None, Vec::new());
+    };
+    if json_str.trim().is_empty() {
+        return (None, Vec::new());
+    }
+    let Ok(value) = serde_json::from_str::<serde_json::Value>(json_str) else {
+        return (None, Vec::new());
+    };
+    let handler_keys = value
+        .get("handlerKeys")
+        .and_then(|v| v.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    let pipeline_val = serde_json::json!({
+        "descriptor": value,
+        "handler_count": handler_keys.len(),
+    });
+    (Some(pipeline_val), handler_keys)
+}
+
+/// Build an info-level diagnostic announcing a handler registry was received.
+fn build_handler_info_diagnostic(handler_keys: &[String]) -> Diagnostic {
+    let count = handler_keys.len();
+    let keys_display = handler_keys
+        .iter()
+        .map(|k| format!("\"{k}\""))
+        .collect::<Vec<_>>()
+        .join(", ");
+    Diagnostic::new(
+        DiagnosticCode::new("panduck.convert.handlers-received"),
+        DiagnosticSeverity::Info,
+        DiagnosticOrigin::new("panduck", "convert"),
+        Message::new("panduck.convert.handlers-received")
+            .with_fallback(format!(
+                "Handler registry received: {count} handler(s) [{keys_display}] — Rust IR lowering will execute custom replace() callbacks when dispatch host is wired"
+            )),
+    )
 }
