@@ -16,8 +16,8 @@ edition = "2024"
 
 [workspace.dependencies]
 # Overlaid by local path `.cargo/config.toml` (git ignored).
-boost-diagnostic = { git = "https://github.com/oovm/rust-boost", rev = "465e3e5eb263f1d2b6f7429c426c5e78064182bc", default-features = false, features = ["std", "serde"] }
-boost-log = { git = "https://github.com/oovm/rust-boost", rev = "465e3e5eb263f1d2b6f7429c426c5e78064182bc" }
+boost-diagnostic = { git = "https://github.com/oovm/rust-boost", rev = "9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86", default-features = false, features = ["std", "serde"] }
+boost-log = { git = "https://github.com/oovm/rust-boost", rev = "9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86" }
 # Overlaid by local path `.cargo/config.toml` (git ignored).
 panduck = { path = "projects/crates/panduck" }
 panduck-types = { path = "projects/crates/panduck-types" }
