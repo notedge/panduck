@@ -8,20 +8,15 @@
  *   - FetchArtifact (from Pandark Crawler.fetch())
  *   - string | Uint8Array
  *
- * All three enter: Rule-executor (TS, linkedom — scope selection only, NO
- * handler execution) → Notedown Rust lowering + handler dispatch.
- * Panduck does NOT ship its own HTML parser or Markdown writer — linkedom is
- * the structural scope-select pass, Rust owns the lowering + handler dispatch.
+ * All three enter the Notedown Rust lowering directly. Panduck does NOT ship
+ * its own HTML parser, DOM executor, or Markdown writer — Rust owns the
+ * lowering.
  *
  * Converter produces a structured DiagnosticRecord[] that the Pandark Crawler
  * can aggregate into the run report without parsing free-form message text.
  */
 
 import { loadPanduckNode } from "./node/load.js";
-import type { RulePlan } from "./rule-builder.js";
-import { RuleBuilder } from "./rule-builder.js";
-import type { ReplaceHandlerFn } from "./rule-builder.js";
-import { executePlan } from "./rule-executor.js";
 import type {
     ConverterConfig,
     MarkdownPolicy,
@@ -95,31 +90,17 @@ export type ConverterArtifactLike = {
 // ---------------------------------------------------------------------------
 
 /**
- * Markdown conversion options.
+ * Conversion options.
  *
- * **Only RuleBuilder / RulePlan lives here.** The legacy flat options
- * (`select`, `root`, `remove`, `required`, `loss`) were removed in favor of
- * declaring everything through RuleBuilder domains — `input.select(...)`,
- * `transform.remove(...)`, `output.requireNoLoss()`, etc.
- *
- * Loss policy is **not** a standalone option anymore — `output.requireNoLoss()`
- * inside a RuleBuilder converts to `deny` semantics for that plan, while a
- * plan that does NOT call `requireNoLoss()` defaults to `warn` semantics
- * (loss records stay, but don't push the status to failed). This keeps the
- * policy inside the same declarative body as the rest of the conversion rules.
+ * Scope selection belongs to Pandark's ExtractionProfile before bytes reach
+ * Panduck. The removed DOM rule chain (`select` / `remove` / `unwrap` /
+ * `replace`) is not part of this surface.
  */
 export type ToMarkdownOptions = {
     /** Format identifier passed to Panduck ("html", "docx", "epub", ...). Default "html". */
     from?: string;
     /** Label written into the report provenance when the input is anonymous. */
     label?: string;
-
-    /**
-     * Declarative rule plan — either a `RulePlan` (already built) or a live
-     * `RuleBuilder` instance. If you pass a `RuleBuilder`, `.build()` is called
-     * internally and its `handlers` registry is used for `.replace()` callbacks.
-     */
-    rules?: RulePlan | RuleBuilder;
 };
 
 // ---------------------------------------------------------------------------
@@ -164,7 +145,7 @@ export class Converter {
     // Overloads — 三个入口并存。
     // -----------------------------------------------------------------------
 
-    /** Legacy entry: RuleBuilder / RulePlan 链式配置。向后兼容。 */
+    /** Legacy entry: format + label options. */
     async toMarkdown(input: ConverterInput, options?: ToMarkdownOptions): Promise<ConverterResult>;
     /** New entry: Profile 化 ConverterConfig（含 RendererPolicy）。 */
     async toMarkdown(input: ConverterInput, config: ConverterConfig): Promise<ConverterResult>;
@@ -189,32 +170,26 @@ export class Converter {
     }
 
     // -----------------------------------------------------------------------
-    // Legacy path — RuleBuilder.input().transform().output()
+    // Legacy path — format + label
     // -----------------------------------------------------------------------
 
     /**
-     * Legacy entry — 保持 RuleBuilder 链式不变。
+     * Legacy entry — format + label only.
      * Pipeline:
-     *   1. Materialize input → HTML string (for Rule executor) + bytes (for Rust)
-     *   2. Execute RulePlan via linkedom DOM executor: input/transform/output ops
-     *      modify the working document.
-     *   3. Serialize post-plan DOM → HTML → bytes → send to Rust.
-     *   4. Rust lowering + handler dispatch.
-     *   5. Derive status from executor diags + Rust report + requireNoLoss flag.
+     *   1. Materialize input → bytes.
+     *   2. Rust lowering + writer.
+     *   3. Derive status from Rust report.
      */
     private async toMarkdownLegacy(
         input: ConverterInput,
         options?: ToMarkdownOptions,
     ): Promise<ConverterResult> {
         const from = options?.from ?? "html";
-        const { html: inputHtml, bytes, label, urlHint } = await materializeInput(input, options?.label);
+        const { bytes, label, urlHint } = await materializeInput(input, options?.label);
 
         const diagnostics: DiagnosticRecord[] = [];
 
-        // (1) Resolve RulePlan + handler registry.
-        const { plan, handlers } = resolveRules(options?.rules);
-
-        // (2) Empty input short-circuit.
+        // Empty input short-circuit.
         if (bytes.length === 0) {
             diagnostics.push({
                 code: "panduck.convert.empty-input",
@@ -228,40 +203,6 @@ export class Converter {
             return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
-        // (3) Rule-executor pass — DOM-level input/transform/output ops.
-        let planHtmlForRust = inputHtml;
-        let requireNoLoss = false;
-        if (plan) {
-            const exec = executePlan(inputHtml, plan, handlers, urlHint);
-            diagnostics.push(...exec.diagnostics);
-            planHtmlForRust = exec.html;
-            requireNoLoss = exec.requireNoLoss;
-
-            const handlerKeys = Object.keys(exec.handlers);
-            const handlersJson =
-                handlerKeys.length > 0
-                    ? JSON.stringify({
-                          version: "panduck-rule-v0",
-                          steps: plan.steps,
-                          handlerKeys,
-                      })
-                    : undefined;
-
-            // (4) Convert the post-plan HTML to bytes for Rust.
-            const planBytes = new TextEncoder().encode(planHtmlForRust);
-
-            return this.runRustConversion({
-                from,
-                bytes: planBytes,
-                label,
-                urlHint,
-                diagnostics,
-                handlersJson,
-                requireNoLoss,
-            });
-        }
-
-        // --- No RulePlan path — direct Rust conversion, no DOM executor ---
         return this.runRustConversion({
             from,
             bytes,
@@ -281,9 +222,9 @@ export class Converter {
      * New entry — Profile 化 ConverterConfig。
      *
      * 关键差异：
-     *   - **不跑 RuleBuilder DOM executor**。没有 `.select()/.remove()/.unwrap()`
-     *     这些 DOM 级动作。scope 选择（如果有）将来会由 Pandark ExtractionProfile
-     *     在进入 Panduck 之前就做掉；renderer 这边只读 Notedown IR。
+     *   - 输入直接进入 Rust lowering，没有 TS 侧 DOM 解析、选择或重序列化。
+     *     scope 选择（如果有）由 Pandark ExtractionProfile 在进入 Panduck 之前做掉；
+     *     renderer 这边只读 Notedown IR。
      *   - `handlers` 挂在 MarkdownPolicy 上，在 writer 阶段触发，接受 IR block
      *     kind + attributes，返回 Markdown writer fragment。
      *   - 当前 Rust 侧还没有真正调用 policy handlers —— 我们把 policy 序列化成
@@ -369,11 +310,9 @@ export class Converter {
     /**
      * ConversionPlan 入口。
      *
-     * 关键差异（与 Legacy RuleBuilder 的对比）：
-     *   - **不跑 HTML DOM executor**。没有 linkedom CSS selector / DOM mutation。
-     *     RuleBuilder 的 `.input.select()/.transform.remove()/.unwrap()` 这些
-     *     DOM 级动作在这里不出现。scope 选择（如果有）由 Pandark ExtractionProfile
-     *     在进入 Panduck 之前就做掉。
+     * 关键差异：
+     *   - **不跑 HTML DOM executor**。没有 CSS selector / DOM mutation / re-serialize。
+     *     scope 选择（如果有）由 Pandark ExtractionProfile 在进入 Panduck 之前做掉。
      *   - **不跑 policy handler 哨兵模拟**。当前 v0 Rust writer 还没真正触发
      *     handler —— 我们把 ConversionPlan 序列化成 handlersJson 传给 Rust，
      *     让 wire contract 先就位。handler 真正执行留待 Rust 端落地。
@@ -649,61 +588,36 @@ function applyPolicyHandlers(
     return out;
 }
 
-type ResolvedRules = {
-    plan: RulePlan | null;
-    handlers: Record<string, ReplaceHandlerFn>;
-};
-
-/** Resolve RuleBuilder / RulePlan → executable plan + handler registry. */
-function resolveRules(rules: RulePlan | RuleBuilder | undefined): ResolvedRules {
-    if (!rules) return { plan: null, handlers: {} };
-    if (rules instanceof RuleBuilder) {
-        return { plan: rules.build(), handlers: { ...rules.handlers } };
-    }
-    // Direct RulePlan — handlers are attached on the plan itself.
-    return { plan: rules, handlers: { ...rules.handlers } };
-}
-
 async function materializeInput(
     input: ConverterInput,
     explicitLabel?: string,
-): Promise<{ html: string; bytes: Uint8Array; label: string; urlHint?: string }> {
+): Promise<{ bytes: Uint8Array; label: string; urlHint?: string }> {
     if (typeof input === "string") {
-        return { html: input, bytes: new TextEncoder().encode(input), label: explicitLabel ?? "<string>" };
+        return { bytes: new TextEncoder().encode(input), label: explicitLabel ?? "<string>" };
     }
     if (input instanceof Uint8Array) {
-        return {
-            html: new TextDecoder().decode(input),
-            bytes: input,
-            label: explicitLabel ?? "<bytes>",
-        };
+        return { bytes: input, label: explicitLabel ?? "<bytes>" };
     }
     if (typeof input === "object" && input !== null) {
         const candidate = input as Record<string, unknown>;
         if (typeof candidate.bytes === "function") {
             const page = input as ConverterPageLike;
             let bytes = page.bytes();
-            let html: string;
             if (!bytes || bytes.length === 0) {
-                html = await page.html();
-                bytes = new TextEncoder().encode(html);
-            } else {
-                html = await page.html();
+                bytes = new TextEncoder().encode(await page.html());
             }
-            return { html, bytes, label: explicitLabel ?? (page.url ?? "<page>"), urlHint: page.url };
+            return { bytes, label: explicitLabel ?? (page.url ?? "<page>"), urlHint: page.url };
         }
         if ("bodyBytes" in candidate) {
             const artifact = input as ConverterArtifactLike;
-            const html = artifact.bodyText ?? new TextDecoder().decode(artifact.bodyBytes);
             return {
-                html,
                 bytes: artifact.bodyBytes,
                 label: explicitLabel ?? (artifact.finalUrl ?? "<artifact>"),
                 urlHint: artifact.finalUrl,
             };
         }
     }
-    return { html: "", bytes: new Uint8Array(), label: explicitLabel ?? "<unknown>" };
+    return { bytes: new Uint8Array(), label: explicitLabel ?? "<unknown>" };
 }
 
 function makeResult(
@@ -834,7 +748,7 @@ function safeParseReport(reportJson: string, urlHint?: string): {
  *   1. exitCode from Rust → 1 means the binary considers this a hard failure.
  *   2. Rust report.status === "failed" → same, hard failure.
  *   3. Error-severity diagnostics (executor OR Rust OR post-process) → failed.
- *   4. requireNoLoss from RuleBuilder → deny semantics. Any loss = failed.
+ *   4. requireNoLoss from ConversionPlan → deny semantics. Any loss = failed.
  *   5. Otherwise, known loss → success_with_loss.
  *   6. Otherwise → success.
  */

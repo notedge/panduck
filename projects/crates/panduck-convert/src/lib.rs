@@ -109,8 +109,8 @@ pub struct ConvertOutput {
 
 /// Converts bytes from `from` format to `to` format.
 ///
-/// `handlers_json` is an optional JSON-serialized RuleDescriptor from the
-/// TS-side RuleBuilder. When provided, its handlerKeys and step structure are
+/// `handlers_json` is an optional JSON-serialized plan descriptor from the
+/// TS-side `ConversionPlan`. When provided, its handlerKeys and step structure are
 /// forwarded into the report `pipeline.handlers` field so downstream consumers
 /// can see which custom `.replace()` handlers were registered for this run.
 /// The Rust IR pipeline does NOT execute handler closures (they are TS-only),
@@ -358,7 +358,7 @@ fn write_target(to: &str, graph: &DocumentGraph) -> Result<(String, Option<Strin
 }
 
 // ---------------------------------------------------------------------------
-// Handler registry bridge — JSON descriptor from TS RuleBuilder
+// Handler registry bridge — JSON descriptor from the TS-side plan
 // ---------------------------------------------------------------------------
 
 /// Parse the optional JSON-serialized RuleDescriptor from the TS side.

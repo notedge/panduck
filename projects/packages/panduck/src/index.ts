@@ -4,7 +4,7 @@ export { loadPanduckWeb, loadPanduckWasm } from "./wasm/index.js";
 export { buildPanduckCli, runCli, getFormatRegistry, ExitCode, REPORT_SCHEMA_VERSION } from "./cli/index.js";
 export type { FormatRecord, PanduckReport, CapabilityState } from "./cli/index.js";
 
-// Public authoring surface — Converter + RuleBuilder + RendererPolicy.
+// Public authoring surface — Converter + RendererPolicy.
 export { Converter } from "./converter.js";
 export type {
     ConverterInput,
@@ -17,23 +17,7 @@ export type {
     ToMarkdownOptions,
 } from "./converter.js";
 
-export {
-    RuleBuilder,
-    InputScope,
-    TransformScope,
-    OutputScope,
-} from "./rule-builder.js";
-export type {
-    RulePlan,
-    RuleStep,
-    InputOp,
-    TransformOp,
-    OutputOp,
-    ReplaceHandlerFn,
-    MarkdownHelper,
-} from "./rule-builder.js";
-
-// RendererPolicy — writer-level 策略层（RuleBuilder.output.replace 的继任者）。
+// RendererPolicy — writer-level 策略层。
 export {
     defineMarkdownPolicy,
     withHandlers,

@@ -1,9 +1,8 @@
 /**
  * ConversionPlan — Panduck 的产品级转换编排器。
  *
- * 与 RuleBuilder 的区别：
- *   - RuleBuilder 面向 HTML DOM（linkedom CSS selector + DOM mutation），
- *     是 Panduck 早期在 Notedown IR 还没就绪前的过渡方案。
+ * 与旧 DOM 规则链的区别：
+ *   - DOM 级 CSS selector / mutation 不是 Panduck 的职责，相关入口已删除。
  *   - ConversionPlan 面向 **notedown-ir DocumentGraph**，是正式的转换合同。
  *     transforms 作用在 IR 语义节点上，output/publish 是产品级交付策略。
  *
@@ -11,7 +10,6 @@
  *   - defineConversion 签名 + 类型已就位，可声明完整 plan。
  *   - transforms 暂不执行（Rust 侧尚未暴露 DocumentGraph 到 TS）。
  *   - output/publish 通过 Converter 分流到现有 Rust conversion 管线。
- *   - RuleBuilder 继续可用，标记 @deprecated —— 等 IR transform pass 落地后删除。
  *
  * 四层合同（与设计文档一致）：
  *   ExtractionProfile  → Pandark — "网页中取什么"

@@ -32,8 +32,7 @@
     "dependencies": {
         "@notedge/panduck-unknown-wasm32": "workspace:*",
         "@vmz/commander": "^0.2.0",
-        "jiti": "^2.4.2",
-        "linkedom": "^0.18.13"
+        "jiti": "^2.4.2"
     },
     "optionalDependencies": {
         "@notedge/panduck-darwin-arm64": "workspace:*",

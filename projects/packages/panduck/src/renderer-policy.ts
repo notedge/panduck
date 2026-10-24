@@ -9,9 +9,9 @@
  * 它被 Converter 在 writer 阶段读取，用来改写或替换 Notedown IR block
  * 的默认 Markdown 输出。
  *
- * 与旧 RuleBuilder 的边界：
- *   - RuleBuilder.input/transform — DOM 级选择/裁剪/替换 → 继续保留
- *   - RuleBuilder.output.replace — DOM 级 replace handler → RendererPolicy.handlers 是 writer 级
+ * 与 DOM 规则链的边界：
+ *   - DOM 级选择/裁剪/替换不属于 Panduck；相关 TS 入口已删除，转换走 Rust lowering。
+ *   - RendererPolicy.handlers 是 writer 级
  *   - RendererPolicy handler 不接受 DOM node，只接受 IR block kind + attributes
  *   - handler 返回值只能是 Markdown writer 能理解的结果：pass-through / fragment / suppress
  */

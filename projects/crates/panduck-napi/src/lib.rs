@@ -215,8 +215,8 @@ pub fn supports_markdown_project(from: String) -> bool {
 ///
 /// **Never throws** — see `convert_bytes_memory` for rationale.
 ///
-/// `handlers_json` is an optional JSON-serialized RuleDescriptor from the
-/// TS-side RuleBuilder. When provided, the handler registry is forwarded
+/// `handlers_json` is an optional JSON-serialized plan descriptor from the
+/// TS-side `ConversionPlan`. When provided, the handler registry is forwarded
 /// into the report pipeline.
 #[napi]
 pub fn convert_markdown_project(
@@ -246,8 +246,8 @@ pub fn convert_markdown_project(
 /// `Error::from_reason("[code=...] ...")` string-construction path where
 /// structured diagnostic identity would be collapsed back into free-form text.
 ///
-/// `handlers_json` is an optional JSON-serialized RuleDescriptor from the
-/// TS-side RuleBuilder. When provided, the handler registry is forwarded
+/// `handlers_json` is an optional JSON-serialized plan descriptor from the
+/// TS-side `ConversionPlan`. When provided, the handler registry is forwarded
 /// into the report pipeline.
 #[napi]
 pub fn convert_document(
@@ -275,8 +275,8 @@ pub fn convert_document(
 /// structured diagnostic identity (code, typed args, origin, severity) so
 /// downstream TS consumers never need to parse free-form error strings.
 ///
-/// `handlers_json` is an optional JSON-serialized RuleDescriptor from the
-/// TS-side RuleBuilder. When provided, the handler registry is forwarded
+/// `handlers_json` is an optional JSON-serialized plan descriptor from the
+/// TS-side `ConversionPlan`. When provided, the handler registry is forwarded
 /// into the report pipeline. The Rust IR lowering does not execute handler
 /// closures (they are TS-only), but the parameter channel is fully open —
 /// this is the wire-level bridge that lets a future Rust-native handler
