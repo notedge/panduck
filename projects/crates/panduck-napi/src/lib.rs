@@ -38,7 +38,7 @@ pub struct ConvertResponse {
     /// Process exit code. Zero means success.
     pub exit_code: u32,
     /// Text output for text targets such as `markdown`.
-    pub markdown: Option<String>,
+    pub text: Option<String>,
     /// HTML output for the HTML target.
     pub html: Option<String>,
     /// Binary output for container targets such as `docx`.
@@ -259,7 +259,7 @@ pub fn convert_document(
     match convert_file(&from, &to, &input_path, handlers_json.as_deref()) {
         Ok(output) => ConvertResponse {
             exit_code: 0,
-            markdown: if output.markdown.is_empty() { None } else { Some(output.markdown) },
+            text: if output.markdown.is_empty() { None } else { Some(output.markdown) },
             html: output.html,
             binary: output.binary.map(Buffer::from),
             report_json: output.report_json,
@@ -292,7 +292,7 @@ pub fn convert_bytes_memory(
     match convert_bytes(&from, &to, &label, bytes.to_vec(), handlers_json.as_deref()) {
         Ok(output) => ConvertResponse {
             exit_code: 0,
-            markdown: if output.markdown.is_empty() { None } else { Some(output.markdown) },
+            text: if output.markdown.is_empty() { None } else { Some(output.markdown) },
             html: output.html,
             binary: output.binary.map(Buffer::from),
             report_json: output.report_json,
@@ -325,7 +325,7 @@ fn build_convert_error_report(from: &str, to: &str, label: &str, error: &Adapter
         "outputs": [],
     })
     .to_string();
-    ConvertResponse { exit_code: 1, markdown: None, html: None, binary: None, report_json }
+    ConvertResponse { exit_code: 1, text: None, html: None, binary: None, report_json }
 }
 
 fn build_project_error_report(from: &str, input_path: &str, output_dir: &str, error: &AdapterError) -> ConvertProjectResponse {

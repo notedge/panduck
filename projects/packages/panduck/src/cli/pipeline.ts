@@ -121,7 +121,7 @@ export async function runConversionPipeline(input: {
     }
 
     const response = bindings.convertDocument(from, to, inputPath);
-    const markdown = response.markdown ?? "";
+    const text = response.text ?? "";
     const binary = response.binary;
     const parsedReport = safeParseReport(response.reportJson);
 
@@ -129,13 +129,13 @@ export async function runConversionPipeline(input: {
         if (binary && binary.length > 0) {
             await publishBinary(outputPath, binary);
         } else {
-            await publishText(outputPath, markdown);
+            await publishText(outputPath, text);
         }
     } else if (!suppressStdout && (isStdoutPath(outputPath) || !outputPath)) {
         if (binary && binary.length > 0) {
             process.stdout.write(binary);
         } else {
-            process.stdout.write(markdown);
+            process.stdout.write(text);
         }
     }
 

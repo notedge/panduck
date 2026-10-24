@@ -10,7 +10,7 @@ type NativeBinding = {
     supportedConversions?: () => string[];
     convertDocument?: (from: string, to: string, inputPath: string, handlersJson?: string) => {
         exitCode: number;
-        markdown?: string;
+        text?: string;
         html?: string;
         binary?: Uint8Array;
         reportJson: string;
@@ -23,7 +23,7 @@ type NativeBinding = {
         handlersJson?: string,
     ) => {
         exitCode: number;
-        markdown?: string;
+        text?: string;
         html?: string;
         binary?: Uint8Array;
         reportJson: string;
@@ -99,7 +99,7 @@ export function loadPanduckNode(): PanduckBindings {
                   const response = binding.convertDocument!(from, to, inputPath, handlersJson);
                   return {
                       exitCode: response.exitCode,
-                      markdown: response.markdown,
+                      text: response.text,
                       html: response.html,
                       binary: response.binary
                           ? new Uint8Array(response.binary)
@@ -113,7 +113,7 @@ export function loadPanduckNode(): PanduckBindings {
                   const response = binding.convertBytesMemory!(from, to, label, bytes, handlersJson);
                   return {
                       exitCode: response.exitCode,
-                      markdown: response.markdown,
+                      text: response.text,
                       html: response.html,
                       binary: response.binary
                           ? new Uint8Array(response.binary)

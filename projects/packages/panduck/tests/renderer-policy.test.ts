@@ -92,8 +92,8 @@ test("toMarkdown with ConverterConfig uses policy path and emits policy-active d
     );
 
     // markdown 输出非空（Rust 转换成功）
-    assert.ok(result.markdown.length > 0, "Markdown output must be non-empty");
-    assert.ok(result.markdown.includes("hello world"), `Markdown must contain original text. Got: ${result.markdown}`);
+    assert.ok(result.text.length > 0, "Markdown output must be non-empty");
+    assert.ok(result.text.includes("hello world"), `Markdown must contain original text. Got: ${result.text}`);
 });
 
 test("toMarkdown: legacy ToMarkdownOptions path still works (backward compat)", async () => {
@@ -103,7 +103,7 @@ test("toMarkdown: legacy ToMarkdownOptions path still works (backward compat)", 
         { from: "html", label: "legacy-test" },
     );
 
-    assert.ok(result.markdown.includes("hello legacy"), `Legacy path must convert. Got: ${result.markdown}`);
+    assert.ok(result.text.includes("hello legacy"), `Legacy path must convert. Got: ${result.text}`);
     // 不能有 policy-active 诊断（没带 ConverterConfig）
     assert.ok(
         !result.diagnostics.some((d) => d.code === "panduck.convert.policy-active"),
@@ -152,7 +152,7 @@ test("toMarkdown with policy handler rewrites sentinel-tagged fragment", async (
         // 记录诊断但不要让测试挂掉 —— 说明 Rust 端还没保留注释，需要改用别的哨兵
         console.log(
             `[info] policy handler not invoked — Rust lowering stripped HTML comments. ` +
-            `Markdown output was: ${JSON.stringify(result.markdown)}`,
+            `Markdown output was: ${JSON.stringify(result.text)}`,
         );
     }
 
@@ -184,5 +184,5 @@ test("toMarkdown policy: suppress handler removes sentinel-tagged content", asyn
 
     const result = await converter.toMarkdown(html, config);
     // 同样，handler 触发依赖 Rust 保留注释 —— 没触发也不算当前 commit 的失败
-    assert.ok(result.markdown.length > 0);
+    assert.ok(result.text.length > 0);
 });

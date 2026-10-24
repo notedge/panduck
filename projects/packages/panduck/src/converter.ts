@@ -140,8 +140,8 @@ export type ConverterStatus = "success" | "success_with_loss" | "success_unvalid
 export type ConverterResult = {
     /** Conversion status. */
     status: ConverterStatus;
-    /** Primary Markdown output — always present even on partial failure. */
-    markdown: string;
+    /** Primary converted text output — always present even on partial failure. */
+    text: string;
     /** Unified diagnostic array covering input, structure, conversion, loss, and rules. */
     diagnostics: DiagnosticRecord[];
     /** Raw report JSON from Panduck — preserved for auditing. */
@@ -355,8 +355,8 @@ export class Converter {
         // --- TS 侧 writer 模拟：在 markdown 输出上跑一遍 policy handlers ---
         // 这不是最终形态（最终在 Rust writer 里触发），但能让 policy
         // 的 handlers 在 TS 端先产生可见效果，让 e2e 能跑。
-        if (handlerKeys.length > 0 && result.markdown) {
-            result.markdown = applyPolicyHandlers(result.markdown, policyHandlers, diagnostics, urlHint);
+        if (handlerKeys.length > 0 && result.text) {
+            result.text = applyPolicyHandlers(result.text, policyHandlers, diagnostics, urlHint);
         }
 
         return result;
@@ -481,7 +481,7 @@ export class Converter {
             return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
         }
 
-        let response: { exitCode: number; markdown?: string; reportJson: string } | undefined = undefined;
+        let response: { exitCode: number; text?: string; reportJson: string } | undefined = undefined;
         let nativePanic: unknown = undefined;
         try {
             response = fn(from, "markdown", label, bytes, handlersJson);
@@ -520,7 +520,7 @@ export class Converter {
             });
         }
 
-        const markdown = response.markdown ?? "";
+        const text = response.text ?? "";
         const status = deriveStatus(diagnostics, {
             rustStatus,
             hasRustLoss,
@@ -528,7 +528,7 @@ export class Converter {
             requireNoLoss,
         });
 
-        return Promise.resolve({ status, markdown, diagnostics, reportJson: response.reportJson });
+        return Promise.resolve({ status, text, diagnostics, reportJson: response.reportJson });
     }
 }
 
@@ -708,7 +708,7 @@ async function materializeInput(
 
 function makeResult(
     status: ConverterStatus,
-    markdown: string,
+    text: string,
     diags: DiagnosticRecord[],
     label: string,
     urlHint?: string,
@@ -729,7 +729,7 @@ function makeResult(
         losses: [],
         outputs: [],
     });
-    return { status, markdown, diagnostics: diags, reportJson };
+    return { status, text, diagnostics: diags, reportJson };
 }
 
 function toRustDiagnosticShape(d: DiagnosticRecord): Record<string, unknown> {
