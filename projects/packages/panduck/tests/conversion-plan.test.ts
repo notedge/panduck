@@ -39,6 +39,18 @@ test("serializeConversionPlan carries transform params and target kinds", () => 
     assert.equal(parsed.transforms[1].params, undefined);
 });
 
+test("serializeConversionPlan keeps only executable publish strategy fields", () => {
+    const plan = defineConversion({
+        id: "publish-shape-check",
+        input: { format: "docx" },
+        output: { format: "markdown" },
+        publish: { kind: "markdown-project", directory: "./out" },
+    });
+
+    const parsed = JSON.parse(serializeConversionPlan(plan));
+    assert.deepEqual(parsed.publish, { kind: "markdown-project", directory: "./out" });
+});
+
 test("Converter executes replace-text across the IR graph", async () => {
     const converter = new Converter();
     const plan = defineConversion({

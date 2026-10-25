@@ -108,7 +108,12 @@ export type OutputRoute = {
  * 发布策略。
  *
  * v0：只声明 `markdown-project`（单文件时等价于不发布，直接输出 markdown）。
- * v1：多文件、多文档、原子写出、资产 materialization 都在这里定义。
+ * 多文件、多文档策略留待后续合同。
+ *
+ * 目录发布在 Rust 侧始终是原子的（先写同盘 staging 目录，再 rename 到目标），
+ * 没有非原子模式。远程资产下载不属于 Panduck：资产只能来自输入容器本身，
+ * 由 Notedown 的 markdown-project writer materialize。因此这里不声明
+ * `atomic` / `downloadAssets` 之类的旗标，避免出现接受但不生效的参数。
  */
 export type PublishStrategy =
     | { readonly kind: "none" }
@@ -116,10 +121,6 @@ export type PublishStrategy =
           readonly kind: "markdown-project";
           /** 输出目录（绝对或相对输入）。 */
           readonly directory: string;
-          /** 是否 materialize 远程 assets 到本地。默认 false。 */
-          readonly downloadAssets?: boolean;
-          /** 原子写出策略。默认 true —— 写到临时目录再 rename。 */
-          readonly atomic?: boolean;
       };
 
 // ---------------------------------------------------------------------------
