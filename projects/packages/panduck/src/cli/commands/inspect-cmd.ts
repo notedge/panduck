@@ -8,6 +8,7 @@ import {
     createContext,
     resolveFormats,
 } from "../context.js";
+import { createDiagnostic, parseReportEnvelope, textArg } from "../../diagnostic.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { CliOptionError, parseInspectStage, readSharedOptions, readString } from "../options.js";
@@ -73,6 +74,23 @@ async function runInspect(options: ParsedOptions): Promise<number> {
         if (stage === "decode" && resolved.from === "docx" && ctx.bindings?.inspectDecode) {
             try {
                 const decode = ctx.bindings.inspectDecode(inputPath, layoutPath);
+                const parsedReport = parseReportEnvelope(decode.reportJson, { component: "inspect" });
+                if (decode.exitCode !== 0) {
+                    const reason = parsedReport.diagnostics.find((entry) => entry.severity === "error")
+                        ?.message.fallback ?? `inspect decode failed with exit code ${decode.exitCode}`;
+                    const report = buildBlockedReport(
+                        ctx,
+                        "inspect",
+                        inputPath,
+                        resolved,
+                        reason,
+                        ExitCode.IrOrWriterFailure,
+                        shared,
+                        parsedReport.diagnostics,
+                    );
+                    emitReport(report, shared.diagnostics, shared.json);
+                    return ExitCode.IrOrWriterFailure;
+                }
                 const report = createReport({
                     operation: "inspect",
                     toolVersion: ctx.toolVersion,
@@ -125,6 +143,23 @@ async function runInspect(options: ParsedOptions): Promise<number> {
         if (stage === "index" && resolved.from === "docx" && ctx.bindings?.inspectIndex) {
             try {
                 const index = ctx.bindings.inspectIndex(inputPath);
+                const parsedReport = parseReportEnvelope(index.reportJson, { component: "inspect" });
+                if (index.exitCode !== 0) {
+                    const reason = parsedReport.diagnostics.find((entry) => entry.severity === "error")
+                        ?.message.fallback ?? `inspect index failed with exit code ${index.exitCode}`;
+                    const report = buildBlockedReport(
+                        ctx,
+                        "inspect",
+                        inputPath,
+                        resolved,
+                        reason,
+                        ExitCode.IrOrWriterFailure,
+                        shared,
+                        parsedReport.diagnostics,
+                    );
+                    emitReport(report, shared.diagnostics, shared.json);
+                    return ExitCode.IrOrWriterFailure;
+                }
                 const report = createReport({
                     operation: "inspect",
                     toolVersion: ctx.toolVersion,
@@ -189,12 +224,13 @@ async function runInspect(options: ParsedOptions): Promise<number> {
                 stage === "probe"
                     ? []
                     : [
-                          {
-                              owner: "panduck",
-                              severity: "warning",
-                              message: `inspect stage ${stage} is not implemented yet`,
+                          createDiagnostic({
                               code: "panduck.inspect.not_implemented",
-                          },
+                              component: "inspect",
+                              severity: "warning",
+                              fallback: `inspect stage ${stage} is not implemented yet`,
+                              args: [["stage", textArg(stage)]],
+                          }),
                       ],
             budgets: shared.budgets,
             determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
@@ -206,12 +242,14 @@ async function runInspect(options: ParsedOptions): Promise<number> {
         });
 
         if (layoutPath) {
-            report.diagnostics?.push({
-                owner: "acorn",
-                severity: "warning",
-                message: `layout path ${layoutPath} indexing is not implemented yet`,
+            report.diagnostics?.push(createDiagnostic({
                 code: "acorn.layout.not_implemented",
-            });
+                namespace: "acorn",
+                component: "layout",
+                severity: "warning",
+                fallback: `layout path ${layoutPath} indexing is not implemented yet`,
+                args: [["path", textArg(layoutPath)]],
+            }));
         }
 
         if (size !== null) {

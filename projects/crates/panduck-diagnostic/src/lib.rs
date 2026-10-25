@@ -94,6 +94,18 @@ fn loss_severity(status: SemanticStatus) -> DiagnosticSeverity {
     }
 }
 
+/// Stable wire label for a semantic status argument.
+fn semantic_status_label(status: SemanticStatus) -> &'static str {
+    match status {
+        SemanticStatus::Resolved => "resolved",
+        SemanticStatus::Unresolved => "unresolved",
+        SemanticStatus::Partial => "partial",
+        SemanticStatus::Unsupported => "unsupported",
+        SemanticStatus::Inferred => "inferred",
+        SemanticStatus::Lossy => "lossy",
+    }
+}
+
 /// Map one IR loss marker to a unified diagnostic.
 pub fn from_loss_marker(marker: &LossMarker) -> Diagnostic {
     let code = if marker.code.contains('.') {
@@ -104,7 +116,7 @@ pub fn from_loss_marker(marker: &LossMarker) -> Diagnostic {
     };
     let msg = Message::new("panduck.semantic.loss")
         .with_arg("code", MessageArg::Text(marker.code.clone()))
-        .with_arg("severity", MessageArg::Text(format!("{:?}", marker.status)));
+        .with_arg("severity", MessageArg::Text(semantic_status_label(marker.status).to_string()));
     Diagnostic::new(
         code,
         loss_severity(marker.status),

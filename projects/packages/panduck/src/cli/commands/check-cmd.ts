@@ -6,6 +6,7 @@ import {
     createContext,
     resolveFormats,
 } from "../context.js";
+import { createDiagnostic } from "../../diagnostic.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { findFormat } from "../format-registry.js";
@@ -143,14 +144,14 @@ async function runCheck(options: ParsedOptions): Promise<number> {
             },
             coverage: source?.coverage ?? target?.coverage,
             diagnostics: [
-                {
-                    owner: "panduck",
+                createDiagnostic({
+                    code: "panduck.check.partial",
+                    component: "check",
                     severity: "warning",
-                    message: routeReady
+                    fallback: routeReady
                         ? "check requires native bindings for wired routes"
                         : "check currently validates readability and registry presence only",
-                    code: "panduck.check.partial",
-                },
+                }),
             ],
             budgets: shared.budgets,
             determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },

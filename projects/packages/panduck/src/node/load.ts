@@ -59,6 +59,7 @@ type NativeBinding = {
         reportJson: string;
     };
     inspectIndex?: (inputPath: string) => {
+        exitCode: number;
         format: string;
         outer: string;
         inner: string;
@@ -68,6 +69,7 @@ type NativeBinding = {
     installConsoleLogFile?: (path: string) => void;
     installLoggerLogFile?: (path: string) => void;
     inspectDecode?: (inputPath: string, partPath?: string) => {
+        exitCode: number;
         format: string;
         outer: string;
         inner: string;
@@ -172,6 +174,7 @@ export function loadPanduckNode(): PanduckBindings {
             ? (inputPath) => {
                   const response = binding.inspectIndex!(inputPath);
                   return {
+                      exitCode: response.exitCode,
                       format: response.format,
                       outer: response.outer,
                       inner: response.inner,
@@ -184,6 +187,7 @@ export function loadPanduckNode(): PanduckBindings {
             ? (inputPath, partPath) => {
                   const response = binding.inspectDecode!(inputPath, partPath);
                   return {
+                      exitCode: response.exitCode,
                       format: response.format,
                       outer: response.outer,
                       inner: response.inner,

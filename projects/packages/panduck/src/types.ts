@@ -17,6 +17,7 @@ export type ConvertProjectResponse = {
 };
 
 export type InspectIndexResponse = {
+    exitCode: number;
     format: string;
     outer: string;
     inner: string;
@@ -33,6 +34,7 @@ export type InspectDecodedPart = {
 };
 
 export type InspectDecodeResponse = {
+    exitCode: number;
     format: string;
     outer: string;
     inner: string;

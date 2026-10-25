@@ -137,7 +137,7 @@ test("unknown transform name is skipped with a diagnostic", async () => {
     const plan = defineConversion({
         id: "unsupported-check",
         input: { format: "html" },
-        transforms: [{ name: "resolve-references" }],
+        transforms: [{ name: "no-such-pass" }],
         output: { format: "markdown" },
     });
 
@@ -281,7 +281,10 @@ test("empty extracted scope payload fails with a diagnostic instead of empty Mar
     const diagnostic = result.diagnostics.find((d) => d.code === "panduck.convert.empty-input");
     assert.ok(diagnostic, "empty scope must produce a structured diagnostic");
     assert.equal(diagnostic.severity, "error");
-    assert.equal(diagnostic.url, "https://example.com/empty");
+    assert.deepEqual(
+        diagnostic.message.args.find(([key]) => key === "url")?.[1],
+        { text: "https://example.com/empty" },
+    );
 
     const report = JSON.parse(result.reportJson);
     assert.equal(report.status, "failed");

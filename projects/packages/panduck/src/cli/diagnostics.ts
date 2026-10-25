@@ -19,6 +19,8 @@ export function emitReport(report: PanduckReport, mode: DiagnosticsMode, jsonReq
     }
     emitHuman(`${report.operation}: ${report.status}`);
     for (const item of report.diagnostics ?? []) {
-        emitHuman(`[${item.owner}] ${item.severity}: ${item.message}`);
+        const { namespace, component } = item.origin;
+        const text = item.message.fallback ?? item.message.key;
+        emitHuman(`[${namespace}/${component}] ${item.severity}: ${text}`);
     }
 }

@@ -8,6 +8,30 @@ import { minimalDocumentXml } from "./fixtures/docx-xml.js";
 import { runPanduck } from "./helpers/cli.js";
 import { storedZip } from "./helpers/stored-zip.js";
 
+test("inspect index failure reports the native boost diagnostic", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-inspect-"));
+    const input = join(workdir, "broken.docx");
+    await writeFile(input, "not a zip package");
+
+    const result = runPanduck(["inspect", input, "--from", "docx", "--stage", "index", "--json"]);
+    assert.equal(result.code, 5, result.stderr || result.stdout);
+    const report = JSON.parse(result.stdout) as {
+        status?: string;
+        diagnostics?: Array<{
+            code?: string;
+            severity?: string;
+            origin?: { namespace?: string; component?: string };
+            message?: { fallback?: string };
+        }>;
+    };
+    assert.equal(report.status, "blocked");
+    const diagnostic = report.diagnostics?.[0];
+    assert.equal(diagnostic?.severity, "error");
+    assert.ok(["panduck", "notedown"].includes(diagnostic?.origin?.namespace ?? ""), diagnostic?.origin?.namespace);
+    assert.match(diagnostic?.code ?? "", /^(panduck|notedown)\./);
+    assert.ok(diagnostic?.message?.fallback, "diagnostic must carry a fallback message");
+});
+
 test("inspect decode reports docx member payload sizes", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-inspect-"));
     const input = join(workdir, "sample.docx");

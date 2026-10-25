@@ -4,6 +4,7 @@ import { basename, dirname, join } from "node:path";
 import { randomBytes } from "node:crypto";
 
 import type { PanduckBindings } from "../types.js";
+import { createDiagnostic, parseReportEnvelope } from "../diagnostic.js";
 import { ExitCode } from "./exit-codes.js";
 import type { SharedCliOptions } from "./options.js";
 import { createReport, type PanduckReport } from "./report.js";
@@ -121,7 +122,7 @@ export async function runConversionPipeline(input: {
     }
 
     const response = bindings.convertDocument(from, to, inputPath);
-    const parsedReport = safeParseReport(response.reportJson);
+    const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert" });
 
     if (response.exitCode !== 0) {
         return blocked(
@@ -131,7 +132,7 @@ export async function runConversionPipeline(input: {
             resolved,
             shared,
             `native conversion failed with exit code ${response.exitCode}`,
-            nativeFailureDiagnostics(parsedReport),
+            parsedReport.diagnostics,
         );
     }
 
@@ -152,7 +153,7 @@ export async function runConversionPipeline(input: {
         }
     }
 
-    const lossCount = Array.isArray(parsedReport?.losses) ? parsedReport.losses.length : 0;
+    const lossCount = parsedReport.losses.length;
     const status = lossCount > 0 ? "success_with_loss" : "success";
     let exitCode: number = ExitCode.Success;
     if (shared.strict || shared.loss === "deny") {
@@ -172,7 +173,7 @@ export async function runConversionPipeline(input: {
             writer: to,
             stages: operation === "check" ? ["read", "ir", "write", "validate"] : ["read", "ir", "write", "publish"],
         },
-        losses: parsedReport?.losses as PanduckReport["losses"],
+        losses: parsedReport.losses,
         outputs: outputPath
             ? [{ path: outputPath, published: publishOutput && !isStdoutPath(outputPath) }]
             : [{ path: "-", published: !suppressStdout }],
@@ -200,39 +201,6 @@ async function publishText(path: string, content: string): Promise<void> {
     await rename(temp, path);
 }
 
-function safeParseReport(raw: string): Record<string, unknown> | null {
-    try {
-        return JSON.parse(raw) as Record<string, unknown>;
-    } catch {
-        return null;
-    }
-}
-
-/**
- * Diagnostics carried by a failed native response, mapped onto the CLI report
- * shape. Returns an empty array when the envelope is absent or malformed so
- * `blocked()` can fall back to the failure reason itself.
- */
-function nativeFailureDiagnostics(parsed: Record<string, unknown> | null): PanduckReport["diagnostics"] {
-    const envelope = parsed?.diagnostics;
-    const raw = envelope && typeof envelope === "object"
-        ? (envelope as { diagnostics?: unknown }).diagnostics
-        : undefined;
-    if (!Array.isArray(raw)) {
-        return [];
-    }
-    return raw.map((entry) => {
-        const record = entry as Record<string, unknown>;
-        const fallback = typeof record.fallback === "string" ? record.fallback : undefined;
-        return {
-            owner: "panduck",
-            severity: typeof record.severity === "string" ? record.severity : "error",
-            message: fallback && fallback.length > 0 ? fallback : String(record.code ?? "native conversion failed"),
-            code: typeof record.code === "string" ? record.code : undefined,
-        };
-    });
-}
-
 function blocked(
     ctx: CliContext,
     operation: "convert" | "check",
@@ -251,7 +219,12 @@ function blocked(
         diagnostics:
             diagnostics && diagnostics.length > 0
                 ? diagnostics
-                : [{ owner: "panduck", severity: "error", message: reason }],
+                : [createDiagnostic({
+                    code: "panduck.cli.blocked",
+                    component: "cli",
+                    severity: "error",
+                    fallback: reason,
+                })],
         determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
         statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.IrOrWriterFailure },
     });
@@ -296,7 +269,7 @@ export async function runMarkdownProjectPipeline(input: {
     }
 
     const response = bindings.convertMarkdownProject(from, inputPath, outputDir);
-    const parsedReport = safeParseReport(response.reportJson);
+    const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert" });
 
     if (response.exitCode !== 0) {
         return blocked(
@@ -306,11 +279,11 @@ export async function runMarkdownProjectPipeline(input: {
             resolved,
             shared,
             `native markdown project conversion failed with exit code ${response.exitCode}`,
-            nativeFailureDiagnostics(parsedReport),
+            parsedReport.diagnostics,
         );
     }
 
-    const lossCount = Array.isArray(parsedReport?.losses) ? parsedReport.losses.length : 0;
+    const lossCount = parsedReport.losses.length;
     const unresolvedCount = response.unresolvedAssets.length;
     const status =
         lossCount > 0 || unresolvedCount > 0 ? "success_with_loss" : "success";
@@ -332,7 +305,7 @@ export async function runMarkdownProjectPipeline(input: {
             writer: "markdown-project",
             stages: ["read", "ir", "write", "materialize", "publish"],
         },
-        losses: parsedReport?.losses as PanduckReport["losses"],
+        losses: parsedReport.losses,
         outputs: [
             { path: join(outputDir, "index.md"), published: true },
             ...response.publishedChapters.map((chapter) => ({

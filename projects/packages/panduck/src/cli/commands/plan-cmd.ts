@@ -7,6 +7,7 @@ import {
     resolveFormats,
     validateIoPaths,
 } from "../context.js";
+import { createDiagnostic, textArg } from "../../diagnostic.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { findFormat, isOperationReady } from "../format-registry.js";
@@ -115,12 +116,13 @@ async function runPlan(options: ParsedOptions): Promise<number> {
                     },
                     coverage: target.coverage,
                     diagnostics: [
-                        {
-                            owner: "panduck",
-                            severity: "error",
-                            message: `source format ${source.format} is not ready for read`,
+                        createDiagnostic({
                             code: "panduck.reader.not_ready",
-                        },
+                            component: "plan",
+                            severity: "error",
+                            fallback: `source format ${source.format} is not ready for read`,
+                            args: [["format", textArg(source.format)]],
+                        }),
                     ],
                     determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
                     statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.InputUnsupported },
@@ -144,12 +146,13 @@ async function runPlan(options: ParsedOptions): Promise<number> {
                     },
                     coverage: target.coverage,
                     diagnostics: [
-                        {
-                            owner: "panduck",
-                            severity: "error",
-                            message: `target format ${target.format} is not ready for write`,
+                        createDiagnostic({
                             code: "panduck.writer.not_ready",
-                        },
+                            component: "plan",
+                            severity: "error",
+                            fallback: `target format ${target.format} is not ready for write`,
+                            args: [["format", textArg(target.format)]],
+                        }),
                     ],
                     determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
                     statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.InputUnsupported },

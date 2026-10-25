@@ -23,6 +23,25 @@ fn loss_marker_maps_to_semantic_diagnostic() {
 }
 
 #[test]
+fn loss_marker_status_arg_uses_controlled_wire_label() {
+    let marker = LossMarker {
+        code: "reader.docx.numbering_unresolved".to_string(),
+        message: "numbering.xml missing".to_string(),
+        status: SemanticStatus::Partial,
+    };
+    let set = {
+        let mut set = boost_diagnostic::DiagnosticSet::new();
+        set.push(from_loss_marker(&marker));
+        set
+    };
+    let json = serde_json::to_string(&DiagnosticEnvelope::from_set(&set))
+        .expect("serialize diagnostic envelope");
+    assert!(json.contains("\"severity\""));
+    assert!(json.contains("\"partial\""), "status arg must use the controlled label, got {json}");
+    assert!(!json.contains("\"Partial\""), "Debug-formatted status must not leak, got {json}");
+}
+
+#[test]
 fn graph_losses_collect_into_diagnostic_set() {
     let mut graph = DocumentGraph::new(IdAllocator::default().document_id());
     graph.push_loss(LossMarker {

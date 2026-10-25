@@ -2,6 +2,8 @@ import { access } from "node:fs/promises";
 import { constants } from "node:fs";
 
 import type { PanduckBindings } from "../types.js";
+import { createDiagnostic } from "../diagnostic.js";
+import type { DiagnosticRecord } from "../diagnostic.js";
 import { loadPanduckNode } from "../node/load.js";
 import { getFormatRegistry, findFormat, type FormatRecord } from "./format-registry.js";
 import { extensionHints, inferTargetFromPath, isStdinPath, normalizeFormatId, pathsOverlap } from "./paths.js";
@@ -72,6 +74,7 @@ export function buildBlockedReport(
     reason: string,
     exitCode: number,
     shared: SharedCliOptions,
+    diagnostics?: DiagnosticRecord[],
 ): PanduckReport {
     return createReport({
         operation,
@@ -84,7 +87,14 @@ export function buildBlockedReport(
             hints: resolved.hints,
         },
         pipeline: { blocked_reason: reason },
-        diagnostics: [{ owner: "panduck", severity: "error", message: reason }],
+        diagnostics: diagnostics && diagnostics.length > 0
+            ? diagnostics
+            : [createDiagnostic({
+                code: "panduck.cli.blocked",
+                component: "cli",
+                severity: "error",
+                fallback: reason,
+            })],
         determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
         statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: exitCode },
     });

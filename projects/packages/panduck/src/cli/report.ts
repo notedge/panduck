@@ -1,3 +1,4 @@
+import type { DiagnosticRecord, LossRecord } from "../diagnostic.js";
 import type { CapabilityState } from "./format-registry.js";
 
 export const REPORT_SCHEMA_VERSION = "panduck.report/v0";
@@ -46,19 +47,8 @@ export type PanduckReport = {
         read?: number;
         write?: number;
     };
-    losses?: Array<{
-        code: string;
-        owner: string;
-        severity: string;
-        message: string;
-        action?: string;
-    }>;
-    diagnostics?: Array<{
-        owner: string;
-        severity: string;
-        message: string;
-        code?: string;
-    }>;
+    losses?: LossRecord[];
+    diagnostics?: DiagnosticRecord[];
     outputs?: Array<{ path: string; published: boolean }>;
     budgets?: Record<string, number>;
     determinism?: {

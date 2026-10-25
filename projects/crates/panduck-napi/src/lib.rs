@@ -8,8 +8,8 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use panduck_convert::{
     READERS, WRITERS, convert_bytes, convert_file, convert_markdown_project_file,
-    convert_to_markdown_project as convert_markdown_project_bytes_impl, empty_diagnostic_envelope, from_adapter_error,
-    inspect_docx_decode, inspect_docx_index, supported_routes, supports_markdown_project_source, supports_route,
+    convert_to_markdown_project as convert_markdown_project_bytes_impl, empty_diagnostic_envelope, inspect_docx_decode,
+    inspect_docx_index, supported_routes, supports_markdown_project_source, supports_route,
 };
 use panduck_types::AdapterError;
 
@@ -50,6 +50,8 @@ pub struct ConvertResponse {
 /// N-API container index response.
 #[napi(object)]
 pub struct InspectIndexResponse {
+    /// Process exit code. Zero means success.
+    pub exit_code: u32,
     /// Detected container format.
     pub format: String,
     /// Outer container label from Acorn detection.
@@ -80,6 +82,8 @@ pub struct InspectDecodedPart {
 /// N-API container decode response.
 #[napi(object)]
 pub struct InspectDecodeResponse {
+    /// Process exit code. Zero means success.
+    pub exit_code: u32,
     /// Detected container format.
     pub format: String,
     /// Outer container label from Acorn detection.
@@ -137,8 +141,20 @@ pub fn supported_conversions() -> Vec<String> {
 
 /// Indexes a DOCX OPC package and returns member part paths.
 #[napi]
-pub fn inspect_index(input_path: String) -> Result<InspectIndexResponse> {
-    let index = inspect_docx_index(&input_path).map_err(map_adapter_error)?;
+pub fn inspect_index(input_path: String) -> InspectIndexResponse {
+    let index = match inspect_docx_index(&input_path) {
+        Ok(index) => index,
+        Err(error) => {
+            return InspectIndexResponse {
+                exit_code: 1,
+                format: String::new(),
+                outer: String::new(),
+                inner: String::new(),
+                parts: Vec::new(),
+                report_json: build_inspect_error_report("index", &input_path, &error),
+            };
+        }
+    };
     let report_json = serde_json::json!({
         "schema_version": panduck_convert::SCHEMA_REPORT,
         "operation": "inspect",
@@ -155,14 +171,33 @@ pub fn inspect_index(input_path: String) -> Result<InspectIndexResponse> {
         "diagnostics": empty_diagnostic_envelope(),
     })
     .to_string();
-    Ok(InspectIndexResponse { format: index.format, outer: index.outer, inner: index.inner, parts: index.parts, report_json })
+    InspectIndexResponse {
+        exit_code: 0,
+        format: index.format,
+        outer: index.outer,
+        inner: index.inner,
+        parts: index.parts,
+        report_json,
+    }
 }
 
 /// Decodes DOCX OPC members and returns per-part payload sizes.
 #[napi]
-pub fn inspect_decode(input_path: String, part_path: Option<String>) -> Result<InspectDecodeResponse> {
+pub fn inspect_decode(input_path: String, part_path: Option<String>) -> InspectDecodeResponse {
     let filter = part_path.as_deref();
-    let decode = inspect_docx_decode(&input_path, filter).map_err(map_adapter_error)?;
+    let decode = match inspect_docx_decode(&input_path, filter) {
+        Ok(decode) => decode,
+        Err(error) => {
+            return InspectDecodeResponse {
+                exit_code: 1,
+                format: String::new(),
+                outer: String::new(),
+                inner: String::new(),
+                parts: Vec::new(),
+                report_json: build_inspect_error_report("decode", &input_path, &error),
+            };
+        }
+    };
     let decoded_parts = decode
         .parts
         .iter()
@@ -196,13 +231,14 @@ pub fn inspect_decode(input_path: String, part_path: Option<String>) -> Result<I
         "diagnostics": empty_diagnostic_envelope(),
     })
     .to_string();
-    Ok(InspectDecodeResponse {
+    InspectDecodeResponse {
+        exit_code: 0,
         format: decode.format,
         outer: decode.outer,
         inner: decode.inner,
         parts: decoded_parts,
         report_json,
-    })
+    }
 }
 
 /// Returns whether a source format can be converted into a Markdown project.
@@ -387,18 +423,21 @@ fn build_project_error_report(from: &str, input_path: &str, output_dir: &str, er
     }
 }
 
-fn map_adapter_error(error: AdapterError) -> Error {
-    // Use `panduck_convert::from_adapter_error` to get the authoritative
-    // `panduck.adapter.*` or `notedown.format.*` wire code instead of the
-    // previous fallback `panduck.adapter.error` string literal that was not
-    // in the DiagnosticCode enum and silently flattened every non-
-    // Diagnostic AdapterError variant.
-    let diag = from_adapter_error(&error);
-    let code = diag.code().to_string();
-    let fallback = diag
-        .message()
-        .fallback()
-        .map(|s| s.to_string())
-        .unwrap_or_else(|| code.clone());
-    Error::from_reason(format!("[code={code}] {fallback}"))
+fn build_inspect_error_report(operation: &str, label: &str, error: &AdapterError) -> String {
+    use boost_diagnostic::{DiagnosticEnvelope, DiagnosticSet};
+
+    let diagnostic = panduck_convert::from_adapter_error(error);
+    let mut set = DiagnosticSet::new();
+    set.push(diagnostic);
+    let envelope = DiagnosticEnvelope::from_set(&set);
+    serde_json::json!({
+        "schema_version": panduck_convert::SCHEMA_REPORT,
+        "operation": "inspect",
+        "status": "failed",
+        "inputs": [{ "path": label }],
+        "pipeline": { "stages": [operation] },
+        "diagnostics": envelope,
+        "losses": [],
+    })
+    .to_string()
 }

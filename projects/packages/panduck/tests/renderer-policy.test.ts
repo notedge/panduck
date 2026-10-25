@@ -152,9 +152,15 @@ test("policy handlers warn as unsupported and are never executed", async () => {
         warning,
         `Expected handlers-unsupported warning, got codes: ${result.diagnostics.map((d) => d.code).join(", ")}`,
     );
-    assert.equal(warning.severity, "warn");
-    assert.deepEqual(warning.args?.handlerKeys, ["custom.important"]);
-    assert.equal(warning.args?.policyName, "rewrite-test");
+    assert.equal(warning.severity, "warning");
+    assert.deepEqual(
+        warning.message.args.find(([key]) => key === "handlerKeys")?.[1],
+        { "text-list": ["custom.important"] },
+    );
+    assert.deepEqual(
+        warning.message.args.find(([key]) => key === "policyName")?.[1],
+        { text: "rewrite-test" },
+    );
 
     assert.equal(invoked, 0, "policy handlers must not be executed in the TS layer");
     assert.ok(result.text.includes("this should stay"), `Original text must survive. Got: ${result.text}`);
@@ -206,8 +212,11 @@ test("ConversionPlan output policy handlers warn instead of claiming execution",
         warning,
         `Expected handlers-unsupported warning, got codes: ${result.diagnostics.map((d) => d.code).join(", ")}`,
     );
-    assert.equal(warning.severity, "warn");
-    assert.deepEqual(warning.args?.handlerKeys, ["custom.ads"]);
+    assert.equal(warning.severity, "warning");
+    assert.deepEqual(
+        warning.message.args.find(([key]) => key === "handlerKeys")?.[1],
+        { "text-list": ["custom.ads"] },
+    );
     assert.equal(invoked, 0, "plan policy handlers must not be executed");
     assert.ok(result.text.includes("buy now"), `Original paragraph must survive. Got: ${result.text}`);
     assert.notEqual(result.status, "failed");

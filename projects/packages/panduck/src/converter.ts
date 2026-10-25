@@ -22,40 +22,17 @@ import { loadPanduckNode } from "./node/load.js";
 import type { ConverterConfig } from "./renderer-policy.js";
 import type { ConversionPlan } from "./conversion-plan.js";
 import { serializeConversionPlan } from "./conversion-plan.js";
+import {
+    createDiagnostic,
+    parseReportEnvelope,
+    textArg,
+    textListArg,
+    u64Arg,
+    withUrl,
+} from "./diagnostic.js";
+import type { DiagnosticMessageArg, DiagnosticRecord, LossRecord } from "./diagnostic.js";
 
-// ---------------------------------------------------------------------------
-// Diagnostic record (shared shape with Pandark Crawler)
-// ---------------------------------------------------------------------------
-
-export type DiagnosticSeverity = "error" | "warn" | "info";
-
-/**
- * Structured diagnostic record. Mirrors boost-diagnostic::Diagnostic but kept
- * as a plain TS interface so both Pandark and Panduck can agree on the
- * wire contract without a shared runtime crate.
- */
-export type DiagnosticRecord = {
-    /** Stable dotted code — e.g. `panduck.convert.required-missing`. */
-    code: string;
-    /** Fallback human-readable message. */
-    fallback?: string;
-    /** Message key for locale resolution. */
-    messageKey?: string;
-    /** Typed args — stable keys, free-form values. */
-    args?: Record<string, unknown>;
-    /** Origin identity. */
-    origin?: {
-        namespace: string;
-        component: string;
-    };
-    severity?: DiagnosticSeverity;
-    /** Which converter stage produced this record. */
-    stage?: "input" | "structure" | "transform" | "convert" | "loss" | "rule" | "output";
-    /** URL or label the diagnostic belongs to. */
-    url?: string;
-    /** Affected selector / source span / asset. */
-    target?: string;
-};
+export type { DiagnosticRecord, DiagnosticSeverity, LossRecord } from "./diagnostic.js";
 
 // ---------------------------------------------------------------------------
 // Input shapes
@@ -190,15 +167,15 @@ export class Converter {
 
         // Empty input short-circuit.
         if (bytes.length === 0) {
-            diagnostics.push({
+            diagnostics.push(createDiagnostic({
                 code: "panduck.convert.empty-input",
                 fallback: `Empty input for ${label}`,
                 messageKey: "panduck.diagnostic.emptyInput",
-                origin: { namespace: "panduck", component: "convert" },
+                component: "convert",
                 severity: "error",
                 stage: "input",
-                url: urlHint,
-            });
+                args: urlHint ? [["url", textArg(urlHint)]] : [],
+            }));
             return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
@@ -239,27 +216,26 @@ export class Converter {
         const diagnostics: DiagnosticRecord[] = [];
 
         if (bytes.length === 0) {
-            diagnostics.push({
+            diagnostics.push(createDiagnostic({
                 code: "panduck.convert.empty-input",
                 fallback: `Empty input for ${label}`,
                 messageKey: "panduck.diagnostic.emptyInput",
-                origin: { namespace: "panduck", component: "convert" },
+                component: "convert",
                 severity: "error",
                 stage: "input",
-                url: urlHint,
-            });
+                args: urlHint ? [["url", textArg(urlHint)]] : [],
+            }));
             return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
-        diagnostics.push({
+        diagnostics.push(createDiagnostic({
             code: "panduck.convert.policy-active",
             fallback: `Using RendererPolicy "${policy.name}"`,
-            args: { policyName: policy.name },
-            origin: { namespace: "panduck", component: "convert" },
+            component: "convert",
             severity: "info",
             stage: "convert",
-            url: urlHint,
-        });
+            args: withUrl([["policyName", textArg(policy.name)]], urlHint),
+        }));
         reportUnsupportedHandlers(
             diagnostics,
             policy.name,
@@ -312,35 +288,34 @@ export class Converter {
         const diagnostics: DiagnosticRecord[] = [];
 
         if (bytes.length === 0) {
-            diagnostics.push({
+            diagnostics.push(createDiagnostic({
                 code: "panduck.convert.empty-input",
                 fallback: `Empty input for ${label}`,
                 messageKey: "panduck.diagnostic.emptyInput",
-                origin: { namespace: "panduck", component: "convert" },
+                component: "convert",
                 severity: "error",
                 stage: "input",
-                url: urlHint,
-            });
+                args: urlHint ? [["url", textArg(urlHint)]] : [],
+            }));
             return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
         // (1) 序列化 ConversionPlan 的 transforms → Rust plan descriptor。
         const handlersJson = serializeConversionPlan(plan);
-        diagnostics.push({
+        diagnostics.push(createDiagnostic({
             code: "panduck.convert.conversion-plan-active",
             fallback: `ConversionPlan "${plan.id}": ${from} → ${plan.output.format} (${plan.transforms.length} transform${plan.transforms.length === 1 ? "" : "s"}, publish: ${plan.publish.kind})`,
-            args: {
-                planId: plan.id,
-                fromFormat: from,
-                toFormat: plan.output.format,
-                transformCount: plan.transforms.length,
-                publishKind: plan.publish.kind,
-            },
-            origin: { namespace: "panduck", component: "convert" },
+            component: "convert",
             severity: "info",
             stage: "convert",
-            url: urlHint,
-        });
+            args: withUrl([
+                ["planId", textArg(plan.id)],
+                ["fromFormat", textArg(from)],
+                ["toFormat", textArg(plan.output.format)],
+                ["transformCount", u64Arg(plan.transforms.length)],
+                ["publishKind", textArg(plan.publish.kind)],
+            ], urlHint),
+        }));
 
         // (2) output 带 RendererPolicy 时，handlers 无法执行 —— 只报告，不应用。
         reportUnsupportedHandlers(
@@ -401,15 +376,15 @@ export class Converter {
         const { from, bytes, label, urlHint, diagnostics, handlersJson, requireNoLoss, directory } = ctx;
         const fn = this.binding.convertMarkdownProjectBytes;
         if (!fn) {
-            diagnostics.push({
+            diagnostics.push(createDiagnostic({
                 code: "panduck.convert.binding-missing",
                 fallback: "Panduck binding does not expose convertMarkdownProjectBytes — rebuild @notedge/panduck-native",
                 messageKey: "panduck.diagnostic.bindingMissing",
-                origin: { namespace: "panduck", component: "convert" },
+                component: "convert",
                 severity: "error",
                 stage: "convert",
-                url: urlHint,
-            });
+                args: withUrl([], urlHint),
+            }));
             return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
         }
 
@@ -424,37 +399,23 @@ export class Converter {
 
         if (nativePanic !== undefined || !response) {
             const msg = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
-            diagnostics.push({
+            diagnostics.push(createDiagnostic({
                 code: "panduck.convert.native-panic",
                 fallback: `Panduck native binary panicked while publishing ${label}: ${msg}`,
-                args: { message: msg },
-                origin: { namespace: "panduck", component: "convert" },
+                component: "convert",
                 severity: "error",
                 stage: "output",
-                url: urlHint,
-            });
+                args: withUrl([["message", textArg(msg)]], urlHint),
+            }));
             return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
         }
 
-        const parsedReport = safeParseReport(response.reportJson);
+        const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert", url: urlHint });
         diagnostics.push(...parsedReport.diagnostics);
-
-        const hasRustLoss = parsedReport.losses.length > 0;
-        if (hasRustLoss) {
-            diagnostics.push({
-                code: "panduck.convert.rust-loss",
-                fallback: `Rust reported ${parsedReport.losses.length} known structural loss(es) for ${label}`,
-                args: { count: parsedReport.losses.length },
-                origin: { namespace: "panduck", component: "convert" },
-                severity: "warn",
-                stage: "loss",
-                url: urlHint,
-            });
-        }
+        reportRustLoss(diagnostics, parsedReport.losses, label, urlHint);
 
         const status = deriveStatus(diagnostics, {
-            rustStatus: parsedReport.rawStatus,
-            hasRustLoss,
+            lossCount: parsedReport.losses.length,
             exitCode: response.exitCode,
             requireNoLoss,
         });
@@ -484,15 +445,15 @@ export class Converter {
         const { from, bytes, label, urlHint, diagnostics, handlersJson, requireNoLoss } = ctx;
         const fn = this.binding.convertBytesMemory;
         if (!fn) {
-            diagnostics.push({
+            diagnostics.push(createDiagnostic({
                 code: "panduck.convert.binding-missing",
                 fallback: "Panduck binding does not expose convertBytesMemory — rebuild @notedge/panduck-native",
                 messageKey: "panduck.diagnostic.bindingMissing",
-                origin: { namespace: "panduck", component: "convert" },
+                component: "convert",
                 severity: "error",
                 stage: "convert",
-                url: urlHint,
-            });
+                args: withUrl([], urlHint),
+            }));
             return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
         }
 
@@ -506,39 +467,24 @@ export class Converter {
 
         if (nativePanic !== undefined || !response) {
             const msg = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
-            diagnostics.push({
+            diagnostics.push(createDiagnostic({
                 code: "panduck.convert.native-panic",
                 fallback: `Panduck native binary panicked for ${label}: ${msg}`,
-                args: { message: msg },
-                origin: { namespace: "panduck", component: "convert" },
+                component: "convert",
                 severity: "error",
                 stage: "convert",
-                url: urlHint,
-            });
+                args: withUrl([["message", textArg(msg)]], urlHint),
+            }));
             return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
         }
 
-        const parsedReport = safeParseReport(response.reportJson);
+        const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert", url: urlHint });
         diagnostics.push(...parsedReport.diagnostics);
-
-        const rustStatus = parsedReport.rawStatus;
-        const hasRustLoss = parsedReport.losses.length > 0;
-        if (hasRustLoss) {
-            diagnostics.push({
-                code: "panduck.convert.rust-loss",
-                fallback: `Rust reported ${parsedReport.losses.length} known structural loss(es) for ${label}`,
-                args: { count: parsedReport.losses.length },
-                origin: { namespace: "panduck", component: "convert" },
-                severity: "warn",
-                stage: "loss",
-                url: urlHint,
-            });
-        }
+        reportRustLoss(diagnostics, parsedReport.losses, label, urlHint);
 
         const text = response.text ?? "";
         const status = deriveStatus(diagnostics, {
-            rustStatus,
-            hasRustLoss,
+            lossCount: parsedReport.losses.length,
             exitCode: response.exitCode,
             requireNoLoss,
         });
@@ -581,18 +527,20 @@ function reportUnsupportedHandlers(
 
     const name = policyName ?? "<unnamed>";
     const keysDisplay = handlerKeys.map((key) => `"${key}"`).join(", ");
-    diagnostics.push({
+    const args: Array<[string, DiagnosticMessageArg]> = [];
+    if (policyName) args.push(["policyName", textArg(policyName)]);
+    args.push(["handlerKeys", textListArg(handlerKeys)]);
+    diagnostics.push(createDiagnostic({
         code: "panduck.policy.handlers-unsupported",
         fallback:
             `RendererPolicy "${name}" declares ${handlerKeys.length} handler(s) [${keysDisplay}] — ` +
             "handler execution is not available in the TS layer and the Rust converter does not execute handlers. " +
             "Conversion continues without applying them.",
-        args: { policyName: policyName ?? null, handlerKeys: [...handlerKeys] },
-        origin: { namespace: "panduck", component: "policy" },
-        severity: "warn",
+        component: "policy",
+        severity: "warning",
         stage: "rule",
-        url: urlHint,
-    });
+        args: withUrl(args, urlHint),
+    }));
 }
 
 async function materializeInput(
@@ -627,6 +575,24 @@ async function materializeInput(
     return { bytes: new Uint8Array(), label: explicitLabel ?? "<unknown>" };
 }
 
+/** Report one warning when the Rust report carries real IR loss markers. */
+function reportRustLoss(
+    diagnostics: DiagnosticRecord[],
+    losses: readonly LossRecord[],
+    label: string,
+    urlHint?: string,
+): void {
+    if (losses.length === 0) return;
+    diagnostics.push(createDiagnostic({
+        code: "panduck.convert.rust-loss",
+        fallback: `Rust reported ${losses.length} known structural loss(es) for ${label}`,
+        component: "convert",
+        severity: "warning",
+        stage: "loss",
+        args: withUrl([["count", u64Arg(losses.length)]], urlHint),
+    }));
+}
+
 function makeResult(
     status: ConverterStatus,
     text: string,
@@ -634,7 +600,7 @@ function makeResult(
     label: string,
     urlHint?: string,
 ): ConverterResult {
-    const reportStatus = status === "failed" ? "failed" : status === "success_with_loss" ? "partial" : "ok";
+    const reportStatus = status === "failed" ? "failed" : status === "success_with_loss" ? "success_with_loss" : "success";
     const reportJson = JSON.stringify({
         schema_version: "panduck.report/v0",
         operation: "convert",
@@ -642,9 +608,9 @@ function makeResult(
         inputs: [{ path: label, format: "html" }],
         pipeline: { reader: "html", writer: "markdown", stages: ["read", "ir", "write"] },
         diagnostics: {
-            schema_version: "panduck.diagnostic/v0",
-            diagnostics: diags.map(toRustDiagnosticShape),
-            truncated: 0,
+            schemaVersion: 1,
+            diagnostics: diags,
+            truncated: false,
             dropped: 0,
         },
         losses: [],
@@ -653,147 +619,25 @@ function makeResult(
     return { status, text, diagnostics: diags, reportJson };
 }
 
-function toRustDiagnosticShape(d: DiagnosticRecord): Record<string, unknown> {
-    return {
-        code: d.code,
-        fallback: d.fallback ?? "",
-        message_key: d.messageKey,
-        args: d.args,
-        origin: d.origin,
-        severity: d.severity ?? "error",
-        stage: d.stage,
-        url: d.url,
-        target: d.target,
-    };
-}
-
 /**
- * Parse Rust-side report_json. The Rust DiagnosticEnvelope serializes as
- *   { schema_version: "...", diagnostics: Diagnostic[], truncated, dropped }
- * and sits under the top-level `diagnostics` key. So we read
- * `parsed.diagnostics.diagnostics` (array), NOT the old buggy path
- * `parsed.diagnostics.envelope`.
+ * Derive ConverterStatus from real run data only:
+ *   1. exitCode from Rust → non-zero means hard failure.
+ *   2. Error-severity diagnostics → failed.
+ *   3. `requireNoLoss` (ConversionPlan deny) → any IR loss is failed.
+ *   4. Real IR loss markers → success_with_loss.
+ *   5. Otherwise → success.
  *
- * If the envelope is missing, corrupt, or JSON itself unparseable we still
- * return a DiagnosticRecord describing *that* — we never silently return an
- * empty array from this function.
- */
-function safeParseReport(reportJson: string, urlHint?: string): {
-    diagnostics: DiagnosticRecord[];
-    rawStatus?: string;
-    losses: unknown[];
-} {
-    const errDiags: DiagnosticRecord[] = [];
-    let parsed: any;
-    try {
-        parsed = JSON.parse(reportJson);
-    } catch (e) {
-        errDiags.push({
-            code: "panduck.convert.report-corrupt",
-            fallback: "Failed to parse Rust report JSON",
-            args: { error: e instanceof Error ? e.message : String(e) },
-            origin: { namespace: "panduck", component: "convert" },
-            severity: "error",
-            stage: "convert",
-            url: urlHint,
-        });
-        return { diagnostics: errDiags, losses: [] };
-    }
-
-    const envelope = parsed?.diagnostics;
-    if (!envelope || typeof envelope !== "object") {
-        errDiags.push({
-            code: "panduck.convert.report-missing",
-            fallback: "Rust report missing `diagnostics` envelope",
-            origin: { namespace: "panduck", component: "convert" },
-            severity: "error",
-            stage: "convert",
-            url: urlHint,
-        });
-        return { diagnostics: errDiags, rawStatus: parsed?.status, losses: [] };
-    }
-
-    const rawDiags = envelope.diagnostics;
-    if (!Array.isArray(rawDiags)) {
-        errDiags.push({
-            code: "panduck.convert.report-corrupt",
-            fallback: "Rust diagnostics envelope missing `diagnostics` array",
-            origin: { namespace: "panduck", component: "convert" },
-            severity: "error",
-            stage: "convert",
-            url: urlHint,
-        });
-        return { diagnostics: errDiags, rawStatus: parsed?.status, losses: [] };
-    }
-
-    const mapped = rawDiags.map((raw): DiagnosticRecord => {
-        const r = raw as Record<string, unknown>;
-        const severity = (r.severity as DiagnosticSeverity | undefined) ?? "error";
-        return {
-            code: String(r.code ?? "panduck.convert.unknown"),
-            fallback: typeof r.fallback === "string" ? r.fallback : undefined,
-            messageKey: typeof r.message_key === "string" ? r.message_key :
-                typeof r.messageKey === "string" ? r.messageKey : undefined,
-            args: (r.args as Record<string, unknown> | undefined) ?? undefined,
-            origin: (r.origin as { namespace: string; component: string } | undefined) ?? undefined,
-            severity,
-            stage: (r.stage as DiagnosticRecord["stage"] | undefined) ?? "convert",
-            url: typeof r.url === "string" ? r.url : undefined,
-            target: typeof r.target === "string" ? r.target : undefined,
-        };
-    });
-
-    return {
-        diagnostics: mapped,
-        rawStatus: typeof parsed.status === "string" ? parsed.status : undefined,
-        losses: Array.isArray(parsed.losses) ? parsed.losses : [],
-    };
-}
-
-/**
- * Derive ConverterStatus. Trust hierarchy:
- *   1. exitCode from Rust → 1 means the binary considers this a hard failure.
- *   2. Rust report.status === "failed" → same, hard failure.
- *   3. Error-severity diagnostics (executor OR Rust OR post-process) → failed.
- *   4. requireNoLoss from ConversionPlan → deny semantics. Any loss = failed.
- *   5. Otherwise, known loss → success_with_loss.
- *   6. Otherwise → success.
+ * Diagnostic code names are never inspected to guess loss.
  */
 function deriveStatus(
     diags: DiagnosticRecord[],
-    ctx: { rustStatus?: string; hasRustLoss: boolean; exitCode: number; requireNoLoss: boolean },
+    ctx: { lossCount: number; exitCode: number; requireNoLoss: boolean },
 ): ConverterStatus {
     if (ctx.exitCode !== 0) return "failed";
-    if (ctx.rustStatus === "failed") return "failed";
     if (diags.some((d) => d.severity === "error")) return "failed";
-
-    // v0 only — no regex. Loss via severity + explicit prefix.
-    const hasLoss = ctx.hasRustLoss || diags.some((d) =>
-        d.severity === "warn" && isLossCode(d.code),
-    );
-    if (hasLoss) {
+    if (ctx.lossCount > 0) {
         if (ctx.requireNoLoss) return "failed";
         return "success_with_loss";
     }
-
-    // Not-validated via explicit prefix.
-    const hasUnvalidated = diags.some((d) =>
-        d.severity === "warn" && isNotValidatedCode(d.code),
-    );
-    if (hasUnvalidated) return "success_unvalidated";
-
     return "success";
-}
-
-function isLossCode(code: string): boolean {
-    if (code.endsWith(".loss")) return true;
-    if (code.includes(".loss.")) return true;
-    if (code === "panduck.convert.structure-loss") return true;
-    return false;
-}
-
-function isNotValidatedCode(code: string): boolean {
-    if (code.endsWith(".not-validated")) return true;
-    if (code.includes(".not-validated.")) return true;
-    return false;
 }

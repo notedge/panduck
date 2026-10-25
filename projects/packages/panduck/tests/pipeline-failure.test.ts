@@ -30,15 +30,26 @@ const failedReportJson = JSON.stringify({
     status: "failed",
     pipeline: { reader: "docx", writer: "markdown", stages: ["read", "ir", "write"] },
     diagnostics: {
-        schema_version: "panduck.diagnostic/v0",
+        schemaVersion: 1,
         diagnostics: [
             {
                 code: "panduck.adapter.not-found",
-                fallback: "input document is not a readable docx package",
                 severity: "error",
+                origin: { namespace: "panduck", component: "adapter", stage: "read" },
+                message: {
+                    key: "panduck.adapter.not-found",
+                    args: [["format", { text: "docx" }]],
+                    fallback: "input document is not a readable docx package",
+                },
+                primary: null,
+                secondary: [],
+                notes: [],
+                helps: [],
+                cause: null,
+                actions: [],
             },
         ],
-        truncated: 0,
+        truncated: false,
         dropped: 0,
     },
     losses: [],
@@ -96,12 +107,17 @@ test("native convert failure blocks the output file instead of writing empty tex
             result.report.pipeline?.blocked_reason,
             "native conversion failed with exit code 1",
         );
-        assert.ok(
-            result.report.diagnostics?.some(
-                (diagnostic) => diagnostic.code === "panduck.adapter.not-found",
-            ),
-            "native failure diagnostics must reach the CLI report",
+        const diagnostic = result.report.diagnostics?.find(
+            (entry) => entry.code === "panduck.adapter.not-found",
         );
+        assert.ok(diagnostic, "native failure diagnostics must reach the CLI report");
+        assert.deepEqual(diagnostic.origin, {
+            namespace: "panduck",
+            component: "adapter",
+            stage: "read",
+        });
+        assert.equal(diagnostic.message.fallback, "input document is not a readable docx package");
+        assert.deepEqual(diagnostic.message.args, [["format", { text: "docx" }]]);
         assert.equal(await exists(outputPath), false, "failed conversion must not publish an empty file");
     } finally {
         await rm(workdir, { recursive: true, force: true });

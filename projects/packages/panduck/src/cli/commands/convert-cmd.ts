@@ -10,6 +10,7 @@ import {
     resolveFormats,
     validateIoPaths,
 } from "../context.js";
+import { createDiagnostic } from "../../diagnostic.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { findFormat, isOperationReady } from "../format-registry.js";
@@ -300,12 +301,12 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                 blocked_reason: "conversion pipeline is not wired yet",
             },
             diagnostics: [
-                {
-                    owner: "panduck",
-                    severity: "error",
-                    message: "conversion pipeline is not wired yet",
+                createDiagnostic({
                     code: "panduck.convert.not_implemented",
-                },
+                    component: "convert",
+                    severity: "error",
+                    fallback: "conversion pipeline is not wired yet",
+                }),
             ],
             outputs: outputPath ? [{ path: outputPath, published: false }] : [],
             budgets: shared.budgets,
