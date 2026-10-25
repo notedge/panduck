@@ -51,71 +51,57 @@ pub fn publish_markdown_project(
     // (bad asset path, disk full, …) does not leave `output_dir` dirty.
     let staging_dir = staging_dir_path(output_dir);
     if staging_dir.exists() {
-        fs::remove_dir_all(&staging_dir)
-            .map_err(|error| AdapterError::io(error, Some(staging_dir.display().to_string())))?;
+        fs::remove_dir_all(&staging_dir).map_err(|error| AdapterError::io(error, Some(staging_dir.display().to_string())))?;
     }
-    fs::create_dir_all(&staging_dir)
-        .map_err(|error| AdapterError::io(error, Some(staging_dir.display().to_string())))?;
+    fs::create_dir_all(&staging_dir).map_err(|error| AdapterError::io(error, Some(staging_dir.display().to_string())))?;
 
-    let assets_dir = staging_dir.join("assets");
-    fs::create_dir_all(&assets_dir)
-        .map_err(|error| AdapterError::io(error, Some(assets_dir.display().to_string())))?;
-
-    let index_path = staging_dir.join("index.md");
-    publish_text(&index_path, &project.index_markdown)?;
-
-    let mut chapter_paths = Vec::with_capacity(project.chapters.len());
-    for chapter in &project.chapters {
-        let chapter_path = staging_dir.join(&chapter.relative_path);
-        if let Some(parent) = chapter_path.parent() {
-            fs::create_dir_all(parent)
-                .map_err(|error| AdapterError::io(error, Some(parent.display().to_string())))?;
-        }
-        publish_text(&chapter_path, &chapter.markdown)?;
-        chapter_paths.push(chapter.relative_path.clone());
-    }
-
-    let mut asset_paths = Vec::with_capacity(project.assets.len());
-    for asset in &project.assets {
-        let file_name = asset.relative_path.strip_prefix("assets/").ok_or_else(|| {
-            AdapterError::invalid_input(format!("asset path must start with assets/: {}", asset.relative_path))
-        })?;
-        let path = assets_dir.join(file_name);
-        publish_bytes(&path, &asset.bytes)?;
-        asset_paths.push(asset.relative_path.clone());
-    }
-
-    let report_path = staging_dir.join("panduck.report.json");
-    publish_text(&report_path, report_json)?;
-
-    // Whole-directory atomic swap: remove any pre-existing output dir, then
-    // rename the staging dir into place.  If the rename fails we still clean
-    // up the staging dir to avoid leaking temp artefacts.
-    let result = replace_project_dir(&staging_dir, output_dir);
-    // Always drop the staging dir if it is still there — rename should have
-    // moved it; failure here is a best-effort cleanup.
+    // Stage the whole layout first, then swap it into place. Any staging error
+    // (bad asset path, disk full, …) returns before `output_dir` is touched,
+    // and the staging directory is always removed so a failed publish leaves
+    // neither a dirty output directory nor a half-written sibling behind.
+    let result =
+        stage_markdown_project(&staging_dir, project, report_json).and_then(|()| replace_project_dir(&staging_dir, output_dir));
     let _ = fs::remove_dir_all(&staging_dir);
     result?;
 
     Ok(PublishedMarkdownProject {
         output_dir: output_dir.to_path_buf(),
         index_path: output_dir.join("index.md"),
-        chapter_paths,
-        asset_paths,
+        chapter_paths: project.chapters.iter().map(|chapter| chapter.relative_path.clone()).collect(),
+        asset_paths: project.assets.iter().map(|asset| asset.relative_path.clone()).collect(),
         report_path: output_dir.join("panduck.report.json"),
     })
 }
 
+/// Writes the project layout into an empty `staging_dir`.
+fn stage_markdown_project(staging_dir: &Path, project: &MarkdownProject, report_json: &str) -> Result<()> {
+    let assets_dir = staging_dir.join("assets");
+    fs::create_dir_all(&assets_dir).map_err(|error| AdapterError::io(error, Some(assets_dir.display().to_string())))?;
+
+    publish_text(staging_dir.join("index.md"), &project.index_markdown)?;
+
+    for chapter in &project.chapters {
+        let chapter_path = staging_dir.join(&chapter.relative_path);
+        if let Some(parent) = chapter_path.parent() {
+            fs::create_dir_all(parent).map_err(|error| AdapterError::io(error, Some(parent.display().to_string())))?;
+        }
+        publish_text(&chapter_path, &chapter.markdown)?;
+    }
+
+    for asset in &project.assets {
+        let file_name = asset.relative_path.strip_prefix("assets/").ok_or_else(|| {
+            AdapterError::invalid_input(format!("asset path must start with assets/: {}", asset.relative_path))
+        })?;
+        publish_bytes(assets_dir.join(file_name), &asset.bytes)?;
+    }
+
+    publish_text(staging_dir.join("panduck.report.json"), report_json)
+}
+
 fn staging_dir_path(output_dir: &Path) -> PathBuf {
-    let file_name = output_dir
-        .file_name()
-        .and_then(|n| n.to_str())
-        .unwrap_or("output");
+    let file_name = output_dir.file_name().and_then(|n| n.to_str()).unwrap_or("output");
     let parent = output_dir.parent().unwrap_or_else(|| Path::new("."));
-    let nanos = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_nanos())
-        .unwrap_or(0);
+    let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
     parent.join(format!(".{}.{}.{}.staging", file_name, std::process::id(), nanos))
 }
 
@@ -127,15 +113,13 @@ fn replace_project_dir(staging_dir: &Path, output_dir: &Path) -> Result<()> {
         // an explicit remove-before-rename keeps semantics identical.
         Err(_) => {
             if output_dir.exists() {
-                fs::remove_dir_all(output_dir).map_err(|error| {
-                    AdapterError::io(error, Some(output_dir.display().to_string()))
-                })?;
+                fs::remove_dir_all(output_dir)
+                    .map_err(|error| AdapterError::io(error, Some(output_dir.display().to_string())))?;
             }
-            fs::rename(staging_dir, output_dir)
-                .map_err(|e| {
-                    let msg = e.to_string();
-                    AdapterError::io(e, Some(msg))
-                })?;
+            fs::rename(staging_dir, output_dir).map_err(|e| {
+                let msg = e.to_string();
+                AdapterError::io(e, Some(msg))
+            })?;
             Ok(())
         }
     }

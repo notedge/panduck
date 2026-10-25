@@ -44,14 +44,8 @@ fn repeated_publish_produces_deterministic_directory_tree() {
     let project = MarkdownProject {
         index_markdown: "# Deterministic\n\nHello.\n".into(),
         chapters: vec![
-            MarkdownProjectChapter {
-                relative_path: "chapters/000-a.md".into(),
-                markdown: "# A\n\nBody A.\n".into(),
-            },
-            MarkdownProjectChapter {
-                relative_path: "chapters/001-b.md".into(),
-                markdown: "# B\n\nBody B.\n".into(),
-            },
+            MarkdownProjectChapter { relative_path: "chapters/000-a.md".into(), markdown: "# A\n\nBody A.\n".into() },
+            MarkdownProjectChapter { relative_path: "chapters/001-b.md".into(), markdown: "# B\n\nBody B.\n".into() },
         ],
         assets: vec![
             notedown_formats::export::markdown_project::MarkdownProjectAsset {
@@ -100,10 +94,7 @@ fn failed_publish_does_not_pollute_existing_output() {
     // Bad asset path: does not start with `assets/` → fails inside the loop.
     let bad_project = MarkdownProject {
         index_markdown: "# Bad\n".into(),
-        chapters: vec![MarkdownProjectChapter {
-            relative_path: "chapters/000.md".into(),
-            markdown: "# Mid\n".into(),
-        }],
+        chapters: vec![MarkdownProjectChapter { relative_path: "chapters/000.md".into(), markdown: "# Mid\n".into() }],
         assets: vec![notedown_formats::export::markdown_project::MarkdownProjectAsset {
             relative_path: "not-in-assets-dir.png".into(),
             bytes: b"nope".to_vec(),
@@ -126,6 +117,106 @@ fn failed_publish_does_not_pollute_existing_output() {
     let _ = fs::remove_dir_all(&output_dir);
 }
 
+/// Publishing into a directory whose parents do not exist must create the
+/// whole chain, not fail on a missing parent.
+#[test]
+fn publish_markdown_project_creates_missing_nested_output_directory() {
+    let base = unique_temp_dir("panduck-nested");
+    let output_dir = base.join("nested").join("site");
+    let project = MarkdownProject {
+        index_markdown: "# Nested\n".into(),
+        chapters: vec![],
+        assets: vec![],
+        unresolved_asset_sources: Vec::new(),
+    };
+    let report = format!(r#"{{"schema_version":"{}"}}"#, panduck_convert::SCHEMA_REPORT);
+
+    let published = publish_markdown_project(&output_dir, &project, &report).expect("publish nested");
+
+    assert!(output_dir.is_dir());
+    assert_eq!(fs::read_to_string(&published.index_path).expect("index"), "# Nested\n");
+    let _ = fs::remove_dir_all(&base);
+}
+
+/// Republishing owns the output directory: files from the previous layout that
+/// the new project does not declare must disappear rather than linger.
+#[test]
+fn repeated_publish_replaces_stale_output_contents() {
+    let base = unique_temp_dir("panduck-republish");
+    let output_dir = base.join("site");
+    let report = format!(r#"{{"schema_version":"{}"}}"#, panduck_convert::SCHEMA_REPORT);
+    let first = MarkdownProject {
+        index_markdown: "# First\n".into(),
+        chapters: vec![MarkdownProjectChapter { relative_path: "chapters/000-a.md".into(), markdown: "# A\n".into() }],
+        assets: vec![notedown_formats::export::markdown_project::MarkdownProjectAsset {
+            relative_path: "assets/old.png".into(),
+            bytes: b"old".to_vec(),
+            asset_id: notedown_ir::AssetId(1),
+        }],
+        unresolved_asset_sources: Vec::new(),
+    };
+    let second = MarkdownProject {
+        index_markdown: "# Second\n".into(),
+        chapters: vec![],
+        assets: vec![notedown_formats::export::markdown_project::MarkdownProjectAsset {
+            relative_path: "assets/new.png".into(),
+            bytes: b"new".to_vec(),
+            asset_id: notedown_ir::AssetId(2),
+        }],
+        unresolved_asset_sources: Vec::new(),
+    };
+
+    publish_markdown_project(&output_dir, &first, &report).expect("first publish");
+    fs::write(output_dir.join("stale.md"), "stale").expect("write stale file");
+
+    let published = publish_markdown_project(&output_dir, &second, &report).expect("second publish");
+
+    assert_eq!(fs::read_to_string(&published.index_path).expect("index"), "# Second\n");
+    assert!(output_dir.join("assets/new.png").exists());
+    assert!(!output_dir.join("assets/old.png").exists(), "old assets must not survive a republish");
+    assert!(!output_dir.join("stale.md").exists(), "unowned files must not survive a republish");
+    assert!(!output_dir.join("chapters").exists(), "old chapter directories must not survive a republish");
+    assert_eq!(fs::read_dir(&base).expect("base entries").count(), 1, "only the output directory may remain");
+    let _ = fs::remove_dir_all(&base);
+}
+
+/// A failed first publish must create neither the target directory nor a
+/// leftover staging sibling.
+#[test]
+fn failed_first_publish_leaves_no_output_or_staging_directory() {
+    let base = unique_temp_dir("panduck-failure-clean");
+    fs::create_dir_all(&base).expect("base");
+    let output_dir = base.join("site");
+    let bad_project = MarkdownProject {
+        index_markdown: "# Bad\n".into(),
+        chapters: vec![MarkdownProjectChapter { relative_path: "chapters/000.md".into(), markdown: "# Mid\n".into() }],
+        assets: vec![notedown_formats::export::markdown_project::MarkdownProjectAsset {
+            relative_path: "outside-assets.png".into(),
+            bytes: b"nope".to_vec(),
+            asset_id: notedown_ir::AssetId(1),
+        }],
+        unresolved_asset_sources: Vec::new(),
+    };
+    let report = format!(r#"{{"schema_version":"{}"}}"#, panduck_convert::SCHEMA_REPORT);
+
+    let result = publish_markdown_project(&output_dir, &bad_project, &report);
+
+    assert!(result.is_err(), "bad asset path must produce an error");
+    assert!(!output_dir.exists(), "failed publish must not create the target directory");
+    let leftovers: Vec<_> = fs::read_dir(&base)
+        .expect("base entries")
+        .map(|entry| entry.expect("entry").file_name().to_string_lossy().to_string())
+        .collect();
+    assert!(leftovers.is_empty(), "failed publish leaked staging entries: {leftovers:?}");
+    let _ = fs::remove_dir_all(&base);
+}
+
+fn unique_temp_dir(prefix: &str) -> std::path::PathBuf {
+    let nanos =
+        std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|duration| duration.as_nanos()).unwrap_or(0);
+    std::env::temp_dir().join(format!("{prefix}-{}-{nanos}", std::process::id()))
+}
+
 fn sorted_entries(dir: &std::path::Path) -> Vec<(String, Vec<u8>)> {
     let mut out: Vec<(String, Vec<u8>)> = Vec::new();
     walk(dir, dir, &mut out);
@@ -140,7 +231,8 @@ fn walk(root: &std::path::Path, dir: &std::path::Path, out: &mut Vec<(String, Ve
         let rel = path.strip_prefix(root).expect("strip");
         if path.is_dir() {
             walk(root, &path, out);
-        } else {
+        }
+        else {
             let bytes = fs::read(&path).expect("read file");
             out.push((rel.to_string_lossy().to_string(), bytes));
         }
