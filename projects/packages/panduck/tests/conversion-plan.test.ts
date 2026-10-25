@@ -1,8 +1,13 @@
 import assert from "node:assert/strict";
+import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 
 import { Converter } from "../src/converter.js";
 import { defineConversion, serializeConversionPlan } from "../src/conversion-plan.js";
+import { imageDocumentXml, imageRelsXml } from "./fixtures/docx-xml.js";
+import { storedZip } from "./helpers/stored-zip.js";
 
 function sampleHtml(body: string): string {
     return `<!doctype html><html><head></head><body>${body}</body></html>`;
@@ -121,4 +126,47 @@ test("ConversionPlan without transforms keeps the previous pipeline shape", asyn
     assert.notEqual(result.status, "failed");
     const report = JSON.parse(result.reportJson);
     assert.equal(report.pipeline.transforms, undefined);
+});
+
+test("markdown-project publish materializes assets after transforms", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-"));
+    const outputDir = join(workdir, "site");
+    try {
+        const docx = storedZip([
+            { path: "word/document.xml", payload: imageDocumentXml },
+            { path: "word/_rels/document.xml.rels", payload: imageRelsXml },
+            { path: "word/media/logo.png", payload: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a]) },
+        ]);
+        const converter = new Converter();
+        const plan = defineConversion({
+            id: "publish-check",
+            input: { format: "docx", label: "image.docx" },
+            transforms: [
+                {
+                    name: "replace-text",
+                    params: { search: "Logo", replacement: "Brand" },
+                },
+            ],
+            output: { format: "markdown" },
+            publish: { kind: "markdown-project", directory: outputDir },
+        });
+
+        const result = await converter.toMarkdown(docx, plan);
+
+        assert.notEqual(result.status, "failed");
+        assert.equal(result.publishPath, outputDir);
+
+        const index = await readFile(join(outputDir, "index.md"), "utf8");
+        assert.match(index, /!\[Brand\]\(assets\/[0-9a-f]{16}\.png\)/);
+
+        const assets = await readdir(join(outputDir, "assets"));
+        assert.ok(assets.length >= 1, "publish must materialize the docx image");
+
+        const report = JSON.parse(result.reportJson);
+        assert.equal(report.pipeline.writer, "markdown-project");
+        assert.equal(report.pipeline.transforms[0].name, "replace-text");
+        assert.equal(report.pipeline.transforms[0].status, "applied");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
 });

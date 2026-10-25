@@ -16,6 +16,8 @@
  * can aggregate into the run report without parsing free-form message text.
  */
 
+import { resolve } from "node:path";
+
 import { loadPanduckNode } from "./node/load.js";
 import type {
     ConverterConfig,
@@ -127,6 +129,8 @@ export type ConverterResult = {
     diagnostics: DiagnosticRecord[];
     /** Raw report JSON from Panduck — preserved for auditing. */
     reportJson: string;
+    /** Published output directory — present when `publish.kind === "markdown-project"`. */
+    publishPath?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -320,6 +324,9 @@ export class Converter {
      *     handlersJson 里的 transforms，在 `DocumentGraph` 上跑内置 pass
      *     （`replace-text` / `remove-blocks`），结果写入 report 的
      *     `pipeline.transforms`。未知 pass 名只在诊断里报告，不中断转换。
+     *   - **publish 真实执行**。`publish.kind === "markdown-project"` 时走
+     *     `convertMarkdownProjectBytes`，把 index / chapters / assets materialize
+     *     到 `publish.directory`，返回的 `publishPath` 指向实际输出目录。
      *
      * 与 Policy 路径的对比：
      *   - Policy 只有 output.policy，没有 input.format / transforms / publish。
@@ -382,6 +389,19 @@ export class Converter {
         // (3) 确定 requireNoLoss（由 plan.output.lossPolicy 决定）。
         const requireNoLoss = plan.output.lossPolicy === "deny";
 
+        if (plan.publish.kind === "markdown-project") {
+            return this.publishMarkdownProject({
+                from,
+                bytes,
+                label,
+                urlHint: plan.input.sourceUrl ?? urlHint,
+                diagnostics,
+                handlersJson,
+                requireNoLoss,
+                directory: plan.publish.directory,
+            });
+        }
+
         return this.runRustConversion({
             from,
             bytes,
@@ -390,6 +410,97 @@ export class Converter {
             diagnostics,
             handlersJson,
             requireNoLoss,
+        });
+    }
+
+    // -----------------------------------------------------------------------
+    // Shared — Rust Markdown project publish
+    // -----------------------------------------------------------------------
+
+    /**
+     * Materialize a Markdown project through `convertMarkdownProjectBytes`.
+     *
+     * The Rust pipeline applies `plan.transforms` before the project writer, so
+     * index/chapter markdown and materialized assets reflect the transform
+     * result. `publishPath` is the resolved output directory reported by Rust.
+     */
+    private publishMarkdownProject(ctx: {
+        from: string;
+        bytes: Uint8Array;
+        label: string;
+        urlHint?: string;
+        diagnostics: DiagnosticRecord[];
+        handlersJson?: string;
+        requireNoLoss: boolean;
+        directory: string;
+    }): Promise<ConverterResult> {
+        const { from, bytes, label, urlHint, diagnostics, handlersJson, requireNoLoss, directory } = ctx;
+        const fn = this.binding.convertMarkdownProjectBytes;
+        if (!fn) {
+            diagnostics.push({
+                code: "panduck.convert.binding-missing",
+                fallback: "Panduck binding does not expose convertMarkdownProjectBytes — rebuild @notedge/panduck-native",
+                messageKey: "panduck.diagnostic.bindingMissing",
+                origin: { namespace: "panduck", component: "convert" },
+                severity: "error",
+                stage: "convert",
+                url: urlHint,
+            });
+            return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
+        }
+
+        const outputDir = resolve(directory);
+        let response: ReturnType<typeof fn> | undefined = undefined;
+        let nativePanic: unknown = undefined;
+        try {
+            response = fn(from, label, bytes, outputDir, handlersJson);
+        } catch (err) {
+            nativePanic = err;
+        }
+
+        if (nativePanic !== undefined || !response) {
+            const msg = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
+            diagnostics.push({
+                code: "panduck.convert.native-panic",
+                fallback: `Panduck native binary panicked while publishing ${label}: ${msg}`,
+                args: { message: msg },
+                origin: { namespace: "panduck", component: "convert" },
+                severity: "error",
+                stage: "output",
+                url: urlHint,
+            });
+            return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
+        }
+
+        const parsedReport = safeParseReport(response.reportJson);
+        diagnostics.push(...parsedReport.diagnostics);
+
+        const hasRustLoss = parsedReport.losses.length > 0;
+        if (hasRustLoss) {
+            diagnostics.push({
+                code: "panduck.convert.rust-loss",
+                fallback: `Rust reported ${parsedReport.losses.length} known structural loss(es) for ${label}`,
+                args: { count: parsedReport.losses.length },
+                origin: { namespace: "panduck", component: "convert" },
+                severity: "warn",
+                stage: "loss",
+                url: urlHint,
+            });
+        }
+
+        const status = deriveStatus(diagnostics, {
+            rustStatus: parsedReport.rawStatus,
+            hasRustLoss,
+            exitCode: response.exitCode,
+            requireNoLoss,
+        });
+
+        return Promise.resolve({
+            status,
+            text: response.indexMarkdown,
+            diagnostics,
+            reportJson: response.reportJson,
+            publishPath: response.outputDir || outputDir,
         });
     }
 

@@ -68,6 +68,14 @@ export type PanduckBindings = {
         outputDir: string,
         handlersJson?: string,
     ) => ConvertProjectResponse;
+    /** Byte-input counterpart of `convertMarkdownProject` — executes `ConversionPlan.publish`. */
+    convertMarkdownProjectBytes?: (
+        from: string,
+        label: string,
+        bytes: Uint8Array,
+        outputDir: string,
+        handlersJson?: string,
+    ) => ConvertProjectResponse;
     inspectIndex?: (inputPath: string) => InspectIndexResponse;
     inspectDecode?: (inputPath: string, partPath?: string) => InspectDecodeResponse;
     installLoggerLogFile?: (path: string) => void;

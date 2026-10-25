@@ -7,9 +7,9 @@ use std::collections::BTreeSet;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use panduck_convert::{
-    READERS, WRITERS, convert_bytes, convert_file, convert_markdown_project_file, empty_diagnostic_envelope,
-    from_adapter_error, inspect_docx_decode, inspect_docx_index, supported_routes, supports_markdown_project_source,
-    supports_route,
+    READERS, WRITERS, convert_bytes, convert_file, convert_markdown_project_file,
+    convert_to_markdown_project as convert_markdown_project_bytes_impl, empty_diagnostic_envelope, from_adapter_error,
+    inspect_docx_decode, inspect_docx_index, supported_routes, supports_markdown_project_source, supports_route,
 };
 use panduck_types::AdapterError;
 
@@ -236,6 +236,34 @@ pub fn convert_markdown_project(
             report_json: output.report_json,
         },
         Err(adapter_error) => build_project_error_report(&from, &input_path, &output_dir, &adapter_error),
+    }
+}
+
+/// Converts in-memory bytes and publishes a Markdown project directory.
+///
+/// This is the byte-input counterpart of `convert_markdown_project` so the
+/// TS-side `ConversionPlan.publish` strategy can execute without a temp input
+/// file. **Never throws** — failures come back as `exit_code: 1` with a
+/// structured report envelope.
+#[napi]
+pub fn convert_markdown_project_bytes(
+    from: String,
+    label: String,
+    bytes: Buffer,
+    output_dir: String,
+    handlers_json: Option<String>,
+) -> ConvertProjectResponse {
+    match convert_markdown_project_bytes_impl(&from, &label, bytes.to_vec(), &output_dir, handlers_json.as_deref()) {
+        Ok((output, published)) => ConvertProjectResponse {
+            exit_code: 0,
+            index_markdown: output.index_markdown,
+            published_assets: output.published_assets,
+            published_chapters: output.published_chapters,
+            unresolved_assets: output.unresolved_assets,
+            output_dir: published.output_dir.display().to_string(),
+            report_json: output.report_json,
+        },
+        Err(adapter_error) => build_project_error_report(&from, &label, &output_dir, &adapter_error),
     }
 }
 
