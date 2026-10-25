@@ -6,12 +6,14 @@
  * "目标格式怎么写"。
  *
  * 这个文件只声明策略类型与辅助构造函数。策略本身 **不** 触发渲染；
- * 它被 Converter 在 writer 阶段读取，用来改写或替换 Notedown IR block
- * 的默认 Markdown 输出。
+ * Converter 读取 MarkdownPolicy 的 writer 选项，但 `handlers` 目前只是
+ * 声明面：TS 侧不执行 handler，Rust converter 也不执行 handler。
+ * 带 handlers 的 policy 会产生 `panduck.policy.handlers-unsupported` 警告，
+ * 转换继续但不会应用 handler。
  *
  * 与 DOM 规则链的边界：
  *   - DOM 级选择/裁剪/替换不属于 Panduck；相关 TS 入口已删除，转换走 Rust lowering。
- *   - RendererPolicy.handlers 是 writer 级
+ *   - RendererPolicy.handlers 是 writer 级声明
  *   - RendererPolicy handler 不接受 DOM node，只接受 IR block kind + attributes
  *   - handler 返回值只能是 Markdown writer 能理解的结果：pass-through / fragment / suppress
  */
@@ -53,7 +55,7 @@ export type MarkdownPolicy = {
     readonly fencedCode: boolean;
     /** 遇到 writer 不支持的 IR block 时的行为。 */
     readonly unsupported: "report" | "drop" | "keep-opaque";
-    /** 自定义 handler — key 匹配 IR block 的 kind 或 writer 的 handlerKey。 */
+    /** 自定义 handler 声明 — key 匹配 IR block 的 kind 或 writer 的 handlerKey。当前不执行。 */
     readonly handlers?: Readonly<Record<string, PolicyHandler>>;
 };
 
@@ -91,7 +93,7 @@ export function defineMarkdownPolicy(overrides: Partial<MarkdownPolicy> = {}): M
     };
 }
 
-/** 构造一个带自定义 handlers 的 policy。后续传入的 handlers 会覆盖同名键。 */
+/** 构造一个带自定义 handlers 声明的 policy。后续传入的 handlers 会覆盖同名键。当前不执行这些 handler。 */
 export function withHandlers(
     policy: MarkdownPolicy,
     handlers: Record<string, PolicyHandler>,

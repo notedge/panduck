@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { Converter } from "../src/converter.js";
+import { defineConversion } from "../src/conversion-plan.js";
 import { defineMarkdownPolicy, withHandlers } from "../src/renderer-policy.js";
 import type { ConverterConfig } from "../src/renderer-policy.js";
 
@@ -71,7 +72,7 @@ test("PolicyHandler 返回值三分支合法", () => {
 });
 
 // ---------------------------------------------------------------------------
-// ConverterConfig 进入 Converter —— policy-active 诊断 + handlersJson 构建
+// ConverterConfig 进入 Converter —— policy-active 诊断
 // ---------------------------------------------------------------------------
 
 test("toMarkdown with ConverterConfig uses policy path and emits policy-active diagnostic", async () => {
@@ -112,19 +113,18 @@ test("toMarkdown: legacy ToMarkdownOptions path still works (backward compat)", 
 });
 
 // ---------------------------------------------------------------------------
-// Policy handler 真正替换 markdown 片段 —— 依赖 Rust 将 HTML 注释保留下
+// Policy handlers 只是声明面 —— 不在 TS 侧执行，只产生 Warning
 // ---------------------------------------------------------------------------
 
-test("toMarkdown with policy handler rewrites sentinel-tagged fragment", async () => {
+test("policy handlers warn as unsupported and are never executed", async () => {
     const converter = new Converter();
 
     let invoked = 0;
     const policy = defineMarkdownPolicy({
         name: "rewrite-test",
         handlers: {
-            "custom.important": (ctx) => {
+            "custom.important": () => {
                 invoked++;
-                assert.equal(ctx.blockKind, "custom.important");
                 return { kind: "fragment", markdown: "**[重写]" };
             },
         },
@@ -132,10 +132,9 @@ test("toMarkdown with policy handler rewrites sentinel-tagged fragment", async (
 
     const config: ConverterConfig = { rendererPolicy: policy };
 
-    // 在 HTML 里放一个 sentinel 注释。Rust lowering 会把它保留成 markdown 里的文本。
     const html = sampleHtml(
         `<p>regular paragraph</p>` +
-        `<div><!-- panduck-policy:custom.important -->this should be replaced</div>` +
+        `<div><!-- panduck-policy:custom.important -->this should stay</div>` +
         `<p>another paragraph</p>`,
     );
 
@@ -146,43 +145,70 @@ test("toMarkdown with policy handler rewrites sentinel-tagged fragment", async (
         "policy-active diagnostic should be present",
     );
 
-    // 现在验证 policy handler 是否触发 —— 如果 Rust 没把注释保留下来，invoked 会是 0，
-    // 那我们需要调整哨兵机制（例如改成自定义 HTML 标签而不是注释）。
-    if (invoked === 0) {
-        // 记录诊断但不要让测试挂掉 —— 说明 Rust 端还没保留注释，需要改用别的哨兵
-        console.log(
-            `[info] policy handler not invoked — Rust lowering stripped HTML comments. ` +
-            `Markdown output was: ${JSON.stringify(result.text)}`,
-        );
-    }
-
-    // 至少验证 handlersJson wire contract 里包含我们的 handlerKeys
-    // （这是当前 commit 的核心产出：让 wire contract 就位）
-    const handlersJsonCodes = result.diagnostics.map((d) => d.code);
+    const warning = result.diagnostics.find(
+        (d) => d.code === "panduck.policy.handlers-unsupported",
+    );
     assert.ok(
-        handlersJsonCodes.includes("panduck.convert.policy-active"),
-        "wire contract: policy path must emit policy-active",
+        warning,
+        `Expected handlers-unsupported warning, got codes: ${result.diagnostics.map((d) => d.code).join(", ")}`,
+    );
+    assert.equal(warning.severity, "warn");
+    assert.deepEqual(warning.args?.handlerKeys, ["custom.important"]);
+    assert.equal(warning.args?.policyName, "rewrite-test");
+
+    assert.equal(invoked, 0, "policy handlers must not be executed in the TS layer");
+    assert.ok(result.text.includes("this should stay"), `Original text must survive. Got: ${result.text}`);
+    assert.ok(!result.text.includes("**[重写]"), "No handler fragment may be synthesized");
+    assert.notEqual(result.status, "failed");
+});
+
+test("policy without handlers emits no handlers-unsupported warning", async () => {
+    const converter = new Converter();
+    const config: ConverterConfig = {
+        rendererPolicy: defineMarkdownPolicy({ name: "plain-policy" }),
+    };
+
+    const result = await converter.toMarkdown(sampleHtml(`<p>plain body</p>`), config);
+
+    assert.ok(
+        !result.diagnostics.some((d) => d.code === "panduck.policy.handlers-unsupported"),
+        "handlers-unsupported must only fire when handlers are declared",
     );
 });
 
-test("toMarkdown policy: suppress handler removes sentinel-tagged content", async () => {
+test("ConversionPlan output policy handlers warn instead of claiming execution", async () => {
     const converter = new Converter();
 
-    const policy = defineMarkdownPolicy({
-        name: "suppress-test",
-        handlers: {
-            "custom.ads": () => ({ kind: "suppress" }),
+    let invoked = 0;
+    const plan = defineConversion({
+        id: "handlers-plan-check",
+        input: { format: "html" },
+        output: {
+            format: "markdown",
+            policy: withHandlers(defineMarkdownPolicy({ name: "plan-policy" }), {
+                "custom.ads": () => {
+                    invoked++;
+                    return { kind: "suppress" };
+                },
+            }),
         },
     });
 
-    const config: ConverterConfig = { rendererPolicy: policy };
-    const html = sampleHtml(
-        `<p>keep me</p>` +
-        `<aside><!-- panduck-policy:custom.ads -->buy now!</aside>` +
-        `<p>keep me too</p>`,
+    const result = await converter.toMarkdown(
+        sampleHtml(`<p>keep me</p><p>buy now!</p>`),
+        plan,
     );
 
-    const result = await converter.toMarkdown(html, config);
-    // 同样，handler 触发依赖 Rust 保留注释 —— 没触发也不算当前 commit 的失败
-    assert.ok(result.text.length > 0);
+    const warning = result.diagnostics.find(
+        (d) => d.code === "panduck.policy.handlers-unsupported",
+    );
+    assert.ok(
+        warning,
+        `Expected handlers-unsupported warning, got codes: ${result.diagnostics.map((d) => d.code).join(", ")}`,
+    );
+    assert.equal(warning.severity, "warn");
+    assert.deepEqual(warning.args?.handlerKeys, ["custom.ads"]);
+    assert.equal(invoked, 0, "plan policy handlers must not be executed");
+    assert.ok(result.text.includes("buy now"), `Original paragraph must survive. Got: ${result.text}`);
+    assert.notEqual(result.status, "failed");
 });

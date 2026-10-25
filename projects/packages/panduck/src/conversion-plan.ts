@@ -51,8 +51,8 @@ export type InputRoute = {
 /**
  * DocumentTransform 描述一个 IR 变换 pass。
  *
- * v0：`transforms` 序列化到 `handlersJson`，由 Rust 侧按 `name` 匹配内置
- * pass 并在 `DocumentGraph` 上执行。已实现：
+ * v0：`transforms` 序列化到 plan descriptor（`handlersJson` 参数），由 Rust
+ * 侧按 `name` 匹配内置 pass 并在 `DocumentGraph` 上执行。已实现：
  *
  *   - `replace-text`：`params.search` 与 `params.replacement`（默认空串）
  *     替换所有 `Inline::Text` 内容。
@@ -180,13 +180,14 @@ export function defineConversion(config: ConversionConfig): ConversionPlan {
 }
 
 // ---------------------------------------------------------------------------
-// 辅助：把 ConversionPlan 序列化到 handlersJson
+// 辅助：把 ConversionPlan 序列化为 Rust 侧 plan descriptor
 // ---------------------------------------------------------------------------
 
 /**
  * 把 ConversionPlan 的 transforms + output 序列化为 JSON 字符串，
- * 传给 Rust 侧 wire contract。Rust 端按 name 匹配已实现的 transform pass；
- * 未实现的 pass 会记录 diagnostic 并被跳过。
+ * 传给 Rust 侧 wire contract。Rust 端只读取 `transforms` 并按 name 匹配
+ * 已实现的 pass；未实现的 pass 会记录 diagnostic 并被跳过。
+ * RendererPolicy 的 handlers 是 TS 闭包，无法序列化，也不会被执行。
  */
 export function serializeConversionPlan(
     plan: ConversionPlan,

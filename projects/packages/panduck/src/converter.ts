@@ -19,12 +19,7 @@
 import { resolve } from "node:path";
 
 import { loadPanduckNode } from "./node/load.js";
-import type {
-    ConverterConfig,
-    MarkdownPolicy,
-    PolicyHandler,
-    PolicyHandlerResult,
-} from "./renderer-policy.js";
+import type { ConverterConfig } from "./renderer-policy.js";
 import type { ConversionPlan } from "./conversion-plan.js";
 import { serializeConversionPlan } from "./conversion-plan.js";
 
@@ -137,7 +132,7 @@ export type ConverterResult = {
 // Converter
 // ---------------------------------------------------------------------------
 
-/** Public façade over Panduck's Rust conversion pipeline + TS Rule executor. */
+/** Public façade over Panduck's Rust conversion pipeline and policy declaration surface. */
 export class Converter {
     private binding: ReturnType<typeof loadPanduckNode>;
 
@@ -229,11 +224,9 @@ export class Converter {
      *   - 输入直接进入 Rust lowering，没有 TS 侧 DOM 解析、选择或重序列化。
      *     scope 选择（如果有）由 Pandark ExtractionProfile 在进入 Panduck 之前做掉；
      *     renderer 这边只读 Notedown IR。
-     *   - `handlers` 挂在 MarkdownPolicy 上，在 writer 阶段触发，接受 IR block
-     *     kind + attributes，返回 Markdown writer fragment。
-     *   - 当前 Rust 侧还没有真正调用 policy handlers —— 我们把 policy 序列化成
-     *     handlersJson 传给 Rust，让 wire contract 先就位，handler 真正执行留待
-     *     Rust 端落地。TS 端在这里先 **模拟** 一遍 handlers，以便 e2e 能跑。
+     *   - `policy.handlers` 只是声明面。TS 侧不执行 handler，Rust lowering
+     *     也不执行 handler —— 跨语言闭包无法通过 wire 传递。带 handlers 时
+     *     产出一条 Warning 诊断，转换继续但不会应用 handler。
      */
     private async toMarkdownWithPolicy(
         input: ConverterInput,
@@ -258,53 +251,30 @@ export class Converter {
             return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
-        // Build handlersJson from MarkdownPolicy — 把 handlerKeys 传给 Rust，
-        // 让 wire contract 就位。TS 侧保留 handlers closure 用于后续 writer 模拟。
-        const policyHandlers = (policy.handlers ?? {}) as Record<string, PolicyHandler>;
-        const handlerKeys = Object.keys(policyHandlers);
-        const handlersJson =
-            handlerKeys.length > 0
-                ? JSON.stringify({
-                      version: "panduck-policy-v0",
-                      policyName: policy.name,
-                      handlers: handlerKeys,
-                      config: {
-                          heading: policy.heading,
-                          bullet: policy.bullet,
-                          fencedCode: policy.fencedCode,
-                          unsupported: policy.unsupported,
-                      },
-                  })
-                : undefined;
-
         diagnostics.push({
             code: "panduck.convert.policy-active",
-            fallback: `Using RendererPolicy "${policy.name}" with ${handlerKeys.length} handler(s)`,
-            args: { policyName: policy.name, handlerCount: handlerKeys.length },
+            fallback: `Using RendererPolicy "${policy.name}"`,
+            args: { policyName: policy.name },
             origin: { namespace: "panduck", component: "convert" },
             severity: "info",
             stage: "convert",
             url: urlHint,
         });
+        reportUnsupportedHandlers(
+            diagnostics,
+            policy.name,
+            Object.keys(policy.handlers ?? {}),
+            urlHint,
+        );
 
-        const result = await this.runRustConversion({
+        return this.runRustConversion({
             from,
             bytes,
             label,
             urlHint,
             diagnostics,
-            handlersJson,
             requireNoLoss: false,
         });
-
-        // --- TS 侧 writer 模拟：在 markdown 输出上跑一遍 policy handlers ---
-        // 这不是最终形态（最终在 Rust writer 里触发），但能让 policy
-        // 的 handlers 在 TS 端先产生可见效果，让 e2e 能跑。
-        if (handlerKeys.length > 0 && result.text) {
-            result.text = applyPolicyHandlers(result.text, policyHandlers, diagnostics, urlHint);
-        }
-
-        return result;
     }
 
     // -----------------------------------------------------------------------
@@ -317,11 +287,11 @@ export class Converter {
      * 关键差异：
      *   - **不跑 HTML DOM executor**。没有 CSS selector / DOM mutation / re-serialize。
      *     scope 选择（如果有）由 Pandark ExtractionProfile 在进入 Panduck 之前做掉。
-     *   - **不跑 policy handler 哨兵模拟**。当前 v0 Rust writer 还没真正触发
-     *     handler —— 我们把 ConversionPlan 序列化成 handlersJson 传给 Rust，
-     *     让 wire contract 先就位。handler 真正执行留待 Rust 端落地。
+     *   - **不执行 policy handler**。handler 是 TS 闭包，Rust converter 不执行，
+     *     也无法通过 wire 传递。plan 携带 handlers 时产出一条 Warning 诊断，
+     *     转换继续但不应用 handler。
      *   - **transforms 真实执行**。Rust 侧 `panduck-convert::transform` 解析
-     *     handlersJson 里的 transforms，在 `DocumentGraph` 上跑内置 pass
+     *     plan descriptor 里的 transforms，在 `DocumentGraph` 上跑内置 pass
      *     （`replace-text` / `remove-blocks`），结果写入 report 的
      *     `pipeline.transforms`。未知 pass 名只在诊断里报告，不中断转换。
      *   - **publish 真实执行**。`publish.kind === "markdown-project"` 时走
@@ -354,7 +324,7 @@ export class Converter {
             return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
-        // (1) 序列化 ConversionPlan → handlersJson。
+        // (1) 序列化 ConversionPlan 的 transforms → Rust plan descriptor。
         const handlersJson = serializeConversionPlan(plan);
         diagnostics.push({
             code: "panduck.convert.conversion-plan-active",
@@ -372,19 +342,13 @@ export class Converter {
             url: urlHint,
         });
 
-        // (2) 如果 output 带 RendererPolicy，也序列化进去。
-        const policyHandlers = (plan.output.policy?.handlers ?? {}) as Record<string, PolicyHandler>;
-        if (Object.keys(policyHandlers).length > 0) {
-            diagnostics.push({
-                code: "panduck.convert.policy-attached",
-                fallback: `ConversionPlan "${plan.id}" 附加 RendererPolicy "${plan.output.policy?.name}"`,
-                args: { planId: plan.id, policyName: plan.output.policy?.name },
-                origin: { namespace: "panduck", component: "convert" },
-                severity: "info",
-                stage: "output",
-                url: urlHint,
-            });
-        }
+        // (2) output 带 RendererPolicy 时，handlers 无法执行 —— 只报告，不应用。
+        reportUnsupportedHandlers(
+            diagnostics,
+            plan.output.policy?.name,
+            Object.keys(plan.output.policy?.handlers ?? {}),
+            urlHint,
+        );
 
         // (3) 确定 requireNoLoss（由 plan.output.lossPolicy 决定）。
         const requireNoLoss = plan.output.lossPolicy === "deny";
@@ -601,103 +565,34 @@ function isConversionPlan(arg: object): arg is ConversionPlan {
 }
 
 /**
- * 在 TS 侧模拟 writer-level policy handler 执行。
+ * 报告 policy handlers 当前无法执行。
  *
- * 不是最终形态（Rust writer 会直接在 IR block 上触发 handlers），但在
- * Rust 端真正落地之前，它能让自定义 handler 在 markdown 输出里产生
- * 可见效果，让 e2e 能跑。
- *
- * 做法：Rust HTML→Markdown lowering 会保留 HTML 注释作为文本。我们约定
- * 一个哨兵格式：`<!-- panduck-policy:block-kind -->`，然后在 markdown 里
- * 找到这些哨兵，对每个跑一遍对应 handler。
- *
- * 输入 HTML 如果想触发某个 handler，写：
- *   <div><!-- panduck-policy:highlight -->important</div>
- * Rust 会把注释当普通文本带进 markdown。TS 端在这里替换。
+ * handler 是 TS 闭包，跨语言 wire 无法传递；Rust converter 也不执行 handler。
+ * 这里只产出一条 Warning，转换继续，但不会应用任何 handler。不要在 TS 侧
+ * 用 sentinel 或其他方式伪造执行。
  */
-function applyPolicyHandlers(
-    markdown: string,
-    handlers: Record<string, PolicyHandler>,
+function reportUnsupportedHandlers(
     diagnostics: DiagnosticRecord[],
+    policyName: string | undefined,
+    handlerKeys: readonly string[],
     urlHint?: string,
-): string {
-    const handlerKeys = Object.keys(handlers);
-    if (handlerKeys.length === 0) return markdown;
+): void {
+    if (handlerKeys.length === 0) return;
 
-    // Match a policy sentinel comment and capture both the kind and the text following it
-    // until the next sentinel or end of string.
-    //  pattern: <!-- panduck-policy:<kind> --> followed by anything up to the next sentinel or EOF
-    const sentinelRe = /<!--\s*panduck-policy:([A-Za-z0-9_\-\.]+)\s*-->/g;
-
-    let out = markdown;
-    const matches: Array<{ idx: number; key: string; matchLength: number }> = [];
-    let m: RegExpExecArray | null;
-    while ((m = sentinelRe.exec(out)) !== null) {
-        matches.push({ idx: m.index, key: m[1], matchLength: m[0].length });
-    }
-
-    if (matches.length === 0) return out;
-
-    // Walk from end to start so offsets stay stable.
-    for (let i = matches.length - 1; i >= 0; i--) {
-        const match = matches[i];
-        const handler = handlers[match.key];
-        if (!handler) {
-            diagnostics.push({
-                code: "panduck.convert.policy-handler-missing",
-                fallback: `Policy handler "${match.key}" not found — pass-through default behavior applies`,
-                args: { key: match.key },
-                origin: { namespace: "panduck", component: "convert" },
-                severity: "info",
-                stage: "convert",
-                url: urlHint,
-            });
-            continue;
-        }
-
-        // Sentinel 之后到下一个 sentinel（或 EOF）的内容，当作 "原始 markdown 片段" 传给 handler。
-        const nextSentinelStart = i > 0 ? matches[i - 1].idx + matches[i - 1].matchLength : out.length;
-        // 注意：matches 按正向记录，i = matches.length - 1 是最后一个 sentinel，
-        // 它之后的文本跑到 EOF。我们需要下一个 **更晚** 的 sentinel，即 matches[i+1]。
-        // 修正：matches 数组是正序的；当前元素 match 之后的下一个 sentinel 是 matches[i+1]。
-        // 这里的循环是倒序的，所以正确的边界是：
-        const endBoundary = i + 1 < matches.length ? matches[i + 1].idx : out.length;
-
-        const rawFragment = out.substring(match.idx + match.matchLength, endBoundary);
-
-        let result: PolicyHandlerResult;
-        try {
-            result = handler({ blockKind: match.key });
-        } catch (err) {
-            diagnostics.push({
-                code: "panduck.convert.policy-handler-threw",
-                fallback: `Policy handler "${match.key}" threw: ${err instanceof Error ? err.message : String(err)}`,
-                args: { key: match.key },
-                origin: { namespace: "panduck", component: "convert" },
-                severity: "error",
-                stage: "convert",
-                url: urlHint,
-            });
-            continue;
-        }
-
-        const replacement = (() => {
-            switch (result.kind) {
-                case "suppress":
-                    return "";
-                case "fragment":
-                    return result.markdown;
-                case "pass-through":
-                default:
-                    // 去掉 sentinel，保留原始片段
-                    return rawFragment;
-            }
-        })();
-
-        out = out.substring(0, match.idx) + replacement + out.substring(endBoundary);
-    }
-
-    return out;
+    const name = policyName ?? "<unnamed>";
+    const keysDisplay = handlerKeys.map((key) => `"${key}"`).join(", ");
+    diagnostics.push({
+        code: "panduck.policy.handlers-unsupported",
+        fallback:
+            `RendererPolicy "${name}" declares ${handlerKeys.length} handler(s) [${keysDisplay}] — ` +
+            "handler execution is not available in the TS layer and the Rust converter does not execute handlers. " +
+            "Conversion continues without applying them.",
+        args: { policyName: policyName ?? null, handlerKeys: [...handlerKeys] },
+        origin: { namespace: "panduck", component: "policy" },
+        severity: "warn",
+        stage: "rule",
+        url: urlHint,
+    });
 }
 
 async function materializeInput(

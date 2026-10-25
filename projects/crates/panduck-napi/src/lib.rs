@@ -216,8 +216,8 @@ pub fn supports_markdown_project(from: String) -> bool {
 /// **Never throws** — see `convert_bytes_memory` for rationale.
 ///
 /// `handlers_json` is an optional JSON-serialized plan descriptor from the
-/// TS-side `ConversionPlan`. When provided, the handler registry is forwarded
-/// into the report pipeline.
+/// TS-side `ConversionPlan`. Only its `transforms` array is executed — policy
+/// handler closures stay in TS and cannot cross the wire.
 #[napi]
 pub fn convert_markdown_project(
     from: String,
@@ -275,8 +275,8 @@ pub fn convert_markdown_project_bytes(
 /// structured diagnostic identity would be collapsed back into free-form text.
 ///
 /// `handlers_json` is an optional JSON-serialized plan descriptor from the
-/// TS-side `ConversionPlan`. When provided, the handler registry is forwarded
-/// into the report pipeline.
+/// TS-side `ConversionPlan`. Only its `transforms` array is executed — policy
+/// handler closures stay in TS and cannot cross the wire.
 #[napi]
 pub fn convert_document(
     from: String,
@@ -304,11 +304,8 @@ pub fn convert_document(
 /// downstream TS consumers never need to parse free-form error strings.
 ///
 /// `handlers_json` is an optional JSON-serialized plan descriptor from the
-/// TS-side `ConversionPlan`. When provided, the handler registry is forwarded
-/// into the report pipeline. The Rust IR lowering does not execute handler
-/// closures (they are TS-only), but the parameter channel is fully open —
-/// this is the wire-level bridge that lets a future Rust-native handler
-/// dispatch host consume the same descriptor.
+/// TS-side `ConversionPlan`. Only its `transforms` array is executed — policy
+/// handler closures stay in TS and cannot cross the wire.
 #[napi]
 pub fn convert_bytes_memory(
     from: String,
