@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { loadPanduckNode } from "@notedge/panduck/node";
+import { loadPanduckNode } from "../src/node/index.js";
 
 test("panduck native bindings expose version and markdown format", () => {
     const binding = loadPanduckNode();
