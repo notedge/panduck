@@ -1,6 +1,6 @@
 {
     "name": "@notedge/panduck",
-    "version": "0.0.17",
+    "version": "0.0.18",
     "description": "Convert Word, Markdown, EPUB and related files locally; CLI and Node API with honest loss reports",
     "type": "module",
     "license": "MPL-2.0",
