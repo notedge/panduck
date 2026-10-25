@@ -9,6 +9,11 @@
 //! - `remove-blocks` removes blocks whose kind is listed in `targetKinds`
 //!   through [`DocumentGraph::walk_mut`] and [`RewriteResult::Remove`], then
 //!   deletes the unreachable descendants of the removed blocks.
+//! - `normalize-headings` renumbers `Block::Section` levels so top-level
+//!   sections start at 1 and every nested section is exactly one level deeper,
+//!   clamped to 6.
+//! - `resolve-references` fills empty `Inline::Reference` display text from the
+//!   referenced block and replaces references to missing nodes with plain text.
 //!
 //! Every pass produces a serializable report plus structured boost
 //! diagnostics. An empty or absent `transforms` array leaves the graph and the
@@ -18,7 +23,9 @@
 use std::collections::{HashMap, HashSet};
 
 use boost_diagnostic::{Diagnostic, DiagnosticCode, DiagnosticOrigin, DiagnosticSeverity, Message, MessageArg};
-use notedown_ir::{AssetId, Block, DocumentGraph, ListItem, NodeId, RelationEndpoint, RewriteResult, TableRow, Traversal};
+use notedown_ir::{
+    AssetId, Block, DocumentGraph, Inline, ListItem, NodeId, RelationEndpoint, RewriteResult, TableRow, Traversal,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -27,6 +34,12 @@ pub const PASS_REPLACE_TEXT: &str = "replace-text";
 
 /// Built-in pass name: remove blocks by block kind.
 pub const PASS_REMOVE_BLOCKS: &str = "remove-blocks";
+
+/// Built-in pass name: renumber nested section levels.
+pub const PASS_NORMALIZE_HEADINGS: &str = "normalize-headings";
+
+/// Built-in pass name: resolve intra-document references.
+pub const PASS_RESOLVE_REFERENCES: &str = "resolve-references";
 
 /// One serializable transform pass declaration from the TS-side plan.
 #[derive(Debug, Clone, Deserialize)]
@@ -73,7 +86,8 @@ pub struct TransformPassReport {
     pub status: TransformPassStatus,
     /// Number of blocks directly changed or removed by this pass.
     pub changed_nodes: usize,
-    /// Number of inline text occurrences replaced (`replace-text`).
+    /// Number of inline text occurrences replaced (`replace-text`) or
+    /// references repaired or replaced (`resolve-references`).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub replaced_occurrences: Option<usize>,
     /// Number of unreachable descendant blocks swept after removal.
@@ -139,6 +153,8 @@ fn run_pass(graph: &mut DocumentGraph, spec: &TransformPassSpec) -> (TransformPa
     match spec.name.as_str() {
         PASS_REPLACE_TEXT => run_replace_text(graph, spec),
         PASS_REMOVE_BLOCKS => run_remove_blocks(graph, spec),
+        PASS_NORMALIZE_HEADINGS => run_normalize_headings(graph, spec),
+        PASS_RESOLVE_REFERENCES => run_resolve_references(graph, spec),
         _ => {
             let message = format!("no built-in transform pass named \"{}\"", spec.name);
             let diagnostic = pass_diagnostic(
@@ -310,6 +326,331 @@ fn run_remove_blocks(graph: &mut DocumentGraph, spec: &TransformPassSpec) -> (Tr
         },
         collected,
     )
+}
+
+fn run_normalize_headings(graph: &mut DocumentGraph, spec: &TransformPassSpec) -> (TransformPassReport, Vec<Diagnostic>) {
+    // Sections hold their children directly, while lists hold theirs on each
+    // item. Treat both as structural containment so nested headings are found
+    // from the real document roots.
+    let contained: HashSet<NodeId> = graph.blocks.iter().flat_map(|node| child_ids(&node.block)).collect();
+    let roots: Vec<NodeId> = graph.blocks.iter().filter(|node| !contained.contains(&node.id)).map(|node| node.id).collect();
+
+    let mut changed_nodes = 0usize;
+    for root in roots {
+        normalize_heading_level(graph, root, 0, &mut changed_nodes);
+    }
+
+    let status = if changed_nodes == 0 { TransformPassStatus::Skipped } else { TransformPassStatus::Applied };
+    let diagnostics = if changed_nodes == 0 {
+        Vec::new()
+    }
+    else {
+        vec![
+            pass_diagnostic(
+                "panduck.transform.pass-applied",
+                DiagnosticSeverity::Info,
+                format!("Transform pass \"{}\" renumbered {changed_nodes} section level(s)", spec.name),
+            )
+            .with_note(
+                Message::new("panduck.transform.pass-applied")
+                    .with_arg("pass", MessageArg::Text(spec.name.clone()))
+                    .with_arg("changedNodes", MessageArg::U64(changed_nodes as u64)),
+            ),
+        ]
+    };
+
+    (
+        TransformPassReport {
+            name: spec.name.clone(),
+            status,
+            changed_nodes,
+            replaced_occurrences: None,
+            swept_nodes: None,
+            target_kinds: normalized_kinds(spec),
+            description: spec.description.clone(),
+            message: None,
+        },
+        diagnostics,
+    )
+}
+
+/// Assign levels to the section `id` and its nested sections.
+///
+/// `parent_level` is 0 for document roots, so top-level sections resolve to 1,
+/// every nested section to `parent + 1`, and levels saturate at 6.
+fn normalize_heading_level(graph: &mut DocumentGraph, id: NodeId, parent_level: u8, changed_nodes: &mut usize) {
+    let Some(node) = graph.block(id)
+    else {
+        return;
+    };
+    let section = match &node.block {
+        Block::Section { level, title, children } => Some((*level, title.clone(), children.clone())),
+        _ => None,
+    };
+    let list_children = match &node.block {
+        Block::List { items, .. } => Some(items.iter().flat_map(|item| item.children.iter().copied()).collect::<Vec<_>>()),
+        _ => None,
+    };
+
+    if let Some((level, title, children)) = section {
+        let target = (parent_level + 1).min(6);
+        if level != target
+            && graph.replace_block(id, Block::Section { level: target, title, children: children.clone() }).is_ok()
+        {
+            *changed_nodes += 1;
+        }
+        for child in children {
+            normalize_heading_level(graph, child, target, changed_nodes);
+        }
+    }
+    else if let Some(children) = list_children {
+        // A list item's nested blocks stay at the enclosing section's depth.
+        for child in children {
+            normalize_heading_level(graph, child, parent_level, changed_nodes);
+        }
+    }
+}
+
+fn run_resolve_references(graph: &mut DocumentGraph, spec: &TransformPassSpec) -> (TransformPassReport, Vec<Diagnostic>) {
+    let targets: HashMap<NodeId, String> =
+        graph.blocks.iter().map(|node| (node.id, readable_block_text(&node.block))).collect();
+    let ids: Vec<NodeId> = graph.blocks.iter().map(|node| node.id).collect();
+
+    let mut changed_nodes = 0usize;
+    let mut repaired_references = 0usize;
+    let mut diagnostics = Vec::new();
+    for id in ids {
+        let Some(node) = graph.block(id)
+        else {
+            continue;
+        };
+        let block = node.block.clone();
+        let Some(next_block) = resolve_block(&block, &targets, &mut repaired_references, &mut diagnostics, &spec.name)
+        else {
+            continue;
+        };
+        if graph.replace_block(id, next_block).is_ok() {
+            changed_nodes += 1;
+        }
+    }
+
+    let status = if changed_nodes == 0 { TransformPassStatus::Skipped } else { TransformPassStatus::Applied };
+    if changed_nodes > 0 {
+        diagnostics.push(
+            pass_diagnostic(
+                "panduck.transform.pass-applied",
+                DiagnosticSeverity::Info,
+                format!(
+                    "Transform pass \"{}\" resolved {repaired_references} reference(s) in {changed_nodes} block(s)",
+                    spec.name
+                ),
+            )
+            .with_note(
+                Message::new("panduck.transform.pass-applied")
+                    .with_arg("pass", MessageArg::Text(spec.name.clone()))
+                    .with_arg("changedNodes", MessageArg::U64(changed_nodes as u64))
+                    .with_arg("replacedOccurrences", MessageArg::U64(repaired_references as u64)),
+            ),
+        );
+    }
+
+    (
+        TransformPassReport {
+            name: spec.name.clone(),
+            status,
+            changed_nodes,
+            replaced_occurrences: Some(repaired_references),
+            swept_nodes: None,
+            target_kinds: normalized_kinds(spec),
+            description: spec.description.clone(),
+            message: None,
+        },
+        diagnostics,
+    )
+}
+
+fn resolve_block(
+    block: &Block,
+    targets: &HashMap<NodeId, String>,
+    repaired_references: &mut usize,
+    diagnostics: &mut Vec<Diagnostic>,
+    pass_name: &str,
+) -> Option<Block> {
+    match block {
+        Block::Section { level, title, children } => {
+            let (title, changed) = resolve_inlines(title, targets, repaired_references, diagnostics, pass_name);
+            changed.then(|| Block::Section { level: *level, title, children: children.clone() })
+        }
+        Block::Paragraph { content } => {
+            let (content, changed) = resolve_inlines(content, targets, repaired_references, diagnostics, pass_name);
+            changed.then_some(Block::Paragraph { content })
+        }
+        Block::Quote { content } => {
+            let (content, changed) = resolve_inlines(content, targets, repaired_references, diagnostics, pass_name);
+            changed.then_some(Block::Quote { content })
+        }
+        Block::List { ordered, items } => {
+            let mut changed = false;
+            let items = items
+                .iter()
+                .map(|item| {
+                    let (content, item_changed) =
+                        resolve_inlines(&item.content, targets, repaired_references, diagnostics, pass_name);
+                    changed |= item_changed;
+                    ListItem { content, children: item.children.clone(), number: item.number }
+                })
+                .collect::<Vec<_>>();
+            changed.then(|| Block::List { ordered: *ordered, items })
+        }
+        // Table captions are already plain strings and cell content is inline
+        // prose, so references can still appear inside cells.
+        Block::Table { caption, rows } => {
+            let mut changed = false;
+            let rows = rows
+                .iter()
+                .map(|row| {
+                    let cells = row
+                        .cells
+                        .iter()
+                        .map(|cell| {
+                            let (content, cell_changed) =
+                                resolve_inlines(&cell.content, targets, repaired_references, diagnostics, pass_name);
+                            changed |= cell_changed;
+                            notedown_ir::TableCell { content, colspan: cell.colspan, rowspan: cell.rowspan }
+                        })
+                        .collect::<Vec<_>>();
+                    TableRow { is_header: row.is_header, cells }
+                })
+                .collect::<Vec<_>>();
+            changed.then(|| Block::Table { caption: caption.clone(), rows })
+        }
+        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Opaque { .. } => None,
+    }
+}
+
+fn resolve_inlines(
+    inlines: &[Inline],
+    targets: &HashMap<NodeId, String>,
+    repaired_references: &mut usize,
+    diagnostics: &mut Vec<Diagnostic>,
+    pass_name: &str,
+) -> (Vec<Inline>, bool) {
+    let mut changed = false;
+    let mut resolved = Vec::with_capacity(inlines.len());
+    for inline in inlines {
+        match inline {
+            Inline::Reference { target, display } => {
+                if let Some(text) = targets.get(target) {
+                    if display.is_empty() && !text.is_empty() {
+                        *repaired_references += 1;
+                        changed = true;
+                        resolved.push(Inline::Reference { target: *target, display: text.clone() });
+                    }
+                    else {
+                        resolved.push(inline.clone());
+                    }
+                }
+                else {
+                    // The target block no longer exists: keep the authored text
+                    // as plain content instead of exporting a broken reference.
+                    *repaired_references += 1;
+                    changed = true;
+                    diagnostics.push(dangling_reference_diagnostic(pass_name, *target));
+                    resolved.push(Inline::Text { text: display.clone() });
+                }
+            }
+            Inline::Styled { style, children } => {
+                let (children, child_changed) = resolve_inlines(children, targets, repaired_references, diagnostics, pass_name);
+                changed |= child_changed;
+                resolved.push(Inline::Styled { style: style.clone(), children });
+            }
+            Inline::Attributed { attributes, children } => {
+                let (children, child_changed) = resolve_inlines(children, targets, repaired_references, diagnostics, pass_name);
+                changed |= child_changed;
+                resolved.push(Inline::Attributed { attributes: attributes.clone(), children });
+            }
+            Inline::Link { target, display, title } => {
+                let (display, child_changed) = resolve_inlines(display, targets, repaired_references, diagnostics, pass_name);
+                changed |= child_changed;
+                resolved.push(Inline::Link { target: target.clone(), display, title: title.clone() });
+            }
+            Inline::Image { source, alt, title, asset } => {
+                let (alt, child_changed) = resolve_inlines(alt, targets, repaired_references, diagnostics, pass_name);
+                changed |= child_changed;
+                resolved.push(Inline::Image { source: source.clone(), alt, title: title.clone(), asset: *asset });
+            }
+            Inline::Note { label, display } => {
+                let (display, child_changed) =
+                    resolve_optional_inlines(display.as_deref(), targets, repaired_references, diagnostics, pass_name);
+                changed |= child_changed;
+                resolved.push(Inline::Note { label: label.clone(), display });
+            }
+            Inline::Citation { key, display } => {
+                let (display, child_changed) =
+                    resolve_optional_inlines(display.as_deref(), targets, repaired_references, diagnostics, pass_name);
+                changed |= child_changed;
+                resolved.push(Inline::Citation { key: key.clone(), display });
+            }
+            other => resolved.push(other.clone()),
+        }
+    }
+    (resolved, changed)
+}
+
+fn resolve_optional_inlines(
+    inlines: Option<&[Inline]>,
+    targets: &HashMap<NodeId, String>,
+    repaired_references: &mut usize,
+    diagnostics: &mut Vec<Diagnostic>,
+    pass_name: &str,
+) -> (Option<Vec<Inline>>, bool) {
+    match inlines {
+        Some(inlines) => {
+            let (resolved, changed) = resolve_inlines(inlines, targets, repaired_references, diagnostics, pass_name);
+            (Some(resolved), changed)
+        }
+        None => (None, false),
+    }
+}
+
+fn dangling_reference_diagnostic(pass_name: &str, target: NodeId) -> Diagnostic {
+    pass_diagnostic(
+        "panduck.transform.dangling-reference",
+        DiagnosticSeverity::Warning,
+        format!("Transform pass \"{pass_name}\" replaced a dangling reference to node {} with its display text", target.0),
+    )
+    .with_note(
+        Message::new("panduck.transform.dangling-reference")
+            .with_arg("pass", MessageArg::Text(pass_name.to_string()))
+            .with_arg("target", MessageArg::U64(target.0)),
+    )
+}
+
+/// Readable text used to fill an empty reference display.
+///
+/// Sections use their title, prose blocks their content, lists their items, and
+/// tables their caption or cells. Code, math, diagram, and opaque payloads are
+/// authored source rather than prose, so they yield no display text.
+fn readable_block_text(block: &Block) -> String {
+    match block {
+        Block::Section { title, .. } => plain_text_of(title),
+        Block::Paragraph { content } => plain_text_of(content),
+        Block::Quote { content } => plain_text_of(content),
+        Block::List { items, .. } => joined_text(items.iter().map(|item| plain_text_of(&item.content))),
+        Block::Table { caption, rows } => match caption.as_deref().map(str::trim).filter(|caption| !caption.is_empty()) {
+            Some(caption) => caption.to_string(),
+            None => joined_text(rows.iter().flat_map(|row| row.cells.iter()).map(|cell| plain_text_of(&cell.content))),
+        },
+        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Opaque { .. } => String::new(),
+    }
+}
+
+fn plain_text_of(inlines: &[Inline]) -> String {
+    inlines.iter().map(Inline::plain_text).collect::<String>().trim().to_string()
+}
+
+fn joined_text(parts: impl Iterator<Item = String>) -> String {
+    parts.filter(|text| !text.is_empty()).collect::<Vec<_>>().join(" ")
 }
 
 fn invalid_params(spec: &TransformPassSpec, message: &str) -> (TransformPassReport, Vec<Diagnostic>) {

@@ -80,10 +80,8 @@ fn replace_text_keeps_diagram_source_and_remove_blocks_targets_diagrams() {
     use notedown_ir::{Block, DocumentGraph, DocumentId, Inline};
 
     let mut graph = DocumentGraph::new(DocumentId(1));
-    let diagram = graph.push_block(Block::Diagram {
-        language: "mermaid".to_string(),
-        source: "flowchart TD\n  Hello --> World".to_string(),
-    });
+    let diagram = graph
+        .push_block(Block::Diagram { language: "mermaid".to_string(), source: "flowchart TD\n  Hello --> World".to_string() });
     graph.push_block(Block::Paragraph { content: vec![Inline::Text { text: "Hello body.".to_string() }] });
 
     let replace = plan_json(r#"{"name":"replace-text","params":{"search":"Hello","replacement":"Bonjour"}}"#);
@@ -130,8 +128,8 @@ fn remove_blocks_pass_sweeps_descendants_of_removed_section() {
 }
 
 #[test]
-fn unsupported_pass_name_is_reported_and_skipped() {
-    let plan = plan_json(r#"{"name":"resolve-references"}"#);
+fn unknown_pass_name_is_reported_and_skipped() {
+    let plan = plan_json(r#"{"name":"no-such-pass"}"#);
     let output = convert_bytes(
         "html",
         "markdown",
@@ -146,10 +144,219 @@ fn unsupported_pass_name_is_reported_and_skipped() {
 
     let report = report(&output);
     let transform = &report["pipeline"]["transforms"][0];
-    assert_eq!(transform["name"], "resolve-references");
+    assert_eq!(transform["name"], "no-such-pass");
     assert_eq!(transform["status"], "unsupported");
     assert_eq!(transform["changedNodes"], 0);
     assert!(diagnostic_codes(&report).iter().any(|code| code == "panduck.transform.unsupported-pass"));
+}
+
+#[test]
+fn resolve_references_is_a_supported_pass_without_references() {
+    let plan = plan_json(r#"{"name":"resolve-references"}"#);
+    let output = convert_bytes(
+        "html",
+        "markdown",
+        "no-references.html",
+        br#"<html><body><p>Plain body.</p></body></html>"#.to_vec(),
+        Some(&plan),
+    )
+    .expect("convert with resolve-references");
+
+    assert_convert_report(&output, "markdown");
+    assert!(output.markdown.contains("Plain body."));
+
+    let report = report(&output);
+    let transform = &report["pipeline"]["transforms"][0];
+    assert_eq!(transform["name"], "resolve-references");
+    assert_eq!(transform["status"], "skipped");
+    assert_eq!(transform["changedNodes"], 0);
+    assert_eq!(transform["replacedOccurrences"], 0);
+    let codes = diagnostic_codes(&report);
+    assert!(!codes.iter().any(|code| code == "panduck.transform.unsupported-pass"), "codes were: {codes:?}");
+}
+
+fn section_block(level: u8, title: &str, children: Vec<notedown_ir::NodeId>) -> notedown_ir::Block {
+    notedown_ir::Block::Section { level, title: vec![notedown_ir::Inline::Text { text: title.to_string() }], children }
+}
+
+fn section_level(graph: &notedown_ir::DocumentGraph, id: notedown_ir::NodeId) -> u8 {
+    match &graph.block(id).expect("block exists").block {
+        notedown_ir::Block::Section { level, .. } => *level,
+        other => panic!("expected section, got {other:?}"),
+    }
+}
+
+#[test]
+fn normalize_headings_renumbers_nested_sections_and_is_idempotent() {
+    use notedown_ir::{Block, DocumentGraph, DocumentId, Inline};
+
+    let mut graph = DocumentGraph::new(DocumentId(1));
+    let paragraph = graph.push_block(Block::Paragraph { content: vec![Inline::Text { text: "Body.".to_string() }] });
+    let grandchild = graph.push_block(section_block(6, "Grandchild", Vec::new()));
+    let child = graph.push_block(section_block(5, "Child", vec![grandchild]));
+    let root = graph.push_block(section_block(3, "Root", vec![paragraph, child]));
+    let sibling = graph.push_block(section_block(1, "Sibling", Vec::new()));
+
+    let plan = plan_json(r#"{"name":"normalize-headings"}"#);
+    let outcome = apply_transform_passes(&mut graph, Some(&plan));
+
+    assert_eq!(outcome.passes.len(), 1);
+    assert_eq!(outcome.passes[0].status, panduck_convert::TransformPassStatus::Applied);
+    assert_eq!(outcome.passes[0].changed_nodes, 3);
+    assert!(outcome.diagnostics.iter().any(|diagnostic| diagnostic.code().as_str() == "panduck.transform.pass-applied"));
+    assert_eq!(section_level(&graph, root), 1);
+    assert_eq!(section_level(&graph, child), 2);
+    assert_eq!(section_level(&graph, grandchild), 3);
+    assert_eq!(section_level(&graph, sibling), 1, "already-normalized sibling stays at level 1");
+
+    let second = apply_transform_passes(&mut graph, Some(&plan));
+    assert_eq!(second.passes[0].status, panduck_convert::TransformPassStatus::Skipped);
+    assert_eq!(second.passes[0].changed_nodes, 0);
+    assert!(second.diagnostics.is_empty(), "idempotent rerun must not emit diagnostics");
+}
+
+#[test]
+fn normalize_headings_clamps_deep_levels_at_six() {
+    use notedown_ir::{DocumentGraph, DocumentId};
+
+    let mut graph = DocumentGraph::new(DocumentId(1));
+    let mut ids = Vec::new();
+    let mut current = graph.push_block(section_block(9, "Level 8", Vec::new()));
+    ids.push(current);
+    for index in (1..8).rev() {
+        current = graph.push_block(section_block(9, &format!("Level {index}"), vec![current]));
+        ids.push(current);
+    }
+
+    let plan = plan_json(r#"{"name":"normalize-headings"}"#);
+    let outcome = apply_transform_passes(&mut graph, Some(&plan));
+    assert_eq!(outcome.passes[0].status, panduck_convert::TransformPassStatus::Applied);
+    assert_eq!(outcome.passes[0].changed_nodes, 8);
+
+    for (index, id) in ids.iter().enumerate() {
+        let expected = (ids.len() - index).min(6) as u8;
+        assert_eq!(section_level(&graph, *id), expected, "section at depth index {index}");
+    }
+}
+
+#[test]
+fn resolve_references_fills_empty_display_from_target_text_and_is_idempotent() {
+    use notedown_ir::{Block, DocumentGraph, DocumentId, Inline, RelationEndpoint};
+
+    let mut graph = DocumentGraph::new(DocumentId(1));
+    let body = graph.push_block(Block::Paragraph { content: vec![Inline::Text { text: "Target body".to_string() }] });
+    let heading = graph.push_block(section_block(1, "Section title", Vec::new()));
+    let holder = graph.push_block(Block::Paragraph {
+        content: vec![
+            Inline::Styled {
+                style: "em".to_string(),
+                children: vec![Inline::Reference { target: body, display: String::new() }],
+            },
+            Inline::Link {
+                target: RelationEndpoint::Document(DocumentId(1)),
+                display: vec![Inline::Reference { target: heading, display: String::new() }],
+                title: None,
+            },
+        ],
+    });
+
+    let plan = plan_json(r#"{"name":"resolve-references"}"#);
+    let outcome = apply_transform_passes(&mut graph, Some(&plan));
+    assert_eq!(outcome.passes[0].status, panduck_convert::TransformPassStatus::Applied);
+    assert_eq!(outcome.passes[0].changed_nodes, 1);
+    assert_eq!(outcome.passes[0].replaced_occurrences, Some(2));
+    assert!(outcome.diagnostics.iter().any(|diagnostic| diagnostic.code().as_str() == "panduck.transform.pass-applied"));
+
+    let Block::Paragraph { content } = &graph.block(holder).expect("holder exists").block
+    else {
+        panic!("paragraph expected")
+    };
+    let Inline::Styled { children, .. } = &content[0]
+    else {
+        panic!("styled inline expected")
+    };
+    assert_eq!(children, &[Inline::Reference { target: body, display: "Target body".to_string() }]);
+    let Inline::Link { display, .. } = &content[1]
+    else {
+        panic!("link inline expected")
+    };
+    assert_eq!(display, &[Inline::Reference { target: heading, display: "Section title".to_string() }]);
+
+    let second = apply_transform_passes(&mut graph, Some(&plan));
+    assert_eq!(second.passes[0].status, panduck_convert::TransformPassStatus::Skipped);
+    assert_eq!(second.passes[0].changed_nodes, 0);
+    assert_eq!(second.passes[0].replaced_occurrences, Some(0));
+    assert!(second.diagnostics.is_empty(), "idempotent rerun must not emit diagnostics");
+}
+
+#[test]
+fn resolve_references_replaces_dangling_reference_and_warns() {
+    use notedown_ir::{Block, DocumentGraph, DocumentId, Inline, NodeId};
+
+    let mut graph = DocumentGraph::new(DocumentId(1));
+    let holder = graph.push_block(Block::Paragraph {
+        content: vec![
+            Inline::Reference { target: NodeId(999), display: "Missing note".to_string() },
+            Inline::Text { text: " then ".to_string() },
+            Inline::Reference { target: NodeId(1000), display: String::new() },
+        ],
+    });
+
+    let plan = plan_json(r#"{"name":"resolve-references"}"#);
+    let outcome = apply_transform_passes(&mut graph, Some(&plan));
+    assert_eq!(outcome.passes[0].status, panduck_convert::TransformPassStatus::Applied);
+    assert_eq!(outcome.passes[0].changed_nodes, 1);
+    assert_eq!(outcome.passes[0].replaced_occurrences, Some(2));
+
+    let dangling: Vec<_> = outcome
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code().as_str() == "panduck.transform.dangling-reference")
+        .collect();
+    assert_eq!(dangling.len(), 2);
+    assert!(dangling.iter().any(|diagnostic| diagnostic.message().to_string().contains("999")));
+    assert!(dangling.iter().any(|diagnostic| diagnostic.message().to_string().contains("1000")));
+
+    let Block::Paragraph { content } = &graph.block(holder).expect("holder exists").block
+    else {
+        panic!("paragraph expected")
+    };
+    assert_eq!(
+        content,
+        &[
+            Inline::Text { text: "Missing note".to_string() },
+            Inline::Text { text: " then ".to_string() },
+            Inline::Text { text: String::new() },
+        ]
+    );
+
+    let second = apply_transform_passes(&mut graph, Some(&plan));
+    assert_eq!(second.passes[0].status, panduck_convert::TransformPassStatus::Skipped);
+    assert_eq!(second.passes[0].changed_nodes, 0);
+    assert!(second.diagnostics.is_empty(), "dangling references are consumed on the first pass");
+}
+
+#[test]
+fn resolve_references_keeps_authored_display_text() {
+    use notedown_ir::{Block, DocumentGraph, DocumentId, Inline};
+
+    let mut graph = DocumentGraph::new(DocumentId(1));
+    let target = graph.push_block(Block::Paragraph { content: vec![Inline::Text { text: "Target body".to_string() }] });
+    let holder =
+        graph.push_block(Block::Paragraph { content: vec![Inline::Reference { target, display: "Keep me".to_string() }] });
+
+    let plan = plan_json(r#"{"name":"resolve-references"}"#);
+    let outcome = apply_transform_passes(&mut graph, Some(&plan));
+    assert_eq!(outcome.passes[0].status, panduck_convert::TransformPassStatus::Skipped);
+    assert_eq!(outcome.passes[0].changed_nodes, 0);
+    assert_eq!(outcome.passes[0].replaced_occurrences, Some(0));
+    assert!(outcome.diagnostics.is_empty());
+
+    let Block::Paragraph { content } = &graph.block(holder).expect("holder exists").block
+    else {
+        panic!("paragraph expected")
+    };
+    assert_eq!(content, &[Inline::Reference { target, display: "Keep me".to_string() }]);
 }
 
 #[test]
