@@ -88,13 +88,13 @@ export type TransformPass = {
 // Output — 目标格式 + RendererPolicy
 // ---------------------------------------------------------------------------
 
-/** 已知输出格式标识符。v0 only —— 与 notedown-formats export 对齐。 */
-export type KnownOutputFormat = "markdown" | "html";
+/** 已知输出格式标识符。v0 只有 markdown writer 已接线。 */
+export type KnownOutputFormat = "markdown";
 
 export type OutputRoute = {
     /** 目标格式。Panduck 通过这个路由到 notedown-formats 的 export 模块。 */
     readonly format: KnownOutputFormat;
-    /** 可选 RendererPolicy —— 控制 writer 行为。 */
+    /** 可选 RendererPolicy —— 只作声明与诊断，不改变 writer 输出。 */
     readonly policy?: MarkdownPolicy;
     /** 可选 loss policy。默认 "warn"；"deny" 时任何 loss 都让 status = failed。 */
     readonly lossPolicy?: "warn" | "deny";
@@ -168,6 +168,11 @@ let anonConversionCounter = 0;
  *   });
  */
 export function defineConversion(config: ConversionConfig): ConversionPlan {
+    if (config.output.format !== "markdown") {
+        throw new TypeError(
+            `ConversionPlan output.format must be "markdown" (got ${JSON.stringify(config.output.format)}) — v0 has no other writer`,
+        );
+    }
     const id = config.id ?? `conv-${++anonConversionCounter}`;
     return {
         version: "panduck-conversion-v0",
