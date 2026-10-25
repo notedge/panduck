@@ -74,8 +74,9 @@ export type TransformPass = {
      */
     readonly params?: Readonly<Record<string, unknown>>;
     /**
-     * 保留字段 —— 不参与序列化。执行由 Rust 侧按 `name` 匹配，
-     * 不要依赖传函数来改变行为。
+     * 保留字段 —— 不参与序列化，也不会执行。执行由 Rust 侧按 `name` 匹配。
+     * 声明该字段会得到 `panduck.transform.non-executable-handler` 警告诊断，
+     * 而不会静默改变行为。
      */
     readonly pass?: unknown;
     /** 描述这个 transform 做什么 — 写入 passDescriptor。 */

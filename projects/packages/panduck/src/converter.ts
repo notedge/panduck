@@ -140,6 +140,23 @@ export class Converter {
 
         const diagnostics: DiagnosticRecord[] = [];
 
+        if (!isExecutablePublishKind(plan.publish.kind)) {
+            const publishKind = String(plan.publish.kind);
+            diagnostics.push(createDiagnostic({
+                code: "panduck.convert.unsupported-publish-kind",
+                fallback: `ConversionPlan "${plan.id}" declares unsupported publish.kind ${JSON.stringify(publishKind)} — v0 executes only "none" and "markdown-project"`,
+                messageKey: "panduck.diagnostic.unsupportedPublishKind",
+                component: "convert",
+                severity: "error",
+                stage: "output",
+                args: withUrl([
+                    ["planId", textArg(plan.id)],
+                    ["publishKind", textArg(publishKind)],
+                ], urlHint),
+            }));
+            return makeResult("failed", "", diagnostics, label, urlHint);
+        }
+
         if (bytes.length === 0) {
             diagnostics.push(createDiagnostic({
                 code: "panduck.convert.empty-input",
@@ -169,6 +186,8 @@ export class Converter {
                 ["publishKind", textArg(plan.publish.kind)],
             ], urlHint),
         }));
+
+        reportNonExecutableHandlers(diagnostics, plan, urlHint);
 
         // (2) 确定 requireNoLoss（由 plan.output.lossPolicy 决定）。
         const requireNoLoss = plan.output.lossPolicy === "deny";
@@ -341,6 +360,37 @@ export class Converter {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/** v0 only executes these two publish strategies — anything else is an author error. */
+function isExecutablePublishKind(kind: string): kind is "none" | "markdown-project" {
+    return kind === "none" || kind === "markdown-project";
+}
+
+/**
+ * Report declared in-process handlers instead of silently dropping them.
+ *
+ * `TransformPass.pass` cannot cross the N-API wire and is never executed. If a
+ * caller still supplies one it is a no-op, so surface an explicit warning
+ * rather than pretending the handler ran.
+ */
+function reportNonExecutableHandlers(
+    diagnostics: DiagnosticRecord[],
+    plan: ConversionPlan,
+    urlHint?: string,
+): void {
+    for (const transform of plan.transforms) {
+        if (transform.pass === undefined) continue;
+        diagnostics.push(createDiagnostic({
+            code: "panduck.transform.non-executable-handler",
+            fallback: `Transform "${transform.name}" declares a \`pass\` handler that cannot cross the N-API boundary and was not executed`,
+            messageKey: "panduck.diagnostic.nonExecutableHandler",
+            component: "transform",
+            severity: "warning",
+            stage: "transform",
+            args: withUrl([["passName", textArg(transform.name)]], urlHint),
+        }));
+    }
+}
 
 async function materializeInput(
     input: ConverterInput,

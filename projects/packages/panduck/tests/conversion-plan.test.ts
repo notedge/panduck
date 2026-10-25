@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
 import { Converter } from "../src/converter.js";
 import { defineConversion, serializeConversionPlan } from "../src/conversion-plan.js";
+import type { ConversionPlan } from "../src/conversion-plan.js";
 import { imageDocumentXml, imageRelsXml } from "./fixtures/docx-xml.js";
 import { storedZip } from "./helpers/stored-zip.js";
 
@@ -254,6 +255,133 @@ test("markdown-project publish deduplicates identical asset bytes and rewrites r
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }
+});
+
+test("markdown-project republish owns the output directory and removes stale files", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-republish-"));
+    const outputDir = join(workdir, "nested", "site");
+    const makeDocx = () =>
+        storedZip([
+            { path: "word/document.xml", payload: imageDocumentXml },
+            { path: "word/_rels/document.xml.rels", payload: imageRelsXml },
+            { path: "word/media/logo.png", payload: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a]) },
+        ]);
+    try {
+        const converter = new Converter();
+        const plan = defineConversion({
+            id: "publish-republish-check",
+            input: { format: "docx", label: "image.docx" },
+            output: { format: "markdown" },
+            publish: { kind: "markdown-project", directory: outputDir },
+        });
+
+        const first = await converter.toMarkdown(makeDocx(), plan);
+        assert.notEqual(first.status, "failed");
+        assert.equal(first.publishPath, outputDir, "publish must create missing parent directories");
+
+        await writeFile(join(outputDir, "stale.md"), "stale", "utf8");
+
+        const second = await converter.toMarkdown(makeDocx(), plan);
+        assert.notEqual(second.status, "failed");
+        assert.equal(second.publishPath, outputDir);
+        await assert.rejects(readFile(join(outputDir, "stale.md"), "utf8"));
+
+        const index = await readFile(join(outputDir, "index.md"), "utf8");
+        assert.match(index, /!\[Logo\]\(assets\/[0-9a-f]{16}\.png\)/);
+        const assets = await readdir(join(outputDir, "assets"));
+        assert.ok(assets.length >= 1, "republish must still materialize the docx image");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("publish kind none writes nothing and returns no publishPath", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-none-"));
+    try {
+        const converter = new Converter();
+        const plan = defineConversion({
+            id: "publish-none-check",
+            input: { format: "html" },
+            output: { format: "markdown" },
+            publish: { kind: "none" },
+        });
+
+        const result = await converter.toMarkdown(sampleHtml("<h1>No publish</h1><p>Body.</p>"), plan);
+
+        assert.notEqual(result.status, "failed");
+        assert.equal(result.publishPath, undefined);
+        assert.deepEqual(await readdir(workdir), [], "publish none must not write files");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("unsupported publish kind is rejected instead of silently treated as none", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-unknown-"));
+    const outputDir = join(workdir, "site");
+    try {
+        const converter = new Converter();
+        const base = defineConversion({
+            id: "publish-unknown-check",
+            input: { format: "html" },
+            output: { format: "markdown" },
+        });
+        const plan = {
+            ...base,
+            publish: { kind: "single-file", directory: outputDir },
+        } as unknown as ConversionPlan;
+
+        const result = await converter.toMarkdown(sampleHtml("<p>Body.</p>"), plan);
+
+        assert.equal(result.status, "failed");
+        assert.equal(result.text, "");
+        assert.equal(result.publishPath, undefined);
+        const diagnostic = result.diagnostics.find((d) => d.code === "panduck.convert.unsupported-publish-kind");
+        assert.ok(diagnostic, "unsupported publish kinds must produce an error diagnostic");
+        assert.equal(diagnostic.severity, "error");
+        assert.deepEqual(
+            diagnostic.message.args.find(([key]) => key === "publishKind")?.[1],
+            { text: "single-file" },
+        );
+        await assert.rejects(readdir(outputDir));
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("in-process transform handlers are diagnosed and never executed", async () => {
+    const converter = new Converter();
+    let handlerCalls = 0;
+    const plan = defineConversion({
+        id: "handler-check",
+        input: { format: "html" },
+        transforms: [
+            {
+                name: "replace-text",
+                params: { search: "Hello", replacement: "Bonjour" },
+                pass: () => {
+                    handlerCalls += 1;
+                    throw new Error("in-process handler must not execute");
+                },
+            },
+        ],
+        output: { format: "markdown" },
+    });
+
+    const result = await converter.toMarkdown(sampleHtml("<h1>Hello World</h1>"), plan);
+
+    assert.equal(handlerCalls, 0, "the declared handler must not be invoked");
+    assert.notEqual(result.status, "failed");
+    assert.match(result.text, /Bonjour World/, "the named built-in pass still runs");
+    const diagnostic = result.diagnostics.find((d) => d.code === "panduck.transform.non-executable-handler");
+    assert.ok(diagnostic, "unexecutable handlers must not be silently ignored");
+    assert.equal(diagnostic.severity, "warning");
+    assert.deepEqual(
+        diagnostic.message.args.find(([key]) => key === "passName")?.[1],
+        { text: "replace-text" },
+    );
+    const descriptor = JSON.parse(serializeConversionPlan(plan));
+    assert.equal(descriptor.transforms[0].pass, undefined, "handlers must stay off the wire");
 });
 
 test("empty extracted scope payload fails with a diagnostic instead of empty Markdown", async () => {
