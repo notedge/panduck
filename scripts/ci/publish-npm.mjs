@@ -260,6 +260,10 @@ function publishJs(version, artifactsRoot) {
         const name = spec.publishName ?? raw.name;
         if (!name) fail(`no name for ${spec.dir}`);
 
+        if (name === "@notedge/panduck" && !fs.existsSync(path.join(abs, "dist", "cli", "main.js"))) {
+            fail(`${name}: missing dist/cli/main.js — run pnpm --filter ${name} build before publishing`);
+        }
+
         if (versionExists(name, version)) {
             console.log(` ✓ ${name}@${version} already on registry — skip`);
             skipped += 1;

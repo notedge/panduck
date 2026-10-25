@@ -236,6 +236,9 @@ jobs:
 
       - run: pnpm install --filter '!@notedge/homepage'
 
+      - name: Build @notedge/panduck dist
+        run: pnpm --filter @notedge/panduck build
+
       - uses: actions/download-artifact@v4
         with:
           pattern: native-*

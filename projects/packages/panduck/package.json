@@ -11,28 +11,41 @@
         "access": "public"
     },
     "exports": {
-        ".": "./src/index.ts",
-        "./node": "./src/node/index.ts",
-        "./wasm": "./src/wasm/index.ts",
-        "./cli": "./src/cli/index.ts"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./node": {
+            "types": "./dist/node/index.d.ts",
+            "default": "./dist/node/index.js"
+        },
+        "./wasm": {
+            "types": "./dist/wasm/index.d.ts",
+            "default": "./dist/wasm/index.js"
+        },
+        "./cli": {
+            "types": "./dist/cli/index.d.ts",
+            "default": "./dist/cli/index.js"
+        }
     },
+    "types": "./dist/index.d.ts",
     "files": [
         "bin",
+        "dist",
         "locales",
-        "readme.md",
-        "src"
+        "readme.md"
     ],
     "engines": {
         "node": ">=20"
     },
     "scripts": {
+        "build": "tsc -p tsconfig.build.json",
         "typecheck": "tsc --noEmit",
-        "test:e2e": "tsx --test tests/**/*.test.ts"
+        "test:e2e": "pnpm build && tsx --test tests/**/*.test.ts"
     },
     "dependencies": {
         "@notedge/panduck-unknown-wasm32": "workspace:*",
-        "@vmz/commander": "^0.2.0",
-        "jiti": "^2.4.2"
+        "@vmz/commander": "^0.2.0"
     },
     "optionalDependencies": {
         "@notedge/panduck-darwin-arm64": "workspace:*",
