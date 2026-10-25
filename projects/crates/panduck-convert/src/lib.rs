@@ -6,6 +6,7 @@ mod format_error;
 mod inspect;
 mod publish;
 mod readers;
+pub mod transform;
 mod writers;
 
 use std::{fs, path::Path};
@@ -37,6 +38,7 @@ pub use inspect::{
     inspect_docx_index_bytes,
 };
 pub use publish::{PublishedMarkdownProject, publish_bytes, publish_markdown_project, publish_text};
+pub use transform::{TransformOutcome, TransformPassReport, TransformPassStatus, apply_transform_passes};
 pub use readers::{
     read_doc, read_doc_bytes, read_html, read_html_bytes, read_markdown, read_markdown_bytes, read_notedown,
     read_notedown_bytes, read_pdf, read_pdf_bytes,
@@ -130,10 +132,14 @@ pub fn convert_bytes(
         return format_error::fail(AdapterError::unsupported_format(from, format!("convert to {to}")));
     }
 
-    let graph = format_error::propagate(read_source(&from, label, bytes))?;
+    let mut graph = format_error::propagate(read_source(&from, label, bytes))?;
+    let transform_outcome = apply_transform_passes(&mut graph, handlers_json);
     let (markdown, html, binary) = format_error::propagate(write_target(&to, &graph))?;
     let loss_count = graph.coverage.loss.len();
     let mut diagnostic_set = diagnostics_from_graph(&graph);
+    for diagnostic in &transform_outcome.diagnostics {
+        diagnostic_set.push(diagnostic.clone());
+    }
 
     // Handler registry bridge — parse the TS-side descriptor, forward keys
     // into the report pipeline, and emit an info diagnostic when present.
@@ -147,6 +153,9 @@ pub fn convert_bytes(
     }
     let diagnostic_envelope = DiagnosticEnvelope::from_set(&diagnostic_set);
     let mut pipeline = serde_json::json!({ "reader": from, "writer": to, "stages": ["read", "ir", "write"] });
+    if !transform_outcome.is_empty() {
+        pipeline["transforms"] = serde_json::to_value(&transform_outcome.passes).unwrap_or_default();
+    }
     if let Some(handlers_val) = pipeline_handlers {
         pipeline["handlers"] = handlers_val;
     }
@@ -178,10 +187,11 @@ pub fn convert_to_markdown_project_bytes(
         return format_error::fail(AdapterError::unsupported_format(from, "markdown project"));
     }
 
-    let graph = format_error::propagate(read_source(&from, label, bytes))?;
+    let mut graph = format_error::propagate(read_source(&from, label, bytes))?;
+    let transform_outcome = apply_transform_passes(&mut graph, handlers_json);
     let mut project = format_error::propagate(write_markdown_project(&graph))?;
     dedupe_assets::dedupe_markdown_project(&mut project);
-    Ok(build_convert_project_output(&from, label, &graph, &project, handlers_json))
+    Ok(build_convert_project_output(&from, label, &graph, &project, &transform_outcome, handlers_json))
 }
 
 /// Converts bytes and publishes a Markdown project directory.
@@ -197,10 +207,11 @@ pub fn convert_to_markdown_project(
         return format_error::fail(AdapterError::unsupported_format(from, "markdown project"));
     }
 
-    let graph = format_error::propagate(read_source(&from, label, bytes))?;
+    let mut graph = format_error::propagate(read_source(&from, label, bytes))?;
+    let transform_outcome = apply_transform_passes(&mut graph, handlers_json);
     let mut project = format_error::propagate(write_markdown_project(&graph))?;
     dedupe_assets::dedupe_markdown_project(&mut project);
-    let output = build_convert_project_output(&from, label, &graph, &project, handlers_json);
+    let output = build_convert_project_output(&from, label, &graph, &project, &transform_outcome, handlers_json);
     let published = publish_markdown_project(output_dir, &project, &output.report_json)?;
     Ok((output, published))
 }
@@ -210,10 +221,14 @@ fn build_convert_project_output(
     label: &str,
     graph: &DocumentGraph,
     project: &notedown_formats::export::markdown_project::MarkdownProject,
+    transform_outcome: &TransformOutcome,
     handlers_json: Option<&str>,
 ) -> ConvertProjectOutput {
     let loss_count = graph.coverage.loss.len();
     let mut diagnostic_set = diagnostics_from_graph(graph);
+    for diagnostic in &transform_outcome.diagnostics {
+        diagnostic_set.push(diagnostic.clone());
+    }
 
     // Handler registry bridge — same pattern as convert_bytes.
     let (pipeline_handlers, handler_keys) = parse_handlers_descriptor(handlers_json);
@@ -236,6 +251,9 @@ fn build_convert_project_output(
     }
     outputs.push(serde_json::json!({ "path": "panduck.report.json", "format": "report", "published": true }));
     let mut pipeline = serde_json::json!({ "reader": from, "writer": "markdown-project", "stages": ["read", "ir", "write", "materialize"] });
+    if !transform_outcome.is_empty() {
+        pipeline["transforms"] = serde_json::to_value(&transform_outcome.passes).unwrap_or_default();
+    }
     if let Some(handlers_val) = pipeline_handlers {
         pipeline["handlers"] = handlers_val;
     }
