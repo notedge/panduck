@@ -316,9 +316,10 @@ export class Converter {
      *   - **不跑 policy handler 哨兵模拟**。当前 v0 Rust writer 还没真正触发
      *     handler —— 我们把 ConversionPlan 序列化成 handlersJson 传给 Rust，
      *     让 wire contract 先就位。handler 真正执行留待 Rust 端落地。
-     *   - **transforms 只声明不执行**。Rust 侧有 notedown-ir walk_mut +
-     *     RewriteResult 基础设施，但尚未暴露到 Panduck TS。当前把 transforms
-     *     序列化到 handlersJson。
+     *   - **transforms 真实执行**。Rust 侧 `panduck-convert::transform` 解析
+     *     handlersJson 里的 transforms，在 `DocumentGraph` 上跑内置 pass
+     *     （`replace-text` / `remove-blocks`），结果写入 report 的
+     *     `pipeline.transforms`。未知 pass 名只在诊断里报告，不中断转换。
      *
      * 与 Policy 路径的对比：
      *   - Policy 只有 output.policy，没有 input.format / transforms / publish。

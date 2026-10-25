@@ -6,9 +6,11 @@
  *   - ConversionPlan 面向 **notedown-ir DocumentGraph**，是正式的转换合同。
  *     transforms 作用在 IR 语义节点上，output/publish 是产品级交付策略。
  *
- * 当前状态（v0 骨架）：
+ * 当前状态：
  *   - defineConversion 签名 + 类型已就位，可声明完整 plan。
- *   - transforms 暂不执行（Rust 侧尚未暴露 DocumentGraph 到 TS）。
+ *   - transforms 由 Rust 侧 `panduck-convert::transform` 在 `DocumentGraph`
+ *     上真实执行。已实现 pass：`replace-text`、`remove-blocks`。
+ *     未实现的名字会被跳过并产生 `panduck.transform.unsupported-pass` 诊断。
  *   - output/publish 通过 Converter 分流到现有 Rust conversion 管线。
  *
  * 四层合同（与设计文档一致）：
@@ -49,26 +51,33 @@ export type InputRoute = {
 /**
  * DocumentTransform 描述一个 IR 变换 pass。
  *
- * v0：transforms 只作声明，不真正执行。Rust 侧有 notedown-ir walk_mut +
- * RewriteResult 基础设施（见 `notedown/src/transform_errors.rs` + `walk.rs`），
- * 但尚未暴露到 Panduck TS。当前把 transforms 序列化到 handlersJson 传给
- * Rust，让 wire contract 先就位。
+ * v0：`transforms` 序列化到 `handlersJson`，由 Rust 侧按 `name` 匹配内置
+ * pass 并在 `DocumentGraph` 上执行。已实现：
  *
- * v1（待 Rust 落地后）：每个 TransformPass 会在 DocumentGraph 上跑一次
- * walk_mut，transform 闭包接受 NodeId + NodeView（TS 侧 IR 视图），返回
- * RewriteResult —— 与 notedown-ir 的 RewriteResult 有限返回值对齐
- * （Keep / Replace / Remove / Unwrap / SkipChildren / Error）。
+ *   - `replace-text`：`params.search` 与 `params.replacement`（默认空串）
+ *     替换所有 `Inline::Text` 内容。
+ *   - `remove-blocks`：`targetKinds` 列出要删除的 block kind
+ *     （`section` / `paragraph` / `list` / `table` / `quote` / `code` /
+ *     `math` / `opaque`），匹配节点的子树一并清理。
+ *
+ * 未实现的名字会被跳过并产生 `panduck.transform.unsupported-pass` 诊断。
+ * 每个 pass 的执行结果写入 report 的 `pipeline.transforms`。
  */
 export type TransformPass = {
-    /** 稳定名称 — 写入 passDescriptor + 诊断。 */
+    /** 稳定名称 — 写入 passDescriptor + 诊断，并匹配 Rust 内置 pass。 */
     readonly name: string;
     /** 可选 traversal 方向 — 默认 bottom-up。 */
     readonly traversal?: "top-down" | "bottom-up";
     /** 可选 predicate —— 只对匹配的 block kind 执行变换。 */
     readonly targetKinds?: readonly string[];
     /**
-     * v0：闭包只作类型占位，不执行。v1 会接受 IR 节点视图 + 返回 RewriteResult。
-     * 保留这个字段是为了让声明式 API 看起来完整，实际执行由 Rust 侧按 name 匹配。
+     * Pass 参数。序列化后由 Rust 内置 pass 读取；schema 随 pass 名称定义，
+     * 例如 `replace-text` 的 `{ search, replacement }`。
+     */
+    readonly params?: Readonly<Record<string, unknown>>;
+    /**
+     * 保留字段 —— 不参与序列化。执行由 Rust 侧按 `name` 匹配，
+     * 不要依赖传函数来改变行为。
      */
     readonly pass?: unknown;
     /** 描述这个 transform 做什么 — 写入 passDescriptor。 */
@@ -189,6 +198,7 @@ export function serializeConversionPlan(
             name: t.name,
             traversal: t.traversal,
             targetKinds: t.targetKinds,
+            params: t.params,
             description: t.description,
         })),
         output: {
