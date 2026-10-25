@@ -1,7 +1,7 @@
 /**
  * PassDescriptor — 一个转换 pass 的能力与边界声明。
  *
- * 用于在 ExtractionProfile / DocumentTransform / RendererPolicy 等
+ * 用于在 ExtractionProfile / DocumentTransform 等
  * 跨模块配置之间声明自己的 I/O 形状、遍历方向、可观测副作用。
  *
  * 设计约束：

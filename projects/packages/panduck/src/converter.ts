@@ -1,7 +1,7 @@
 /**
  * Panduck Converter — TS authoring surface for format conversion.
  *
- * Contract: `Converter.toMarkdown(input, options?)`.
+ * Contract: `Converter.toMarkdown(input, plan: ConversionPlan)`.
  *
  * Input can be any of three projections:
  *   - Page (from Pandark Crawler — has html()/bytes())
@@ -19,18 +19,16 @@
 import { resolve } from "node:path";
 
 import { loadPanduckNode } from "./node/load.js";
-import type { ConverterConfig } from "./renderer-policy.js";
 import type { ConversionPlan } from "./conversion-plan.js";
 import { serializeConversionPlan } from "./conversion-plan.js";
 import {
     createDiagnostic,
     parseReportEnvelope,
     textArg,
-    textListArg,
     u64Arg,
     withUrl,
 } from "./diagnostic.js";
-import type { DiagnosticMessageArg, DiagnosticRecord, LossRecord } from "./diagnostic.js";
+import type { DiagnosticRecord, LossRecord } from "./diagnostic.js";
 
 export type { DiagnosticRecord, DiagnosticSeverity, LossRecord } from "./diagnostic.js";
 
@@ -57,24 +55,6 @@ export type ConverterArtifactLike = {
     readonly finalUrl?: string;
     readonly bodyText?: string;
     readonly bodyBytes: Uint8Array;
-};
-
-// ---------------------------------------------------------------------------
-// Options
-// ---------------------------------------------------------------------------
-
-/**
- * Conversion options.
- *
- * Scope selection belongs to Pandark's ExtractionProfile before bytes reach
- * Panduck. The removed DOM rule chain (`select` / `remove` / `unwrap` /
- * `replace`) is not part of this surface.
- */
-export type ToMarkdownOptions = {
-    /** Format identifier passed to Panduck ("html", "docx", "epub", ...). Default "html". */
-    from?: string;
-    /** Label written into the report provenance when the input is anonymous. */
-    label?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -109,7 +89,7 @@ export type ConverterResult = {
 // Converter
 // ---------------------------------------------------------------------------
 
-/** Public façade over Panduck's Rust conversion pipeline and policy declaration surface. */
+/** Public façade over Panduck's Rust conversion pipeline, driven by `ConversionPlan`. */
 export class Converter {
     private binding: ReturnType<typeof loadPanduckNode>;
 
@@ -118,139 +98,17 @@ export class Converter {
     }
 
     // -----------------------------------------------------------------------
-    // Overloads — 三个入口并存。
-    // -----------------------------------------------------------------------
-
-    /** Legacy entry: format + label options. */
-    async toMarkdown(input: ConverterInput, options?: ToMarkdownOptions): Promise<ConverterResult>;
-    /** New entry: Profile 化 ConverterConfig（含 RendererPolicy）。 */
-    async toMarkdown(input: ConverterInput, config: ConverterConfig): Promise<ConverterResult>;
-    /** Newest entry: ConversionPlan — 面向 IR 的产品级转换编排。 */
-    async toMarkdown(input: ConverterInput, plan: ConversionPlan): Promise<ConverterResult>;
-
-    // -----------------------------------------------------------------------
-    // Implementation — 通过 arg shape 分流。
-    // -----------------------------------------------------------------------
-
-    async toMarkdown(
-        input: ConverterInput,
-        arg?: ToMarkdownOptions | ConverterConfig | ConversionPlan,
-    ): Promise<ConverterResult> {
-        if (arg && isConversionPlan(arg)) {
-            return this.toMarkdownWithPlan(input, arg);
-        }
-        if (arg && isConverterConfig(arg)) {
-            return this.toMarkdownWithPolicy(input, arg);
-        }
-        return this.toMarkdownLegacy(input, arg as ToMarkdownOptions | undefined);
-    }
-
-    // -----------------------------------------------------------------------
-    // Legacy path — format + label
+    // Single entry — ConversionPlan
     // -----------------------------------------------------------------------
 
     /**
-     * Legacy entry — format + label only.
-     * Pipeline:
-     *   1. Materialize input → bytes.
-     *   2. Rust lowering + writer.
-     *   3. Derive status from Rust report.
-     */
-    private async toMarkdownLegacy(
-        input: ConverterInput,
-        options?: ToMarkdownOptions,
-    ): Promise<ConverterResult> {
-        const from = options?.from ?? "html";
-        const { bytes, label, urlHint } = await materializeInput(input, options?.label);
-
-        const diagnostics: DiagnosticRecord[] = [];
-
-        // Empty input short-circuit.
-        if (bytes.length === 0) {
-            diagnostics.push(createDiagnostic({
-                code: "panduck.convert.empty-input",
-                fallback: `Empty input for ${label}`,
-                messageKey: "panduck.diagnostic.emptyInput",
-                component: "convert",
-                severity: "error",
-                stage: "input",
-                args: urlHint ? [["url", textArg(urlHint)]] : [],
-            }));
-            return makeResult("failed", "", diagnostics, label, urlHint);
-        }
-
-        return this.runRustConversion({
-            from,
-            bytes,
-            label,
-            urlHint,
-            diagnostics,
-            handlersJson: undefined,
-            requireNoLoss: false,
-        });
-    }
-
-    // -----------------------------------------------------------------------
-    // Policy path — ConverterConfig + RendererPolicy
-    // -----------------------------------------------------------------------
-
-    /**
-     * New entry — Profile 化 ConverterConfig。
+     * Convert input according to a `ConversionPlan` from `defineConversion`.
      *
-     * 关键差异：
-     *   - 输入直接进入 Rust lowering，没有 TS 侧 DOM 解析、选择或重序列化。
-     *     scope 选择（如果有）由 Pandark ExtractionProfile 在进入 Panduck 之前做掉；
-     *     renderer 这边只读 Notedown IR。
-     *   - `policy.handlers` 只是声明面。TS 侧不执行 handler，Rust lowering
-     *     也不执行 handler —— 跨语言闭包无法通过 wire 传递。带 handlers 时
-     *     产出一条 Warning 诊断，转换继续但不会应用 handler。
+     * The plan owns input routing, IR transforms and publish strategy. There is
+     * no option-based fallback: callers must construct a plan.
      */
-    private async toMarkdownWithPolicy(
-        input: ConverterInput,
-        config: ConverterConfig,
-    ): Promise<ConverterResult> {
-        const from = "html"; // policy 入口只服务于 Pandark 场景，输入是 HTML page
-        const policy = config.rendererPolicy;
-        const { bytes, label, urlHint } = await materializeInput(input, undefined);
-
-        const diagnostics: DiagnosticRecord[] = [];
-
-        if (bytes.length === 0) {
-            diagnostics.push(createDiagnostic({
-                code: "panduck.convert.empty-input",
-                fallback: `Empty input for ${label}`,
-                messageKey: "panduck.diagnostic.emptyInput",
-                component: "convert",
-                severity: "error",
-                stage: "input",
-                args: urlHint ? [["url", textArg(urlHint)]] : [],
-            }));
-            return makeResult("failed", "", diagnostics, label, urlHint);
-        }
-
-        diagnostics.push(createDiagnostic({
-            code: "panduck.convert.policy-active",
-            fallback: `Using RendererPolicy "${policy.name}"`,
-            component: "convert",
-            severity: "info",
-            stage: "convert",
-            args: withUrl([["policyName", textArg(policy.name)]], urlHint),
-        }));
-        reportUnsupportedHandlers(
-            diagnostics,
-            policy.name,
-            Object.keys(policy.handlers ?? {}),
-            urlHint,
-        );
-
-        return this.runRustConversion({
-            from,
-            bytes,
-            label,
-            urlHint,
-            diagnostics,
-            requireNoLoss: false,
-        });
+    async toMarkdown(input: ConverterInput, plan: ConversionPlan): Promise<ConverterResult> {
+        return this.runConversionPlan(input, plan);
     }
 
     // -----------------------------------------------------------------------
@@ -263,9 +121,6 @@ export class Converter {
      * 关键差异：
      *   - **不跑 HTML DOM executor**。没有 CSS selector / DOM mutation / re-serialize。
      *     scope 选择（如果有）由 Pandark ExtractionProfile 在进入 Panduck 之前做掉。
-     *   - **不执行 policy handler**。handler 是 TS 闭包，Rust converter 不执行，
-     *     也无法通过 wire 传递。plan 携带 handlers 时产出一条 Warning 诊断，
-     *     转换继续但不应用 handler。
      *   - **transforms 真实执行**。Rust 侧 `panduck-convert::transform` 解析
      *     plan descriptor 里的 transforms，在 `DocumentGraph` 上跑内置 pass
      *     （`replace-text` / `remove-blocks`），结果写入 report 的
@@ -274,11 +129,9 @@ export class Converter {
      *     `convertMarkdownProjectBytes`，把 index / chapters / assets materialize
      *     到 `publish.directory`，返回的 `publishPath` 指向实际输出目录。
      *
-     * 与 Policy 路径的对比：
-     *   - Policy 只有 output.policy，没有 input.format / transforms / publish。
-     *   - ConversionPlan 是完整的产品级转换合同，覆盖 input → transforms → output → publish。
+     * ConversionPlan 是完整的产品级转换合同，覆盖 input → transforms → output → publish。
      */
-    private async toMarkdownWithPlan(
+    private async runConversionPlan(
         input: ConverterInput,
         plan: ConversionPlan,
     ): Promise<ConverterResult> {
@@ -317,15 +170,7 @@ export class Converter {
             ], urlHint),
         }));
 
-        // (2) output 带 RendererPolicy 时，handlers 无法执行 —— 只报告，不应用。
-        reportUnsupportedHandlers(
-            diagnostics,
-            plan.output.policy?.name,
-            Object.keys(plan.output.policy?.handlers ?? {}),
-            urlHint,
-        );
-
-        // (3) 确定 requireNoLoss（由 plan.output.lossPolicy 决定）。
+        // (2) 确定 requireNoLoss（由 plan.output.lossPolicy 决定）。
         const requireNoLoss = plan.output.lossPolicy === "deny";
 
         if (plan.publish.kind === "markdown-project") {
@@ -496,52 +341,6 @@ export class Converter {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/** Type guard: true if arg is a ConverterConfig (has `rendererPolicy`). */
-function isConverterConfig(arg: object): arg is ConverterConfig {
-    return "rendererPolicy" in arg && (arg as { rendererPolicy?: unknown }).rendererPolicy != null;
-}
-
-/** Type guard: true if arg is a ConversionPlan (has `version: "panduck-conversion-v0"`). */
-function isConversionPlan(arg: object): arg is ConversionPlan {
-    return "version" in arg
-        && (arg as { version?: unknown }).version === "panduck-conversion-v0"
-        && "input" in arg
-        && "output" in arg;
-}
-
-/**
- * 报告 policy handlers 当前无法执行。
- *
- * handler 是 TS 闭包，跨语言 wire 无法传递；Rust converter 也不执行 handler。
- * 这里只产出一条 Warning，转换继续，但不会应用任何 handler。不要在 TS 侧
- * 用 sentinel 或其他方式伪造执行。
- */
-function reportUnsupportedHandlers(
-    diagnostics: DiagnosticRecord[],
-    policyName: string | undefined,
-    handlerKeys: readonly string[],
-    urlHint?: string,
-): void {
-    if (handlerKeys.length === 0) return;
-
-    const name = policyName ?? "<unnamed>";
-    const keysDisplay = handlerKeys.map((key) => `"${key}"`).join(", ");
-    const args: Array<[string, DiagnosticMessageArg]> = [];
-    if (policyName) args.push(["policyName", textArg(policyName)]);
-    args.push(["handlerKeys", textListArg(handlerKeys)]);
-    diagnostics.push(createDiagnostic({
-        code: "panduck.policy.handlers-unsupported",
-        fallback:
-            `RendererPolicy "${name}" declares ${handlerKeys.length} handler(s) [${keysDisplay}] — ` +
-            "handler execution is not available in the TS layer and the Rust converter does not execute handlers. " +
-            "Conversion continues without applying them.",
-        component: "policy",
-        severity: "warning",
-        stage: "rule",
-        args: withUrl(args, urlHint),
-    }));
-}
 
 async function materializeInput(
     input: ConverterInput,

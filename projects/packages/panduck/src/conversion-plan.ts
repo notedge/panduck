@@ -17,10 +17,8 @@
  *   ExtractionProfile  → Pandark — "网页中取什么"
  *   DocumentTransform  → Notedown IR — "语义文档怎么改"（RewriteResult 有限返回值）
  *   ConversionPlan     → Panduck — "如何完成一次格式转换"（本文件）
- *   RendererPolicy     → Panduck — "目标格式怎么写"
  */
 
-import type { MarkdownPolicy } from "./renderer-policy.js";
 import type { DiagnosticRecord } from "./converter.js";
 
 // ---------------------------------------------------------------------------
@@ -85,7 +83,7 @@ export type TransformPass = {
 };
 
 // ---------------------------------------------------------------------------
-// Output — 目标格式 + RendererPolicy
+// Output — 目标格式
 // ---------------------------------------------------------------------------
 
 /** 已知输出格式标识符。v0 只有 markdown writer 已接线。 */
@@ -94,8 +92,6 @@ export type KnownOutputFormat = "markdown";
 export type OutputRoute = {
     /** 目标格式。Panduck 通过这个路由到 notedown-formats 的 export 模块。 */
     readonly format: KnownOutputFormat;
-    /** 可选 RendererPolicy —— 只作声明与诊断，不改变 writer 输出。 */
-    readonly policy?: MarkdownPolicy;
     /** 可选 loss policy。默认 "warn"；"deny" 时任何 loss 都让 status = failed。 */
     readonly lossPolicy?: "warn" | "deny";
 };
@@ -163,7 +159,7 @@ let anonConversionCounter = 0;
  *       { name: "normalize-headings", description: "flatten heading nesting" },
  *       { name: "resolve-references" }
  *     ],
- *     output: { format: "markdown", policy: markdownGfm() },
+ *     output: { format: "markdown" },
  *     publish: { kind: "markdown-project", directory: "./out" }
  *   });
  */
@@ -192,7 +188,6 @@ export function defineConversion(config: ConversionConfig): ConversionPlan {
  * 把 ConversionPlan 的 transforms + output 序列化为 JSON 字符串，
  * 传给 Rust 侧 wire contract。Rust 端只读取 `transforms` 并按 name 匹配
  * 已实现的 pass；未实现的 pass 会记录 diagnostic 并被跳过。
- * RendererPolicy 的 handlers 是 TS 闭包，无法序列化，也不会被执行。
  */
 export function serializeConversionPlan(
     plan: ConversionPlan,
@@ -210,7 +205,6 @@ export function serializeConversionPlan(
         })),
         output: {
             format: plan.output.format,
-            policyName: plan.output.policy?.name,
             lossPolicy: plan.output.lossPolicy ?? "warn",
         },
         publish: plan.publish,
