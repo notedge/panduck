@@ -13,6 +13,31 @@ function sampleHtml(body: string): string {
     return `<!doctype html><html><head></head><body>${body}</body></html>`;
 }
 
+const duplicateImageDocumentXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+  <w:body>
+    <w:p>
+      <w:r>
+        <w:drawing><wp:inline><wp:docPr descr="First"/><a:graphic><a:graphicData><a:blip r:embed="rId1"/></a:graphicData></a:graphic></wp:inline></w:drawing>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:drawing><wp:inline><wp:docPr descr="Second"/><a:graphic><a:graphicData><a:blip r:embed="rId2"/></a:graphicData></a:graphic></wp:inline></w:drawing>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>`, "utf8");
+
+const duplicateImageRelsXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/alpha.png"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/beta.png"/>
+</Relationships>`, "utf8");
+
 test("serializeConversionPlan carries transform params and target kinds", () => {
     const plan = defineConversion({
         id: "serialize-check",
@@ -181,4 +206,84 @@ test("markdown-project publish materializes assets after transforms", async () =
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }
+});
+
+test("markdown-project publish deduplicates identical asset bytes and rewrites references", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-dedupe-"));
+    const outputDir = join(workdir, "site");
+    const samePng = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x00, 0x73, 0x61, 0x6d, 0x65]);
+    try {
+        const docx = storedZip([
+            { path: "word/document.xml", payload: duplicateImageDocumentXml },
+            { path: "word/_rels/document.xml.rels", payload: duplicateImageRelsXml },
+            { path: "word/media/alpha.png", payload: samePng },
+            { path: "word/media/beta.png", payload: samePng },
+        ]);
+        const converter = new Converter();
+        const plan = defineConversion({
+            id: "publish-dedupe-check",
+            input: { format: "docx", label: "duplicate.docx" },
+            output: { format: "markdown" },
+            publish: { kind: "markdown-project", directory: outputDir },
+        });
+
+        const result = await converter.toMarkdown(docx, plan);
+
+        assert.notEqual(result.status, "failed");
+        assert.equal(result.publishPath, outputDir);
+
+        const index = await readFile(join(outputDir, "index.md"), "utf8");
+        const refs = [...index.matchAll(/!\[(First|Second)\]\(([^)]+)\)/g)];
+        assert.equal(refs.length, 2, `both image references must survive publish: ${index}`);
+        const firstPath = refs[0][2];
+        const secondPath = refs[1][2];
+        assert.match(firstPath, /^assets\/[0-9a-f]{16}\.png$/);
+        assert.equal(secondPath, firstPath, "identical bytes must share one content-addressed path");
+        assert.doesNotMatch(index, /media\/(alpha|beta)\.png/, "source asset names must be rewritten");
+
+        const assets = await readdir(join(outputDir, "assets"));
+        assert.deepEqual(assets, [firstPath.slice("assets/".length)], "dedupe must materialize exactly one asset file");
+        const publishedBytes = await readFile(join(outputDir, firstPath));
+        assert.deepEqual(publishedBytes, samePng);
+
+        const report = JSON.parse(result.reportJson);
+        const assetOutput = report.outputs.find(
+            (output: { path?: string }) => output.path === "assets/",
+        );
+        assert.equal(assetOutput?.published_asset_count, 1);
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("empty extracted scope payload fails with a diagnostic instead of empty Markdown", async () => {
+    const converter = new Converter();
+    const plan = defineConversion({
+        id: "empty-scope-check",
+        input: { format: "html", sourceUrl: "https://example.com/empty" },
+        output: { format: "markdown" },
+        publish: { kind: "none" },
+    });
+
+    const result = await converter.toMarkdown(
+        {
+            url: "https://example.com/empty",
+            bytes: () => new Uint8Array(),
+            html: async () => "",
+        },
+        plan,
+    );
+
+    assert.equal(result.status, "failed");
+    assert.equal(result.text, "", "no Markdown may be emitted for an empty scope");
+    assert.equal(result.publishPath, undefined);
+
+    const diagnostic = result.diagnostics.find((d) => d.code === "panduck.convert.empty-input");
+    assert.ok(diagnostic, "empty scope must produce a structured diagnostic");
+    assert.equal(diagnostic.severity, "error");
+    assert.equal(diagnostic.url, "https://example.com/empty");
+
+    const report = JSON.parse(result.reportJson);
+    assert.equal(report.status, "failed");
+    assert.deepEqual(report.outputs, []);
 });
