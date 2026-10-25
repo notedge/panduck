@@ -606,7 +606,12 @@ function makeResult(
         operation: "convert",
         status: reportStatus,
         inputs: [{ path: label, format: "html" }],
-        pipeline: { reader: "html", writer: "markdown", stages: ["read", "ir", "write"] },
+        pipeline: {
+            reader: "html",
+            writer: "markdown",
+            stages: ["read", "ir", "write"],
+            ...(reportStatus === "blocked" ? { blocked_reason: "conversion failed" } : {}),
+        },
         diagnostics: {
             schemaVersion: 1,
             diagnostics: diags,

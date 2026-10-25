@@ -165,7 +165,7 @@ async function runPlan(options: ParsedOptions): Promise<number> {
         const report = createReport({
             operation: "plan",
             toolVersion: ctx.toolVersion,
-            status: routeReady ? "success" : "success_with_loss",
+            status: routeReady ? "success" : "partial",
             inputs: [{ path: inputPath, format: resolved.from }],
             detection: { format: resolved.from, confidence: resolved.from ? "hint" : undefined, hints: resolved.hints },
             pipeline: {
