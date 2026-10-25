@@ -368,6 +368,7 @@ fn block_kind(block: &Block) -> &'static str {
         Block::Quote { .. } => "quote",
         Block::Code { .. } => "code",
         Block::Math { .. } => "math",
+        Block::Diagram { .. } => "diagram",
         Block::Opaque { .. } => "opaque",
     }
 }
@@ -473,7 +474,9 @@ fn rewrite_block(block: &Block, search: &str, replacement: &str) -> Option<(Bloc
                 .collect::<Vec<_>>();
             (occurrences > 0).then(|| (Block::Table { caption, rows }, occurrences))
         }
-        Block::Code { .. } | Block::Math { .. } | Block::Opaque { .. } => None,
+        // Diagram source is authored data, not inline prose, so text
+        // replacement must not rewrite or corrupt it.
+        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Opaque { .. } => None,
     }
 }
 

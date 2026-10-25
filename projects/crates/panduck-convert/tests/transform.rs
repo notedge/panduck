@@ -76,6 +76,34 @@ fn remove_blocks_pass_deletes_matching_block_kind() {
 }
 
 #[test]
+fn replace_text_keeps_diagram_source_and_remove_blocks_targets_diagrams() {
+    use notedown_ir::{Block, DocumentGraph, DocumentId, Inline};
+
+    let mut graph = DocumentGraph::new(DocumentId(1));
+    let diagram = graph.push_block(Block::Diagram {
+        language: "mermaid".to_string(),
+        source: "flowchart TD\n  Hello --> World".to_string(),
+    });
+    graph.push_block(Block::Paragraph { content: vec![Inline::Text { text: "Hello body.".to_string() }] });
+
+    let replace = plan_json(r#"{"name":"replace-text","params":{"search":"Hello","replacement":"Bonjour"}}"#);
+    let outcome = apply_transform_passes(&mut graph, Some(&replace));
+    assert_eq!(outcome.passes[0].changed_nodes, 1, "only the paragraph is rewritten");
+
+    let Block::Diagram { language, source } = &graph.block(diagram).expect("diagram remains").block
+    else {
+        panic!("diagram block expected")
+    };
+    assert_eq!(language, "mermaid");
+    assert!(source.contains("Hello"), "diagram source is not prose: {source}");
+
+    let remove = plan_json(r#"{"name":"remove-blocks","targetKinds":["diagram"]}"#);
+    let outcome = apply_transform_passes(&mut graph, Some(&remove));
+    assert_eq!(outcome.passes[0].changed_nodes, 1);
+    assert!(graph.block(diagram).is_none());
+}
+
+#[test]
 fn remove_blocks_pass_sweeps_descendants_of_removed_section() {
     use notedown_ir::{Block, DocumentGraph, DocumentId, Inline};
 
