@@ -23,9 +23,14 @@ fn html_routes_are_registered_and_reopen_as_markdown() {
 
 #[test]
 fn html_routes_preserve_image_loss_as_reported_semantics() {
-    let output =
-        convert_bytes("html", "html", "image.html", br#"<body><p><img src="picture.png" alt="Picture"></p></body>"#.to_vec(), None)
-            .expect("convert html");
+    let output = convert_bytes(
+        "html",
+        "html",
+        "image.html",
+        br#"<body><p><img src="picture.png" alt="Picture"></p></body>"#.to_vec(),
+        None,
+    )
+    .expect("convert html");
     assert_convert_report(&output, "html");
     assert!(output.html.expect("html output").contains(r#"<img alt="Picture" src="picture.png">"#));
     assert_report_contains_loss_codes(&output.report_json, &["import.html.partial_coverage"]);

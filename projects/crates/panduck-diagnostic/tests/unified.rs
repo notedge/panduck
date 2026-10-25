@@ -34,8 +34,7 @@ fn loss_marker_status_arg_uses_controlled_wire_label() {
         set.push(from_loss_marker(&marker));
         set
     };
-    let json = serde_json::to_string(&DiagnosticEnvelope::from_set(&set))
-        .expect("serialize diagnostic envelope");
+    let json = serde_json::to_string(&DiagnosticEnvelope::from_set(&set)).expect("serialize diagnostic envelope");
     assert!(json.contains("\"severity\""));
     assert!(json.contains("\"partial\""), "status arg must use the controlled label, got {json}");
     assert!(!json.contains("\"Partial\""), "Debug-formatted status must not leak, got {json}");

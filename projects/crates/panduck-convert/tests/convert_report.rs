@@ -27,7 +27,8 @@ fn docx_field_to_markdown_convert_report_lists_field_loss() {
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:body><w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r><w:r><w:t>visible fallback</w:t></w:r></w:p></w:body>
 </w:document>"#;
-    let output = convert_bytes("docx", "markdown", "field.docx", docx_zip(document_xml), None).expect("convert docx with field");
+    let output =
+        convert_bytes("docx", "markdown", "field.docx", docx_zip(document_xml), None).expect("convert docx with field");
 
     assert_convert_report(&output, "markdown");
     assert_report_contains_loss_codes(&output.report_json, &["reader.docx.fields", "import.docx.partial_coverage"]);

@@ -56,7 +56,8 @@ fn docx_to_markdown_project_writes_index_assets_and_report() {
     ]);
 
     let output_dir = std::env::temp_dir().join(format!("panduck-md-project-{}", std::process::id()));
-    let (output, published) = convert_to_markdown_project("docx", "image.docx", zip, &output_dir, None).expect("convert project");
+    let (output, published) =
+        convert_to_markdown_project("docx", "image.docx", zip, &output_dir, None).expect("convert project");
 
     assert_eq!(output.published_assets.len(), 1);
     let asset_path = &output.published_assets[0];
@@ -202,8 +203,10 @@ fn docx_to_markdown_project_is_deterministic_across_repeated_runs() {
     // Report JSON must be identical (no timestamps or nondeterministic fields).
     assert_eq!(output_a.report_json, output_b.report_json);
     assert_eq!(published_a.index_path, dir_a.join("index.md"));
-    assert_eq!(fs::read_to_string(&published_a.index_path).expect("a"),
-               fs::read_to_string(&published_b.index_path).expect("b"));
+    assert_eq!(
+        fs::read_to_string(&published_a.index_path).expect("a"),
+        fs::read_to_string(&published_b.index_path).expect("b")
+    );
 
     let _ = fs::remove_dir_all(&base);
 }
@@ -318,8 +321,8 @@ fn epub_with_image_zip() -> Vec<u8> {
 #[test]
 fn epub_to_markdown_project_materializes_chapter_image() {
     let output_dir = std::env::temp_dir().join(format!("panduck-epub-image-project-{}", std::process::id()));
-    let (output, published) =
-        convert_to_markdown_project("epub", "image.epub", epub_with_image_zip(), &output_dir, None).expect("convert epub project");
+    let (output, published) = convert_to_markdown_project("epub", "image.epub", epub_with_image_zip(), &output_dir, None)
+        .expect("convert epub project");
 
     assert!(output.published_chapters.is_empty());
     assert_eq!(output.published_assets.len(), 1);
@@ -386,8 +389,8 @@ fn multi_chapter_epub_zip() -> Vec<u8> {
 #[test]
 fn epub_to_markdown_project_splits_spine_into_chapters() {
     let output_dir = std::env::temp_dir().join(format!("panduck-epub-chapters-{}", std::process::id()));
-    let (output, published) =
-        convert_to_markdown_project("epub", "book.epub", multi_chapter_epub_zip(), &output_dir, None).expect("convert epub project");
+    let (output, published) = convert_to_markdown_project("epub", "book.epub", multi_chapter_epub_zip(), &output_dir, None)
+        .expect("convert epub project");
 
     assert_eq!(output.published_chapters.len(), 2);
     assert!(output.index_markdown.contains("# Sample Book"));
@@ -536,10 +539,7 @@ fn docx_to_markdown_project_missing_relationship_target_yields_unresolved_asset(
     let (output, published) = convert_to_markdown_project("docx", "broken.docx", zip, &output_dir, None).expect("convert");
 
     assert!(output.published_assets.is_empty(), "no asset bytes available to materialize");
-    assert!(
-        !output.unresolved_assets.is_empty(),
-        "broken relationship must surface an unresolved asset source in the report"
-    );
+    assert!(!output.unresolved_assets.is_empty(), "broken relationship must surface an unresolved asset source in the report");
     assert_convert_project_report(&output, &published);
     assert_report_contains_loss_codes(&output.report_json, &["import.docx.partial_coverage"]);
 
@@ -592,7 +592,8 @@ fn pdf_to_markdown_project_writes_index_and_reopens_text() {
         .expect("pdf bytes");
 
     let output_dir = std::env::temp_dir().join(format!("panduck-pdf-project-{}", std::process::id()));
-    let (output, published) = convert_to_markdown_project("pdf", "sample.pdf", pdf, &output_dir, None).expect("convert pdf project");
+    let (output, published) =
+        convert_to_markdown_project("pdf", "sample.pdf", pdf, &output_dir, None).expect("convert pdf project");
 
     assert!(output.index_markdown.contains("Heading"));
     assert!(output.index_markdown.contains("Body text."));

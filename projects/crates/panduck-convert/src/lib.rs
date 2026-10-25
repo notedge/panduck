@@ -35,11 +35,11 @@ pub use inspect::{
     inspect_docx_index_bytes,
 };
 pub use publish::{PublishedMarkdownProject, publish_bytes, publish_markdown_project, publish_text};
-pub use transform::{TransformOutcome, TransformPassReport, TransformPassStatus, apply_transform_passes};
 pub use readers::{
     read_doc, read_doc_bytes, read_html, read_html_bytes, read_markdown, read_markdown_bytes, read_notedown,
     read_notedown_bytes, read_pdf, read_pdf_bytes,
 };
+pub use transform::{TransformOutcome, TransformPassReport, TransformPassStatus, apply_transform_passes};
 pub use writers::{
     write_document_docx, write_document_html, write_document_markdown, write_document_pdf, write_markdown_project,
 };
@@ -112,13 +112,7 @@ pub struct ConvertOutput {
 /// TS-side `ConversionPlan`. Only its `transforms` array is executed, through
 /// `apply_transform_passes`. Policy handler closures stay in TS — they cannot
 /// cross the wire, and this pipeline does not execute them.
-pub fn convert_bytes(
-    from: &str,
-    to: &str,
-    label: &str,
-    bytes: Vec<u8>,
-    handlers_json: Option<&str>,
-) -> Result<ConvertOutput> {
+pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>, handlers_json: Option<&str>) -> Result<ConvertOutput> {
     let from = from.to_ascii_lowercase();
     let to = to.to_ascii_lowercase();
     if !supports_route(&from, &to) {
@@ -226,7 +220,8 @@ fn build_convert_project_output(
         outputs.push(serde_json::json!({ "path": chapter, "format": "markdown", "published": true }));
     }
     outputs.push(serde_json::json!({ "path": "panduck.report.json", "format": "report", "published": true }));
-    let mut pipeline = serde_json::json!({ "reader": from, "writer": "markdown-project", "stages": ["read", "ir", "write", "materialize"] });
+    let mut pipeline =
+        serde_json::json!({ "reader": from, "writer": "markdown-project", "stages": ["read", "ir", "write", "materialize"] });
     if !transform_outcome.is_empty() {
         pipeline["transforms"] = serde_json::to_value(&transform_outcome.passes).unwrap_or_default();
     }
@@ -277,12 +272,7 @@ pub fn convert_markdown_project_file(
 }
 
 /// Converts a file on disk.
-pub fn convert_file(
-    from: &str,
-    to: &str,
-    input: impl AsRef<Path>,
-    handlers_json: Option<&str>,
-) -> Result<ConvertOutput> {
+pub fn convert_file(from: &str, to: &str, input: impl AsRef<Path>, handlers_json: Option<&str>) -> Result<ConvertOutput> {
     let input = input.as_ref();
     let bytes = match fs::read(input) {
         Ok(bytes) => bytes,

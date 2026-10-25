@@ -314,12 +314,7 @@ pub fn convert_markdown_project_bytes(
 /// TS-side `ConversionPlan`. Only its `transforms` array is executed — policy
 /// handler closures stay in TS and cannot cross the wire.
 #[napi]
-pub fn convert_document(
-    from: String,
-    to: String,
-    input_path: String,
-    handlers_json: Option<String>,
-) -> ConvertResponse {
+pub fn convert_document(from: String, to: String, input_path: String, handlers_json: Option<String>) -> ConvertResponse {
     match convert_file(&from, &to, &input_path, handlers_json.as_deref()) {
         Ok(output) => ConvertResponse {
             exit_code: 0,
