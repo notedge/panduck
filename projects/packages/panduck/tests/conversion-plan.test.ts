@@ -287,6 +287,6 @@ test("empty extracted scope payload fails with a diagnostic instead of empty Mar
     );
 
     const report = JSON.parse(result.reportJson);
-    assert.equal(report.status, "failed");
+    assert.equal(report.status, "blocked");
     assert.deepEqual(report.outputs, []);
 });

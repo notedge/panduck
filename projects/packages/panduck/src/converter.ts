@@ -89,7 +89,7 @@ export type ToMarkdownOptions = {
  * caller should inspect. Only `success` means no required structures were
  * missing and no known loss was detected.
  */
-export type ConverterStatus = "success" | "success_with_loss" | "success_unvalidated" | "failed";
+export type ConverterStatus = "success" | "success_with_loss" | "failed";
 
 /** Result of a Panduck conversion — consumed directly by Pandark Crawler. */
 export type ConverterResult = {
@@ -600,7 +600,7 @@ function makeResult(
     label: string,
     urlHint?: string,
 ): ConverterResult {
-    const reportStatus = status === "failed" ? "failed" : status === "success_with_loss" ? "success_with_loss" : "success";
+    const reportStatus = status === "failed" ? "blocked" : status;
     const reportJson = JSON.stringify({
         schema_version: "panduck.report/v0",
         operation: "convert",

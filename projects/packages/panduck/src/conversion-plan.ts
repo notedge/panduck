@@ -214,7 +214,7 @@ export function serializeConversionPlan(
 
 /** ConversionPlan 执行结果（由 Converter 返回，结构复用 ConverterResult）。 */
 export type ConversionResult = {
-    status: "success" | "success_with_loss" | "success_unvalidated" | "failed";
+    status: "success" | "success_with_loss" | "failed";
     text: string;
     diagnostics: DiagnosticRecord[];
     reportJson: string;

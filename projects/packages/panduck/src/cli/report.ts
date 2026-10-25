@@ -7,8 +7,7 @@ export type ReportStatus =
     | "success"
     | "success_with_loss"
     | "partial"
-    | "blocked"
-    | "failed";
+    | "blocked";
 
 export type LossPolicy = "allow" | "warn" | "deny";
 
