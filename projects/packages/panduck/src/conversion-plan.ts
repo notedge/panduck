@@ -87,8 +87,8 @@ export type TransformPass = {
 // Output — 目标格式
 // ---------------------------------------------------------------------------
 
-/** 已知输出格式标识符。v0 只有 markdown writer 已接线。 */
-export type KnownOutputFormat = "markdown";
+/** 已知输出格式标识符。v0 已接线 markdown / epub。 */
+export type KnownOutputFormat = "markdown" | "epub";
 
 export type OutputRoute = {
     /** 目标格式。Panduck 通过这个路由到 notedown-formats 的 export 模块。 */
@@ -165,9 +165,9 @@ let anonConversionCounter = 0;
  *   });
  */
 export function defineConversion(config: ConversionConfig): ConversionPlan {
-    if (config.output.format !== "markdown") {
+    if (config.output.format !== "markdown" && config.output.format !== "epub") {
         throw new TypeError(
-            `ConversionPlan output.format must be "markdown" (got ${JSON.stringify(config.output.format)}) — v0 has no other writer`,
+            `ConversionPlan output.format must be "markdown" or "epub" (got ${JSON.stringify(config.output.format)}) — v0 has no other writer`,
         );
     }
     const id = config.id ?? `conv-${++anonConversionCounter}`;

@@ -75,8 +75,12 @@ export type ConverterStatus = "success" | "success_with_loss" | "failed";
 export type ConverterResult = {
     /** Conversion status. */
     status: ConverterStatus;
-    /** Primary converted text output — always present even on partial failure. */
+    /** Primary converted text output — always present even on partial failure.
+     *  Empty string for binary output formats (epub, docx, pdf). */
     text: string;
+    /** Binary output for container targets (epub, docx, pdf).
+     *  `undefined` for text targets (markdown, html). */
+    binary?: Uint8Array;
     /** Unified diagnostic array covering input, structure, conversion, loss, and rules. */
     diagnostics: DiagnosticRecord[];
     /** Raw report JSON from Panduck — preserved for auditing. */
@@ -207,6 +211,7 @@ export class Converter {
 
         return this.runRustConversion({
             from,
+            to: plan.output.format,
             bytes,
             label,
             urlHint: plan.input.sourceUrl ?? urlHint,
@@ -299,6 +304,7 @@ export class Converter {
 
     private runRustConversion(ctx: {
         from: string;
+        to: string;
         bytes: Uint8Array;
         label: string;
         urlHint?: string;
@@ -306,7 +312,7 @@ export class Converter {
         handlersJson?: string;
         requireNoLoss: boolean;
     }): Promise<ConverterResult> {
-        const { from, bytes, label, urlHint, diagnostics, handlersJson, requireNoLoss } = ctx;
+        const { from, to, bytes, label, urlHint, diagnostics, handlersJson, requireNoLoss } = ctx;
         const fn = this.binding.convertBytesMemory;
         if (!fn) {
             diagnostics.push(createDiagnostic({
@@ -321,10 +327,10 @@ export class Converter {
             return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
         }
 
-        let response: { exitCode: number; text?: string; reportJson: string } | undefined = undefined;
+        let response: { exitCode: number; text?: string; html?: string; binary?: Uint8Array; reportJson: string } | undefined = undefined;
         let nativePanic: unknown = undefined;
         try {
-            response = fn(from, "markdown", label, bytes, handlersJson);
+            response = fn(from, to, label, bytes, handlersJson);
         } catch (err) {
             nativePanic = err;
         }
@@ -347,13 +353,16 @@ export class Converter {
         reportRustLoss(diagnostics, parsedReport.losses, label, urlHint);
 
         const text = response.text ?? "";
+        const binary = response.binary;
         const status = deriveStatus(diagnostics, {
             lossCount: parsedReport.losses.length,
             exitCode: response.exitCode,
             requireNoLoss,
         });
 
-        return Promise.resolve({ status, text, diagnostics, reportJson: response.reportJson });
+        const result: ConverterResult = { status, text, diagnostics, reportJson: response.reportJson };
+        if (binary) result.binary = binary;
+        return Promise.resolve(result);
     }
 }
 
