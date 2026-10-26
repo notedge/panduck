@@ -497,7 +497,7 @@ fn resolve_block(
                     let (content, item_changed) =
                         resolve_inlines(&item.content, targets, repaired_references, diagnostics, pass_name);
                     changed |= item_changed;
-                    ListItem { content, children: item.children.clone(), number: item.number }
+                    ListItem { content, children: item.children.clone(), number: item.number, is_checked: item.is_checked, is_task: item.is_task }
                 })
                 .collect::<Vec<_>>();
             changed.then(|| Block::List { ordered: *ordered, items })
@@ -524,7 +524,7 @@ fn resolve_block(
                 .collect::<Vec<_>>();
             changed.then(|| Block::Table { caption: caption.clone(), rows })
         }
-        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Opaque { .. } => None,
+        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Opaque { .. } | Block::RawHtml { .. } => None,
     }
 }
 
@@ -641,7 +641,7 @@ fn readable_block_text(block: &Block) -> String {
             Some(caption) => caption.to_string(),
             None => joined_text(rows.iter().flat_map(|row| row.cells.iter()).map(|cell| plain_text_of(&cell.content))),
         },
-        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Opaque { .. } => String::new(),
+        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Opaque { .. } | Block::RawHtml { .. } => String::new(),
     }
 }
 
@@ -711,6 +711,7 @@ fn block_kind(block: &Block) -> &'static str {
         Block::Math { .. } => "math",
         Block::Diagram { .. } => "diagram",
         Block::Opaque { .. } => "opaque",
+        Block::RawHtml { .. } => "raw-html",
     }
 }
 
@@ -787,7 +788,7 @@ fn rewrite_block(block: &Block, search: &str, replacement: &str) -> Option<(Bloc
                 .map(|item| {
                     let (content, count) = rewrite_inlines(&item.content, search, replacement);
                     occurrences += count;
-                    ListItem { content, children: item.children.clone(), number: item.number }
+                    ListItem { content, children: item.children.clone(), number: item.number, is_checked: item.is_checked, is_task: item.is_task }
                 })
                 .collect::<Vec<_>>();
             (occurrences > 0).then(|| (Block::List { ordered: *ordered, items }, occurrences))
@@ -817,7 +818,7 @@ fn rewrite_block(block: &Block, search: &str, replacement: &str) -> Option<(Bloc
         }
         // Diagram source is authored data, not inline prose, so text
         // replacement must not rewrite or corrupt it.
-        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Opaque { .. } => None,
+        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Opaque { .. } | Block::RawHtml { .. } => None,
     }
 }
 

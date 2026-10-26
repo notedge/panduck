@@ -41,14 +41,15 @@ pub use readers::{
 };
 pub use transform::{TransformOutcome, TransformPassReport, TransformPassStatus, apply_transform_passes};
 pub use writers::{
-    write_document_docx, write_document_html, write_document_markdown, write_document_pdf, write_markdown_project,
+    write_document_docx, write_document_epub, write_document_html, write_document_markdown,
+    write_document_pdf, write_markdown_project,
 };
 
 /// Reader formats wired into this build (lowercase).
 pub const READERS: &[&str] = &["docx", "doc", "pdf", "epub", "html", "markdown", "notedown"];
 
 /// Writer formats wired into this build (lowercase).
-pub const WRITERS: &[&str] = &["markdown", "docx", "pdf", "html"];
+pub const WRITERS: &[&str] = &["markdown", "docx", "pdf", "html", "epub"];
 
 /// Whether Panduck has a reader for `from` and a writer for `to`.
 ///
@@ -333,6 +334,10 @@ fn write_target(to: &str, graph: &DocumentGraph) -> Result<(String, Option<Strin
         "html" => {
             let html = write_document_html(graph)?;
             Ok((String::new(), Some(html), None))
+        }
+        "epub" => {
+            let binary = write_document_epub(graph)?;
+            Ok((String::new(), None, Some(binary)))
         }
         other => format_error::fail(AdapterError::unsupported_format(other, "write")),
     }
