@@ -26,9 +26,9 @@ panduck-convert = { path = "projects/crates/panduck-convert" }
 panduck-napi = { path = "projects/crates/panduck-napi" }
 panduck-wasm = { path = "projects/crates/panduck-wasm" }
 # Overlaid by local path `.cargo/config.toml` (git ignored).
-notedown-ir = { git = "https://github.com/notedge/notedown.git", branch = "dev" }
-notedown-formats = { git = "https://github.com/notedge/notedown.git", branch = "dev", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }
-notedown-fixtures = { git = "https://github.com/notedge/notedown.git", branch = "dev" }
+notedown-ir = { git = "https://github.com/notedge/notedown.git", rev = "0a2f60078a6777b26ccf03025784076d9328d7fb" }
+notedown-formats = { git = "https://github.com/notedge/notedown.git", rev = "0a2f60078a6777b26ccf03025784076d9328d7fb", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }
+notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "0a2f60078a6777b26ccf03025784076d9328d7fb" }
 
 # External dependencies
 serde = { version = "1.0.229", features = ["derive"] }
