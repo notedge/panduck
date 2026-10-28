@@ -296,6 +296,6 @@ fn markdown_reference_link_convert_report_matches_loss_count() {
     let output = convert_bytes("markdown", "markdown", "reference.md", source, None).expect("convert");
 
     assert_convert_report(&output, "markdown");
-    assert_eq!(output.loss_count, 1);
-    assert_report_contains_loss_codes(&output.report_json, &["import.markdown.reference_definition_title"]);
+    assert_eq!(output.loss_count, 0, "resolved reference definition title is preserved in IR");
+    assert!(output.report_json.contains("\"complete\":true"));
 }

@@ -43,8 +43,8 @@ fn markdown_to_html_route() {
 fn markdown_reference_link_route_reopens_semantically_and_reports_loss() {
     let source = b"Read [guide][docs].\n\n[docs]: https://example.com/guide \"Docs\"\n".to_vec();
     let output = convert_bytes("markdown", "markdown", "reference.md", source, None).expect("convert");
-    assert!(output.markdown.contains("[guide](https://example.com/guide)"));
-    assert_eq!(output.loss_count, 1, "definition title must be reported as lossy");
+    assert!(output.markdown.contains("[guide](https://example.com/guide \"Docs\")"));
+    assert_eq!(output.loss_count, 0, "resolved reference definition title is preserved in IR");
     let reopened = read_markdown_bytes("reference-output.md", output.markdown.clone()).expect("reopen");
     assert!(reopened.blocks.iter().any(|block| {
         matches!(
