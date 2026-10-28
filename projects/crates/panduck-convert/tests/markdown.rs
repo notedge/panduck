@@ -40,7 +40,7 @@ fn markdown_to_html_route() {
 }
 
 #[test]
-fn markdown_reference_link_route_reopens_semantically_and_reports_loss() {
+fn markdown_reference_link_route_preserves_title_without_loss() {
     let source = b"Read [guide][docs].\n\n[docs]: https://example.com/guide \"Docs\"\n".to_vec();
     let output = convert_bytes("markdown", "markdown", "reference.md", source, None).expect("convert");
     assert!(output.markdown.contains("[guide](https://example.com/guide \"Docs\")"));
