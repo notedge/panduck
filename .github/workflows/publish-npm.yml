@@ -139,7 +139,7 @@ jobs:
           set -euo pipefail
           out="dist/${{ matrix.short }}"
           mkdir -p "$out"
-          src="projects/crates/panduck-napi"
+          src="projects/panduck.rs/exports/panduck-napi"
           node="$(find "$src" -maxdepth 1 -name '*.node' | head -n 1)"
           if [[ -z "$node" ]]; then
             echo "missing native binary under $src" >&2
@@ -192,12 +192,12 @@ jobs:
         run: |
           set -euo pipefail
           pnpm build:wasm
-          test -f projects/packages/panduck-unknown-wasm32/lib/panduck_wasm.js
+          test -f projects/panduck.ts/platforms/panduck-unknown-wasm32/lib/panduck_wasm.js
 
       - uses: actions/upload-artifact@v4
         with:
           name: wasm-lib
-          path: projects/packages/panduck-unknown-wasm32/lib
+          path: projects/panduck.ts/platforms/panduck-unknown-wasm32/lib
           if-no-files-found: error
 
   publish:
@@ -260,7 +260,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: wasm-lib
-          path: projects/packages/panduck-unknown-wasm32/lib
+          path: projects/panduck.ts/platforms/panduck-unknown-wasm32/lib
 
       - name: Strip token-style npmrc (OIDC only)
         shell: bash

@@ -29,7 +29,7 @@ If the route exists, write ./draft.md and ./draft.report.json without touching t
 Summarize any semantic losses from the report.
 ```
 
-Full skill: [`projects/packages/panduck-skills/skills/panduck/SKILL.md`](projects/packages/panduck-skills/skills/panduck/SKILL.md).
+Full skill: [`projects/panduck.ts/packages/panduck-skills/skills/panduck/SKILL.md`](projects/panduck.ts/packages/panduck-skills/skills/panduck/SKILL.md).
 
 ### 2. Command line (global install)
 
@@ -110,7 +110,7 @@ Read the report even when the command exits 0. Use `--strict` if you want losses
 
 ## 🦀 Rust facade
 
-The `panduck` crate is a feature-gated facade over `panduck-types`, `panduck-diagnostic`, and `panduck-convert`. See [`projects/crates/panduck/readme.md`](projects/crates/panduck/readme.md).
+The `panduck` crate is a feature-gated facade over `panduck-types`, `panduck-diagnostic`, and `panduck-convert`. See [`projects/panduck.rs/crates/panduck/readme.md`](projects/panduck.rs/crates/panduck/readme.md).
 
 ```toml
 [dependencies]
@@ -127,7 +127,7 @@ const result = panduck.convertDocument!("docx", "markdown", "./paper.docx");
 console.log(result.reportJson);
 ```
 
-CLI details and npm exports: [`projects/packages/panduck/readme.md`](projects/packages/panduck/readme.md).
+CLI details and npm exports: [`projects/panduck.ts/packages/panduck/readme.md`](projects/panduck.ts/packages/panduck/readme.md).
 
 ## 🔧 When something fails
 

@@ -1,2 +1,4 @@
 packages:
-    - projects/packages/*
+    - projects/panduck.ts/packages/*
+    - projects/panduck.ts/platforms/*
+    - projects/panduck.ts/homepage

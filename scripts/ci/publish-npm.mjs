@@ -58,9 +58,9 @@ const NATIVE_PLATFORMS = [
 
 /** @type {{ dir: string, publishName?: string }[]} */
 const JS_PACKAGES = [
-    { dir: "projects/packages/panduck-unknown-wasm32" },
-    { dir: "projects/packages/panduck-skills" },
-    { dir: "projects/packages/panduck", publishName: "@notedge/panduck" },
+    { dir: "projects/panduck.ts/platforms/panduck-unknown-wasm32" },
+    { dir: "projects/panduck.ts/packages/panduck-skills" },
+    { dir: "projects/panduck.ts/packages/panduck", publishName: "@notedge/panduck" },
 ];
 
 function fail(msg) {
@@ -198,7 +198,7 @@ function publishNative(version, artifactsRoot) {
     let skipped = 0;
     for (const plat of NATIVE_PLATFORMS) {
         const name = `@notedge/panduck-${plat.short}`;
-        const packageDir = path.join(ROOT, "projects/packages", `panduck-${plat.short}`);
+        const packageDir = path.join(ROOT, "projects/panduck.ts/platforms", `panduck-${plat.short}`);
         const artDir = path.join(artifactsRoot, plat.short);
         if (!fs.existsSync(artDir)) {
             console.log(` · ${name} no artifact (${plat.short}) — skip`);

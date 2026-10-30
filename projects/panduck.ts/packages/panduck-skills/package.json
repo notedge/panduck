@@ -6,9 +6,9 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/notedge/panduck.git",
-        "directory": "projects/packages/panduck-skills"
+        "directory": "projects/panduck.ts/packages/panduck-skills"
     },
-    "homepage": "https://github.com/notedge/panduck/tree/dev/projects/packages/panduck-skills",
+    "homepage": "https://github.com/notedge/panduck/tree/dev/projects/panduck.ts/packages/panduck-skills",
     "keywords": [
         "panduck",
         "document-conversion",

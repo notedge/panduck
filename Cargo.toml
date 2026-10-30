@@ -1,11 +1,14 @@
 [workspace]
 resolver = "2"
-members = ["projects/crates/*"]
+members = [
+    "projects/panduck.rs/crates/*",
+    "projects/panduck.rs/exports/*",
+]
 default-members = [
-    "projects/crates/panduck",
-    "projects/crates/panduck-types",
-    "projects/crates/panduck-convert",
-    "projects/crates/panduck-napi",
+    "projects/panduck.rs/crates/panduck",
+    "projects/panduck.rs/crates/panduck-types",
+    "projects/panduck.rs/crates/panduck-convert",
+    "projects/panduck.rs/exports/panduck-napi",
 ]
 
 [workspace.package]
@@ -19,12 +22,12 @@ edition = "2024"
 boost-diagnostic = { git = "https://github.com/oovm/rust-boost", rev = "9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86", default-features = false, features = ["std", "serde"] }
 boost-log = { git = "https://github.com/oovm/rust-boost", rev = "9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86" }
 # Overlaid by local path `.cargo/config.toml` (git ignored).
-panduck = { path = "projects/crates/panduck" }
-panduck-types = { path = "projects/crates/panduck-types" }
-panduck-diagnostic = { path = "projects/crates/panduck-diagnostic" }
-panduck-convert = { path = "projects/crates/panduck-convert" }
-panduck-napi = { path = "projects/crates/panduck-napi" }
-panduck-wasm = { path = "projects/crates/panduck-wasm" }
+panduck = { path = "projects/panduck.rs/crates/panduck" }
+panduck-types = { path = "projects/panduck.rs/crates/panduck-types" }
+panduck-diagnostic = { path = "projects/panduck.rs/crates/panduck-diagnostic" }
+panduck-convert = { path = "projects/panduck.rs/crates/panduck-convert" }
+panduck-napi = { path = "projects/panduck.rs/exports/panduck-napi" }
+panduck-wasm = { path = "projects/panduck.rs/exports/panduck-wasm" }
 # Overlaid by local path `.cargo/config.toml` (git ignored).
 notedown-ir = { git = "https://github.com/notedge/notedown.git", rev = "0a2f60078a6777b26ccf03025784076d9328d7fb" }
 notedown-formats = { git = "https://github.com/notedge/notedown.git", rev = "0a2f60078a6777b26ccf03025784076d9328d7fb", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }

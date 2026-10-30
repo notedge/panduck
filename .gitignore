@@ -24,10 +24,10 @@ pnpm-lock.yaml
 scripts/.placeholder-npm-cache.json
 .cache/npm-placeholder.json
 .env.placeholder.local
-projects/packages/panduck-unknown-wasm32/lib/
-projects/packages/homepage/dist/
-projects/packages/homepage/public/
-projects/crates/panduck-napi/index.d.ts
-projects/crates/panduck-napi/index.js
+projects/panduck.ts/platforms/panduck-unknown-wasm32/lib/
+projects/panduck.ts/homepage/dist/
+projects/panduck.ts/homepage/public/
+projects/panduck.rs/exports/panduck-napi/index.d.ts
+projects/panduck.rs/exports/panduck-napi/index.js
 *.wasm
 *.node
