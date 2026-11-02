@@ -53,6 +53,34 @@
             "value": "2px"
         },
         {
+            "key": { "path": ["radius", "xs"] },
+            "value": "2px"
+        },
+        {
+            "key": { "path": ["radius", "pill"] },
+            "value": "999px"
+        },
+        {
+            "key": { "path": ["space", "1"] },
+            "value": "0.25rem"
+        },
+        {
+            "key": { "path": ["space", "2"] },
+            "value": "0.5rem"
+        },
+        {
+            "key": { "path": ["space", "3"] },
+            "value": "0.75rem"
+        },
+        {
+            "key": { "path": ["space", "4"] },
+            "value": "1rem"
+        },
+        {
+            "key": { "path": ["space", "5"] },
+            "value": "1.5rem"
+        },
+        {
             "key": { "path": ["radius", "md"] },
             "value": "6px"
         },

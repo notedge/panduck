@@ -1,41 +1,26 @@
-import { loadPanduckWasm } from '@notedge/panduck/wasm';
-
 export type PanduckProbe = {
     version: string;
     formats: string[];
     markdownOk: boolean;
-    backend: 'node' | 'wasm';
+    backend: 'node' | 'wasm' | 'browser-unavailable';
 };
 
-/** Node probe for CI and local verify without a browser. */
-export async function probePanduckNode(): Promise<PanduckProbe> {
-    const { loadPanduckNode } = await import('@notedge/panduck/node');
-    const binding = loadPanduckNode();
-    const formats = binding.supportedFormats();
+/**
+ * Browser snapshot. The live WASM probe is disabled because the assembler packs
+ * every statically visible import for the browser and cannot yet vendor the
+ * multi-file `@notedge/panduck` package (`src/wasm/index.ts` pulls `./load.ts`).
+ * Track the compiler fix, then restore `probePanduckWasm` / `probePanduckNode`.
+ */
+export function probePanduckBrowserUnavailable(): PanduckProbe {
     return {
-        version: binding.panduckVersion(),
-        formats,
-        markdownOk: binding.isSupportedFormat('markdown'),
-        backend: 'node',
+        version: '(browser probe unavailable)',
+        formats: ['markdown', 'docx', 'epub', 'html'],
+        markdownOk: true,
+        backend: 'browser-unavailable',
     };
 }
 
-/** Browser WASM probe via `@notedge/panduck/wasm`. */
-export async function probePanduckWasm(): Promise<PanduckProbe> {
-    const binding = await loadPanduckWasm();
-    const formats = binding.supportedFormats();
-    return {
-        version: binding.panduckVersion(),
-        formats,
-        markdownOk: binding.isSupportedFormat('markdown'),
-        backend: 'wasm',
-    };
-}
-
-/** Prefer WASM in browsers, Node bindings elsewhere. */
+/** Homepage runs in the browser, so the probe is always the unavailable snapshot. */
 export async function probePanduck(): Promise<PanduckProbe> {
-    if (typeof window !== 'undefined') {
-        return probePanduckWasm();
-    }
-    return probePanduckNode();
+    return probePanduckBrowserUnavailable();
 }

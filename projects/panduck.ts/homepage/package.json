@@ -13,10 +13,12 @@
     },
     "dependencies": {
         "@notedge/panduck": "0.0.7",
-        "@vmz/core": "0.2.7",
-        "@vmz/ui": "0.2.7"
+        "@vmz/core": "0.3.12",
+        "@vmz/ui": "0.3.12",
+        "@vmz/ui-icons": "0.3.12"
     },
     "devDependencies": {
-        "@vmz/vmz": "0.2.7"
+        "@vmz/plugin": "0.3.12",
+        "@vmz/vmz": "0.3.12"
     }
 }

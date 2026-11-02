@@ -1,4 +1,4 @@
-import { defineConfig } from '@vmz/vmz';
+import { defineConfig } from '@vmz/plugin';
 
 /** Static CDN — publish only `dist/cdn` (profile `name`), not the whole `dist/`. */
 export default defineConfig({

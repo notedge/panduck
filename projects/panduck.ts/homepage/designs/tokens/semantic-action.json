@@ -17,6 +17,10 @@
             "value": "#115e59"
         },
         {
+            "key": { "path": ["action", "primary", "soft"] },
+            "value": "#E6F4FF"
+        },
+        {
             "key": { "path": ["action", "secondary", "background"] },
             "value": "#FFFFFF"
         },
@@ -31,6 +35,18 @@
         {
             "key": { "path": ["action", "secondary", "hover"] },
             "value": "#f8fafc"
+        },
+        {
+            "key": { "path": ["action", "secondary", "active"] },
+            "value": "#F0F1F3"
+        },
+        {
+            "key": { "path": ["action", "link", "foreground"] },
+            "value": "#0f766e"
+        },
+        {
+            "key": { "path": ["action", "link", "hover"] },
+            "value": "#0D9488"
         },
         {
             "key": { "path": ["focus", "ring"] },
