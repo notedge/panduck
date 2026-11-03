@@ -1,3 +1,9 @@
+//! Shared report assertions for the integration test binaries.
+//!
+//! Each test target compiles this module whole, so helpers used by one target
+//! are legitimately unused in another.
+#![allow(dead_code)]
+
 use std::fs;
 
 use panduck_convert::{ConvertOutput, ConvertProjectOutput, PublishedMarkdownProject, SCHEMA_REPORT};

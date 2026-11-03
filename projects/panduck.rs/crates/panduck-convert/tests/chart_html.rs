@@ -121,6 +121,16 @@ fn unsupported_chart_constructs_keep_the_source_and_report_a_span() {
             document[start as usize..end as usize].contains(construct),
             "the span must cover the authored fence body: {losses:?}"
         );
+
+        let diagnostics = report["diagnostics"]["diagnostics"].as_array().expect("diagnostics array");
+        let diagnostic = diagnostics.iter().find(|entry| entry["code"] == *code).unwrap_or_else(|| {
+            panic!("the unified diagnostics must keep the stable chart code {code}: {diagnostics:?}")
+        });
+        let args = diagnostic["message"]["args"].as_array().expect("diagnostic message args");
+        let span_start = args.iter().find(|arg| arg[0] == "span.start").expect("span.start arg")[1]["u64"].as_u64();
+        let span_end = args.iter().find(|arg| arg[0] == "span.end").expect("span.end arg")[1]["u64"].as_u64();
+        assert_eq!(span_start, Some(start), "diagnostic span.start must match the loss span");
+        assert_eq!(span_end, Some(end), "diagnostic span.end must match the loss span");
     }
 }
 
