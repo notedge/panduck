@@ -25,6 +25,7 @@ panduck-diagnostic = { workspace = true }
 notedown-ir = { workspace = true }
 notedown-formats = { workspace = true }
 davinci-diagram = { workspace = true }
+davinci-chart = { workspace = true }
 davinci-types = { workspace = true }
 
 serde = { workspace = true }
@@ -42,7 +43,7 @@ console = ["logger"]
 
 [dev-dependencies]
 boost-log = { workspace = true }
-notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "148fb1928bc8a123e7b3c2bade14fabea7bec7ae" }
+notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "fb0ceff6132112738b84249f052fc90e241b8fb2" }
 serial_test = "3.2.0"
 
 [[test]]
@@ -55,4 +56,5 @@ required-features = ["logger"]
 
 [[test]]
 name = "publish_output"
+
 

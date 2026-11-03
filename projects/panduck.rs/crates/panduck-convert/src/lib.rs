@@ -2,6 +2,7 @@
 #![doc = include_str!("readme.md")]
 
 mod dedupe_assets;
+pub mod chart;
 pub mod diagram;
 mod format_error;
 mod inspect;
@@ -108,6 +109,33 @@ pub struct ConvertOutput {
     pub loss_count: usize,
 }
 
+/// Serialize the IR loss markers with the authored span each one points at.
+///
+/// `notedown-ir` keeps spans in a sidecar alongside the markers, so the report
+/// carries `span.start` and `span.end` per loss. Consumers no longer have to
+/// re-read the source to locate a loss.
+fn losses_with_spans(graph: &DocumentGraph) -> serde_json::Value {
+    let losses: Vec<serde_json::Value> = graph
+        .coverage
+        .loss
+        .iter()
+        .enumerate()
+        .map(|(index, loss)| {
+            let span = graph.loss_span(index);
+            serde_json::json!({
+                "code": loss.code,
+                "message": loss.message,
+                "status": loss.status,
+                "span": match span {
+                    Some(span) => serde_json::json!({ "start": span.start, "end": span.end }),
+                    None => serde_json::Value::Null,
+                },
+            })
+        })
+        .collect();
+    serde_json::Value::Array(losses)
+}
+
 /// Converts bytes from `from` format to `to` format.
 ///
 /// `handlers_json` is an optional JSON-serialized plan descriptor from the
@@ -145,7 +173,7 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>, handlers
         "inputs": [{ "path": label, "format": from }],
         "pipeline": pipeline,
         "coverage": graph.coverage,
-        "losses": graph.coverage.loss,
+        "losses": losses_with_spans(&graph),
         "diagnostics": diagnostic_envelope,
         "outputs": [{ "format": to, "published": true }],
     })
@@ -234,7 +262,7 @@ fn build_convert_project_output(
         "inputs": [{ "path": label, "format": from }],
         "pipeline": pipeline,
         "coverage": graph.coverage,
-        "losses": graph.coverage.loss,
+        "losses": losses_with_spans(graph),
         "diagnostics": diagnostic_envelope,
         "outputs": outputs,
         "unresolved_assets": project.unresolved_asset_sources,
@@ -333,11 +361,17 @@ fn write_target(to: &str, graph: &mut DocumentGraph) -> Result<(String, Option<S
             Ok((String::new(), None, Some(binary)))
         }
         "html" => {
-            let rendered = crate::diagram::render_diagrams(graph);
-            for (loss, span) in rendered.losses.into_iter().zip(rendered.loss_spans) {
+            let diagrams = crate::diagram::render_diagrams(graph);
+            for (loss, span) in diagrams.losses.into_iter().zip(diagrams.loss_spans) {
                 graph.push_loss_at(loss, span);
             }
-            let html = write_document_html(graph, &rendered.scenes)?;
+            let charts = crate::chart::render_charts(graph);
+            for (loss, span) in charts.losses.into_iter().zip(charts.loss_spans) {
+                graph.push_loss_at(loss, span);
+            }
+            let mut scenes = diagrams.scenes;
+            scenes.extend(charts.scenes);
+            let html = write_document_html(graph, &scenes)?;
             Ok((String::new(), Some(html), None))
         }
         "epub" => {

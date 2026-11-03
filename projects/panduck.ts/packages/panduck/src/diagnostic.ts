@@ -64,6 +64,8 @@ export type LossRecord = {
     code: string;
     message: string;
     status: "Resolved" | "Unresolved" | "Partial" | "Unsupported" | "Inferred" | "Lossy";
+    /** Authored byte range the loss points at, when Notedown recorded one. */
+    span: { start: number; end: number } | null;
 };
 
 /** Parsed result of a `panduck.report/v0` payload. */
@@ -349,7 +351,28 @@ function parseLoss(raw: unknown): LossRecord | null {
     ) {
         return null;
     }
-    return { code, message, status: status as LossRecord["status"] };
+    const span = parseLossSpan(raw.span);
+    if (span === undefined) return null;
+    return { code, message, status: status as LossRecord["status"], span };
+}
+
+/** Parse the optional authored byte range; `undefined` reports a malformed span. */
+function parseLossSpan(raw: unknown): { start: number; end: number } | null | undefined {
+    if (raw === null || raw === undefined) return null;
+    if (!isRecord(raw)) return undefined;
+    const start = raw.start;
+    const end = raw.end;
+    if (
+        typeof start !== "number"
+        || typeof end !== "number"
+        || !Number.isInteger(start)
+        || !Number.isInteger(end)
+        || start < 0
+        || end < start
+    ) {
+        return undefined;
+    }
+    return { start, end };
 }
 
 function reportError(
