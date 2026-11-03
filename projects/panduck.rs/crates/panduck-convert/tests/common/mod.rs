@@ -12,7 +12,7 @@ pub fn assert_convert_report(output: &ConvertOutput, writer: &str) {
     let losses = report["losses"].as_array().expect("losses array");
     let coverage_losses = report["coverage"]["loss"].as_array().expect("coverage.loss array");
     assert_eq!(output.loss_count, losses.len());
-    assert_eq!(losses, coverage_losses, "report losses must mirror graph.coverage.loss");
+    assert_losses_mirror_coverage(losses, coverage_losses);
 
     // status is now the AND of capability readiness and IR coverage completeness.
     // All routes currently report Partial on import/export, so we expect the
@@ -116,7 +116,7 @@ pub fn assert_convert_project_report(output: &ConvertProjectOutput, published: &
     let losses = report["losses"].as_array().expect("losses array");
     let coverage_losses = report["coverage"]["loss"].as_array().expect("coverage.loss array");
     assert_eq!(output.loss_count, losses.len());
-    assert_eq!(losses, coverage_losses, "report losses must mirror graph.coverage.loss");
+    assert_losses_mirror_coverage(losses, coverage_losses);
 
     let unresolved = report["unresolved_assets"].as_array().expect("unresolved_assets array");
     assert_eq!(output.unresolved_assets.len(), unresolved.len(), "report unresolved_assets must mirror project export");
@@ -148,6 +148,25 @@ pub fn assert_report_contains_loss_codes(report_json: &str, codes: &[&str]) {
         report["losses"].as_array().expect("losses array").iter().filter_map(|loss| loss["code"].as_str()).collect::<Vec<_>>();
     for code in codes {
         assert!(loss_codes.iter().any(|entry| *entry == *code), "expected loss code {code}, got {loss_codes:?}");
+    }
+}
+
+/// Report losses repeat every coverage marker and add the authored span.
+///
+/// `notedown-ir` stores spans in a sidecar, so the report entry is the marker
+/// plus `span` (`null` when no authored range was recorded).
+fn assert_losses_mirror_coverage(losses: &[Value], coverage_losses: &[Value]) {
+    assert_eq!(losses.len(), coverage_losses.len(), "report losses must mirror graph.coverage.loss");
+    for (loss, coverage) in losses.iter().zip(coverage_losses) {
+        for key in ["code", "message", "status"] {
+            assert_eq!(loss[key], coverage[key], "report loss `{key}` must mirror graph.coverage.loss");
+        }
+        let span = loss.get("span").expect("report losses carry the span key");
+        if !span.is_null() {
+            assert!(span["start"].as_u64().is_some(), "span.start must be a number: {loss}");
+            assert!(span["end"].as_u64().is_some(), "span.end must be a number: {loss}");
+            assert!(span["start"].as_u64() < span["end"].as_u64(), "span must be a non-empty range: {loss}");
+        }
     }
 }
 

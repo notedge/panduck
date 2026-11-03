@@ -88,11 +88,25 @@ test("loss count comes only from IR loss markers, never from diagnostic codes", 
 
 test("reads notedown loss markers as real statistics", () => {
     const parsed = parseReportEnvelope(
-        report([], [{ code: "panduck.semantic.loss", message: "dropped", status: "Partial" }]),
+        report([], [
+            { code: "panduck.semantic.loss", message: "dropped", status: "Partial" },
+            {
+                code: "davinci.chart.unsupported-transform",
+                message: "refused",
+                status: "Unsupported",
+                span: { start: 12, end: 40 },
+            },
+        ]),
         { component: "convert" },
     );
 
     assert.deepEqual(parsed.losses, [
-        { code: "panduck.semantic.loss", message: "dropped", status: "Partial" },
+        { code: "panduck.semantic.loss", message: "dropped", status: "Partial", span: null },
+        {
+            code: "davinci.chart.unsupported-transform",
+            message: "refused",
+            status: "Unsupported",
+            span: { start: 12, end: 40 },
+        },
     ]);
 });
