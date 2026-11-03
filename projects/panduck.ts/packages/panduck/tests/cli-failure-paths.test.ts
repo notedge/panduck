@@ -458,14 +458,14 @@ test("cli fails closed instead of silently ignoring extra batch inputs", async (
     }
 });
 
-test("cli rejects unknown or unenforced budget keys instead of ignoring them", async () => {
+test("cli rejects budget keys outside the four enforced keys", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-budget-keys-"));
     const input = join(workdir, "source.md");
     const output = join(workdir, "source.html");
     await writeFile(input, "# Title\n\nBody.\n", "utf8");
 
     try {
-        for (const budget of ["typo_bytes=10", "layout_nodes=10", "wall_ms=10"]) {
+        for (const budget of ["typo_bytes=10", "layout_nodes=10", "wall_ms=10", "recursion_depth=3", "remote_bytes=1024"]) {
             const run = runPanduck([
                 "convert",
                 input,
@@ -481,6 +481,12 @@ test("cli rejects unknown or unenforced budget keys instead of ignoring them", a
                 "silent",
             ]);
             assert.equal(run.code, 2, `${budget} must be an argument error: ${run.stderr}`);
+            assert.match(run.stderr, /invalid budget: /, `${budget} must name the rejection: ${run.stderr}`);
+            assert.match(
+                run.stderr,
+                /supported keys: input_bytes, output_bytes, decompressed_bytes, container_entries/,
+                `${budget} must list the supported keys: ${run.stderr}`,
+            );
         }
         assert.equal(await exists(output), false, "rejected budgets must not publish the output");
     } finally {
@@ -577,7 +583,7 @@ test("cli rejects declared flags that this build does not implement", async () =
                 "silent",
             ]);
             assert.equal(run.code, 2, `${flag.label} must fail closed: ${run.stderr}`);
-            assert.match(run.stderr, /these flags are not supported by this build/);
+            assert.match(run.stderr, /these flags are not supported in v0/);
             assert.ok(
                 run.stderr.includes(flag.label),
                 `${flag.label} must be named in the rejection: ${run.stderr}`,
@@ -586,7 +592,26 @@ test("cli rejects declared flags that this build does not implement", async () =
 
         const plan = runPanduck(["plan", input, "--to", "html", "--profile", "office", "--json"]);
         assert.equal(plan.code, 2, `plan must reject --profile too: ${plan.stderr}`);
-        assert.match(plan.stderr, /these flags are not supported by this build/);
+        assert.match(plan.stderr, /these flags are not supported in v0/);
+
+        for (const args of [["--from-profile", "gfm"], ["--to-profile", "gfm"]]) {
+            const run = runPanduck([
+                "convert",
+                input,
+                "--from",
+                "markdown",
+                "--to",
+                "html",
+                "-o",
+                output,
+                ...args,
+                "--diagnostics",
+                "silent",
+            ]);
+            assert.equal(run.code, 2, `${args[0]} is not declared and must exit 2: ${run.stderr}`);
+            assert.ok(run.stderr.includes(args[0]), `${args[0]} must be named: ${run.stderr}`);
+        }
+
         assert.equal(await exists(output), false, "rejected flags must not publish the output");
     } finally {
         await rm(workdir, { recursive: true, force: true });

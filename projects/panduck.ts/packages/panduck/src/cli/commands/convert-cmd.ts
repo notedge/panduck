@@ -15,7 +15,6 @@ import { emitJson, emitReport, writeReportFile } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { findFormat, isOperationReady } from "../format-registry.js";
 import {
-    CONTAINER_BUDGET_KEYS,
     CliOptionError,
     readSharedOptions,
     readString,
@@ -73,7 +72,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
         const shared = readSharedOptions(options);
         const unsupported = unsupportedFlags(options);
         if (unsupported.length > 0) {
-            console.error(`these flags are not supported by this build: ${unsupported.join(", ")}`);
+            console.error(`these flags are not supported in v0: ${unsupported.join(", ")}`);
             return ExitCode.InvalidArgs;
         }
         const inputPath = options._[0] ?? readString(options, "input");
@@ -99,17 +98,6 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             return ExitCode.InvalidArgs;
         }
         const outputPath = outputOption ?? outputDirOption;
-
-        const ENFORCED_BUDGET_KEYS = new Set([
-            "input_bytes",
-            "output_bytes",
-            ...CONTAINER_BUDGET_KEYS,
-        ]);
-        const unenforcedBudgets = Object.keys(shared.budgets).filter((key) => !ENFORCED_BUDGET_KEYS.has(key));
-        if (unenforcedBudgets.length > 0) {
-            console.error(`budget keys are not enforced by this build: ${unenforcedBudgets.join(", ")}`);
-            return ExitCode.InvalidArgs;
-        }
 
         const overlapCode = validateConversionPaths(inputPath, outputPath, reportPath);
         if (overlapCode !== null) {

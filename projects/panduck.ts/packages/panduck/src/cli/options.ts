@@ -28,16 +28,8 @@ const ASSET_VALUES = new Set<AssetPolicy>(["preserve", "copy", "embed", "drop"])
 const LINK_VALUES = new Set<LinkPolicy>(["preserve", "rewrite", "drop"]);
 const DIAG_VALUES = new Set<DiagnosticsMode>(["silent", "human", "json"]);
 const STAGE_VALUES = new Set<InspectStage>(["probe", "index", "decode", "validate"]);
-const BUDGET_KEYS = new Set([
-    "input_bytes",
-    "decompressed_bytes",
-    "container_entries",
-    "layout_nodes",
-    "recursion_depth",
-    "remote_bytes",
-    "wall_ms",
-    "output_bytes",
-]);
+/** The complete `--budget` key set for this build. */
+export const BUDGET_KEYS = ["input_bytes", "output_bytes", "decompressed_bytes", "container_entries"] as const;
 
 export function readFlag(options: ParsedOptions, key: string): boolean {
     return options[key] === true;
@@ -84,9 +76,9 @@ const UNSUPPORTED_FLAGS = [
 ] as const;
 
 /**
- * Flags that are declared for contract completeness but have no effect in
- * this build. Accepting them silently would promise behavior the pipeline
- * never applies, so the commands reject them instead.
+ * Flags that are declared for discoverability but have no semantics in v0.
+ * Accepting them silently would promise behavior the pipeline never applies,
+ * so the commands reject them instead.
  */
 export function unsupportedFlags(options: ParsedOptions): string[] {
     const flags: string[] = [];
@@ -146,8 +138,8 @@ export function parseBudgets(raw: string | boolean | string[] | undefined): Reco
             throw new CliOptionError("budget", item);
         }
         const key = item.slice(0, eq).trim();
-        if (!BUDGET_KEYS.has(key)) {
-            throw new CliOptionError("budget", item);
+        if (!BUDGET_KEYS.includes(key as (typeof BUDGET_KEYS)[number])) {
+            throw new CliOptionError("budget", item, `supported keys: ${BUDGET_KEYS.join(", ")}`);
         }
         const value = Number(item.slice(eq + 1).trim());
         if (!Number.isFinite(value) || value < 0) {
@@ -176,8 +168,8 @@ export class CliOptionError extends Error {
     readonly value: string;
     readonly exitCode = ExitCode.InvalidArgs;
 
-    constructor(field: string, value: string) {
-        super(`invalid ${field}: ${value}`);
+    constructor(field: string, value: string, detail?: string) {
+        super(`invalid ${field}: ${value}${detail ? ` (${detail})` : ""}`);
         this.field = field;
         this.value = value;
     }

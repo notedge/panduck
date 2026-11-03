@@ -32,7 +32,7 @@ async function runPlan(options: ParsedOptions): Promise<number> {
         const shared = readSharedOptions(options);
         const unsupported = unsupportedFlags(options);
         if (unsupported.length > 0) {
-            console.error(`these flags are not supported by this build: ${unsupported.join(", ")}`);
+            console.error(`these flags are not supported in v0: ${unsupported.join(", ")}`);
             return ExitCode.InvalidArgs;
         }
         const inputPath = options._[0] ?? readString(options, "input");
