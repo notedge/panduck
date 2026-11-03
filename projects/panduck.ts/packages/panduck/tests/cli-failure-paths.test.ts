@@ -29,27 +29,66 @@ async function exists(path: string): Promise<boolean> {
     }
 }
 
-test("cli publishes the converted text to stdout without polluting the payload", async () => {
+const STDOUT_FORMS: Array<{ label: string; args: string[] }> = [
+    { label: "-o -", args: ["-o", "-"] },
+    { label: "--output -", args: ["--output", "-"] },
+    { label: "--output=-", args: ["--output=-"] },
+];
+
+test("cli publishes the converted text to stdout for every dash form without polluting the payload", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-stdout-"));
     const input = join(workdir, "source.md");
     const markdown = "# Stdout Title\n\nBody paragraph.\n";
     await writeFile(input, markdown, "utf8");
 
     try {
-        const run = runPanduck([
-            "convert",
-            input,
-            "--from",
-            "markdown",
-            "--to",
-            "markdown",
-            "--output=-",
-            "--diagnostics",
-            "silent",
-        ]);
-        assert.equal(run.code, 0, run.stderr);
-        assert.equal(run.stdout.trimEnd(), markdown.trimEnd(), "stdout must carry the document only");
-        assert.ok(!run.stdout.includes("panduck.report/v0"), "no report may leak into the document payload");
+        for (const form of STDOUT_FORMS) {
+            const run = runPanduck([
+                "convert",
+                input,
+                "--from",
+                "markdown",
+                "--to",
+                "markdown",
+                ...form.args,
+                "--diagnostics",
+                "silent",
+            ]);
+            assert.equal(run.code, 0, `${form.label}: ${run.stderr}`);
+            assert.equal(run.stdout.trimEnd(), markdown.trimEnd(), `${form.label} must carry the document only`);
+            assert.ok(
+                !run.stdout.includes("panduck.report/v0"),
+                `${form.label}: no report may leak into the document payload`,
+            );
+        }
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("cli rejects an option token where the output value belongs", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-output-missing-value-"));
+    const input = join(workdir, "source.md");
+    await writeFile(input, "# Stdout Title\n\nBody paragraph.\n", "utf8");
+
+    try {
+        for (const args of [["--output", "--verbose"], ["--output", "-v"]]) {
+            const run = runPanduck([
+                "convert",
+                input,
+                "--from",
+                "markdown",
+                "--to",
+                "markdown",
+                ...args,
+                "--diagnostics",
+                "silent",
+            ]);
+            assert.equal(run.code, 2, `${args.join(" ")} must be an argument error: ${run.stderr}`);
+            assert.match(run.stderr, /missing value for/, `${args.join(" ")} must report the missing value`);
+            assert.match(run.stderr, /--output/);
+            assert.equal(run.stdout, "", `${args.join(" ")} must not reach the document payload`);
+        }
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }

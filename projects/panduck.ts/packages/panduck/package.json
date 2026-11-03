@@ -45,7 +45,7 @@
     },
     "dependencies": {
         "@notedge/panduck-unknown-wasm32": "workspace:*",
-        "@vmz/commander": "^0.2.0"
+        "@vmz/commander": "0.3.13"
     },
     "optionalDependencies": {
         "@notedge/panduck-darwin-arm64": "workspace:*",

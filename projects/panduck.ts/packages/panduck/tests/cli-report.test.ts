@@ -94,31 +94,40 @@ test("cli writes the blocked report to the file when the publish is refused", as
     }
 });
 
-test("cli sends the report to stdout when the report path is a dash", async () => {
+test("cli sends the report to stdout for every dash form of the report path", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-report-stdout-"));
     const input = join(workdir, "source.md");
-    const output = join(workdir, "source.html");
     await writeFile(input, SOURCE, "utf8");
 
     try {
-        const run = runPanduck([
-            "convert",
-            input,
-            "--from",
-            "markdown",
-            "--to",
-            "html",
-            "--output",
-            output,
-            "--report=-",
-            "--diagnostics",
-            "silent",
-        ]);
-        assert.equal(run.code, 0, run.stderr);
-        const report = JSON.parse(run.stdout) as CliReport;
-        assert.equal(report.schema_version, "panduck.report/v0");
-        assert.equal(report.status, "success");
-        assert.ok(!run.stdout.includes("<h1"), "the document payload must not share stdout with the report");
+        const forms: string[][] = [
+            ["--report", "-"],
+            ["--report=-"],
+        ];
+        for (const [index, args] of forms.entries()) {
+            const output = join(workdir, `report-stdout-${index}.html`);
+            const run = runPanduck([
+                "convert",
+                input,
+                "--from",
+                "markdown",
+                "--to",
+                "html",
+                "--output",
+                output,
+                ...args,
+                "--diagnostics",
+                "silent",
+            ]);
+            assert.equal(run.code, 0, `${args.join(" ")}: ${run.stderr}`);
+            const report = JSON.parse(run.stdout) as CliReport;
+            assert.equal(report.schema_version, "panduck.report/v0");
+            assert.equal(report.status, "success");
+            assert.ok(
+                !run.stdout.includes("<h1"),
+                `${args.join(" ")}: the document payload must not share stdout with the report`,
+            );
+        }
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }
@@ -130,21 +139,25 @@ test("cli rejects a request that puts both the document and the report on stdout
     await writeFile(input, SOURCE, "utf8");
 
     try {
-        const run = runPanduck([
-            "convert",
-            input,
-            "--from",
-            "markdown",
-            "--to",
-            "markdown",
-            "--output=-",
-            "--report=-",
-            "--diagnostics",
-            "silent",
-        ]);
-        assert.equal(run.code, 2, "the conflicting channels must be an argument error");
-        assert.match(run.stderr, /stdout cannot carry both the document and the report/);
-        assert.equal(run.stdout, "", "no partial payload may reach stdout");
+        for (const args of [
+            ["-o", "-", "--report=-"],
+            ["--output", "-", "--report", "-"],
+        ]) {
+            const run = runPanduck([
+                "convert",
+                input,
+                "--from",
+                "markdown",
+                "--to",
+                "markdown",
+                ...args,
+                "--diagnostics",
+                "silent",
+            ]);
+            assert.equal(run.code, 2, `${args.join(" ")} must be an argument error: ${run.stderr}`);
+            assert.match(run.stderr, /stdout cannot carry both the document and the report/);
+            assert.equal(run.stdout, "", `${args.join(" ")}: no partial payload may reach stdout`);
+        }
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }
