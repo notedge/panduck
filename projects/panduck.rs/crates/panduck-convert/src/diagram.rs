@@ -59,7 +59,7 @@ pub fn render_mermaid_diagrams(graph: &DocumentGraph) -> RenderedDiagrams {
                     });
                     continue;
                 }
-                match lowered.scene.to_svg() {
+                match lowered.scene.to_svg_with_hooks(&format!("diagram-{}", node.id.0), "diagram") {
                     Ok(svg) => {
                         rendered.scenes.insert(node.id, RenderedDiagram { svg });
                     }

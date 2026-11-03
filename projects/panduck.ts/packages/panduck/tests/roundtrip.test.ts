@@ -73,9 +73,9 @@ test("mermaid diagrams survive the markdown to html to markdown roundtrip as dia
     assert.equal(toHtml.code, 0, toHtml.stderr || toHtml.stdout);
 
     const html = await readFile(htmlPath, "utf8");
-    assert.match(html, /<figure class="notedown-diagram" data-diagram-language="mermaid"/, "the diagram must render as a real figure");
+    assert.match(html, /<figure class="diagram" data-diagram-language="mermaid"/, "the diagram must render as a real figure");
     assert.match(html, /<svg[^>]*viewBox="/, "the figure must embed a vector scene, not plain text");
-    assert.ok(!html.includes("<pre data-diagram-language"), "a rendered diagram must not be downgraded to a source block");
+    assert.ok(!html.includes('<pre class="diagram" data-diagram-language'), "a rendered diagram must not be downgraded to a source block");
 
     const toMarkdown = runPanduck(["convert", htmlPath, "--from", "html", "--to", "markdown", "-o", backPath, "--diagnostics", "silent"]);
     assert.equal(toMarkdown.code, 0, toMarkdown.stderr || toMarkdown.stdout);

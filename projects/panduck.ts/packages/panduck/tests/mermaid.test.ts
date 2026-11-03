@@ -43,11 +43,11 @@ test("cli converts a mermaid fence into a real rendered svg figure", async () =>
     assert.equal(run.code, 0, run.stderr || run.stdout);
 
     const html = await readFile(output, "utf8");
-    assert.match(html, /<figure class="notedown-diagram" data-diagram-language="mermaid"/, "the diagram must render as a figure");
+    assert.match(html, /<figure class="diagram" data-diagram-language="mermaid"/, "the diagram must render as a figure");
     assert.match(html, /<svg[^>]*viewBox="/, "the figure must carry a real inline SVG scene");
     assert.match(html, /data-diagram-source-hex="[0-9a-f]+"/, "the authored source must ride along for round-trip");
     assert.match(html, /Closing paragraph\./);
-    assert.ok(!html.includes("<pre data-diagram-language"), "a rendered diagram must not keep the source fallback");
+    assert.ok(!html.includes('<pre class="diagram" data-diagram-language'), "a rendered diagram must not keep the source fallback");
 
     const report = parseCliReport(run.stdout);
     assert.equal(report.status, "success", `clean render must stay loss-free: ${run.stdout}`);
@@ -64,7 +64,7 @@ test("cli keeps broken mermaid as visible source and reports structured loss", a
     assert.equal(run.code, 0, `warn policy publishes the fallback: ${run.stderr}`);
 
     const html = await readFile(output, "utf8");
-    assert.match(html, /<pre data-diagram-language="mermaid"/, "failed renders keep the visible source block");
+    assert.match(html, /<pre class="diagram" data-diagram-language="mermaid"/, "failed renders keep the visible source block");
     assert.match(html, /this is not a mermaid diagram at all/);
     assert.ok(!html.includes("<figure"), "no figure may be emitted for a failed render");
 
@@ -77,6 +77,30 @@ test("cli keeps broken mermaid as visible source and reports structured loss", a
 
     const denied = runPanduck(["convert", input, "--from", "markdown", "--to", "html", "-o", join(workdir, "denied.html"), "--loss", "deny", "--diagnostics", "json"]);
     assert.equal(denied.code, 1, "deny policy must fail the conversion on render loss");
+});
+
+test("cli namespaces ids per diagram and keeps classes scoped", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-mermaid-namespaced-"));
+    const input = join(workdir, "two.md");
+    const output = join(workdir, "two.html");
+    const twoDiagrams = ["# Two", "", "```mermaid", "flowchart LR", "  A --> B", "```", "", "```mermaid", "flowchart LR", "  A --> B", "```", ""].join("\n");
+    await writeFile(input, twoDiagrams, "utf8");
+
+    const run = runPanduck(["convert", input, "--from", "markdown", "--to", "html", "-o", output, "--diagnostics", "silent"]);
+    assert.equal(run.code, 0, run.stderr || run.stdout);
+
+    const html = await readFile(output, "utf8");
+    const ids = [...html.matchAll(/ id="([^"]+)"/g)].map((match) => match[1]);
+    assert.equal(new Set(ids).size, ids.length, `duplicate ids across diagrams: ${ids.join(", ")}`);
+    assert.ok(
+        ids.filter((id) => !/^node-\d+$/.test(id)).every((id) => id.startsWith("diagram-")),
+        `diagram ids carry the page namespace: ${ids.join(", ")}`,
+    );
+    assert.match(html, /<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" class="diagram"/);
+    assert.match(html, /class="diagram-node"/);
+    for (const bare of ['class="node"', 'class="edge"', 'class="label"', 'class="cluster"']) {
+        assert.ok(!html.includes(bare), `bare class ${bare} must not leak into the host page`);
+    }
 });
 
 test("cli mermaid html output is byte stable across runs", async () => {
@@ -101,7 +125,7 @@ test("node binding renders mermaid inline through the in-memory entry", () => {
     const response = convert("markdown", "html", "diagram.md", new TextEncoder().encode(FLOWCHART_DOC));
     assert.equal(response.exitCode, 0, response.reportJson);
     assert.ok(response.html, "the html target must return the html payload on the binding");
-    assert.match(response.html!, /<figure class="notedown-diagram"/);
+    assert.match(response.html!, /<figure class="diagram"/);
     assert.match(response.html!, /<svg/);
 
     const report = JSON.parse(response.reportJson) as CliReport;
