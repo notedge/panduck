@@ -110,19 +110,26 @@ fn point_chart_renders_one_circle_per_row() {
     assert_eq!(output.loss_count, 0, "{}", output.report_json);
 }
 
-const REJECTIONS: &[(&str, &str, &str)] = &[
+/// `(code, json path, exact rejected text, readable needle, spec)`.
+const REJECTIONS: &[(&str, &str, &str, &str, &str)] = &[
     (
         "davinci.chart.unsupported-transform",
-        "transform",
+        "$.transform",
+        r#"[{"filter":"datum.a > 0"}]"#,
+        "filter",
         r#"{"data":{"values":[{"a":1}]},"transform":[{"filter":"datum.a > 0"}],"mark":"bar","encoding":{"x":{"field":"a","type":"quantitative"},"y":{"field":"a","type":"quantitative"}}}"#,
     ),
     (
         "davinci.chart.unsupported-view",
+        "$.layer",
+        r#"[{"mark":"bar","encoding":{"x":{"field":"a","type":"quantitative"}}}]"#,
         "layer",
         r#"{"layer":[{"mark":"bar","encoding":{"x":{"field":"a","type":"quantitative"}}}]}"#,
     ),
     (
         "davinci.chart.remote-data",
+        "$.data.url",
+        r#""https://example.com/data.json""#,
         "url",
         r#"{"data":{"url":"https://example.com/data.json"},"mark":"bar","encoding":{"x":{"field":"a","type":"quantitative"}}}"#,
     ),
@@ -130,7 +137,7 @@ const REJECTIONS: &[(&str, &str, &str)] = &[
 
 #[test]
 fn unsupported_chart_constructs_keep_the_source_and_report_a_span() {
-    for (code, construct, spec) in REJECTIONS {
+    for (code, path, rejected, needle, spec) in REJECTIONS {
         let output = html_of("vega-lite", spec);
         let html = output.html.as_deref().expect("html output");
 
@@ -138,7 +145,7 @@ fn unsupported_chart_constructs_keep_the_source_and_report_a_span() {
             html.contains(r#"<pre class="chart" data-chart-language="vega-lite""#),
             "a refused chart must keep its source visible: {html}"
         );
-        assert!(html.contains(construct), "the authored construct must stay readable: {html}");
+        assert!(html.contains(needle), "the authored construct must stay readable: {html}");
         assert!(!html.contains("<figure"), "a refused chart must not emit a figure: {html}");
         assert_eq!(report_status(&output.report_json), "success_with_loss", "{code}");
 
@@ -148,13 +155,17 @@ fn unsupported_chart_constructs_keep_the_source_and_report_a_span() {
         let loss = &losses[0];
         assert_eq!(loss["code"], *code, "{losses:?}");
         assert_eq!(loss["status"], "Unsupported", "{losses:?}");
+        assert!(
+            loss["message"].as_str().expect("loss message").contains(path),
+            "the loss must name the JSON path `{path}`: {losses:?}"
+        );
         let start = loss["span"]["start"].as_u64().expect("span.start must be a real number");
         let end = loss["span"]["end"].as_u64().expect("span.end must be a real number");
         assert!(start > 0 && end > start, "the authored span must be a non-empty range: {losses:?}");
         let document = chart_doc("vega-lite", spec);
-        assert!(
-            document[start as usize..end as usize].contains(construct),
-            "the span must cover the authored fence body: {losses:?}"
+        assert_eq!(
+            &document[start as usize..end as usize], *rejected,
+            "the span must cover exactly the rejected JSON value: {losses:?}"
         );
 
         let diagnostics = report["diagnostics"]["diagnostics"].as_array().expect("diagnostics array");
@@ -172,11 +183,12 @@ fn unsupported_chart_constructs_keep_the_source_and_report_a_span() {
 }
 
 #[test]
-fn rejected_chart_loss_points_at_the_authored_block_span() {
+fn rejected_chart_loss_points_at_the_rejected_value_not_the_whole_fence() {
     use notedown_ir::{Block, DocumentGraph, DocumentId, SourceSpan};
 
-    let source = REJECTIONS[0].2;
+    let (_, _, rejected, _, source) = REJECTIONS[0];
     let fence_start = 42;
+    let local_start = source.find(rejected).expect("the rejected value exists in the spec");
     let mut graph = DocumentGraph::new(DocumentId(1));
     graph.push_block_at(
         Block::Chart { language: "vega-lite".to_string(), source: source.to_string() },
@@ -188,8 +200,8 @@ fn rejected_chart_loss_points_at_the_authored_block_span() {
     assert_eq!(rendered.loss_spans.len(), rendered.losses.len(), "loss spans stay aligned with losses");
     assert_eq!(
         rendered.loss_spans[0],
-        SourceSpan::new(fence_start, fence_start + source.len()),
-        "the chart loss carries the authored block span"
+        SourceSpan::new(fence_start + local_start, fence_start + local_start + rejected.len()),
+        "the chart loss promotes the frontend span to the document offset"
     );
     assert!(rendered.scenes.is_empty(), "a refused chart produces no scene");
 }

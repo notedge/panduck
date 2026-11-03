@@ -253,12 +253,22 @@ pub fn diagnostics_from_graph(graph: &DocumentGraph) -> DiagnosticSet {
     set
 }
 
-/// Authoring block id whose recorded span is exactly `span`.
+/// Authoring block id whose recorded span contains `span`.
 ///
-/// Fence losses are pushed with the fence body span, so an exact match recovers
-/// the block id that the IR does not attach to the loss marker itself.
+/// A loss span may either be the fence body itself or a narrower range inside
+/// it, depending on how precise the frontend is. Containment recovers the block
+/// in both cases, and the innermost block wins so nested blocks never steal a
+/// loss from the fence that authored it.
 fn block_id_at_span(graph: &DocumentGraph, span: SourceSpan) -> Option<u64> {
-    graph.blocks.iter().find(|node| graph.block_span(node.id) == Some(span)).map(|node| node.id.0)
+    graph
+        .blocks
+        .iter()
+        .filter_map(|node| {
+            let block = graph.block_span(node.id)?;
+            (block.start <= span.start && span.end <= block.end).then(|| (block.end - block.start, node.id.0))
+        })
+        .min_by_key(|candidate| candidate.0)
+        .map(|candidate| candidate.1)
 }
 
 #[cfg(feature = "logger")]

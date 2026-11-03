@@ -18,6 +18,8 @@ struct Row {
     source: &'static str,
     code: &'static str,
     span_text: &'static str,
+    /// JSON path the rejection names, for languages that address structure.
+    path: Option<&'static str>,
 }
 
 const CATALOG: [Row; 4] = [
@@ -25,25 +27,29 @@ const CATALOG: [Row; 4] = [
         language: "mermaid",
         source: "sequenceDiagram\n  participant Alice\n  participant Bob\n  Note over Alice,Bob: shared\n  Alice->>Bob: Hello\n",
         code: "davinci.diagram.unsupported",
-        span_text: "sequenceDiagram\n  participant Alice\n  participant Bob\n  Note over Alice,Bob: shared\n  Alice->>Bob: Hello\n",
+        span_text: "Note over Alice,Bob: shared",
+        path: None,
     },
     Row {
         language: "dot",
         source: "digraph {\n  a [label=<b>bold</b>]\n}\n",
         code: "davinci.diagram.unsupported",
         span_text: "<b>bold</b>",
+        path: None,
     },
     Row {
         language: "plantuml",
         source: "@startuml\nskinparam monochrome true\n@enduml\n",
         code: "davinci.diagram.unsupported",
         span_text: "skinparam monochrome true",
+        path: None,
     },
     Row {
         language: "vega-lite",
         source: r#"{"data":{"values":[{"t":1,"v":10}]},"mark":"line","encoding":{"x":{"field":"t","type":"quantitative"},"y":{"field":"v","type":"quantitative"}},"transform":[{"calculate":"1","as":"k"}]}"#,
         code: "davinci.chart.unsupported-transform",
-        span_text: r#"{"data":{"values":[{"t":1,"v":10}]},"mark":"line","encoding":{"x":{"field":"t","type":"quantitative"},"y":{"field":"v","type":"quantitative"}},"transform":[{"calculate":"1","as":"k"}]}"#,
+        span_text: r#"[{"calculate":"1","as":"k"}]"#,
+        path: Some("$.transform"),
     },
 ];
 
@@ -70,6 +76,12 @@ fn every_catalog_rejection_reports_the_documented_code_and_span() {
         let start = span["start"].as_u64().expect("span start") as usize;
         let end = span["end"].as_u64().expect("span end") as usize;
         assert_eq!(&document[start..end], row.span_text, "{}: the span points at the rejected text", row.language);
+
+        let message =
+            losses.iter().find(|loss| loss["code"] == row.code).and_then(|loss| loss["message"].as_str()).expect("loss message");
+        if let Some(path) = row.path {
+            assert!(message.contains(path), "{}: the message names `{path}`: {message}", row.language);
+        }
     }
 }
 

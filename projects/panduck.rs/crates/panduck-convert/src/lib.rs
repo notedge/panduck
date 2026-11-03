@@ -9,6 +9,7 @@ mod inspect;
 mod publish;
 mod readers;
 pub mod transform;
+mod span;
 mod writers;
 
 use std::{fs, path::Path};

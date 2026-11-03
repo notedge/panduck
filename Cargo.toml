@@ -29,13 +29,13 @@ panduck-convert = { path = "projects/panduck.rs/crates/panduck-convert" }
 panduck-napi = { path = "projects/panduck.rs/exports/panduck-napi" }
 panduck-wasm = { path = "projects/panduck.rs/exports/panduck-wasm" }
 # Overlaid by local path `.cargo/config.toml` (git ignored).
-notedown-ir = { git = "https://github.com/notedge/notedown.git", rev = "325abec1bc3c04f14cd935e2cf102e42b382bdc6" }
-notedown-formats = { git = "https://github.com/notedge/notedown.git", rev = "325abec1bc3c04f14cd935e2cf102e42b382bdc6", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }
-notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "325abec1bc3c04f14cd935e2cf102e42b382bdc6" }
+notedown-ir = { git = "https://github.com/notedge/notedown.git", rev = "4b57c4c2738c2519681a08d1efc776a0837eb43a" }
+notedown-formats = { git = "https://github.com/notedge/notedown.git", rev = "4b57c4c2738c2519681a08d1efc776a0837eb43a", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }
+notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "4b57c4c2738c2519681a08d1efc776a0837eb43a" }
 # DaVinci diagram chain (same repository, same rev as notedown-*).
-davinci-diagram = { git = "https://github.com/notedge/notedown.git", rev = "325abec1bc3c04f14cd935e2cf102e42b382bdc6" }
-davinci-chart = { git = "https://github.com/notedge/notedown.git", rev = "325abec1bc3c04f14cd935e2cf102e42b382bdc6", features = ["vega-lite"] }
-davinci-types = { git = "https://github.com/notedge/notedown.git", rev = "325abec1bc3c04f14cd935e2cf102e42b382bdc6" }
+davinci-diagram = { git = "https://github.com/notedge/notedown.git", rev = "4b57c4c2738c2519681a08d1efc776a0837eb43a" }
+davinci-chart = { git = "https://github.com/notedge/notedown.git", rev = "4b57c4c2738c2519681a08d1efc776a0837eb43a", features = ["vega-lite"] }
+davinci-types = { git = "https://github.com/notedge/notedown.git", rev = "4b57c4c2738c2519681a08d1efc776a0837eb43a" }
 
 # External dependencies
 serde = { version = "1.0.229", features = ["derive"] }

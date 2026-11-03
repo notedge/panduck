@@ -17,6 +17,8 @@ use davinci_diagram::{dot_to_scene, mermaid_to_scene, plantuml_to_scene};
 use notedown_formats::export::html::RenderedDiagram;
 use notedown_ir::{Block, DocumentGraph, LossMarker, NodeId, SemanticStatus, SourceSpan};
 
+use crate::span::absolute_span;
+
 /// Diagram scenes rendered for the HTML writer plus the losses they caused.
 #[derive(Default)]
 pub struct RenderedDiagrams {
@@ -32,13 +34,6 @@ impl RenderedDiagrams {
     fn push_loss(&mut self, marker: LossMarker, span: Option<SourceSpan>) {
         self.losses.push(marker);
         self.loss_spans.push(span);
-    }
-}
-
-fn absolute_span(block: Option<SourceSpan>, local: Option<std::ops::Range<usize>>) -> Option<SourceSpan> {
-    match (block, local) {
-        (Some(block), Some(local)) => SourceSpan::new(block.start as usize + local.start, block.start as usize + local.end),
-        _ => block,
     }
 }
 

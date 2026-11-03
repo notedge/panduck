@@ -18,6 +18,8 @@ use davinci_chart::vega_lite;
 use notedown_formats::export::html::RenderedDiagram;
 use notedown_ir::{Block, DocumentGraph, LossMarker, NodeId, SemanticStatus, SourceSpan};
 
+use crate::span::absolute_span;
+
 /// Chart scenes rendered for the HTML writer plus the losses they caused.
 #[derive(Default)]
 pub struct RenderedCharts {
@@ -63,7 +65,7 @@ pub fn render_charts(graph: &DocumentGraph) -> RenderedCharts {
                         message: error.message().to_string(),
                         status: SemanticStatus::Unsupported,
                     },
-                    block_span,
+                    absolute_span(block_span, error.span()),
                 );
                 continue;
             }
