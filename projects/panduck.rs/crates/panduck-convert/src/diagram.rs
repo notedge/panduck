@@ -1,6 +1,6 @@
 //! Host-side diagram rendering through the DaVinci diagram chain.
 //!
-//! `notedown-formats` lowers explicit Mermaid and DOT fences to
+//! `notedown-formats` lowers explicit Mermaid, DOT, and PlantUML fences to
 //! `Block::Diagram`. This module lowers those blocks with `davinci-diagram` and
 //! serializes each resolved display scene to SVG, keyed by the authoring block
 //! id, so the HTML writer can embed real vector output instead of the
@@ -13,7 +13,7 @@
 
 use std::collections::HashMap;
 
-use davinci_diagram::{dot_to_scene, mermaid_to_scene};
+use davinci_diagram::{dot_to_scene, mermaid_to_scene, plantuml_to_scene};
 use notedown_formats::export::html::RenderedDiagram;
 use notedown_ir::{Block, DocumentGraph, LossMarker, NodeId, SemanticStatus};
 
@@ -26,7 +26,8 @@ pub struct RenderedDiagrams {
     pub losses: Vec<LossMarker>,
 }
 
-/// Render every Mermaid or DOT `Block::Diagram` in `graph` to an SVG scene.
+/// Render every Mermaid, DOT, or PlantUML `Block::Diagram` in `graph` to an SVG
+/// scene.
 ///
 /// Non-fatal lowering diagnostics (approximations, partially unsupported
 /// statements) keep the rendered scene but record `Partial` loss. Fatal
@@ -44,6 +45,8 @@ pub fn render_diagrams(graph: &DocumentGraph) -> RenderedDiagrams {
             mermaid_to_scene(source)
         } else if language.eq_ignore_ascii_case("dot") {
             dot_to_scene(source)
+        } else if language.eq_ignore_ascii_case("plantuml") || language.eq_ignore_ascii_case("puml") {
+            plantuml_to_scene(source)
         } else {
             continue;
         };

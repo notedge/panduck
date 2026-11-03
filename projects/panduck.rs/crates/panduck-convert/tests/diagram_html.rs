@@ -114,3 +114,21 @@ fn multiple_identical_diagrams_get_unique_namespaced_ids_and_scoped_classes() {
         assert!(!html.contains(bare), "bare class `{bare}` must not appear: {html}");
     }
 }
+
+#[test]
+fn puml_alias_reaches_the_plantuml_lowering() {
+    use notedown_ir::{Block, DocumentGraph, DocumentId};
+
+    let source = "@startuml\nclass Parser\nclass Renderer\nParser <|-- Renderer\n@enduml\n";
+    let mut graph = DocumentGraph::new(DocumentId(1));
+    graph.push_block(Block::Diagram { language: "puml".to_string(), source: source.to_string() });
+
+    let rendered = panduck_convert::diagram::render_diagrams(&graph);
+    assert!(rendered.losses.is_empty(), "the alias must lower cleanly: {:?}", rendered.losses);
+    assert_eq!(rendered.scenes.len(), 1, "the alias must render exactly one scene");
+
+    let scene = rendered.scenes.values().next().expect("rendered scene");
+    assert!(scene.svg.contains(r#"class="diagram""#), "{}", scene.svg);
+    assert!(scene.svg.contains(r#"data-role="node""#), "{}", scene.svg);
+    assert!(scene.svg.contains(r#"data-role="edge""#), "the inheritance edge must render: {}", scene.svg);
+}
