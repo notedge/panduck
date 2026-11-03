@@ -524,7 +524,7 @@ fn resolve_block(
                 .collect::<Vec<_>>();
             changed.then(|| Block::Table { caption: caption.clone(), rows })
         }
-        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Opaque { .. } | Block::RawHtml { .. } => None,
+        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Chart { .. } | Block::Opaque { .. } | Block::RawHtml { .. } => None,
     }
 }
 
@@ -629,8 +629,8 @@ fn dangling_reference_diagnostic(pass_name: &str, target: NodeId) -> Diagnostic 
 /// Readable text used to fill an empty reference display.
 ///
 /// Sections use their title, prose blocks their content, lists their items, and
-/// tables their caption or cells. Code, math, diagram, and opaque payloads are
-/// authored source rather than prose, so they yield no display text.
+/// tables their caption or cells. Code, math, diagram, chart, and opaque payloads
+/// are authored source rather than prose, so they yield no display text.
 fn readable_block_text(block: &Block) -> String {
     match block {
         Block::Section { title, .. } => plain_text_of(title),
@@ -641,7 +641,7 @@ fn readable_block_text(block: &Block) -> String {
             Some(caption) => caption.to_string(),
             None => joined_text(rows.iter().flat_map(|row| row.cells.iter()).map(|cell| plain_text_of(&cell.content))),
         },
-        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Opaque { .. } | Block::RawHtml { .. } => String::new(),
+        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Chart { .. } | Block::Opaque { .. } | Block::RawHtml { .. } => String::new(),
     }
 }
 
@@ -710,6 +710,7 @@ fn block_kind(block: &Block) -> &'static str {
         Block::Code { .. } => "code",
         Block::Math { .. } => "math",
         Block::Diagram { .. } => "diagram",
+        Block::Chart { .. } => "chart",
         Block::Opaque { .. } => "opaque",
         Block::RawHtml { .. } => "raw-html",
     }
@@ -816,9 +817,9 @@ fn rewrite_block(block: &Block, search: &str, replacement: &str) -> Option<(Bloc
                 .collect::<Vec<_>>();
             (occurrences > 0).then(|| (Block::Table { caption, rows }, occurrences))
         }
-        // Diagram source is authored data, not inline prose, so text
+        // Diagram and chart source is authored data, not inline prose, so text
         // replacement must not rewrite or corrupt it.
-        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Opaque { .. } | Block::RawHtml { .. } => None,
+        Block::Code { .. } | Block::Math { .. } | Block::Diagram { .. } | Block::Chart { .. } | Block::Opaque { .. } | Block::RawHtml { .. } => None,
     }
 }
 
