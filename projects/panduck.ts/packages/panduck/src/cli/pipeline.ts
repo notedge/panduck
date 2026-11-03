@@ -298,7 +298,12 @@ export async function runConversionPipeline(input: {
         toolVersion: ctx.toolVersion,
         status,
         inputs: [{ path: inputPath, format: from }],
-        detection: { format: from, outer: "zip", inner: "opc", confidence: "verified", hints: resolved.hints },
+        detection: {
+            format: from,
+            ...(from === "docx" ? { outer: "zip", inner: "opc" } : {}),
+            confidence: "verified",
+            hints: resolved.hints,
+        },
         pipeline: {
             reader: from,
             writer: to,

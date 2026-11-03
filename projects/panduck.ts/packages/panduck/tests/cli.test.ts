@@ -59,3 +59,33 @@ test("convert --log-file records semantic loss diagnostics on successful routes"
     assert.match(text, /partial_coverage/);
     rmSync(workdir, { recursive: true, force: true });
 });
+
+test("cli reports its installed version without loading the native lane", () => {
+    const run = runPanduck(["--version"]);
+    assert.equal(run.code, 0, run.stderr);
+    assert.match(run.stdout.trim(), /^\d+\.\d+\.\d+$/, "the version flag must print a semver");
+});
+
+test("convert detection does not claim a zip container for markdown", () => {
+    const workdir = mkdtempSync(join(tmpdir(), "panduck-detection-"));
+    const input = join(workdir, "source.md");
+    writeFileSync(input, "# Title\n\nBody.\n", "utf8");
+    const run = runPanduck([
+        "convert",
+        input,
+        "--from",
+        "markdown",
+        "--to",
+        "html",
+        "-o",
+        join(workdir, "source.html"),
+        "--diagnostics",
+        "json",
+    ]);
+    assert.equal(run.code, 0, run.stderr);
+    const report = JSON.parse(run.stdout) as { detection: { outer?: string; inner?: string; format?: string } };
+    assert.equal(report.detection.format, "markdown");
+    assert.equal(report.detection.outer, undefined, "markdown is not a zip container");
+    assert.equal(report.detection.inner, undefined);
+    rmSync(workdir, { recursive: true, force: true });
+});
