@@ -157,3 +157,27 @@ fn rejected_plantuml_loss_carries_the_authored_span() {
         "the span points at the rejected statement"
     );
 }
+
+#[test]
+fn package_visibility_members_reach_the_svg_without_a_loss() {
+    let document = "# Visibility\n\n```plantuml\n@startuml\nclass Cache {\n  ~cache : Map\n}\n@enduml\n```\n";
+    let output = convert_bytes("markdown", "html", "visibility.md", document.as_bytes().to_vec(), None).expect("convert package visibility");
+    let html = output.html.as_deref().expect("html output");
+
+    assert!(html.contains("~cache : Map"), "the `~` member must be drawn, not dropped: {html}");
+    assert_eq!(output.loss_count, 0, "a supported marker must not report a loss: {}", output.report_json);
+    assert_eq!(report_status(&output.report_json), "success");
+}
+
+#[test]
+fn unknown_member_markers_are_rejected_with_a_span_instead_of_dropped() {
+    let document = "# Marker\n\n```plantuml\n@startuml\nclass Cache {\n  !cache : Map\n}\n@enduml\n```\n";
+    let output = convert_bytes("markdown", "html", "marker.md", document.as_bytes().to_vec(), None).expect("convert unknown marker");
+    let html = output.html.as_deref().expect("html output");
+
+    assert!(html.contains(r#"<pre class="diagram" data-diagram-language="plantuml""#), "the refusal must keep the source visible: {html}");
+    assert!(!html.contains("~cache"), "{html}");
+    assert!(output.loss_count > 0, "the refusal must be reported: {}", output.report_json);
+    assert_eq!(report_status(&output.report_json), "success_with_loss");
+    assert!(output.report_json.contains("span.start"), "the refusal must carry its authored offset: {}", output.report_json);
+}
