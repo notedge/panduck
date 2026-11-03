@@ -78,7 +78,7 @@ pub fn render_charts(graph: &DocumentGraph) -> RenderedCharts {
                 block_span,
             );
         }
-        match chart.to_svg() {
+        match chart.to_svg_with_hooks(&format!("chart-{}", node.id.0), "chart") {
             Ok(svg) => {
                 rendered.scenes.insert(node.id, RenderedDiagram { svg });
             }
