@@ -22,7 +22,7 @@ dist/
 pnpm-lock.yaml
 .placeholder-npm-cache.json
 scripts/.placeholder-npm-cache.json
-.cache/npm-placeholder.json
+.cache/
 .env.placeholder.local
 projects/panduck.ts/platforms/panduck-unknown-wasm32/lib/
 projects/panduck.ts/homepage/dist/
