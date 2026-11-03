@@ -1,0 +1,29 @@
+name: check-install
+
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+    branches: [master, dev]
+  workflow_dispatch:
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install workspace dependencies
+        run: pnpm install
+      - name: Build the Node-API binary
+        run: pnpm build:napi
+      - name: Build the TypeScript CLI
+        run: pnpm --filter @notedge/panduck build
+      - name: Verify the packed install
+        run: node scripts/ci/verify-install.mjs

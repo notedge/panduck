@@ -8,6 +8,7 @@
         "test": "cargo test --release && pnpm --filter @notedge/panduck test:e2e",
         "test:e2e": "pnpm --filter @notedge/panduck test:e2e",
         "typecheck": "pnpm --filter @notedge/panduck typecheck",
+        "verify:install": "node scripts/ci/verify-install.mjs",
         "homepage:dev": "pnpm --filter @notedge/homepage dev",
         "homepage:build": "pnpm --filter @notedge/homepage build",
         "homepage:check": "pnpm --filter @notedge/homepage check",
