@@ -20,19 +20,23 @@ export type PanduckReport = {
     operation: string;
     status: ReportStatus;
     inputs: Array<{ path: string; format?: string }>;
-    detection?: {
+    /**
+     * Always present; `null` means the operation did not run format detection.
+     * Fixed top-level keys keep reports diffable across runs and versions.
+     */
+    detection: {
         outer?: string;
         inner?: string;
         format?: string;
         confidence?: "hint" | "verified" | "ambiguous";
         hints?: string[];
-    };
-    pipeline?: {
+    } | null;
+    pipeline: {
         reader?: string;
         writer?: string;
         stages?: string[];
         blocked_reason?: string;
-    };
+    } | null;
     parts?: string[];
     decoded_parts?: Array<{
         path: string;
@@ -41,11 +45,11 @@ export type PanduckReport = {
         uncompressed_size: number;
         decoded_size: number;
     }>;
-    coverage?: {
+    coverage: {
         state: CapabilityState;
         read?: number;
         write?: number;
-    };
+    } | null;
     /**
      * Content losses recorded by the IR.
      *
@@ -99,11 +103,11 @@ export function createReport(input: {
         operation: input.operation,
         status: input.status,
         inputs: input.inputs,
-        detection: input.detection,
-        pipeline: input.pipeline,
+        detection: input.detection ?? null,
+        pipeline: input.pipeline ?? null,
         parts: input.parts,
         decoded_parts: input.decodedParts,
-        coverage: input.coverage,
+        coverage: input.coverage ?? null,
         losses: input.losses ?? [],
         diagnostics: input.diagnostics ?? [],
         outputs: input.outputs ?? [],

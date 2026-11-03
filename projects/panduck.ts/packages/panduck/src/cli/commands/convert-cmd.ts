@@ -8,7 +8,7 @@ import {
     buildBlockedReport,
     createContext,
     resolveFormats,
-    validateIoPaths,
+    validateConversionPaths,
 } from "../context.js";
 import { createDiagnostic } from "../../diagnostic.js";
 import { emitJson, emitReport, writeReportFile } from "../diagnostics.js";
@@ -81,18 +81,14 @@ async function runConvert(options: ParsedOptions): Promise<number> {
         if (!inputPath) {
             return ExitCode.InvalidArgs;
         }
-        if (batch && inputPath === "-") {
-            console.error("standard input cannot be used with --batch");
-            return ExitCode.InvalidArgs;
-        }
-        if (batch && !readString(options, "output-dir")) {
-            console.error("--batch requires --output-dir");
-            return ExitCode.InvalidArgs;
+        if (batch) {
+            console.error("--batch is not implemented yet; convert one input at a time");
+            return ExitCode.BatchFailure;
         }
 
-        const overlapCode = validateIoPaths(inputPath, outputPath);
+        const overlapCode = validateConversionPaths(inputPath, outputPath, reportPath);
         if (overlapCode !== null) {
-            console.error(`input and output paths must not be the same: ${inputPath}`);
+            console.error("input, output and report paths must not overlap");
             return overlapCode;
         }
 
@@ -103,6 +99,13 @@ async function runConvert(options: ParsedOptions): Promise<number> {
 
         if (isStdoutPath(outputPath) && reportPath === "-") {
             console.error("stdout cannot carry both the document and the report");
+            return ExitCode.InvalidArgs;
+        }
+
+        if (isStdoutPath(outputPath) && (shared.diagnostics === "json" || shared.json)) {
+            console.error(
+                "stdout cannot carry both the document and the JSON report; write the document to a file or use --report -",
+            );
             return ExitCode.InvalidArgs;
         }
 

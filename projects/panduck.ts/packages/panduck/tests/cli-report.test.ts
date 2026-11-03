@@ -133,6 +133,66 @@ test("cli sends the report to stdout for every dash form of the report path", as
     }
 });
 
+const FIXED_TOP_LEVEL_KEYS = [
+    "schema_version",
+    "tool",
+    "operation",
+    "status",
+    "inputs",
+    "detection",
+    "pipeline",
+    "coverage",
+    "losses",
+    "diagnostics",
+    "outputs",
+    "budgets",
+    "determinism",
+    "status_policy",
+];
+
+test("cli emits the same report bytes for identical runs", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-report-deterministic-"));
+    const input = join(workdir, "source.md");
+    const output = join(workdir, "source.html");
+    const firstReport = join(workdir, "first.json");
+    const secondReport = join(workdir, "second.json");
+    await writeFile(input, SOURCE, "utf8");
+
+    try {
+        for (const reportPath of [firstReport, secondReport]) {
+            const run = runPanduck([
+                "convert",
+                input,
+                "--from",
+                "markdown",
+                "--to",
+                "html",
+                "--output",
+                output,
+                "--overwrite",
+                "--report",
+                reportPath,
+                "--diagnostics",
+                "silent",
+            ]);
+            assert.equal(run.code, 0, run.stderr);
+        }
+
+        const first = await readFile(firstReport, "utf8");
+        const second = await readFile(secondReport, "utf8");
+        assert.equal(first, second, "identical inputs must produce byte-identical reports");
+
+        const report = JSON.parse(first) as Record<string, unknown>;
+        assert.deepEqual(
+            Object.keys(report),
+            FIXED_TOP_LEVEL_KEYS,
+            "the fixed top-level keys must stay present and ordered",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
 test("cli rejects a request that puts both the document and the report on stdout", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-report-conflict-"));
     const input = join(workdir, "source.md");

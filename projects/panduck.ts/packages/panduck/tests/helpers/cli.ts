@@ -10,8 +10,16 @@ export type PanduckCliResult = {
     stderr: string;
 };
 
-export function runPanduck(args: string[]): PanduckCliResult {
-    const result = spawnSync(process.execPath, [panduckBin, ...args], { encoding: "utf8" });
+export type PanduckCliOptions = {
+    /** Bytes piped to standard input, used by the `-` input path. */
+    stdin?: string;
+};
+
+export function runPanduck(args: string[], options: PanduckCliOptions = {}): PanduckCliResult {
+    const result = spawnSync(process.execPath, [panduckBin, ...args], {
+        encoding: "utf8",
+        input: options.stdin,
+    });
     return {
         code: result.status ?? 1,
         stdout: result.stdout,

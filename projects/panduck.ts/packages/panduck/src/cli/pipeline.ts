@@ -1,22 +1,113 @@
-import { mkdir, mkdtemp, rename, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rename, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
 import { randomBytes } from "node:crypto";
 
-import type { PanduckBindings } from "../types.js";
-import { createDiagnostic, parseReportEnvelope } from "../diagnostic.js";
+import type { ConvertResponse, PanduckBindings } from "../types.js";
+import { createDiagnostic, parseReportEnvelope, textArg, u64Arg } from "../diagnostic.js";
+import type { DiagnosticRecord } from "../diagnostic.js";
 import { ExitCode } from "./exit-codes.js";
 import type { SharedCliOptions } from "./options.js";
 import { createReport, type PanduckReport } from "./report.js";
 import { emitReport } from "./diagnostics.js";
 import type { CliContext } from "./context.js";
 import type { ResolvedFormats } from "./context.js";
-import { isStdoutPath } from "./paths.js";
+import { isStdinPath, isStdoutPath } from "./paths.js";
 
 export type PipelineResult = {
     exitCode: number;
     report: PanduckReport;
 };
+
+/**
+ * Maps native diagnostics to the stable CLI exit-code matrix.
+ *
+ * The native layer reports every failure as `exit_code: 1` and carries the
+ * structured identity in diagnostics, so the CLI must classify by code rather
+ * than propagate the transport value.
+ */
+export function exitCodeForDiagnostics(diagnostics: readonly DiagnosticRecord[]): number {
+    const codes = diagnostics.map((item) => item.code);
+    if (codes.some((code) => code.endsWith("budget-exhausted"))) {
+        return ExitCode.BudgetExceeded;
+    }
+    if (codes.some((code) => code.endsWith("parse-failed") || code.endsWith("invalid-input"))) {
+        return ExitCode.ParseFailure;
+    }
+    if (
+        codes.some(
+            (code) =>
+                code.endsWith("unsupported")
+                || code.endsWith("not-implemented")
+                || code.endsWith("not-ready")
+                || code.endsWith("ambiguous")
+                || code.endsWith("not-readable"),
+        )
+    ) {
+        return ExitCode.InputUnsupported;
+    }
+    return ExitCode.IrOrWriterFailure;
+}
+
+function budgetDiagnostic(key: string, limit: number, observed: number): DiagnosticRecord {
+    return createDiagnostic({
+        code: "panduck.budget.exhausted",
+        component: "budgets",
+        severity: "error",
+        fallback: `${key} budget exceeded: observed ${observed} bytes, limit ${limit}`,
+        args: [
+            ["budget", textArg(key)],
+            ["limit", u64Arg(limit)],
+            ["observed", u64Arg(observed)],
+        ],
+    });
+}
+
+function exceededBudget(
+    shared: SharedCliOptions,
+    key: string,
+    observed: number,
+): { limit: number; diagnostic: DiagnosticRecord } | null {
+    const limit = shared.budgets[key];
+    if (limit === undefined || observed <= limit) {
+        return null;
+    }
+    return { limit, diagnostic: budgetDiagnostic(key, limit, observed) };
+}
+
+async function inputByteLength(inputPath: string, bytes?: Uint8Array): Promise<number> {
+    if (bytes) {
+        return bytes.byteLength;
+    }
+    if (isStdinPath(inputPath)) {
+        return 0;
+    }
+    try {
+        const info = await stat(inputPath);
+        return info.size;
+    } catch {
+        // Missing inputs must reach the native layer so it can emit the
+        // structured diagnostic; a budget check cannot substitute for it.
+        return 0;
+    }
+}
+
+function outputByteLength(response: ConvertResponse): number {
+    if (response.binary && response.binary.length > 0) {
+        return response.binary.byteLength;
+    }
+    const text = response.text ?? response.html ?? "";
+    return Buffer.byteLength(text, "utf8");
+}
+
+/** Reads all of standard input; `-` input paths route through the bytes binding. */
+async function readStdinBytes(): Promise<Uint8Array> {
+    const chunks: Buffer[] = [];
+    for await (const chunk of process.stdin) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as string));
+    }
+    return new Uint8Array(Buffer.concat(chunks));
+}
 
 export function hasPipeline(
     bindings: PanduckBindings | null,
@@ -117,11 +208,35 @@ export async function runConversionPipeline(input: {
         throw new Error("conversion requires resolved from/to formats");
     }
 
-    if (!bindings.convertDocument) {
+    let inputBytes: Uint8Array | undefined;
+    let response: ConvertResponse;
+    if (isStdinPath(inputPath)) {
+        if (!bindings.convertBytesMemory) {
+            return blocked(ctx, operation, inputPath, resolved, shared, "native convertBytesMemory binding is missing");
+        }
+        inputBytes = await readStdinBytes();
+    } else if (!bindings.convertDocument) {
         return blocked(ctx, operation, inputPath, resolved, shared, "native convertDocument binding is missing");
     }
 
-    const response = bindings.convertDocument(from, to, inputPath);
+    const inputObserved = await inputByteLength(inputPath, inputBytes);
+    const overInput = exceededBudget(shared, "input_bytes", inputObserved);
+    if (overInput) {
+        return blocked(
+            ctx,
+            operation,
+            inputPath,
+            resolved,
+            shared,
+            `input_bytes budget exceeded: observed ${inputObserved}, limit ${overInput.limit}`,
+            [overInput.diagnostic],
+            ExitCode.BudgetExceeded,
+        );
+    }
+
+    response = inputBytes
+        ? bindings.convertBytesMemory!(from, to, "stdin", inputBytes)
+        : bindings.convertDocument!(from, to, inputPath);
     const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert" });
 
     if (response.exitCode !== 0) {
@@ -133,6 +248,22 @@ export async function runConversionPipeline(input: {
             shared,
             `native conversion failed with exit code ${response.exitCode}`,
             parsedReport.diagnostics,
+            exitCodeForDiagnostics(parsedReport.diagnostics),
+        );
+    }
+
+    const outputObserved = outputByteLength(response);
+    const overOutput = exceededBudget(shared, "output_bytes", outputObserved);
+    if (overOutput) {
+        return blocked(
+            ctx,
+            operation,
+            inputPath,
+            resolved,
+            shared,
+            `output_bytes budget exceeded: observed ${outputObserved}, limit ${overOutput.limit}`,
+            [overOutput.diagnostic],
+            ExitCode.BudgetExceeded,
         );
     }
 
@@ -210,6 +341,7 @@ function blocked(
     shared: SharedCliOptions,
     reason: string,
     diagnostics?: PanduckReport["diagnostics"],
+    exitCode: number = ExitCode.IrOrWriterFailure,
 ): PipelineResult {
     const report = createReport({
         operation,
@@ -226,10 +358,11 @@ function blocked(
                     severity: "error",
                     fallback: reason,
                 })],
+        budgets: shared.budgets,
         determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
-        statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.IrOrWriterFailure },
+        statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: exitCode },
     });
-    return { exitCode: ExitCode.IrOrWriterFailure, report };
+    return { exitCode, report };
 }
 
 export async function runMarkdownProjectPipeline(input: {
@@ -269,7 +402,39 @@ export async function runMarkdownProjectPipeline(input: {
         );
     }
 
-    const response = bindings.convertMarkdownProject(from, inputPath, outputDir);
+    let inputBytes: Uint8Array | undefined;
+    if (isStdinPath(inputPath)) {
+        if (!bindings.convertMarkdownProjectBytes) {
+            return blocked(
+                ctx,
+                "convert",
+                inputPath,
+                resolved,
+                shared,
+                "native convertMarkdownProjectBytes binding is missing",
+            );
+        }
+        inputBytes = await readStdinBytes();
+    }
+
+    const inputObserved = await inputByteLength(inputPath, inputBytes);
+    const overInput = exceededBudget(shared, "input_bytes", inputObserved);
+    if (overInput) {
+        return blocked(
+            ctx,
+            "convert",
+            inputPath,
+            resolved,
+            shared,
+            `input_bytes budget exceeded: observed ${inputObserved}, limit ${overInput.limit}`,
+            [overInput.diagnostic],
+            ExitCode.BudgetExceeded,
+        );
+    }
+
+    const response = inputBytes
+        ? bindings.convertMarkdownProjectBytes!(from, "stdin", inputBytes, outputDir)
+        : bindings.convertMarkdownProject!(from, inputPath, outputDir);
     const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert" });
 
     if (response.exitCode !== 0) {
@@ -281,6 +446,7 @@ export async function runMarkdownProjectPipeline(input: {
             shared,
             `native markdown project conversion failed with exit code ${response.exitCode}`,
             parsedReport.diagnostics,
+            exitCodeForDiagnostics(parsedReport.diagnostics),
         );
     }
 

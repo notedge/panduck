@@ -106,3 +106,30 @@ export function validateIoPaths(inputPath: string, outputPath: string | undefine
     }
     return null;
 }
+
+/**
+ * Rejects a report path that would overwrite the input or the converted document.
+ *
+ * `--report` is written after the document, so a shared path silently replaces
+ * the payload with the reporting envelope. `-` is the stdout sentinel and never
+ * collides with filesystem paths.
+ */
+export function validateConversionPaths(
+    inputPath: string,
+    outputPath: string | undefined,
+    reportPath: string | undefined,
+): number | null {
+    if (validateIoPaths(inputPath, outputPath) !== null) {
+        return ExitCode.InvalidArgs;
+    }
+    if (!reportPath || reportPath === "-") {
+        return null;
+    }
+    if (pathsOverlap(inputPath, reportPath)) {
+        return ExitCode.InvalidArgs;
+    }
+    if (outputPath && pathsOverlap(outputPath, reportPath)) {
+        return ExitCode.InvalidArgs;
+    }
+    return null;
+}

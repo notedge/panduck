@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, mkdtemp, readdir, rm } from "node:fs/promises";
+import { access, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -13,6 +13,7 @@ import { ExitCode } from "../src/cli/exit-codes.js";
 import type { SharedCliOptions } from "../src/cli/options.js";
 import type { CliContext } from "../src/cli/context.js";
 import type { PanduckBindings } from "../src/types.js";
+import { runPanduck } from "./helpers/cli.js";
 
 const shared: SharedCliOptions = {
     json: false,
@@ -125,37 +126,27 @@ test("native convert failure blocks the output file instead of writing empty tex
 });
 
 test("native convert failure writes nothing to stdout", async () => {
-    const { ctx, bindings } = stubBindings({
-        convertDocument: () => ({
-            exitCode: 4,
-            text: "",
-            reportJson: failedReportJson,
-        }),
-    });
-
-    const stdout = process.stdout.write.bind(process.stdout);
-    const chunks: string[] = [];
-    process.stdout.write = ((chunk: string | Uint8Array) => {
-        chunks.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8"));
-        return true;
-    }) as typeof process.stdout.write;
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-native-failure-stdout-"));
+    const input = join(workdir, "broken.docx");
+    await writeFile(input, "this is not a zip container", "utf8");
 
     try {
-        const result = await runConversionPipeline({
-            ctx,
-            bindings,
-            inputPath: "broken.docx",
-            outputPath: "-",
-            resolved: { from: "docx", to: "markdown", ambiguous: false, hints: [".docx"] },
-            shared,
-            toolVersion: "0.0.0-test",
-        });
-
-        assert.equal(result.exitCode, ExitCode.IrOrWriterFailure);
-        assert.equal(result.report.status, "blocked");
-        assert.equal(chunks.join(""), "", "failed conversion must not emit empty stdout");
+        const run = runPanduck([
+            "convert",
+            input,
+            "--from",
+            "docx",
+            "--to",
+            "markdown",
+            "-o",
+            "-",
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(run.code, ExitCode.ParseFailure, `the corrupt container must fail: ${run.stderr}`);
+        assert.equal(run.stdout, "", "failed conversion must not emit empty stdout");
     } finally {
-        process.stdout.write = stdout;
+        await rm(workdir, { recursive: true, force: true });
     }
 });
 

@@ -1,5 +1,6 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { mkdir, rename, writeFile } from "node:fs/promises";
+import { randomBytes } from "node:crypto";
+import { basename, dirname, join } from "node:path";
 
 import type { DiagnosticsMode } from "./options.js";
 import type { PanduckReport } from "./report.js";
@@ -13,8 +14,11 @@ export function emitJson(value: unknown): void {
 }
 
 export async function writeReportFile(report: PanduckReport, path: string): Promise<void> {
-    await mkdir(dirname(path), { recursive: true });
-    await writeFile(path, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+    const dir = dirname(path);
+    await mkdir(dir, { recursive: true });
+    const temp = join(dir, `.${basename(path)}.${randomBytes(4).toString("hex")}.tmp`);
+    await writeFile(temp, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+    await rename(temp, path);
 }
 
 export function emitReport(report: PanduckReport, mode: DiagnosticsMode, jsonRequested: boolean): void {
