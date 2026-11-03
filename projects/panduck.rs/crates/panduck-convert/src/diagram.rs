@@ -1,9 +1,10 @@
-//! Host-side Mermaid rendering through the DaVinci diagram chain.
+//! Host-side diagram rendering through the DaVinci diagram chain.
 //!
-//! `notedown-formats` lowers explicit Mermaid fences to `Block::Diagram`. This
-//! module lowers those blocks with `davinci-diagram` and serializes each
-//! resolved display scene to SVG, keyed by the authoring block id, so the HTML
-//! writer can embed real vector output instead of the source-only fallback.
+//! `notedown-formats` lowers explicit Mermaid and DOT fences to
+//! `Block::Diagram`. This module lowers those blocks with `davinci-diagram` and
+//! serializes each resolved display scene to SVG, keyed by the authoring block
+//! id, so the HTML writer can embed real vector output instead of the
+//! source-only fallback.
 //!
 //! A block that fails to parse, lowers to a non-positive canvas, or fails scene
 //! serialization keeps no scene: the exporter falls back to the visible source
@@ -12,7 +13,7 @@
 
 use std::collections::HashMap;
 
-use davinci_diagram::mermaid_to_scene;
+use davinci_diagram::{dot_to_scene, mermaid_to_scene};
 use notedown_formats::export::html::RenderedDiagram;
 use notedown_ir::{Block, DocumentGraph, LossMarker, NodeId, SemanticStatus};
 
@@ -25,23 +26,28 @@ pub struct RenderedDiagrams {
     pub losses: Vec<LossMarker>,
 }
 
-/// Render every Mermaid `Block::Diagram` in `graph` to an SVG scene.
+/// Render every Mermaid or DOT `Block::Diagram` in `graph` to an SVG scene.
 ///
 /// Non-fatal lowering diagnostics (approximations, partially unsupported
 /// statements) keep the rendered scene but record `Partial` loss. Fatal
 /// failures record the stable `davinci.*` code as `Unsupported` loss and the
 /// block keeps the visible source fallback in the exported HTML.
-pub fn render_mermaid_diagrams(graph: &DocumentGraph) -> RenderedDiagrams {
+pub fn render_diagrams(graph: &DocumentGraph) -> RenderedDiagrams {
     let mut rendered = RenderedDiagrams::default();
     for node in &graph.blocks {
         let Block::Diagram { language, source } = &node.block
         else {
             continue;
         };
-        if !language.trim().eq_ignore_ascii_case("mermaid") {
+        let language = language.trim();
+        let lowered = if language.eq_ignore_ascii_case("mermaid") {
+            mermaid_to_scene(source)
+        } else if language.eq_ignore_ascii_case("dot") {
+            dot_to_scene(source)
+        } else {
             continue;
-        }
-        match mermaid_to_scene(source) {
+        };
+        match lowered {
             Ok(lowered) => {
                 for diagnostic in &lowered.diagnostics {
                     rendered.losses.push(LossMarker {
@@ -54,7 +60,7 @@ pub fn render_mermaid_diagrams(graph: &DocumentGraph) -> RenderedDiagrams {
                 if size.width <= 0.0 || size.height <= 0.0 {
                     rendered.losses.push(LossMarker {
                         code: "panduck.diagram.invalid-canvas".to_string(),
-                        message: format!("Mermaid diagram lowered to a non-positive canvas: {size:?}"),
+                        message: format!("Diagram lowered to a non-positive canvas: {size:?}"),
                         status: SemanticStatus::Lossy,
                     });
                     continue;

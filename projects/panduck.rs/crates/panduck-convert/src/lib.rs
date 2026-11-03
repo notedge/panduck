@@ -333,7 +333,7 @@ fn write_target(to: &str, graph: &mut DocumentGraph) -> Result<(String, Option<S
             Ok((String::new(), None, Some(binary)))
         }
         "html" => {
-            let rendered = crate::diagram::render_mermaid_diagrams(graph);
+            let rendered = crate::diagram::render_diagrams(graph);
             for loss in rendered.losses {
                 graph.push_loss(loss);
             }
