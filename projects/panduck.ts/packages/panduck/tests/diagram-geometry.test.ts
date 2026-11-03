@@ -221,7 +221,10 @@ function contrast(a: string, b: string): number {
     return (high + 0.05) / (low + 0.05);
 }
 
-async function convert(markdown: string, name: string): Promise<{ html: string; svg: string }> {
+async function convert(
+    markdown: string,
+    name: string,
+): Promise<{ html: string; svg: string; report: { status: string; losses: Array<{ code: string }> } }> {
     const workdir = await mkdtemp(join(tmpdir(), `panduck-${name}-`));
     try {
         const input = join(workdir, "source.md");
@@ -241,7 +244,8 @@ async function convert(markdown: string, name: string): Promise<{ html: string; 
         ]);
         assert.equal(run.code, 0, run.stderr || run.stdout);
         const html = await readFile(output, "utf8");
-        return { html, svg: inlineSvg(html) };
+        const report = JSON.parse(run.stdout) as { status: string; losses: Array<{ code: string }> };
+        return { html, svg: inlineSvg(html), report };
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }
@@ -372,6 +376,34 @@ test("the emitted palette keeps WCAG AA contrast in light and dark", async () =>
         );
     }
     assert.notEqual(nodeFill.light, nodeFill.dark, "the two schemes must not share one palette");
+});
+
+test("sequence diagrams render through the time-ordered plan", async () => {
+    const source = [
+        "# Interaction",
+        "",
+        "```mermaid",
+        "sequenceDiagram",
+        "  participant C as Client",
+        "  participant S as Server",
+        "  C->>S: request",
+        "  S->>S: validate",
+        "  S-->>C: response",
+        "```",
+        "",
+    ].join("\n");
+    const first = await convert(source, "sequence-first");
+    const second = await convert(source, "sequence-second");
+
+    assert.equal(first.html, second.html, "the same source must render byte identically");
+    assert.match(first.html, /<figure class="diagram" data-diagram-language="mermaid"/);
+    assert.ok(!first.html.includes("<pre class=\"diagram\""), "a time-ordered fence must not fall back to source text");
+    assert.equal(roles(first.svg, "node").length, 2, "both participants need a lifeline");
+    assert.ok(edges(first.svg).length >= 2, "both messages must become edges");
+    assert.ok(["success", "success_with_loss"].includes(first.report.status), first.report.status);
+    for (const loss of first.report.losses) {
+        assert.match(loss.code, /^davinci\.diagram\./, `unexpected loss from another domain: ${loss.code}`);
+    }
 });
 
 test("class diagrams render through the spec and rerender byte identically", async () => {
