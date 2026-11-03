@@ -25,6 +25,7 @@ panduck-diagnostic = { workspace = true }
 notedown-ir = { workspace = true }
 notedown-formats = { workspace = true }
 davinci-diagram = { workspace = true }
+davinci-types = { workspace = true }
 
 serde = { workspace = true }
 serde_json = { workspace = true }
