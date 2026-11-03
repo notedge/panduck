@@ -29,11 +29,11 @@ panduck-convert = { path = "projects/panduck.rs/crates/panduck-convert" }
 panduck-napi = { path = "projects/panduck.rs/exports/panduck-napi" }
 panduck-wasm = { path = "projects/panduck.rs/exports/panduck-wasm" }
 # Overlaid by local path `.cargo/config.toml` (git ignored).
-notedown-ir = { git = "https://github.com/notedge/notedown.git", rev = "229f214eb9df7a146c4e760fe37f5097abd623ea" }
-notedown-formats = { git = "https://github.com/notedge/notedown.git", rev = "229f214eb9df7a146c4e760fe37f5097abd623ea", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }
-notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "229f214eb9df7a146c4e760fe37f5097abd623ea" }
+notedown-ir = { git = "https://github.com/notedge/notedown.git", rev = "2c0b48a81f3fb33686645fc7ffe1a184983afd3d" }
+notedown-formats = { git = "https://github.com/notedge/notedown.git", rev = "2c0b48a81f3fb33686645fc7ffe1a184983afd3d", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }
+notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "2c0b48a81f3fb33686645fc7ffe1a184983afd3d" }
 # DaVinci diagram chain (same repository, same rev as notedown-*).
-davinci-diagram = { git = "https://github.com/notedge/notedown.git", rev = "229f214eb9df7a146c4e760fe37f5097abd623ea" }
+davinci-diagram = { git = "https://github.com/notedge/notedown.git", rev = "2c0b48a81f3fb33686645fc7ffe1a184983afd3d" }
 
 # External dependencies
 serde = { version = "1.0.229", features = ["derive"] }
