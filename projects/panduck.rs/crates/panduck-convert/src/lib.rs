@@ -2,6 +2,7 @@
 #![doc = include_str!("readme.md")]
 
 mod dedupe_assets;
+pub mod diagram;
 mod format_error;
 mod inspect;
 mod publish;
@@ -122,7 +123,7 @@ pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>, handlers
 
     let mut graph = format_error::propagate(read_source(&from, label, bytes))?;
     let transform_outcome = apply_transform_passes(&mut graph, handlers_json);
-    let (markdown, html, binary) = format_error::propagate(write_target(&to, &graph))?;
+    let (markdown, html, binary) = format_error::propagate(write_target(&to, &mut graph))?;
     let loss_count = graph.coverage.loss.len();
     let mut diagnostic_set = diagnostics_from_graph(&graph);
     for diagnostic in &transform_outcome.diagnostics {
@@ -317,7 +318,7 @@ fn read_source(from: &str, label: &str, bytes: Vec<u8>) -> Result<DocumentGraph>
     }
 }
 
-fn write_target(to: &str, graph: &DocumentGraph) -> Result<(String, Option<String>, Option<Vec<u8>>)> {
+fn write_target(to: &str, graph: &mut DocumentGraph) -> Result<(String, Option<String>, Option<Vec<u8>>)> {
     match to {
         "markdown" => {
             let markdown = write_document_markdown(graph)?;
@@ -332,7 +333,11 @@ fn write_target(to: &str, graph: &DocumentGraph) -> Result<(String, Option<Strin
             Ok((String::new(), None, Some(binary)))
         }
         "html" => {
-            let html = write_document_html(graph)?;
+            let rendered = crate::diagram::render_mermaid_diagrams(graph);
+            for loss in rendered.losses {
+                graph.push_loss(loss);
+            }
+            let html = write_document_html(graph, &rendered.scenes)?;
             Ok((String::new(), Some(html), None))
         }
         "epub" => {
