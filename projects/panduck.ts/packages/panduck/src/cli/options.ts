@@ -28,6 +28,16 @@ const ASSET_VALUES = new Set<AssetPolicy>(["preserve", "copy", "embed", "drop"])
 const LINK_VALUES = new Set<LinkPolicy>(["preserve", "rewrite", "drop"]);
 const DIAG_VALUES = new Set<DiagnosticsMode>(["silent", "human", "json"]);
 const STAGE_VALUES = new Set<InspectStage>(["probe", "index", "decode", "validate"]);
+const BUDGET_KEYS = new Set([
+    "input_bytes",
+    "decompressed_bytes",
+    "container_entries",
+    "layout_nodes",
+    "recursion_depth",
+    "remote_bytes",
+    "wall_ms",
+    "output_bytes",
+]);
 
 export function readFlag(options: ParsedOptions, key: string): boolean {
     return options[key] === true;
@@ -92,6 +102,9 @@ export function parseBudgets(raw: string | boolean | string[] | undefined): Reco
             throw new CliOptionError("budget", item);
         }
         const key = item.slice(0, eq).trim();
+        if (!BUDGET_KEYS.has(key)) {
+            throw new CliOptionError("budget", item);
+        }
         const value = Number(item.slice(eq + 1).trim());
         if (!Number.isFinite(value) || value < 0) {
             throw new CliOptionError("budget", item);

@@ -86,6 +86,14 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             return ExitCode.BatchFailure;
         }
 
+        const unenforcedBudgets = Object.keys(shared.budgets).filter(
+            (key) => key !== "input_bytes" && key !== "output_bytes",
+        );
+        if (unenforcedBudgets.length > 0) {
+            console.error(`budget keys are not enforced by this build: ${unenforcedBudgets.join(", ")}`);
+            return ExitCode.InvalidArgs;
+        }
+
         const overlapCode = validateConversionPaths(inputPath, outputPath, reportPath);
         if (overlapCode !== null) {
             console.error("input, output and report paths must not overlap");

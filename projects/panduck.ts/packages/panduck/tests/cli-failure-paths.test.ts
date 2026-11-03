@@ -458,3 +458,33 @@ test("cli fails closed instead of silently ignoring extra batch inputs", async (
         await rm(workdir, { recursive: true, force: true });
     }
 });
+
+test("cli rejects unknown or unenforced budget keys instead of ignoring them", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-budget-keys-"));
+    const input = join(workdir, "source.md");
+    const output = join(workdir, "source.html");
+    await writeFile(input, "# Title\n\nBody.\n", "utf8");
+
+    try {
+        for (const budget of ["typo_bytes=10", "decompressed_bytes=10"]) {
+            const run = runPanduck([
+                "convert",
+                input,
+                "--from",
+                "markdown",
+                "--to",
+                "html",
+                "-o",
+                output,
+                "--budget",
+                budget,
+                "--diagnostics",
+                "silent",
+            ]);
+            assert.equal(run.code, 2, `${budget} must be an argument error: ${run.stderr}`);
+        }
+        assert.equal(await exists(output), false, "rejected budgets must not publish the output");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
