@@ -4,7 +4,7 @@
 use boost_diagnostic::{
     Diagnostic, DiagnosticCode as WireDiagnosticCode, DiagnosticOrigin, DiagnosticSet, DiagnosticSeverity, Message,
 };
-use notedown_ir::{DocumentGraph, LossMarker, SemanticStatus};
+use notedown_ir::{DocumentGraph, LossMarker, SemanticStatus, SourceSpan};
 use panduck_types::AdapterError;
 
 /// Panduck report schema (pre-1.0 — bump only on breaking wire changes).
@@ -115,7 +115,17 @@ pub fn from_loss_marker(marker: &LossMarker) -> Diagnostic {
 ///
 /// The span travels as `span.start` and `span.end` args so report consumers can
 /// locate the rejection without parsing prose.
-pub fn from_spanned_loss_marker(marker: &LossMarker, span: Option<notedown_ir::SourceSpan>) -> Diagnostic {
+pub fn from_spanned_loss_marker(marker: &LossMarker, span: Option<SourceSpan>) -> Diagnostic {
+    from_spanned_loss_marker_at(marker, span, None)
+}
+
+/// Map one IR loss marker to a diagnostic that names the block it came from.
+///
+/// `block` is the authoring block id used by `notedown-ir`: it lets a report
+/// reader jump from a diagnostic to the exact fence or node, while `span`
+/// gives the byte range inside that block. Import-level losses pass `None`
+/// because no block owns them.
+pub fn from_spanned_loss_marker_at(marker: &LossMarker, span: Option<SourceSpan>, block: Option<u64>) -> Diagnostic {
     let code = if marker.code.contains('.') {
         WireDiagnosticCode::new(&marker.code)
     }
@@ -125,6 +135,9 @@ pub fn from_spanned_loss_marker(marker: &LossMarker, span: Option<notedown_ir::S
     let mut msg = Message::new("panduck.semantic.loss")
         .with_arg("code", MessageArg::Text(marker.code.clone()))
         .with_arg("severity", MessageArg::Text(semantic_status_label(marker.status).to_string()));
+    if let Some(block) = block {
+        msg = msg.with_arg("block", MessageArg::U64(block));
+    }
     if let Some(span) = span {
         msg = msg.with_arg("span.start", MessageArg::U64(span.start as u64)).with_arg("span.end", MessageArg::U64(span.end as u64));
     }
@@ -233,9 +246,19 @@ pub fn from_adapter_error(error: &AdapterError) -> Diagnostic {
 pub fn diagnostics_from_graph(graph: &DocumentGraph) -> DiagnosticSet {
     let mut set = DiagnosticSet::new();
     for (index, marker) in graph.coverage.loss.iter().enumerate() {
-        set.push(from_spanned_loss_marker(marker, graph.loss_span(index)));
+        let span = graph.loss_span(index);
+        let block = span.and_then(|span| block_id_at_span(graph, span));
+        set.push(from_spanned_loss_marker_at(marker, span, block));
     }
     set
+}
+
+/// Authoring block id whose recorded span is exactly `span`.
+///
+/// Fence losses are pushed with the fence body span, so an exact match recovers
+/// the block id that the IR does not attach to the loss marker itself.
+fn block_id_at_span(graph: &DocumentGraph, span: SourceSpan) -> Option<u64> {
+    graph.blocks.iter().find(|node| graph.block_span(node.id) == Some(span)).map(|node| node.id.0)
 }
 
 #[cfg(feature = "logger")]

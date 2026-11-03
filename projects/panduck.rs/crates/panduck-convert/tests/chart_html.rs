@@ -131,6 +131,8 @@ fn unsupported_chart_constructs_keep_the_source_and_report_a_span() {
         let span_end = args.iter().find(|arg| arg[0] == "span.end").expect("span.end arg")[1]["u64"].as_u64();
         assert_eq!(span_start, Some(start), "diagnostic span.start must match the loss span");
         assert_eq!(span_end, Some(end), "diagnostic span.end must match the loss span");
+        let block = args.iter().find(|arg| arg[0] == "block").expect("block arg")[1]["u64"].as_u64();
+        assert_eq!(block, Some(2), "block ids start at 1: the heading is block 1 and the chart fence is block 2");
     }
 }
 
