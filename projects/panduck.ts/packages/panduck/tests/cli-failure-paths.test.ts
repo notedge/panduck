@@ -430,8 +430,8 @@ test("cli converts standard input when the input path is a dash", async () => {
     }
 });
 
-test("cli fails closed instead of silently ignoring extra batch inputs", async () => {
-    const workdir = await mkdtemp(join(tmpdir(), "panduck-batch-"));
+test("cli requires --output-dir for a multi-input batch", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-batch-no-dir-"));
     const first = join(workdir, "one.md");
     const second = join(workdir, "two.md");
     await writeFile(first, "# One\n", "utf8");
@@ -446,13 +446,13 @@ test("cli fails closed instead of silently ignoring extra batch inputs", async (
             "markdown",
             "--to",
             "html",
-            "--output-dir",
-            workdir,
             "--diagnostics",
             "silent",
         ]);
-        assert.equal(run.code, 2, `extra inputs must be rejected: ${run.stderr}`);
-        assert.match(run.stderr, /batch conversion is not implemented/);
+        assert.equal(run.code, 2, `a batch without a destination must fail: ${run.stderr}`);
+        assert.match(run.stderr, /multiple inputs require --output-dir/);
+        assert.equal(await exists(join(workdir, "one.html")), false, "a rejected batch must not publish partial output");
+        assert.equal(await exists(join(workdir, "two.html")), false, "a rejected batch must not publish partial output");
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }

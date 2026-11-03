@@ -1,5 +1,6 @@
-import { access } from "node:fs/promises";
+import { access, mkdir } from "node:fs/promises";
 import { constants } from "node:fs";
+import { basename, extname, join } from "node:path";
 
 import type { Cli, ParsedOptions } from "@vmz/commander";
 
@@ -22,13 +23,27 @@ import {
     type SharedCliOptions,
 } from "../options.js";
 import { createReport, type PanduckReport } from "../report.js";
-import { isStdoutPath } from "../paths.js";
+import { isStdinPath, isStdoutPath } from "../paths.js";
 import { configureConsoleBackend } from "../console-backend.js";
 import {
     hasPipeline,
     runConversionPipeline,
     runMarkdownProjectPipeline,
 } from "../pipeline.js";
+
+/** Target format to the extension used when a batch derives one file per input. */
+const TARGET_EXTENSIONS: Record<string, string> = {
+    markdown: "md",
+    notedown: "notedown",
+    org: "org",
+    rst: "rst",
+    tex: "tex",
+    html: "html",
+    docx: "docx",
+    epub: "epub",
+    pdf: "pdf",
+    doc: "doc",
+};
 
 export function registerConvertCommand(cli: Cli): void {
     cli.command("convert", "cli.cmd.convert")
@@ -75,7 +90,8 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             console.error(`these flags are not supported in v0: ${unsupported.join(", ")}`);
             return ExitCode.InvalidArgs;
         }
-        const inputPath = options._[0] ?? readString(options, "input");
+        const inputs: string[] = Array.isArray(options._) ? options._ : [];
+        const inputPath = inputs[0] ?? readString(options, "input");
         const outputOption = readString(options, "output");
         const outputDirOption = readString(options, "output-dir");
         const reportPath = readString(options, "report");
@@ -85,15 +101,24 @@ async function runConvert(options: ParsedOptions): Promise<number> {
         if (!inputPath) {
             return ExitCode.InvalidArgs;
         }
-        if (options._.length > 1) {
-            console.error("convert accepts one input; batch conversion is not implemented");
-            return ExitCode.InvalidArgs;
-        }
         if (outputDirOption && outputOption) {
             console.error("use either -o or --output-dir, not both");
             return ExitCode.InvalidArgs;
         }
-        if (outputDirOption && !markdownProjectTarget) {
+        if (outputDirOption && markdownProjectTarget && inputs.length > 1) {
+            console.error("markdown-project export accepts one input; batch conversion needs another target format");
+            return ExitCode.InvalidArgs;
+        }
+        if (inputs.length > 1) {
+            if (!outputDirOption) {
+                console.error("multiple inputs require --output-dir");
+                return ExitCode.InvalidArgs;
+            }
+            if (inputs.some((path) => isStdinPath(path))) {
+                console.error("batch conversion cannot read standard input; pass real file paths");
+                return ExitCode.InvalidArgs;
+            }
+        } else if (outputDirOption && !markdownProjectTarget) {
             console.error("--output-dir requires --to markdown-project; use -o for a single output file");
             return ExitCode.InvalidArgs;
         }
@@ -129,66 +154,118 @@ async function runConvert(options: ParsedOptions): Promise<number> {
 
         const ctx = createContext();
         configureConsoleBackend(ctx.bindings, shared.logFile);
-        const resolved = resolveFormats(inputPath, outputPath, shared);
 
-        if (resolved.ambiguous) {
-            const report = buildBlockedReport(
+        if (inputs.length > 1) {
+            const batch = await runBatchConvert({
                 ctx,
-                "convert",
-                inputPath,
-                resolved,
-                "ambiguous input format",
-                ExitCode.InputUnsupported,
+                inputs,
+                outputDir: outputDirOption!,
                 shared,
-            );
-            await emitConvertReport(report, shared, reportPath);
-            return ExitCode.InputUnsupported;
+                dryRun,
+            });
+            await emitConvertReport(batch.report, shared, reportPath);
+            return batch.exitCode;
+        }
+
+        const result = await convertSingleFile({
+            ctx,
+            inputPath,
+            outputPath,
+            shared,
+            dryRun,
+        });
+        await emitConvertReport(result.report, shared, reportPath);
+        return result.exitCode;
+    } catch (error) {
+        if (error instanceof CliOptionError) {
+            console.error(error.message);
+            return error.exitCode;
+        }
+        console.error(error instanceof Error ? error.message : String(error));
+        return ExitCode.InvalidArgs;
+    }
+}
+
+type FileResult = {
+    exitCode: number;
+    report: PanduckReport;
+};
+
+/** Converts one input with the already-resolved CLI context. */
+async function convertSingleFile(input: {
+    ctx: ReturnType<typeof createContext>;
+    inputPath: string;
+    outputPath: string | undefined;
+    shared: SharedCliOptions;
+    dryRun: boolean;
+}): Promise<FileResult> {
+    const { ctx, inputPath, outputPath, shared, dryRun } = input;
+    const resolved = resolveFormats(inputPath, outputPath, shared);
+    const markdownProjectTarget = shared.to === "markdown-project";
+
+    try {
+        if (resolved.ambiguous) {
+            return {
+                exitCode: ExitCode.InputUnsupported,
+                report: buildBlockedReport(
+                    ctx,
+                    "convert",
+                    inputPath,
+                    resolved,
+                    "ambiguous input format",
+                    ExitCode.InputUnsupported,
+                    shared,
+                ),
+            };
         }
 
         if (!resolved.to) {
-            const report = buildBlockedReport(
-                ctx,
-                "convert",
-                inputPath,
-                resolved,
-                "target format is required",
-                ExitCode.InvalidArgs,
-                shared,
-            );
-            await emitConvertReport(report, shared, reportPath);
-            return ExitCode.InvalidArgs;
+            return {
+                exitCode: ExitCode.InvalidArgs,
+                report: buildBlockedReport(
+                    ctx,
+                    "convert",
+                    inputPath,
+                    resolved,
+                    "target format is required",
+                    ExitCode.InvalidArgs,
+                    shared,
+                ),
+            };
         }
 
         try {
             await assertReadableInput(inputPath);
         } catch {
-            const report = buildBlockedReport(
-                ctx,
-                "convert",
-                inputPath,
-                resolved,
-                "input is not readable",
-                ExitCode.InputUnsupported,
-                shared,
-            );
-            await emitConvertReport(report, shared, reportPath);
-            return ExitCode.InputUnsupported;
+            return {
+                exitCode: ExitCode.InputUnsupported,
+                report: buildBlockedReport(
+                    ctx,
+                    "convert",
+                    inputPath,
+                    resolved,
+                    "input is not readable",
+                    ExitCode.InputUnsupported,
+                    shared,
+                ),
+            };
         }
 
         if (outputPath && outputPath !== "-" && !shared.overwrite) {
             try {
                 await access(outputPath, constants.F_OK);
-                const report = buildBlockedReport(
-                    ctx,
-                    "convert",
-                    inputPath,
-                    resolved,
-                    "output already exists",
-                    ExitCode.OutputFailure,
-                    shared,
-                );
-                await emitConvertReport(report, shared, reportPath);
-                return ExitCode.OutputFailure;
+                return {
+                    exitCode: ExitCode.OutputFailure,
+                    report: buildBlockedReport(
+                        ctx,
+                        "convert",
+                        inputPath,
+                        resolved,
+                        "output already exists",
+                        ExitCode.OutputFailure,
+                        shared,
+                    ),
+                };
             } catch {
                 // target does not exist yet
             }
@@ -197,17 +274,18 @@ async function runConvert(options: ParsedOptions): Promise<number> {
         const source = resolved.from ? findFormat(ctx.registry, resolved.from) : undefined;
         const target = findFormat(ctx.registry, resolved.to);
         if (!target) {
-            const report = buildBlockedReport(
-                ctx,
-                "convert",
-                inputPath,
-                resolved,
-                `unknown target format ${resolved.to}`,
-                ExitCode.InputUnsupported,
-                shared,
-            );
-            await emitConvertReport(report, shared, reportPath);
-            return ExitCode.InputUnsupported;
+            return {
+                exitCode: ExitCode.InputUnsupported,
+                report: buildBlockedReport(
+                    ctx,
+                    "convert",
+                    inputPath,
+                    resolved,
+                    `unknown target format ${resolved.to}`,
+                    ExitCode.InputUnsupported,
+                    shared,
+                ),
+            };
         }
 
         const routeReady = markdownProjectTarget
@@ -218,68 +296,72 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             : hasPipeline(ctx.bindings, resolved.from, resolved.to);
 
         if (resolved.from === "doc" && !markdownProjectTarget) {
-            const report = buildBlockedReport(
-                ctx,
-                "convert",
-                inputPath,
-                resolved,
-                "legacy .doc import requires OLE reader support; convert to .docx first",
-                ExitCode.InputUnsupported,
-                shared,
-            );
-            await emitConvertReport(report, shared, reportPath);
-            return ExitCode.InputUnsupported;
+            return {
+                exitCode: ExitCode.InputUnsupported,
+                report: buildBlockedReport(
+                    ctx,
+                    "convert",
+                    inputPath,
+                    resolved,
+                    "legacy .doc import requires OLE reader support; convert to .docx first",
+                    ExitCode.InputUnsupported,
+                    shared,
+                ),
+            };
         }
 
         if (!routeReady) {
             if (source && !isOperationReady(source, "read")) {
-                const report = buildBlockedReport(
-                    ctx,
-                    "convert",
-                    inputPath,
-                    resolved,
-                    `source format ${source.format} is not ready for read`,
-                    ExitCode.InputUnsupported,
-                    shared,
-                );
-                await emitConvertReport(report, shared, reportPath);
-                return ExitCode.InputUnsupported;
+                return {
+                    exitCode: ExitCode.InputUnsupported,
+                    report: buildBlockedReport(
+                        ctx,
+                        "convert",
+                        inputPath,
+                        resolved,
+                        `source format ${source.format} is not ready for read`,
+                        ExitCode.InputUnsupported,
+                        shared,
+                    ),
+                };
             }
 
             if (!isOperationReady(target, "write")) {
-                const report = buildBlockedReport(
-                    ctx,
-                    "convert",
-                    inputPath,
-                    resolved,
-                    `target format ${target.format} is not ready for write`,
-                    ExitCode.InputUnsupported,
-                    shared,
-                );
-                await emitConvertReport(report, shared, reportPath);
-                return ExitCode.InputUnsupported;
+                return {
+                    exitCode: ExitCode.InputUnsupported,
+                    report: buildBlockedReport(
+                        ctx,
+                        "convert",
+                        inputPath,
+                        resolved,
+                        `target format ${target.format} is not ready for write`,
+                        ExitCode.InputUnsupported,
+                        shared,
+                    ),
+                };
             }
         }
 
         if (dryRun) {
-            const report = createReport({
-                operation: "convert",
-                toolVersion: ctx.toolVersion,
-                status: "success",
-                inputs: [{ path: inputPath, format: resolved.from }],
-                detection: { format: resolved.from, confidence: "hint", hints: resolved.hints },
-                pipeline: {
-                    reader: source?.format ?? resolved.from,
-                    writer: target.format,
-                    stages: ["detect", "read", "ir", "write", "publish"],
-                },
-                outputs: outputPath ? [{ path: outputPath, published: false }] : [],
-                budgets: shared.budgets,
-                determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
-                statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.Success },
-            });
-            await emitConvertReport(report, shared, reportPath);
-            return ExitCode.Success;
+            return {
+                exitCode: ExitCode.Success,
+                report: createReport({
+                    operation: "convert",
+                    toolVersion: ctx.toolVersion,
+                    status: "success",
+                    inputs: [{ path: inputPath, format: resolved.from }],
+                    detection: { format: resolved.from, confidence: "hint", hints: resolved.hints },
+                    pipeline: {
+                        reader: source?.format ?? resolved.from,
+                        writer: target.format,
+                        stages: ["detect", "read", "ir", "write", "publish"],
+                    },
+                    outputs: outputPath ? [{ path: outputPath, published: false }] : [],
+                    budgets: shared.budgets,
+                    determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
+                    statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.Success },
+                }),
+            };
         }
 
         if (routeReady && ctx.bindings) {
@@ -303,58 +385,188 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                           shared,
                           toolVersion: ctx.toolVersion,
                       });
-                await emitConvertReport(result.report, shared, reportPath);
-                return result.exitCode;
+                return { exitCode: result.exitCode, report: result.report };
             } catch (error) {
                 const message = error instanceof Error ? error.message : String(error);
-                const report = buildBlockedReport(
-                    ctx,
-                    "convert",
-                    inputPath,
-                    resolved,
-                    message,
-                    ExitCode.IrOrWriterFailure,
-                    shared,
-                );
-                await emitConvertReport(report, shared, reportPath);
-                return ExitCode.IrOrWriterFailure;
+                return {
+                    exitCode: ExitCode.IrOrWriterFailure,
+                    report: buildBlockedReport(
+                        ctx,
+                        "convert",
+                        inputPath,
+                        resolved,
+                        message,
+                        ExitCode.IrOrWriterFailure,
+                        shared,
+                    ),
+                };
             }
         }
 
-        const report = createReport({
-            operation: "convert",
-            toolVersion: ctx.toolVersion,
-            status: "blocked",
-            inputs: [{ path: inputPath, format: resolved.from }],
-            detection: { format: resolved.from, confidence: "hint", hints: resolved.hints },
-            pipeline: {
-                reader: source?.format ?? resolved.from,
-                writer: target.format,
-                stages: ["detect", "read", "ir", "write", "publish"],
-                blocked_reason: "conversion pipeline is not wired yet",
-            },
-            diagnostics: [
-                createDiagnostic({
-                    code: "panduck.convert.not_implemented",
-                    component: "convert",
-                    severity: "error",
-                    fallback: "conversion pipeline is not wired yet",
-                }),
-            ],
-            outputs: outputPath ? [{ path: outputPath, published: false }] : [],
-            budgets: shared.budgets,
-            determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
-            statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.IrOrWriterFailure },
-        });
-
-        await emitConvertReport(report, shared, reportPath);
-        return ExitCode.IrOrWriterFailure;
+        return {
+            exitCode: ExitCode.IrOrWriterFailure,
+            report: createReport({
+                operation: "convert",
+                toolVersion: ctx.toolVersion,
+                status: "blocked",
+                inputs: [{ path: inputPath, format: resolved.from }],
+                detection: { format: resolved.from, confidence: "hint", hints: resolved.hints },
+                pipeline: {
+                    reader: source?.format ?? resolved.from,
+                    writer: target.format,
+                    stages: ["detect", "read", "ir", "write", "publish"],
+                    blocked_reason: "conversion pipeline is not wired yet",
+                },
+                diagnostics: [
+                    createDiagnostic({
+                        code: "panduck.convert.not_implemented",
+                        component: "convert",
+                        severity: "error",
+                        fallback: "conversion pipeline is not wired yet",
+                    }),
+                ],
+                outputs: outputPath ? [{ path: outputPath, published: false }] : [],
+                budgets: shared.budgets,
+                determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
+                statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.IrOrWriterFailure },
+            }),
+        };
     } catch (error) {
-        if (error instanceof CliOptionError) {
-            console.error(error.message);
-            return error.exitCode;
-        }
-        console.error(error instanceof Error ? error.message : String(error));
-        return ExitCode.InvalidArgs;
+        const message = error instanceof Error ? error.message : String(error);
+        return {
+            exitCode: ExitCode.IrOrWriterFailure,
+            report: buildBlockedReport(
+                ctx,
+                "convert",
+                inputPath,
+                resolved,
+                message,
+                ExitCode.IrOrWriterFailure,
+                shared,
+            ),
+        };
     }
+}
+
+/** One aggregated report over every input, in the order the inputs were given. */
+async function runBatchConvert(input: {
+    ctx: ReturnType<typeof createContext>;
+    inputs: string[];
+    outputDir: string;
+    shared: SharedCliOptions;
+    dryRun: boolean;
+}): Promise<FileResult> {
+    const { ctx, inputs, outputDir, shared, dryRun } = input;
+    const to = shared.to;
+    if (!to || shared.to === "markdown-project") {
+        console.error("batch conversion requires a single-file target format such as --to html or --to docx");
+        return {
+            exitCode: ExitCode.InvalidArgs,
+            report: createReport({
+                operation: "convert-batch",
+                toolVersion: ctx.toolVersion,
+                status: "blocked",
+                inputs: inputs.map((path) => ({ path })),
+                pipeline: { blocked_reason: "batch conversion requires a single-file target format" },
+                diagnostics: [
+                    createDiagnostic({
+                        code: "panduck.cli.blocked",
+                        component: "cli",
+                        severity: "error",
+                        fallback: "batch conversion requires a single-file target format",
+                    }),
+                ],
+                budgets: shared.budgets,
+                determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
+                statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.InvalidArgs },
+            }),
+        };
+    }
+
+    const extension = TARGET_EXTENSIONS[to] ?? to;
+    const plans = inputs.map((inputPath) => ({
+        inputPath,
+        outputPath: join(outputDir, `${basename(inputPath, extname(inputPath))}.${extension}`),
+    }));
+
+    const seen = new Set<string>();
+    for (const plan of plans) {
+        if (seen.has(plan.outputPath)) {
+            console.error(`two batch inputs map to the same output: ${plan.outputPath}`);
+            return {
+                exitCode: ExitCode.InvalidArgs,
+                report: createReport({
+                    operation: "convert-batch",
+                    toolVersion: ctx.toolVersion,
+                    status: "blocked",
+                    inputs: inputs.map((path) => ({ path })),
+                    pipeline: { blocked_reason: `two batch inputs map to the same output: ${plan.outputPath}` },
+                    diagnostics: [
+                        createDiagnostic({
+                            code: "panduck.cli.blocked",
+                            component: "cli",
+                            severity: "error",
+                            fallback: `two batch inputs map to the same output: ${plan.outputPath}`,
+                        }),
+                    ],
+                    budgets: shared.budgets,
+                    determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
+                    statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.InvalidArgs },
+                }),
+            };
+        }
+        seen.add(plan.outputPath);
+    }
+
+    await mkdir(outputDir, { recursive: true });
+
+    let exitCode: number = ExitCode.Success;
+    let blocked = false;
+    let withLoss = false;
+    const inputsReport: PanduckReport["inputs"] = [];
+    const outputs: NonNullable<PanduckReport["outputs"]> = [];
+    const losses: NonNullable<PanduckReport["losses"]> = [];
+    const diagnostics: NonNullable<PanduckReport["diagnostics"]> = [];
+
+    for (const plan of plans) {
+        const result = await convertSingleFile({
+            ctx,
+            inputPath: plan.inputPath,
+            outputPath: plan.outputPath,
+            shared,
+            dryRun,
+        });
+        exitCode = Math.max(exitCode, result.exitCode);
+        blocked = blocked || result.report.status === "blocked";
+        withLoss = withLoss || result.report.status === "success_with_loss";
+        for (const item of result.report.inputs) {
+            inputsReport.push(item);
+        }
+        for (const item of result.report.outputs ?? []) {
+            outputs.push(item);
+        }
+        for (const item of result.report.losses ?? []) {
+            losses.push(item);
+        }
+        for (const item of result.report.diagnostics ?? []) {
+            diagnostics.push(item);
+        }
+    }
+
+    const status: PanduckReport["status"] = blocked ? "blocked" : withLoss ? "success_with_loss" : "success";
+    const report = createReport({
+        operation: "convert-batch",
+        toolVersion: ctx.toolVersion,
+        status,
+        inputs: inputsReport,
+        pipeline: { writer: to, stages: ["read", "ir", "write", "publish"] },
+        losses,
+        diagnostics,
+        outputs,
+        budgets: shared.budgets,
+        determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
+        statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: exitCode },
+    });
+
+    return { exitCode, report };
 }
