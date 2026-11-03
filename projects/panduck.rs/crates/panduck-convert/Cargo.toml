@@ -42,7 +42,7 @@ console = ["logger"]
 
 [dev-dependencies]
 boost-log = { workspace = true }
-notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "5083d970c10c016db91e9a61eccd69608d34548e" }
+notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "148fb1928bc8a123e7b3c2bade14fabea7bec7ae" }
 serial_test = "3.2.0"
 
 [[test]]

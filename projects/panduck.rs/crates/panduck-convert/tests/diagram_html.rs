@@ -181,3 +181,16 @@ fn unknown_member_markers_are_rejected_with_a_span_instead_of_dropped() {
     assert_eq!(report_status(&output.report_json), "success_with_loss");
     assert!(output.report_json.contains("span.start"), "the refusal must carry its authored offset: {}", output.report_json);
 }
+
+#[test]
+fn mixed_plantuml_families_are_refused_with_the_contradicting_marker() {
+    let document = "# Mixed Family\n\n```plantuml\n@startuml\nclass Order\nparticipant X\n@enduml\n```\n";
+    let output = convert_bytes("markdown", "html", "mixed.md", document.as_bytes().to_vec(), None).expect("convert mixed family");
+    let html = output.html.as_deref().expect("html output");
+
+    assert!(html.contains(r#"<pre class="diagram" data-diagram-language="plantuml""#), "the refusal must keep the source visible: {html}");
+    assert!(output.loss_count > 0, "the refusal must be reported: {}", output.report_json);
+    assert_eq!(report_status(&output.report_json), "success_with_loss");
+    assert!(output.report_json.contains("mixes class and sequence"), "the diagnostic names the conflict: {}", output.report_json);
+    assert!(output.report_json.contains("span.start"), "the diagnostic carries the marker offset: {}", output.report_json);
+}
