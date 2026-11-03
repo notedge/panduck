@@ -334,8 +334,8 @@ fn write_target(to: &str, graph: &mut DocumentGraph) -> Result<(String, Option<S
         }
         "html" => {
             let rendered = crate::diagram::render_diagrams(graph);
-            for loss in rendered.losses {
-                graph.push_loss(loss);
+            for (loss, span) in rendered.losses.into_iter().zip(rendered.loss_spans) {
+                graph.push_loss_at(loss, span);
             }
             let html = write_document_html(graph, &rendered.scenes)?;
             Ok((String::new(), Some(html), None))

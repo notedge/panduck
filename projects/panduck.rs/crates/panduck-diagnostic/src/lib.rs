@@ -108,15 +108,26 @@ fn semantic_status_label(status: SemanticStatus) -> &'static str {
 
 /// Map one IR loss marker to a unified diagnostic.
 pub fn from_loss_marker(marker: &LossMarker) -> Diagnostic {
+    from_spanned_loss_marker(marker, None)
+}
+
+/// Map one IR loss marker and its authored source span to a unified diagnostic.
+///
+/// The span travels as `span.start` and `span.end` args so report consumers can
+/// locate the rejection without parsing prose.
+pub fn from_spanned_loss_marker(marker: &LossMarker, span: Option<notedown_ir::SourceSpan>) -> Diagnostic {
     let code = if marker.code.contains('.') {
         WireDiagnosticCode::new(&marker.code)
     }
     else {
         DiagnosticCode::SemanticLoss.wire_code()
     };
-    let msg = Message::new("panduck.semantic.loss")
+    let mut msg = Message::new("panduck.semantic.loss")
         .with_arg("code", MessageArg::Text(marker.code.clone()))
         .with_arg("severity", MessageArg::Text(semantic_status_label(marker.status).to_string()));
+    if let Some(span) = span {
+        msg = msg.with_arg("span.start", MessageArg::U64(span.start as u64)).with_arg("span.end", MessageArg::U64(span.end as u64));
+    }
     Diagnostic::new(
         code,
         loss_severity(marker.status),
@@ -221,8 +232,8 @@ pub fn from_adapter_error(error: &AdapterError) -> Diagnostic {
 /// Collect semantic loss diagnostics from a document graph.
 pub fn diagnostics_from_graph(graph: &DocumentGraph) -> DiagnosticSet {
     let mut set = DiagnosticSet::new();
-    for marker in &graph.coverage.loss {
-        set.push(from_loss_marker(marker));
+    for (index, marker) in graph.coverage.loss.iter().enumerate() {
+        set.push(from_spanned_loss_marker(marker, graph.loss_span(index)));
     }
     set
 }

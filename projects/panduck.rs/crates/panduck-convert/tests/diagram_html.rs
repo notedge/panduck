@@ -132,3 +132,28 @@ fn puml_alias_reaches_the_plantuml_lowering() {
     assert!(scene.svg.contains(r#"data-role="node""#), "{}", scene.svg);
     assert!(scene.svg.contains(r#"data-role="edge""#), "the inheritance edge must render: {}", scene.svg);
 }
+
+#[test]
+fn rejected_plantuml_loss_carries_the_authored_span() {
+    use notedown_ir::{Block, DocumentGraph, DocumentId, SourceSpan};
+
+    let source = "@startuml\nskinparam monochrome true\n@enduml\n";
+    let fence_start = 9;
+    let mut graph = DocumentGraph::new(DocumentId(1));
+    graph.push_block_at(
+        Block::Diagram { language: "plantuml".to_string(), source: source.to_string() },
+        SourceSpan::new(fence_start, fence_start + source.len()),
+    );
+
+    let rendered = panduck_convert::diagram::render_diagrams(&graph);
+    assert_eq!(rendered.losses.len(), 1, "the unsupported directive must be reported: {:?}", rendered.losses);
+    assert_eq!(rendered.loss_spans.len(), rendered.losses.len(), "loss spans stay aligned with losses");
+    let span = rendered.loss_spans[0].expect("the rejection carries an authored span");
+    assert!(span.start >= fence_start as u32, "span starts inside the fence: {span:?}");
+    assert!(span.end <= (fence_start + source.len()) as u32, "span ends inside the fence: {span:?}");
+    assert_eq!(
+        &source[(span.start as usize - fence_start)..(span.end as usize - fence_start)],
+        "skinparam monochrome true",
+        "the span points at the rejected statement"
+    );
+}

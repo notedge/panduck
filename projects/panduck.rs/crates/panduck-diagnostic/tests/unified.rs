@@ -1,5 +1,5 @@
 use boost_diagnostic::DiagnosticSeverity;
-use notedown_ir::{DocumentGraph, IdAllocator, LossMarker, SemanticStatus};
+use notedown_ir::{DocumentGraph, IdAllocator, LossMarker, SemanticStatus, SourceSpan};
 use panduck_diagnostic::{DiagnosticEnvelope, diagnostics_from_graph, from_adapter_error, from_loss_marker};
 use panduck_types::AdapterError;
 
@@ -51,6 +51,38 @@ fn graph_losses_collect_into_diagnostic_set() {
     let set = diagnostics_from_graph(&graph);
     assert_eq!(set.diagnostics().len(), 1);
     assert_eq!(set.diagnostics()[0].code().as_str(), "panduck.writer.unsupported-feature");
+}
+
+#[test]
+fn graph_loss_with_a_source_span_exposes_offsets_in_the_envelope() {
+    let mut graph = DocumentGraph::new(IdAllocator::default().document_id());
+    graph.push_loss_at(
+        LossMarker {
+            code: "davinci.diagram.unsupported".to_string(),
+            message: "unsupported statement".to_string(),
+            status: SemanticStatus::Lossy,
+        },
+        SourceSpan::new(12, 34),
+    );
+    let set = diagnostics_from_graph(&graph);
+    assert_eq!(set.diagnostics().len(), 1);
+    let json = serde_json::to_string(&DiagnosticEnvelope::from_set(&set)).expect("serialize spanned envelope");
+    assert!(json.contains("span.start"), "the rejection must expose its start offset, got {json}");
+    assert!(json.contains("span.end"), "the rejection must expose its end offset, got {json}");
+    assert!(json.contains("davinci.diagram.unsupported"), "got {json}");
+}
+
+#[test]
+fn graph_loss_without_a_span_stays_position_free() {
+    let mut graph = DocumentGraph::new(IdAllocator::default().document_id());
+    graph.push_loss(LossMarker {
+        code: "panduck.writer.unsupported-feature".to_string(),
+        message: "strike not expressible".to_string(),
+        status: SemanticStatus::Lossy,
+    });
+    let set = diagnostics_from_graph(&graph);
+    let json = serde_json::to_string(&DiagnosticEnvelope::from_set(&set)).expect("serialize unspanned envelope");
+    assert!(!json.contains("span.start"), "a span-free loss must not invent offsets, got {json}");
 }
 
 #[test]
