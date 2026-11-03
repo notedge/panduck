@@ -35,10 +35,38 @@ type CliLoss = {
     span: { start: number; end: number } | null;
 };
 
+type DiagnosticArg = { text?: string; u64?: number };
+
+type CliDiagnostic = {
+    code: string;
+    severity: string;
+    origin: { namespace: string; component: string; stage: string | null };
+    message: { key: string; args: Array<[string, DiagnosticArg]>; fallback: string | null };
+};
+
 type CliReport = {
     status: string;
     losses: CliLoss[];
+    diagnostics: CliDiagnostic[];
 };
+
+function diagnosticArg(diagnostic: CliDiagnostic, name: string): number | undefined {
+    const entry = diagnostic.message.args.find((arg) => arg[0] === name);
+    return entry?.[1].u64;
+}
+
+function assertDiagnosticMatchesLoss(report: CliReport, label: string): void {
+    const loss = report.losses[0];
+    assert.ok(loss, `${label}: expected one loss`);
+    const diagnostic = report.diagnostics.find((entry) => entry.code === loss.code);
+    assert.ok(diagnostic, `${label}: diagnostics must repeat ${loss.code}, got ${JSON.stringify(report.diagnostics)}`);
+    assert.equal(diagnostic.severity, "warning", `${label}: a refusal is a warning`);
+    assert.equal(diagnosticArg(diagnostic, "span.start"), loss.span?.start, `${label}: span.start must match losses[0].span`);
+    assert.equal(diagnosticArg(diagnostic, "span.end"), loss.span?.end, `${label}: span.end must match losses[0].span`);
+    const block = diagnosticArg(diagnostic, "block");
+    assert.equal(typeof block, "number", `${label}: the diagnostic must name the authoring block`);
+    assert.ok((block as number) > 0, `${label}: the chart fence is not block 0`);
+}
 
 function chartDoc(language: string, spec: string): string {
     return ["# Chart", "", "```" + language, spec, "```", ""].join("\n");
@@ -73,6 +101,7 @@ test("bar chart fences render real rect geometry on the declared canvas", async 
     assert.doesNotMatch(html, /<pre class="chart"/, "a rendered chart must not keep the source fallback");
     assert.equal(report.status, "success");
     assert.deepEqual(report.losses, []);
+    assert.deepEqual(report.diagnostics, [], "a clean chart emits no diagnostics");
 });
 
 test("line chart fences render one trained polyline", async () => {
@@ -86,6 +115,7 @@ test("line chart fences render one trained polyline", async () => {
     );
     assert.equal((html.match(/data-role="mark"/g) ?? []).length, 1, "a line chart has one mark, not one per row");
     assert.deepEqual(report.losses, []);
+    assert.deepEqual(report.diagnostics, []);
 });
 
 test("point chart fences render one circle per row", async () => {
@@ -100,6 +130,7 @@ test("point chart fences render one circle per row", async () => {
         assert.match(html, expected);
     }
     assert.deepEqual(report.losses, []);
+    assert.deepEqual(report.diagnostics, []);
 });
 
 test("refused charts keep the visible source, the stable code, and a real span", async () => {
@@ -120,7 +151,29 @@ test("refused charts keep the visible source, the stable code, and a real span",
             document.slice(loss.span.start, loss.span.end).includes(rejection.spec.slice(0, 20)),
             `${rejection.label}: the span must address the authored fence body`,
         );
+        assertDiagnosticMatchesLoss(report, rejection.label);
     }
+});
+
+test("report files carry the same diagnostic span as stdout", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-chart-report-"));
+    const input = join(workdir, "rejected.md");
+    const output = join(workdir, "rejected.html");
+    const reportPath = join(workdir, "report.json");
+    await writeFile(input, chartDoc("vega-lite", REJECTIONS[0].spec), "utf8");
+
+    const run = runPanduck([
+        "convert", input, "--from", "markdown", "--to", "html",
+        "-o", output, "--report", reportPath, "--diagnostics", "silent",
+    ]);
+    assert.equal(run.code, 0, run.stderr || run.stdout);
+
+    const report = JSON.parse(await readFile(reportPath, "utf8")) as CliReport;
+    assert.equal(report.status, "success_with_loss");
+    assertDiagnosticMatchesLoss(report, "--report");
+    const diagnostic = report.diagnostics[0];
+    assert.equal(diagnostic.origin.namespace, "panduck");
+    assert.equal(diagnostic.origin.component, "semantic");
 });
 
 test("chart denials fail the conversion while the fallback is still published", async () => {

@@ -174,6 +174,7 @@ export async function runConversionPipeline(input: {
             stages: operation === "check" ? ["read", "ir", "write", "validate"] : ["read", "ir", "write", "publish"],
         },
         losses: parsedReport.losses,
+        diagnostics: parsedReport.diagnostics,
         outputs: outputPath
             ? [{ path: outputPath, published: publishOutput && !isStdoutPath(outputPath) }]
             : [{ path: "-", published: !suppressStdout }],
@@ -306,6 +307,7 @@ export async function runMarkdownProjectPipeline(input: {
             stages: ["read", "ir", "write", "materialize", "publish"],
         },
         losses: parsedReport.losses,
+        diagnostics: parsedReport.diagnostics,
         outputs: [
             { path: join(outputDir, "index.md"), published: true },
             ...response.publishedChapters.map((chapter) => ({

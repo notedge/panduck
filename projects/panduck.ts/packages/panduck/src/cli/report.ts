@@ -46,7 +46,22 @@ export type PanduckReport = {
         read?: number;
         write?: number;
     };
+    /**
+     * Content losses recorded by the IR.
+     *
+     * Each entry is a semantic change the conversion had to make: a refused
+     * chart, a dropped table cell, a downgraded structure. Use `losses` when
+     * the question is "what did not survive the conversion".
+     */
     losses?: LossRecord[];
+    /**
+     * Every diagnostic produced by the pipeline, including one entry per loss.
+     *
+     * The unified diagnostic keeps `code`, `severity`, `origin`, and the
+     * structured `message.args` that locate it. Loss entries repeat the same
+     * `span.start` and `span.end` args as `losses`, and add `block` (the
+     * authoring block id) when the loss belongs to a fence or node.
+     */
     diagnostics?: DiagnosticRecord[];
     outputs?: Array<{ path: string; published: boolean }>;
     budgets?: Record<string, number>;
