@@ -16,10 +16,9 @@ import { ExitCode } from "../exit-codes.js";
 import { findFormat, isOperationReady } from "../format-registry.js";
 import {
     CliOptionError,
-    parseAssetPolicy,
-    parseLinkPolicy,
     readSharedOptions,
     readString,
+    unsupportedFlags,
     type SharedCliOptions,
 } from "../options.js";
 import { createReport, type PanduckReport } from "../report.js";
@@ -72,11 +71,18 @@ async function emitConvertReport(
 async function runConvert(options: ParsedOptions): Promise<number> {
     try {
         const shared = readSharedOptions(options);
+        const unsupported = unsupportedFlags(options);
+        if (unsupported.length > 0) {
+            console.error(`these flags are not supported by this build: ${unsupported.join(", ")}`);
+            return ExitCode.InvalidArgs;
+        }
         const inputPath = options._[0] ?? readString(options, "input");
-        const outputPath = readString(options, "output");
+        const outputOption = readString(options, "output");
+        const outputDirOption = readString(options, "output-dir");
         const reportPath = readString(options, "report");
         const batch = options.batch === true;
         const dryRun = options["dry-run"] === true;
+        const markdownProjectTarget = shared.to === "markdown-project";
 
         if (!inputPath) {
             return ExitCode.InvalidArgs;
@@ -85,6 +91,15 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             console.error("--batch is not implemented yet; convert one input at a time");
             return ExitCode.BatchFailure;
         }
+        if (outputDirOption && outputOption) {
+            console.error("use either -o or --output-dir, not both");
+            return ExitCode.InvalidArgs;
+        }
+        if (outputDirOption && !markdownProjectTarget) {
+            console.error("--output-dir requires --to markdown-project; use -o for a single output file");
+            return ExitCode.InvalidArgs;
+        }
+        const outputPath = outputOption ?? outputDirOption;
 
         const unenforcedBudgets = Object.keys(shared.budgets).filter(
             (key) => key !== "input_bytes" && key !== "output_bytes",
@@ -117,7 +132,6 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             return ExitCode.InvalidArgs;
         }
 
-        const markdownProjectTarget = shared.to === "markdown-project";
         if (markdownProjectTarget && (!outputPath || isStdoutPath(outputPath))) {
             console.error("markdown-project requires an output directory via -o or --output-dir");
             return ExitCode.InvalidArgs;
@@ -189,9 +203,6 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                 // target does not exist yet
             }
         }
-
-        parseAssetPolicy(readString(options, "asset-policy"));
-        parseLinkPolicy(readString(options, "link-policy"));
 
         const source = resolved.from ? findFormat(ctx.registry, resolved.from) : undefined;
         const target = findFormat(ctx.registry, resolved.to);

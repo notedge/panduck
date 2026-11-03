@@ -74,6 +74,32 @@ export function readSharedOptions(options: ParsedOptions): SharedCliOptions {
     };
 }
 
+const UNSUPPORTED_FLAGS = [
+    "profile",
+    "config",
+    "allow-partial",
+    "assets-dir",
+    "asset-policy",
+    "link-policy",
+] as const;
+
+/**
+ * Flags that are declared for contract completeness but have no effect in
+ * this build. Accepting them silently would promise behavior the pipeline
+ * never applies, so the commands reject them instead.
+ */
+export function unsupportedFlags(options: ParsedOptions): string[] {
+    const flags: string[] = [];
+    for (const key of UNSUPPORTED_FLAGS) {
+        const value = options[key];
+        if (value === undefined || value === false) {
+            continue;
+        }
+        flags.push(`--${key}`);
+    }
+    return flags;
+}
+
 export function parseAssetPolicy(value: string | undefined): AssetPolicy {
     return parseEnum(value ?? "preserve", ASSET_VALUES, "asset-policy");
 }

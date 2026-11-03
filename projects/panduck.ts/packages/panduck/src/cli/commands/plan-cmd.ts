@@ -11,7 +11,7 @@ import { createDiagnostic, textArg } from "../../diagnostic.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { findFormat, isOperationReady } from "../format-registry.js";
-import { CliOptionError, readSharedOptions, readString } from "../options.js";
+import { CliOptionError, readSharedOptions, readString, unsupportedFlags } from "../options.js";
 import { hasPipeline } from "../pipeline.js";
 import { configureConsoleBackend } from "../console-backend.js";
 import { createReport } from "../report.js";
@@ -30,6 +30,11 @@ export function registerPlanCommand(cli: Cli): void {
 async function runPlan(options: ParsedOptions): Promise<number> {
     try {
         const shared = readSharedOptions(options);
+        const unsupported = unsupportedFlags(options);
+        if (unsupported.length > 0) {
+            console.error(`these flags are not supported by this build: ${unsupported.join(", ")}`);
+            return ExitCode.InvalidArgs;
+        }
         const inputPath = options._[0] ?? readString(options, "input");
         if (!inputPath) {
             return ExitCode.InvalidArgs;

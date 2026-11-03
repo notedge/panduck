@@ -488,3 +488,92 @@ test("cli rejects unknown or unenforced budget keys instead of ignoring them", a
         await rm(workdir, { recursive: true, force: true });
     }
 });
+
+test("cli rejects declared flags that this build does not implement", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-inert-flags-"));
+    const input = join(workdir, "source.md");
+    const output = join(workdir, "source.html");
+    await writeFile(input, "# Title\n\nBody.\n", "utf8");
+
+    const flags: Array<{ label: string; args: string[] }> = [
+        { label: "--profile", args: ["--profile", "office"] },
+        { label: "--config", args: ["--config", join(workdir, "missing.json")] },
+        { label: "--allow-partial", args: ["--allow-partial"] },
+        { label: "--assets-dir", args: ["--assets-dir", workdir] },
+        { label: "--asset-policy", args: ["--asset-policy", "copy"] },
+        { label: "--link-policy", args: ["--link-policy", "rewrite"] },
+    ];
+
+    try {
+        for (const flag of flags) {
+            const run = runPanduck([
+                "convert",
+                input,
+                "--from",
+                "markdown",
+                "--to",
+                "html",
+                "-o",
+                output,
+                ...flag.args,
+                "--diagnostics",
+                "silent",
+            ]);
+            assert.equal(run.code, 2, `${flag.label} must fail closed: ${run.stderr}`);
+            assert.match(run.stderr, /these flags are not supported by this build/);
+            assert.ok(
+                run.stderr.includes(flag.label),
+                `${flag.label} must be named in the rejection: ${run.stderr}`,
+            );
+        }
+
+        const plan = runPanduck(["plan", input, "--to", "html", "--profile", "office", "--json"]);
+        assert.equal(plan.code, 2, `plan must reject --profile too: ${plan.stderr}`);
+        assert.match(plan.stderr, /these flags are not supported by this build/);
+        assert.equal(await exists(output), false, "rejected flags must not publish the output");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("cli refuses --output-dir unless the target is a markdown project", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-output-dir-"));
+    const input = join(workdir, "source.md");
+    await writeFile(input, "# Title\n\nBody.\n", "utf8");
+
+    try {
+        const run = runPanduck([
+            "convert",
+            input,
+            "--from",
+            "markdown",
+            "--to",
+            "html",
+            "--output-dir",
+            workdir,
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(run.code, 2, `--output-dir needs a directory target: ${run.stderr}`);
+        assert.match(run.stderr, /--output-dir requires --to markdown-project/);
+
+        const both = runPanduck([
+            "convert",
+            input,
+            "--from",
+            "markdown",
+            "--to",
+            "markdown-project",
+            "-o",
+            join(workdir, "out"),
+            "--output-dir",
+            join(workdir, "other"),
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(both.code, 2, `-o and --output-dir must conflict: ${both.stderr}`);
+        assert.match(both.stderr, /use either -o or --output-dir/);
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
