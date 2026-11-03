@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -180,4 +180,56 @@ test("garbage bytes declared as docx fail with an error diagnostic instead of em
         result.diagnostics.some((d) => d.severity === "error"),
         `an error diagnostic must explain the failure: ${JSON.stringify(result.diagnostics)}`,
     );
+});
+
+test("mixed diagram languages stay typed fences in one document", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-mixed-diagrams-"));
+    const input = join(workdir, "mixed.md");
+    const htmlPath = join(workdir, "mixed.html");
+    const backPath = join(workdir, "mixed-back.md");
+    const source = [
+        "# Mixed",
+        "",
+        "```mermaid",
+        "flowchart LR",
+        "  A --> B",
+        "```",
+        "",
+        "```plantuml",
+        "@startuml",
+        "Alice -> Bob",
+        "@enduml",
+        "```",
+        "",
+        "```dot",
+        "digraph { a -> b }",
+        "```",
+        "",
+    ].join("\n");
+    await writeFile(input, source, "utf8");
+
+    try {
+        const forward = runPanduck(["convert", input, "--from", "markdown", "--to", "html", "-o", htmlPath, "--diagnostics", "json"]);
+        assert.equal(forward.code, 0, forward.stderr);
+        const html = await readFile(htmlPath, "utf8");
+        for (const language of ["mermaid", "plantuml", "dot"]) {
+            assert.match(
+                html,
+                new RegExp(`<figure class="diagram" data-diagram-language="${language}"`),
+                `${language} must render as its own typed diagram`,
+            );
+        }
+
+        const backward = runPanduck(["convert", htmlPath, "--from", "html", "--to", "markdown", "-o", backPath, "--diagnostics", "json"]);
+        assert.equal(backward.code, 0, backward.stderr);
+        const back = await readFile(backPath, "utf8");
+        for (const fence of ["```mermaid", "```plantuml", "```dot"]) {
+            assert.match(back, new RegExp(fence), `${fence} must survive the roundtrip`);
+        }
+        assert.match(back, /A --> B/, "the mermaid body must stay verbatim");
+        assert.match(back, /Alice -> Bob/, "the plantuml body must stay verbatim");
+        assert.match(back, /digraph \{ a -> b \}/, "the dot body must stay verbatim");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
 });
