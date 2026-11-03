@@ -54,6 +54,7 @@ export type PanduckBindings = {
         to: string,
         inputPath: string,
         handlersJson?: string,
+        budgetsJson?: string,
     ) => ConvertResponse;
     /** Convert in-memory bytes — the path Pandark Engine takes when the page is already fetched. */
     convertBytesMemory?: (
@@ -62,6 +63,7 @@ export type PanduckBindings = {
         label: string,
         bytes: Uint8Array,
         handlersJson?: string,
+        budgetsJson?: string,
     ) => ConvertResponse;
     supportsMarkdownProject?: (from: string) => boolean;
     convertMarkdownProject?: (
@@ -69,6 +71,7 @@ export type PanduckBindings = {
         inputPath: string,
         outputDir: string,
         handlersJson?: string,
+        budgetsJson?: string,
     ) => ConvertProjectResponse;
     /** Byte-input counterpart of `convertMarkdownProject` — executes `ConversionPlan.publish`. */
     convertMarkdownProjectBytes?: (
@@ -77,6 +80,7 @@ export type PanduckBindings = {
         bytes: Uint8Array,
         outputDir: string,
         handlersJson?: string,
+        budgetsJson?: string,
     ) => ConvertProjectResponse;
     inspectIndex?: (inputPath: string) => InspectIndexResponse;
     inspectDecode?: (inputPath: string, partPath?: string) => InspectDecodeResponse;

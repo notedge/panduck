@@ -147,9 +147,15 @@ test("refused charts keep the visible source, the stable code, and a real span",
         assert.equal(loss.status, "Unsupported", rejection.label);
         assert.ok(loss.span, `${rejection.label}: the CLI report must carry the authored span`);
         assert.ok(loss.span.start > 0 && loss.span.end > loss.span.start, `${rejection.label}: ${JSON.stringify(loss.span)}`);
+        const fenceStart = document.indexOf(rejection.spec);
+        const fenceEnd = fenceStart + rejection.spec.length;
         assert.ok(
-            document.slice(loss.span.start, loss.span.end).includes(rejection.spec.slice(0, 20)),
-            `${rejection.label}: the span must address the authored fence body`,
+            loss.span.start >= fenceStart && loss.span.end <= fenceEnd,
+            `${rejection.label}: the span must stay inside the authored fence body, got ${JSON.stringify(loss.span)}`,
+        );
+        assert.ok(
+            document.slice(loss.span.start, loss.span.end).trim().length > 0,
+            `${rejection.label}: the span must address non-empty authored bytes`,
         );
         assertDiagnosticMatchesLoss(report, rejection.label);
     }

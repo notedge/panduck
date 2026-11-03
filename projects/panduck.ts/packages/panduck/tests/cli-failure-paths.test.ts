@@ -446,14 +446,13 @@ test("cli fails closed instead of silently ignoring extra batch inputs", async (
             "markdown",
             "--to",
             "html",
-            "--batch",
             "--output-dir",
             workdir,
             "--diagnostics",
             "silent",
         ]);
-        assert.equal(run.code, 8, `batch must fail closed until implemented: ${run.stderr}`);
-        assert.match(run.stderr, /--batch is not implemented yet/);
+        assert.equal(run.code, 2, `extra inputs must be rejected: ${run.stderr}`);
+        assert.match(run.stderr, /batch conversion is not implemented/);
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }
@@ -466,7 +465,7 @@ test("cli rejects unknown or unenforced budget keys instead of ignoring them", a
     await writeFile(input, "# Title\n\nBody.\n", "utf8");
 
     try {
-        for (const budget of ["typo_bytes=10", "decompressed_bytes=10"]) {
+        for (const budget of ["typo_bytes=10", "layout_nodes=10", "wall_ms=10"]) {
             const run = runPanduck([
                 "convert",
                 input,
@@ -484,6 +483,64 @@ test("cli rejects unknown or unenforced budget keys instead of ignoring them", a
             assert.equal(run.code, 2, `${budget} must be an argument error: ${run.stderr}`);
         }
         assert.equal(await exists(output), false, "rejected budgets must not publish the output");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("container budgets reject a real docx before conversion publishes output", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-container-budget-"));
+    const source = join(workdir, "source.md");
+    const docx = join(workdir, "source.docx");
+    const output = join(workdir, "back.md");
+    await writeFile(source, "# Container\n\nBody paragraph.\n", "utf8");
+
+    try {
+        const toDocx = runPanduck(["convert", source, "--from", "markdown", "--to", "docx", "-o", docx, "--diagnostics", "silent"]);
+        assert.equal(toDocx.code, 0, toDocx.stderr);
+
+        for (const budget of ["container_entries=1", "decompressed_bytes=100"]) {
+            const run = runPanduck([
+                "convert",
+                docx,
+                "--from",
+                "docx",
+                "--to",
+                "markdown",
+                "-o",
+                output,
+                "--budget",
+                budget,
+                "--diagnostics",
+                "json",
+                "--report",
+                join(workdir, "report.json"),
+            ]);
+            assert.equal(run.code, 7, `${budget} must exceed the container limit: ${run.stderr}`);
+            assert.match(run.stdout + run.stderr, /budget-exhausted/);
+            assert.equal(await exists(output), false, `${budget} must not publish the output`);
+            const report = JSON.parse(await readFile(join(workdir, "report.json"), "utf8")) as CliReport;
+            assert.equal(report.status, "blocked", `${budget} must be reported as blocked`);
+        }
+
+        const allowed = runPanduck([
+            "convert",
+            docx,
+            "--from",
+            "docx",
+            "--to",
+            "markdown",
+            "-o",
+            output,
+            "--budget",
+            "decompressed_bytes=104857600",
+            "--budget",
+            "container_entries=1000",
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(allowed.code, 0, `generous container budgets must pass: ${allowed.stderr}`);
+        assert.equal(await exists(output), true);
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }

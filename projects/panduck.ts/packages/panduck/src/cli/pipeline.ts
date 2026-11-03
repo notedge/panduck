@@ -7,6 +7,7 @@ import type { ConvertResponse, PanduckBindings } from "../types.js";
 import { createDiagnostic, parseReportEnvelope, textArg, u64Arg } from "../diagnostic.js";
 import type { DiagnosticRecord } from "../diagnostic.js";
 import { ExitCode } from "./exit-codes.js";
+import { containerBudgetsJson } from "./options.js";
 import type { SharedCliOptions } from "./options.js";
 import { createReport, type PanduckReport } from "./report.js";
 import { emitReport } from "./diagnostics.js";
@@ -234,9 +235,10 @@ export async function runConversionPipeline(input: {
         );
     }
 
+    const budgetsJson = containerBudgetsJson(shared.budgets);
     response = inputBytes
-        ? bindings.convertBytesMemory!(from, to, "stdin", inputBytes)
-        : bindings.convertDocument!(from, to, inputPath);
+        ? bindings.convertBytesMemory!(from, to, "stdin", inputBytes, undefined, budgetsJson)
+        : bindings.convertDocument!(from, to, inputPath, undefined, budgetsJson);
     const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert" });
 
     if (response.exitCode !== 0) {
@@ -437,9 +439,10 @@ export async function runMarkdownProjectPipeline(input: {
         );
     }
 
+    const budgetsJson = containerBudgetsJson(shared.budgets);
     const response = inputBytes
-        ? bindings.convertMarkdownProjectBytes!(from, "stdin", inputBytes, outputDir)
-        : bindings.convertMarkdownProject!(from, inputPath, outputDir);
+        ? bindings.convertMarkdownProjectBytes!(from, "stdin", inputBytes, outputDir, undefined, budgetsJson)
+        : bindings.convertMarkdownProject!(from, inputPath, outputDir, undefined, budgetsJson);
     const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert" });
 
     if (response.exitCode !== 0) {

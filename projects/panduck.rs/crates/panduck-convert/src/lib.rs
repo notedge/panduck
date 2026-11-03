@@ -1,7 +1,9 @@
 #![deny(missing_docs)]
 #![doc = include_str!("readme.md")]
 
+mod budget;
 mod dedupe_assets;
+pub use budget::ConversionBudgets;
 pub mod chart;
 pub mod diagram;
 mod format_error;
@@ -144,10 +146,28 @@ fn losses_with_spans(graph: &DocumentGraph) -> serde_json::Value {
 /// `apply_transform_passes`. Policy handler closures stay in TS — they cannot
 /// cross the wire, and this pipeline does not execute them.
 pub fn convert_bytes(from: &str, to: &str, label: &str, bytes: Vec<u8>, handlers_json: Option<&str>) -> Result<ConvertOutput> {
+    convert_bytes_with_budgets(from, to, label, bytes, handlers_json, None)
+}
+
+/// Converts bytes while enforcing container budgets before import.
+///
+/// Budget exhaustion is reported as `notedown.format.budget-exhausted`, which
+/// the CLI maps to exit code 7 without publishing any output.
+pub fn convert_bytes_with_budgets(
+    from: &str,
+    to: &str,
+    label: &str,
+    bytes: Vec<u8>,
+    handlers_json: Option<&str>,
+    budgets: Option<&ConversionBudgets>,
+) -> Result<ConvertOutput> {
     let from = from.to_ascii_lowercase();
     let to = to.to_ascii_lowercase();
     if !supports_route(&from, &to) {
         return format_error::fail(AdapterError::unsupported_format(from, format!("convert to {to}")));
+    }
+    if let Some(budgets) = budgets {
+        budgets.enforce_container(&from, label, &bytes)?;
     }
 
     let mut graph = format_error::propagate(read_source(&from, label, bytes))?;
@@ -190,9 +210,23 @@ pub fn convert_to_markdown_project_bytes(
     bytes: Vec<u8>,
     handlers_json: Option<&str>,
 ) -> Result<ConvertProjectOutput> {
+    convert_to_markdown_project_bytes_with_budgets(from, label, bytes, handlers_json, None)
+}
+
+/// Byte-input Markdown project conversion with container budgets.
+pub fn convert_to_markdown_project_bytes_with_budgets(
+    from: &str,
+    label: &str,
+    bytes: Vec<u8>,
+    handlers_json: Option<&str>,
+    budgets: Option<&ConversionBudgets>,
+) -> Result<ConvertProjectOutput> {
     let from = from.to_ascii_lowercase();
     if !supports_markdown_project_source(&from) {
         return format_error::fail(AdapterError::unsupported_format(from, "markdown project"));
+    }
+    if let Some(budgets) = budgets {
+        budgets.enforce_container(&from, label, &bytes)?;
     }
 
     let mut graph = format_error::propagate(read_source(&from, label, bytes))?;
@@ -210,9 +244,24 @@ pub fn convert_to_markdown_project(
     output_dir: impl AsRef<Path>,
     handlers_json: Option<&str>,
 ) -> Result<(ConvertProjectOutput, PublishedMarkdownProject)> {
+    convert_to_markdown_project_with_budgets(from, label, bytes, output_dir, handlers_json, None)
+}
+
+/// Publishes a Markdown project while enforcing container budgets.
+pub fn convert_to_markdown_project_with_budgets(
+    from: &str,
+    label: &str,
+    bytes: Vec<u8>,
+    output_dir: impl AsRef<Path>,
+    handlers_json: Option<&str>,
+    budgets: Option<&ConversionBudgets>,
+) -> Result<(ConvertProjectOutput, PublishedMarkdownProject)> {
     let from = from.to_ascii_lowercase();
     if !supports_markdown_project_source(&from) {
         return format_error::fail(AdapterError::unsupported_format(from, "markdown project"));
+    }
+    if let Some(budgets) = budgets {
+        budgets.enforce_container(&from, label, &bytes)?;
     }
 
     let mut graph = format_error::propagate(read_source(&from, label, bytes))?;
@@ -292,6 +341,17 @@ pub fn convert_markdown_project_file(
     output_dir: impl AsRef<Path>,
     handlers_json: Option<&str>,
 ) -> Result<(ConvertProjectOutput, PublishedMarkdownProject)> {
+    convert_markdown_project_file_with_budgets(from, input, output_dir, handlers_json, None)
+}
+
+/// File-input Markdown project conversion with container budgets.
+pub fn convert_markdown_project_file_with_budgets(
+    from: &str,
+    input: impl AsRef<Path>,
+    output_dir: impl AsRef<Path>,
+    handlers_json: Option<&str>,
+    budgets: Option<&ConversionBudgets>,
+) -> Result<(ConvertProjectOutput, PublishedMarkdownProject)> {
     let input = input.as_ref();
     let bytes = match fs::read(input) {
         Ok(bytes) => bytes,
@@ -299,11 +359,22 @@ pub fn convert_markdown_project_file(
             return format_error::fail(AdapterError::io(source, Some(input.display().to_string())));
         }
     };
-    convert_to_markdown_project(from, &input.display().to_string(), bytes, output_dir, handlers_json)
+    convert_to_markdown_project_with_budgets(from, &input.display().to_string(), bytes, output_dir, handlers_json, budgets)
 }
 
 /// Converts a file on disk.
 pub fn convert_file(from: &str, to: &str, input: impl AsRef<Path>, handlers_json: Option<&str>) -> Result<ConvertOutput> {
+    convert_file_with_budgets(from, to, input, handlers_json, None)
+}
+
+/// File-input conversion with container budgets.
+pub fn convert_file_with_budgets(
+    from: &str,
+    to: &str,
+    input: impl AsRef<Path>,
+    handlers_json: Option<&str>,
+    budgets: Option<&ConversionBudgets>,
+) -> Result<ConvertOutput> {
     let input = input.as_ref();
     let bytes = match fs::read(input) {
         Ok(bytes) => bytes,
@@ -311,7 +382,7 @@ pub fn convert_file(from: &str, to: &str, input: impl AsRef<Path>, handlers_json
             return format_error::fail(AdapterError::io(source, Some(input.display().to_string())));
         }
     };
-    convert_bytes(from, to, &input.display().to_string(), bytes, handlers_json)
+    convert_bytes_with_budgets(from, to, &input.display().to_string(), bytes, handlers_json, budgets)
 }
 
 fn read_source(from: &str, label: &str, bytes: Vec<u8>) -> Result<DocumentGraph> {

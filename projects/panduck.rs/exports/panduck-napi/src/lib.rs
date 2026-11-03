@@ -7,9 +7,10 @@ use std::collections::BTreeSet;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use panduck_convert::{
-    READERS, WRITERS, convert_bytes, convert_file, convert_markdown_project_file,
-    convert_to_markdown_project as convert_markdown_project_bytes_impl, empty_diagnostic_envelope, inspect_docx_decode,
-    inspect_docx_index, supported_routes, supports_markdown_project_source, supports_route,
+    ConversionBudgets, READERS, WRITERS, convert_bytes_with_budgets, convert_file_with_budgets,
+    convert_markdown_project_file_with_budgets,
+    convert_to_markdown_project_with_budgets as convert_markdown_project_bytes_impl, empty_diagnostic_envelope,
+    inspect_docx_decode, inspect_docx_index, supported_routes, supports_markdown_project_source, supports_route,
 };
 use panduck_types::AdapterError;
 
@@ -260,8 +261,10 @@ pub fn convert_markdown_project(
     input_path: String,
     output_dir: String,
     handlers_json: Option<String>,
+    budgets_json: Option<String>,
 ) -> ConvertProjectResponse {
-    match convert_markdown_project_file(&from, &input_path, &output_dir, handlers_json.as_deref()) {
+    let budgets = ConversionBudgets::from_json(budgets_json.as_deref());
+    match convert_markdown_project_file_with_budgets(&from, &input_path, &output_dir, handlers_json.as_deref(), Some(&budgets)) {
         Ok((output, published)) => ConvertProjectResponse {
             exit_code: 0,
             index_markdown: output.index_markdown,
@@ -288,8 +291,10 @@ pub fn convert_markdown_project_bytes(
     bytes: Buffer,
     output_dir: String,
     handlers_json: Option<String>,
+    budgets_json: Option<String>,
 ) -> ConvertProjectResponse {
-    match convert_markdown_project_bytes_impl(&from, &label, bytes.to_vec(), &output_dir, handlers_json.as_deref()) {
+    let budgets = ConversionBudgets::from_json(budgets_json.as_deref());
+    match convert_markdown_project_bytes_impl(&from, &label, bytes.to_vec(), &output_dir, handlers_json.as_deref(), Some(&budgets)) {
         Ok((output, published)) => ConvertProjectResponse {
             exit_code: 0,
             index_markdown: output.index_markdown,
@@ -314,8 +319,15 @@ pub fn convert_markdown_project_bytes(
 /// TS-side `ConversionPlan`. Only its `transforms` array is executed — policy
 /// handler closures stay in TS and cannot cross the wire.
 #[napi]
-pub fn convert_document(from: String, to: String, input_path: String, handlers_json: Option<String>) -> ConvertResponse {
-    match convert_file(&from, &to, &input_path, handlers_json.as_deref()) {
+pub fn convert_document(
+    from: String,
+    to: String,
+    input_path: String,
+    handlers_json: Option<String>,
+    budgets_json: Option<String>,
+) -> ConvertResponse {
+    let budgets = ConversionBudgets::from_json(budgets_json.as_deref());
+    match convert_file_with_budgets(&from, &to, &input_path, handlers_json.as_deref(), Some(&budgets)) {
         Ok(output) => ConvertResponse {
             exit_code: 0,
             text: if output.markdown.is_empty() { None } else { Some(output.markdown) },
@@ -344,8 +356,10 @@ pub fn convert_bytes_memory(
     label: String,
     bytes: Buffer,
     handlers_json: Option<String>,
+    budgets_json: Option<String>,
 ) -> ConvertResponse {
-    match convert_bytes(&from, &to, &label, bytes.to_vec(), handlers_json.as_deref()) {
+    let budgets = ConversionBudgets::from_json(budgets_json.as_deref());
+    match convert_bytes_with_budgets(&from, &to, &label, bytes.to_vec(), handlers_json.as_deref(), Some(&budgets)) {
         Ok(output) => ConvertResponse {
             exit_code: 0,
             text: if output.markdown.is_empty() { None } else { Some(output.markdown) },

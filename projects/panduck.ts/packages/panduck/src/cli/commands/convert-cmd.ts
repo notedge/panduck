@@ -15,6 +15,7 @@ import { emitJson, emitReport, writeReportFile } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { findFormat, isOperationReady } from "../format-registry.js";
 import {
+    CONTAINER_BUDGET_KEYS,
     CliOptionError,
     readSharedOptions,
     readString,
@@ -44,7 +45,6 @@ export function registerConvertCommand(cli: Cli): void {
         .option("--strict", "cli.opt.strict")
         .option("--allow-partial", "cli.opt.allow-partial")
         .option("--diagnostics <mode>", "cli.opt.diagnostics")
-        .option("--batch", "cli.opt.batch")
         .option("--output-dir <dir>", "cli.opt.output-dir")
         .option("--report <file>", "cli.opt.report")
         .option("--overwrite", "cli.opt.overwrite")
@@ -80,16 +80,15 @@ async function runConvert(options: ParsedOptions): Promise<number> {
         const outputOption = readString(options, "output");
         const outputDirOption = readString(options, "output-dir");
         const reportPath = readString(options, "report");
-        const batch = options.batch === true;
         const dryRun = options["dry-run"] === true;
         const markdownProjectTarget = shared.to === "markdown-project";
 
         if (!inputPath) {
             return ExitCode.InvalidArgs;
         }
-        if (batch) {
-            console.error("--batch is not implemented yet; convert one input at a time");
-            return ExitCode.BatchFailure;
+        if (options._.length > 1) {
+            console.error("convert accepts one input; batch conversion is not implemented");
+            return ExitCode.InvalidArgs;
         }
         if (outputDirOption && outputOption) {
             console.error("use either -o or --output-dir, not both");
@@ -101,9 +100,12 @@ async function runConvert(options: ParsedOptions): Promise<number> {
         }
         const outputPath = outputOption ?? outputDirOption;
 
-        const unenforcedBudgets = Object.keys(shared.budgets).filter(
-            (key) => key !== "input_bytes" && key !== "output_bytes",
-        );
+        const ENFORCED_BUDGET_KEYS = new Set([
+            "input_bytes",
+            "output_bytes",
+            ...CONTAINER_BUDGET_KEYS,
+        ]);
+        const unenforcedBudgets = Object.keys(shared.budgets).filter((key) => !ENFORCED_BUDGET_KEYS.has(key));
         if (unenforcedBudgets.length > 0) {
             console.error(`budget keys are not enforced by this build: ${unenforcedBudgets.join(", ")}`);
             return ExitCode.InvalidArgs;

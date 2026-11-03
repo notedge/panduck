@@ -100,6 +100,24 @@ export function unsupportedFlags(options: ParsedOptions): string[] {
     return flags;
 }
 
+/** Budget keys the native container preflight can enforce today. */
+export const CONTAINER_BUDGET_KEYS = ["decompressed_bytes", "container_entries"] as const;
+
+/**
+ * Serializes the container budgets the native layer enforces.
+ * Returns `undefined` when the user did not set either key.
+ */
+export function containerBudgetsJson(budgets: Record<string, number>): string | undefined {
+    const picked: Record<string, number> = {};
+    for (const key of CONTAINER_BUDGET_KEYS) {
+        const value = budgets[key];
+        if (value !== undefined) {
+            picked[key] = value;
+        }
+    }
+    return Object.keys(picked).length > 0 ? JSON.stringify(picked) : undefined;
+}
+
 export function parseAssetPolicy(value: string | undefined): AssetPolicy {
     return parseEnum(value ?? "preserve", ASSET_VALUES, "asset-policy");
 }
