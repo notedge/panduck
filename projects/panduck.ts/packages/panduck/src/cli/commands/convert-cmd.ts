@@ -11,7 +11,7 @@ import {
     validateIoPaths,
 } from "../context.js";
 import { createDiagnostic } from "../../diagnostic.js";
-import { emitReport } from "../diagnostics.js";
+import { emitJson, emitReport, writeReportFile } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { findFormat, isOperationReady } from "../format-registry.js";
 import {
@@ -20,12 +20,12 @@ import {
     parseLinkPolicy,
     readSharedOptions,
     readString,
+    type SharedCliOptions,
 } from "../options.js";
-import { createReport } from "../report.js";
+import { createReport, type PanduckReport } from "../report.js";
 import { isStdoutPath } from "../paths.js";
 import { configureConsoleBackend } from "../console-backend.js";
 import {
-    emitPipelineResult,
     hasPipeline,
     runConversionPipeline,
     runMarkdownProjectPipeline,
@@ -52,6 +52,21 @@ export function registerConvertCommand(cli: Cli): void {
         .option("--budget <limit>", "cli.opt.budget")
         .option("--dry-run", "cli.opt.dry-run")
         .action((options: ParsedOptions) => runConvert(options));
+}
+
+async function emitConvertReport(
+    report: PanduckReport,
+    shared: SharedCliOptions,
+    reportPath: string | undefined,
+): Promise<void> {
+    if (reportPath === "-") {
+        emitJson(report);
+        return;
+    }
+    if (reportPath) {
+        await writeReportFile(report, reportPath);
+    }
+    emitReport(report, shared.diagnostics, shared.json);
 }
 
 async function runConvert(options: ParsedOptions): Promise<number> {
@@ -86,6 +101,11 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             return ExitCode.InvalidArgs;
         }
 
+        if (isStdoutPath(outputPath) && reportPath === "-") {
+            console.error("stdout cannot carry both the document and the report");
+            return ExitCode.InvalidArgs;
+        }
+
         const markdownProjectTarget = shared.to === "markdown-project";
         if (markdownProjectTarget && (!outputPath || isStdoutPath(outputPath))) {
             console.error("markdown-project requires an output directory via -o or --output-dir");
@@ -106,7 +126,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                 ExitCode.InputUnsupported,
                 shared,
             );
-            emitReport(report, shared.diagnostics, shared.json);
+            await emitConvertReport(report, shared, reportPath);
             return ExitCode.InputUnsupported;
         }
 
@@ -120,7 +140,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                 ExitCode.InvalidArgs,
                 shared,
             );
-            emitReport(report, shared.diagnostics, shared.json);
+            await emitConvertReport(report, shared, reportPath);
             return ExitCode.InvalidArgs;
         }
 
@@ -136,7 +156,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                 ExitCode.InputUnsupported,
                 shared,
             );
-            emitReport(report, shared.diagnostics, shared.json);
+            await emitConvertReport(report, shared, reportPath);
             return ExitCode.InputUnsupported;
         }
 
@@ -152,7 +172,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                     ExitCode.OutputFailure,
                     shared,
                 );
-                emitReport(report, shared.diagnostics, shared.json);
+                await emitConvertReport(report, shared, reportPath);
                 return ExitCode.OutputFailure;
             } catch {
                 // target does not exist yet
@@ -174,7 +194,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                 ExitCode.InputUnsupported,
                 shared,
             );
-            emitReport(report, shared.diagnostics, shared.json);
+            await emitConvertReport(report, shared, reportPath);
             return ExitCode.InputUnsupported;
         }
 
@@ -195,7 +215,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                 ExitCode.InputUnsupported,
                 shared,
             );
-            emitReport(report, shared.diagnostics, shared.json);
+            await emitConvertReport(report, shared, reportPath);
             return ExitCode.InputUnsupported;
         }
 
@@ -210,7 +230,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                     ExitCode.InputUnsupported,
                     shared,
                 );
-                emitReport(report, shared.diagnostics, shared.json);
+                await emitConvertReport(report, shared, reportPath);
                 return ExitCode.InputUnsupported;
             }
 
@@ -224,7 +244,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                     ExitCode.InputUnsupported,
                     shared,
                 );
-                emitReport(report, shared.diagnostics, shared.json);
+                await emitConvertReport(report, shared, reportPath);
                 return ExitCode.InputUnsupported;
             }
         }
@@ -246,7 +266,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                 determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
                 statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.Success },
             });
-            emitReport(report, shared.diagnostics, shared.json);
+            await emitConvertReport(report, shared, reportPath);
             return ExitCode.Success;
         }
 
@@ -271,7 +291,8 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                           shared,
                           toolVersion: ctx.toolVersion,
                       });
-                return emitPipelineResult(result, shared);
+                await emitConvertReport(result.report, shared, reportPath);
+                return result.exitCode;
             } catch (error) {
                 const message = error instanceof Error ? error.message : String(error);
                 const report = buildBlockedReport(
@@ -283,7 +304,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
                     ExitCode.IrOrWriterFailure,
                     shared,
                 );
-                emitReport(report, shared.diagnostics, shared.json);
+                await emitConvertReport(report, shared, reportPath);
                 return ExitCode.IrOrWriterFailure;
             }
         }
@@ -314,7 +335,7 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.IrOrWriterFailure },
         });
 
-        emitReport(report, shared.diagnostics, shared.json);
+        await emitConvertReport(report, shared, reportPath);
         return ExitCode.IrOrWriterFailure;
     } catch (error) {
         if (error instanceof CliOptionError) {

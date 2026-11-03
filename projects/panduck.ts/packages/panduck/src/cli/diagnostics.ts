@@ -1,3 +1,6 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
+
 import type { DiagnosticsMode } from "./options.js";
 import type { PanduckReport } from "./report.js";
 
@@ -7,6 +10,11 @@ export function emitHuman(message: string): void {
 
 export function emitJson(value: unknown): void {
     console.log(JSON.stringify(value, null, 2));
+}
+
+export async function writeReportFile(report: PanduckReport, path: string): Promise<void> {
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 }
 
 export function emitReport(report: PanduckReport, mode: DiagnosticsMode, jsonRequested: boolean): void {
