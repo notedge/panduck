@@ -13,8 +13,15 @@ test("formats emits markdown capability json", () => {
     assert.match(formats.stdout, /"conversions":/);
 });
 
-test("plan blocks unsupported ready pipeline with report schema", () => {
+test("plan accepts the markdown to epub pipeline", () => {
     const plan = runPanduck(["plan", "package.json", "--from", "markdown", "--to", "epub", "--json"]);
+    assert.equal(plan.code, 0, plan.stderr);
+    assert.match(plan.stdout, /panduck\.report\/v0/);
+    assert.match(plan.stdout, /"writer": "epub"/);
+});
+
+test("plan blocks unsupported ready pipeline with report schema", () => {
+    const plan = runPanduck(["plan", "package.json", "--from", "markdown", "--to", "typst", "--json"]);
     assert.equal(plan.code, 3);
     assert.match(plan.stdout, /panduck\.report\/v0/);
 });
