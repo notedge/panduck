@@ -136,7 +136,7 @@ export async function runConversionPipeline(input: {
         );
     }
 
-    const text = response.text ?? "";
+    const text = response.text ?? response.html ?? "";
     const binary = response.binary;
 
     if (publishOutput && outputPath && !isStdoutPath(outputPath)) {

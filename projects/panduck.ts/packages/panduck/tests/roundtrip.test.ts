@@ -50,6 +50,43 @@ test("markdown to docx to markdown roundtrip preserves authored semantics", asyn
     assert.match(roundtripped, /Closing text\./, "plain paragraphs must survive");
 });
 
+test("mermaid diagrams survive the markdown to html to markdown roundtrip as diagrams", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-mermaid-roundtrip-"));
+    const input = join(workdir, "diagram.md");
+    const htmlPath = join(workdir, "diagram.html");
+    const backPath = join(workdir, "roundtrip.md");
+    const markdown = [
+        "# Diagram Roundtrip",
+        "",
+        "```mermaid",
+        "flowchart TD",
+        "  A[Start] --> B{Done?}",
+        "  B -->|yes| C[Stop]",
+        "```",
+        "",
+        "Closing paragraph.",
+        "",
+    ].join("\n");
+    await writeFile(input, markdown, "utf8");
+
+    const toHtml = runPanduck(["convert", input, "--from", "markdown", "--to", "html", "-o", htmlPath, "--diagnostics", "silent"]);
+    assert.equal(toHtml.code, 0, toHtml.stderr || toHtml.stdout);
+
+    const html = await readFile(htmlPath, "utf8");
+    assert.match(html, /<figure class="notedown-diagram" data-diagram-language="mermaid"/, "the diagram must render as a real figure");
+    assert.match(html, /<svg[^>]*viewBox="/, "the figure must embed a vector scene, not plain text");
+    assert.ok(!html.includes("<pre data-diagram-language"), "a rendered diagram must not be downgraded to a source block");
+
+    const toMarkdown = runPanduck(["convert", htmlPath, "--from", "html", "--to", "markdown", "-o", backPath, "--diagnostics", "silent"]);
+    assert.equal(toMarkdown.code, 0, toMarkdown.stderr || toMarkdown.stdout);
+
+    const roundtripped = await readFile(backPath, "utf8");
+    assert.match(roundtripped, /```mermaid/, "the rendered figure must read back as a mermaid fence, not plain text");
+    assert.match(roundtripped, /A\[Start\] --> B\{Done\?\}/, "the authored edges must survive both legs");
+    assert.match(roundtripped, /B -->\|yes\| C\[Stop\]/, "the edge label must survive both legs");
+    assert.match(roundtripped, /Closing paragraph\./);
+});
+
 test("Converter walks the whole ConverterStatus enum on real inputs", async () => {
     const converter = new Converter();
     // Footnote bodies resolve through footnotes.xml; the docx import still
