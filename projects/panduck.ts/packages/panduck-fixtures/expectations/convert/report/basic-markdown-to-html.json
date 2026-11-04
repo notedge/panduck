@@ -16,6 +16,8 @@
                 "import.markdown.definition_list",
                 "import.markdown.definition_list",
                 "import.markdown.definition_list",
+                "import.markdown.footnote_body_unplaced",
+                "import.markdown.footnote_reference_marker",
                 "import.markdown.unresolved_reference_link",
                 "import.markdown.table_alignment"
             ]
@@ -62,7 +64,9 @@
             "losses": [
                 "import.markdown.definition_list",
                 "import.markdown.table_alignment",
-                "import.markdown.unresolved_reference_link"
+                "import.markdown.unresolved_reference_link",
+                "import.markdown.footnote_body_unplaced",
+                "import.markdown.footnote_reference_marker"
             ]
         },
         {
@@ -150,6 +154,14 @@
             "semantic": "新增 python 代码体逐字断言",
             "updatedAt": "2026-11-04T17:36:16.361Z",
             "assertionDiff": "+ {\"kind\":\"contains\",\"target\":\"html\",\"value\":\"return fibonacci(n-1) + fibonacci(n-2)\"}",
+            "observedStatus": "pass"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 212653d0994b0670a1ecd83a9a6f97bae221132e",
+            "reason": "围栏修复后浮出两条脚注损失码：脚注 body 未放置、脚注引用标记未放置，属于如实上报而不是新增缺陷",
+            "semantic": "loss-codes 与 honest-success 补上两条真实脚注损失码，同时把脚注落位缺口登记到 harness 报告的缺口清单，补期望不等于问题消失",
+            "updatedAt": "2026-11-05T02:36:47.127Z",
+            "assertionDiff": "~ {\"kind\":\"loss-codes\",\"expected\":[…\"import.markdown.footnote_body_unplaced\",\"import.markdown.footnote_reference_marker\"…]}",
             "observedStatus": "pass"
         }
     ]

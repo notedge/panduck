@@ -265,12 +265,12 @@
             "spanText": "note right of Idle: waiting"
         },
         {
-            "id": "diagram-mermaid-state-family",
+            "id": "diagram-mermaid-gantt-family",
             "language": "mermaid",
-            "source": "stateDiagram-v2\n  [*] --> Still\n",
+            "source": "gantt\n  title A Gantt Diagram\n  section Section\n  A task :a1, 2026-01-01, 3d\n",
             "code": "davinci.diagram.unsupported",
             "severity": "error",
-            "spanText": "stateDiagram-v2"
+            "spanText": "gantt"
         },
         {
             "id": "diagram-mermaid-parallelogram",
