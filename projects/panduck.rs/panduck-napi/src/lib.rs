@@ -810,6 +810,7 @@ pub fn convert_document(
     budgets_json: Option<String>,
 ) -> ConvertResponse {
     let budgets = ConversionBudgets::from_json(budgets_json.as_deref());
+    document_fonts::install_default_math_font();
     match convert_file_with_budgets(&from, &to, &input_path, handlers_json.as_deref(), Some(&budgets)) {
         Ok(output) => ConvertResponse {
             exit_code: 0,
@@ -842,6 +843,7 @@ pub fn convert_bytes_memory(
     budgets_json: Option<String>,
 ) -> ConvertResponse {
     let budgets = ConversionBudgets::from_json(budgets_json.as_deref());
+    document_fonts::install_default_math_font();
     match convert_bytes_with_budgets(&from, &to, &label, bytes.to_vec(), handlers_json.as_deref(), Some(&budgets)) {
         Ok(output) => ConvertResponse {
             exit_code: 0,

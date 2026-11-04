@@ -16,6 +16,7 @@ crate-type = ["cdylib", "rlib"]
 napi = { workspace = true }
 napi-derive = { workspace = true }
 document-convert = { workspace = true, features = ["logger"] }
+document-fonts = { workspace = true }
 document-ir = { workspace = true }
 document-types = { workspace = true }
 oak-core = { workspace = true }
@@ -29,6 +30,7 @@ plotter-input-dot = { workspace = true }
 plotter-input-tikz = { workspace = true }
 plotter-input-mermaid = { workspace = true }
 plotter-input-plantuml = { workspace = true }
+plotter-runtime = { workspace = true }
 plotter-scene = { workspace = true }
 plotter-types = { workspace = true }
 boost-diagnostic = { workspace = true }
