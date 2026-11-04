@@ -1,0 +1,25 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "markdown-nested-structures-to-html",
+    "assertions": [
+        { "kind": "exit-code", "leg": 0, "expected": 0 },
+        { "kind": "report-status", "leg": 0, "expected": "success_with_loss" },
+        { "kind": "loss-codes", "leg": 0, "expected": ["import.markdown.table_alignment"] },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "<h1>Nested Structures</h1>" },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "<blockquote>quoted text</blockquote>" },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "<li>inner</li><li>second</li>" },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "class=\"task-list-item\"" },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "<input type=\"checkbox\" disabled checked>" },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "<th>left</th><th>right</th>" },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "<td>a</td><td>b</td>" }
+    ],
+    "provenance": [
+        {
+            "author": "document.rs 迁移",
+            "reason": "替代 `document.input.markdown/tests/markdown_pipeline` 的 `table_quote_nested_list_and_task_list`，后者只断言文字出现，比不出列表从属关系",
+            "semantic": "嵌套列表的第二个兄弟项留在同一个子列表内，任务列表保留勾选状态，表格保留表头与行",
+            "updatedAt": "2026-11-05T00:00:00.000Z",
+            "observedStatus": "fail"
+        }
+    ]
+}

@@ -123,6 +123,87 @@
             "from": "markdown",
             "to": "pdf",
             "expectation": "convert/report/pdf-geometry-regular.json"
+        },
+        {
+            "id": "markdown-nested-structures-to-html",
+            "kind": "convert",
+            "title": "Nested list, quote, task list and table keep their containment",
+            "input": "convert/nested-structures.md",
+            "from": "markdown",
+            "to": "html",
+            "expectation": "convert/report/markdown-nested-structures-to-html.json"
+        },
+        {
+            "id": "markdown-autolink-raw-html-to-html",
+            "kind": "convert",
+            "title": "Autolink expands and a raw HTML block does not absorb the next paragraph",
+            "input": "convert/autolink-raw-html.md",
+            "from": "markdown",
+            "to": "html",
+            "expectation": "convert/report/markdown-autolink-raw-html-to-html.json"
+        },
+        {
+            "id": "markdown-code-escape-to-html",
+            "kind": "convert",
+            "title": "Fence body stays verbatim, escapes stay literal and quotes nest",
+            "input": "convert/code-escape.md",
+            "from": "markdown",
+            "to": "html",
+            "expectation": "convert/report/markdown-code-escape-to-html.json"
+        },
+        {
+            "id": "html-table-list-to-markdown",
+            "kind": "convert",
+            "title": "Imported HTML table and list survive as markdown structure",
+            "input": "convert/table-and-list.html",
+            "from": "html",
+            "to": "markdown",
+            "expectation": "convert/report/html-table-list-to-markdown.json"
+        },
+        {
+            "id": "html-table-list-to-docx",
+            "kind": "convert",
+            "title": "Imported HTML table and list reach the docx writer",
+            "input": "convert/table-and-list.html",
+            "from": "html",
+            "to": "docx",
+            "expectation": "convert/report/html-table-list-to-docx.json"
+        },
+        {
+            "id": "markdown-nested-structures-to-docx",
+            "kind": "convert",
+            "title": "Nested list and table reach the docx writer with a declared alignment loss",
+            "input": "convert/nested-structures.md",
+            "from": "markdown",
+            "to": "docx",
+            "expectation": "convert/report/markdown-nested-structures-to-docx.json"
+        },
+        {
+            "id": "markdown-fonts-cjk-to-pdf",
+            "kind": "convert",
+            "title": "Latin and CJK styled runs reach the PDF writer without a declared loss",
+            "input": "convert/fonts-and-cjk.md",
+            "from": "markdown",
+            "to": "pdf",
+            "expectation": "convert/report/markdown-fonts-cjk-to-pdf.json"
+        },
+        {
+            "id": "tex-input-to-html",
+            "kind": "convert",
+            "title": "TeX input imports into the document model and renders HTML",
+            "input": "formats/tex/sections.tex",
+            "from": "tex",
+            "to": "html",
+            "expectation": "convert/report/tex-input-to-html.json"
+        },
+        {
+            "id": "typst-input-to-html",
+            "kind": "convert",
+            "title": "Typst input imports into the document model and renders HTML",
+            "input": "formats/typst/heading.typ",
+            "from": "typst",
+            "to": "html",
+            "expectation": "convert/report/typst-input-to-html.json"
         }
     ]
 }

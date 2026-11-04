@@ -1,0 +1,22 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "markdown-code-escape-to-html",
+    "assertions": [
+        { "kind": "exit-code", "leg": 0, "expected": 0 },
+        { "kind": "report-status", "leg": 0, "expected": "success" },
+        { "kind": "loss-codes", "leg": 0, "expected": [] },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "<pre><code class=\"language-rust\">let *literal* = 1;</code></pre>" },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "Escaped *asterisks* survive." },
+        { "kind": "not-contains", "leg": 0, "target": "html", "value": "<em>asterisks</em>" },
+        { "kind": "count", "leg": 0, "target": "html", "pattern": "<blockquote>", "expected": 2 },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "<li>first</li><li>second</li>" }
+    ],
+    "provenance": [
+        {
+            "author": "document.rs 迁移",
+            "reason": "替代 `document.input.markdown/tests/markdown_pipeline` 的 `ordered_lists_links_and_code_blocks_reach_the_svg` 与 `escapes_and_nested_quotes_keep_their_meaning`",
+            "semantic": "围栏体逐字保留，反斜杠转义不变成强调，块引用按层嵌套，有序列表项不被拆散",
+            "updatedAt": "2026-11-05T00:00:00.000Z"
+        }
+    ]
+}

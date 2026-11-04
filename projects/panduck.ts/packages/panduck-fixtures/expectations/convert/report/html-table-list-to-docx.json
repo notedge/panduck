@@ -1,0 +1,17 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "html-table-list-to-docx",
+    "assertions": [
+        { "kind": "exit-code", "leg": 0, "expected": 0 },
+        { "kind": "report-status", "leg": 0, "expected": "success_with_loss" },
+        { "kind": "loss-codes", "leg": 0, "expected": ["import.html.partial_coverage"] }
+    ],
+    "provenance": [
+        {
+            "author": "document.rs 迁移",
+            "reason": "docx 是二进制出口，结构断言由 `examples/crosscheck-python` 用 python-docx 读取产物完成，这里只守住路由与 loss 声明",
+            "semantic": "html 到 docx 的路由成功并显式声明导入覆盖不足",
+            "updatedAt": "2026-11-05T00:00:00.000Z"
+        }
+    ]
+}

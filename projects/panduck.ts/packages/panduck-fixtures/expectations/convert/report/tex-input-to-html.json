@@ -1,0 +1,18 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "tex-input-to-html",
+    "assertions": [
+        { "kind": "exit-code", "leg": 0, "expected": 0 },
+        { "kind": "report-status", "leg": 0, "expected": "success" },
+        { "kind": "loss-codes", "leg": 0, "expected": [] }
+    ],
+    "provenance": [
+        {
+            "author": "document.rs 迁移",
+            "reason": "替代 `document.input.tex/tests/render_smoke`；Rust 侧只保留入口冒烟，TeX 语义是否到达下游由公开绑定判定",
+            "semantic": "公开 napi 绑定接受 TeX 输入并渲染 HTML，不返回 unsupported-format",
+            "updatedAt": "2026-11-05T00:00:00.000Z",
+            "observedStatus": "fail"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "markdown-fonts-cjk-to-pdf",
+    "assertions": [
+        { "kind": "exit-code", "leg": 0, "expected": 0 },
+        { "kind": "report-status", "leg": 0, "expected": "success" },
+        { "kind": "loss-codes", "leg": 0, "expected": [] },
+        { "kind": "pdf-run-advance", "leg": 0, "runs": [{ "text": "Latin ", "tolerance": 0.5 }] }
+    ],
+    "provenance": [
+        {
+            "author": "document.rs 迁移",
+            "reason": "替代 `document.renderer.pdf/tests/font_embedding` 的自解析断言；字体是否真的嵌入与 CJK 是否可提取由 `examples/crosscheck-python` 的 PyMuPDF oracle 判定",
+            "semantic": "拉丁样式片段在 PDF 中的实际推进与布局预留宽度一致，且整条路由没有声明丢失",
+            "updatedAt": "2026-11-05T00:00:00.000Z"
+        }
+    ]
+}

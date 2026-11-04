@@ -12,10 +12,32 @@
         "markdown-to-html": "node markdown-to-html.mjs",
         "roundtrip-docx": "node roundtrip-docx.mjs",
         "pdf-route": "node pdf-route.mjs",
-        "html-refusal": "node html-refusal.mjs"
+        "html-refusal": "node html-refusal.mjs",
+        "crosscheck:markdown": "node crosscheck/markdown-to-html.mjs",
+        "crosscheck:html": "node crosscheck/html-parse.mjs",
+        "crosscheck:chart": "node crosscheck/chart.mjs",
+        "crosscheck:docx": "node crosscheck/docx.mjs",
+        "crosscheck:pdf": "node crosscheck/pdf.mjs",
+        "crosscheck:all": "node crosscheck/markdown-to-html.mjs && node crosscheck/html-parse.mjs && node crosscheck/chart.mjs && node crosscheck/docx.mjs && node crosscheck/pdf.mjs",
+        "crosscheck:python": "node crosscheck-python/run.mjs"
     },
     "dependencies": {
         "@notedge/panduck": "workspace:*",
         "@notedge/panduck-fixtures": "workspace:*"
+    },
+    "devDependencies": {
+        "docx": "^9.5.0",
+        "htmlparser2": "^10.0.0",
+        "jszip": "^3.10.1",
+        "linkedom": "^0.18.5",
+        "mammoth": "^1.11.0",
+        "markdown-it": "^14.1.0",
+        "marked": "^16.0.0",
+        "parse5": "^7.2.1",
+        "pdfjs-dist": "^4.10.38",
+        "remark": "^15.0.1",
+        "remark-html": "^16.0.1",
+        "vega": "^5.30.0",
+        "vega-lite": "^5.23.0"
     }
 }

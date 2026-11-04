@@ -1,0 +1,20 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "markdown-autolink-raw-html-to-html",
+    "assertions": [
+        { "kind": "exit-code", "leg": 0, "expected": 0 },
+        { "kind": "report-status", "leg": 0, "expected": "success_with_loss" },
+        { "kind": "loss-codes", "leg": 0, "expected": ["import.markdown.raw_html_unrendered"] },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "<a href=\"https://example.org\">https://example.org</a>" },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "<p>Trailing text stays.</p>" }
+    ],
+    "provenance": [
+        {
+            "author": "document.rs 迁移",
+            "reason": "替代 `document.input.markdown/tests/markdown_pipeline` 的 `autolinks_and_raw_html_do_not_disappear_without_a_report`，并补上原测试没断言的段落边界",
+            "semantic": "自动链接展开为锚点，原始 HTML 块之后的段落是独立语义段落而不是被吞进 HTML 块",
+            "updatedAt": "2026-11-05T00:00:00.000Z",
+            "observedStatus": "fail"
+        }
+    ]
+}

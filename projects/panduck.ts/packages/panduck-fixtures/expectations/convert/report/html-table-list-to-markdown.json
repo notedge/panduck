@@ -1,0 +1,21 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "html-table-list-to-markdown",
+    "assertions": [
+        { "kind": "exit-code", "leg": 0, "expected": 0 },
+        { "kind": "report-status", "leg": 0, "expected": "success_with_loss" },
+        { "kind": "loss-codes", "leg": 0, "expected": ["import.html.partial_coverage"] },
+        { "kind": "contains", "leg": 0, "target": "text", "value": "| left | right |" },
+        { "kind": "contains", "leg": 0, "target": "text", "value": "| a | b |" },
+        { "kind": "contains", "leg": 0, "target": "text", "value": "- one" },
+        { "kind": "contains", "leg": 0, "target": "text", "value": "closing paragraph" }
+    ],
+    "provenance": [
+        {
+            "author": "document.rs 迁移",
+            "reason": "替代 `document.formats` 的 HTML 导入表格与列表用例；断言从 HTML 结构不可回退为可辨认的 markdown 结构，partial coverage 必须是显式声明而不是静默丢节点",
+            "semantic": "HTML 表格和列表转换为 markdown 表格与列表，覆盖不足必须报告 loss",
+            "updatedAt": "2026-11-05T00:00:00.000Z"
+        }
+    ]
+}

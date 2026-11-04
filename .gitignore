@@ -34,3 +34,7 @@ projects/panduck.rs/exports/panduck-napi/index.js
 
 # Harness runtime archive
 projects/panduck.ts/packages/panduck-harness/results/
+
+# Python oracle environment
+projects/panduck.ts/examples/crosscheck-python/.venv/
+!projects/panduck.ts/examples/crosscheck-python/requirements.txt
