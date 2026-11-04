@@ -1,0 +1,20 @@
+{
+    "name": "@notedge/panduck-examples",
+    "version": "0.0.18",
+    "private": true,
+    "type": "module",
+    "description": "Runnable examples for Panduck document consumers",
+    "license": "MPL-2.0",
+    "scripts": {
+        "convert-markdown": "node convert-markdown/index.mjs",
+        "conformance": "node conformance/index.mjs",
+        "markdown-to-html": "node markdown-to-html.mjs",
+        "roundtrip-docx": "node roundtrip-docx.mjs",
+        "pdf-route": "node pdf-route.mjs",
+        "html-refusal": "node html-refusal.mjs"
+    },
+    "dependencies": {
+        "@notedge/panduck": "workspace:*",
+        "@notedge/panduck-fixtures": "workspace:*"
+    }
+}

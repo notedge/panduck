@@ -1,0 +1,18 @@
+# 示例落点
+
+`examples/*` 只演示「下游怎么消费 Panduck」，不放语料、不放期望数据。
+
+- 语料与期望归 `../packages/panduck-fixtures`：输入在 `fixtures/`，期望在 `expectations/`
+- 执行器归 `../packages/panduck-harness`：`verify` 只验语料结构，`run` 才调 binding
+- 示例自己带最小输入，不引用 `fixtures/` 里的样例，避免示例和语料耦合
+
+当前示例：
+
+| 目录 | 演示什么 | 命令 |
+| --- | --- | --- |
+| `convert-markdown/` | 用公开的 `loadPanduckNode` 跑一次 markdown 转 html | `pnpm --filter @notedge/panduck-examples convert-markdown` |
+| `conformance/` | 调用 harness 的 `verify`，检查语料可被下游读取 | `pnpm --filter @notedge/panduck-examples conformance` |
+| `markdown-to-html.mjs` | 读 `convert/diagrams.md`，DOT / Mermaid / PlantUML 三个 fence 各渲染成 SVG | `pnpm --filter @notedge/panduck-examples markdown-to-html` |
+| `roundtrip-docx.mjs` | 读 `convert/roundtrip.md`，markdown 转 docx 再转回 markdown | `pnpm --filter @notedge/panduck-examples roundtrip-docx` |
+| `pdf-route.mjs` | 同一条输入走 markdown 转 pdf 再转回 markdown，打印 loss 码 | `pnpm --filter @notedge/panduck-examples pdf-route` |
+| `html-refusal.mjs` | 读 `notedown/basic.html`，演示声明式拒绝的诊断码 | `pnpm --filter @notedge/panduck-examples html-refusal` |

@@ -31,3 +31,6 @@ projects/panduck.rs/exports/panduck-napi/index.d.ts
 projects/panduck.rs/exports/panduck-napi/index.js
 *.wasm
 *.node
+
+# Harness runtime archive
+projects/panduck.ts/packages/panduck-harness/results/
