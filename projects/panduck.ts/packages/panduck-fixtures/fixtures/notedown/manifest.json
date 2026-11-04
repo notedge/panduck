@@ -3,7 +3,7 @@
     "provenance": {
         "repo": "notedown",
         "crate": "notedown-fixtures",
-        "rev": "1438449e1c9a99baca2c9aee27d702458aff851f",
+        "rev": "8f3328e168d6cef1f75aad48721b160e4440a6e4",
         "note": "Lexer conformance pairs moved downstream because panduck owns the corpus home"
     },
     "cases": [

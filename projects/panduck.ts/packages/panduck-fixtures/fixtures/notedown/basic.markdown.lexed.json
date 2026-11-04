@@ -1,6 +1,6 @@
 {
     "success": true,
-    "count": 1801,
+    "count": 1686,
     "tokens": [
         {
             "kind": "Heading1",
@@ -1641,45 +1641,9 @@
             "end": 725
         },
         {
-            "kind": "Text",
-            "text": "fn",
+            "kind": "CodeBlock",
+            "text": "fn main() {",
             "start": 725,
-            "end": 727
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 727,
-            "end": 728
-        },
-        {
-            "kind": "Text",
-            "text": "main",
-            "start": 728,
-            "end": 732
-        },
-        {
-            "kind": "LParen",
-            "text": "(",
-            "start": 732,
-            "end": 733
-        },
-        {
-            "kind": "RParen",
-            "text": ")",
-            "start": 733,
-            "end": 734
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 734,
-            "end": 735
-        },
-        {
-            "kind": "Text",
-            "text": "{",
-            "start": 735,
             "end": 736
         },
         {
@@ -1690,68 +1654,8 @@
         },
         {
             "kind": "CodeBlock",
-            "text": "    ",
+            "text": "    println!(\"Hello, world!\");",
             "start": 737,
-            "end": 741
-        },
-        {
-            "kind": "Text",
-            "text": "println",
-            "start": 741,
-            "end": 748
-        },
-        {
-            "kind": "Exclamation",
-            "text": "!",
-            "start": 748,
-            "end": 749
-        },
-        {
-            "kind": "LParen",
-            "text": "(",
-            "start": 749,
-            "end": 750
-        },
-        {
-            "kind": "Text",
-            "text": "\"Hello,",
-            "start": 750,
-            "end": 757
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 757,
-            "end": 758
-        },
-        {
-            "kind": "Text",
-            "text": "world",
-            "start": 758,
-            "end": 763
-        },
-        {
-            "kind": "Exclamation",
-            "text": "!",
-            "start": 763,
-            "end": 764
-        },
-        {
-            "kind": "Text",
-            "text": "\"",
-            "start": 764,
-            "end": 765
-        },
-        {
-            "kind": "RParen",
-            "text": ")",
-            "start": 765,
-            "end": 766
-        },
-        {
-            "kind": "Text",
-            "text": ";",
-            "start": 766,
             "end": 767
         },
         {
@@ -1761,7 +1665,7 @@
             "end": 768
         },
         {
-            "kind": "Text",
+            "kind": "CodeBlock",
             "text": "}",
             "start": 768,
             "end": 769
@@ -1809,51 +1713,9 @@
             "end": 789
         },
         {
-            "kind": "Text",
-            "text": "function",
+            "kind": "CodeBlock",
+            "text": "function greet(name) {",
             "start": 789,
-            "end": 797
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 797,
-            "end": 798
-        },
-        {
-            "kind": "Text",
-            "text": "greet",
-            "start": 798,
-            "end": 803
-        },
-        {
-            "kind": "LParen",
-            "text": "(",
-            "start": 803,
-            "end": 804
-        },
-        {
-            "kind": "Text",
-            "text": "name",
-            "start": 804,
-            "end": 808
-        },
-        {
-            "kind": "RParen",
-            "text": ")",
-            "start": 808,
-            "end": 809
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 809,
-            "end": 810
-        },
-        {
-            "kind": "Text",
-            "text": "{",
-            "start": 810,
             "end": 811
         },
         {
@@ -1864,32 +1726,8 @@
         },
         {
             "kind": "CodeBlock",
-            "text": "    ",
+            "text": "    return `Hello, ${name}!`;",
             "start": 812,
-            "end": 816
-        },
-        {
-            "kind": "Text",
-            "text": "return",
-            "start": 816,
-            "end": 822
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 822,
-            "end": 823
-        },
-        {
-            "kind": "InlineCode",
-            "text": "`Hello, ${name}!`",
-            "start": 823,
-            "end": 840
-        },
-        {
-            "kind": "Text",
-            "text": ";",
-            "start": 840,
             "end": 841
         },
         {
@@ -1899,7 +1737,7 @@
             "end": 842
         },
         {
-            "kind": "Text",
+            "kind": "CodeBlock",
             "text": "}",
             "start": 842,
             "end": 843
@@ -1947,45 +1785,9 @@
             "end": 859
         },
         {
-            "kind": "Text",
-            "text": "def",
+            "kind": "CodeBlock",
+            "text": "def fibonacci(n):",
             "start": 859,
-            "end": 862
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 862,
-            "end": 863
-        },
-        {
-            "kind": "Text",
-            "text": "fibonacci",
-            "start": 863,
-            "end": 872
-        },
-        {
-            "kind": "LParen",
-            "text": "(",
-            "start": 872,
-            "end": 873
-        },
-        {
-            "kind": "Text",
-            "text": "n",
-            "start": 873,
-            "end": 874
-        },
-        {
-            "kind": "RParen",
-            "text": ")",
-            "start": 874,
-            "end": 875
-        },
-        {
-            "kind": "Colon",
-            "text": ":",
-            "start": 875,
             "end": 876
         },
         {
@@ -1996,62 +1798,8 @@
         },
         {
             "kind": "CodeBlock",
-            "text": "    ",
+            "text": "    if n <= 1:",
             "start": 877,
-            "end": 881
-        },
-        {
-            "kind": "Text",
-            "text": "if",
-            "start": 881,
-            "end": 883
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 883,
-            "end": 884
-        },
-        {
-            "kind": "Text",
-            "text": "n",
-            "start": 884,
-            "end": 885
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 885,
-            "end": 886
-        },
-        {
-            "kind": "Less",
-            "text": "<",
-            "start": 886,
-            "end": 887
-        },
-        {
-            "kind": "Text",
-            "text": "=",
-            "start": 887,
-            "end": 888
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 888,
-            "end": 889
-        },
-        {
-            "kind": "Text",
-            "text": "1",
-            "start": 889,
-            "end": 890
-        },
-        {
-            "kind": "Colon",
-            "text": ":",
-            "start": 890,
             "end": 891
         },
         {
@@ -2062,32 +1810,8 @@
         },
         {
             "kind": "CodeBlock",
-            "text": "    ",
+            "text": "        return n",
             "start": 892,
-            "end": 896
-        },
-        {
-            "kind": "Whitespace",
-            "text": "    ",
-            "start": 896,
-            "end": 900
-        },
-        {
-            "kind": "Text",
-            "text": "return",
-            "start": 900,
-            "end": 906
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 906,
-            "end": 907
-        },
-        {
-            "kind": "Text",
-            "text": "n",
-            "start": 907,
             "end": 908
         },
         {
@@ -2098,110 +1822,8 @@
         },
         {
             "kind": "CodeBlock",
-            "text": "    ",
+            "text": "    return fibonacci(n-1) + fibonacci(n-2)",
             "start": 909,
-            "end": 913
-        },
-        {
-            "kind": "Text",
-            "text": "return",
-            "start": 913,
-            "end": 919
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 919,
-            "end": 920
-        },
-        {
-            "kind": "Text",
-            "text": "fibonacci",
-            "start": 920,
-            "end": 929
-        },
-        {
-            "kind": "LParen",
-            "text": "(",
-            "start": 929,
-            "end": 930
-        },
-        {
-            "kind": "Text",
-            "text": "n",
-            "start": 930,
-            "end": 931
-        },
-        {
-            "kind": "Dash",
-            "text": "-",
-            "start": 931,
-            "end": 932
-        },
-        {
-            "kind": "Text",
-            "text": "1",
-            "start": 932,
-            "end": 933
-        },
-        {
-            "kind": "RParen",
-            "text": ")",
-            "start": 933,
-            "end": 934
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 934,
-            "end": 935
-        },
-        {
-            "kind": "Plus",
-            "text": "+",
-            "start": 935,
-            "end": 936
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 936,
-            "end": 937
-        },
-        {
-            "kind": "Text",
-            "text": "fibonacci",
-            "start": 937,
-            "end": 946
-        },
-        {
-            "kind": "LParen",
-            "text": "(",
-            "start": 946,
-            "end": 947
-        },
-        {
-            "kind": "Text",
-            "text": "n",
-            "start": 947,
-            "end": 948
-        },
-        {
-            "kind": "Dash",
-            "text": "-",
-            "start": 948,
-            "end": 949
-        },
-        {
-            "kind": "Text",
-            "text": "2",
-            "start": 949,
-            "end": 950
-        },
-        {
-            "kind": "RParen",
-            "text": ")",
-            "start": 950,
             "end": 951
         },
         {
@@ -2313,21 +1935,9 @@
             "end": 995
         },
         {
-            "kind": "Hash",
-            "text": "#",
+            "kind": "CodeBlock",
+            "text": "#!/bin/bash",
             "start": 995,
-            "end": 996
-        },
-        {
-            "kind": "Exclamation",
-            "text": "!",
-            "start": 996,
-            "end": 997
-        },
-        {
-            "kind": "Text",
-            "text": "/bin/bash",
-            "start": 997,
             "end": 1006
         },
         {
@@ -2337,69 +1947,9 @@
             "end": 1007
         },
         {
-            "kind": "Text",
-            "text": "echo",
+            "kind": "CodeBlock",
+            "text": "echo \"This is a bash script\"",
             "start": 1007,
-            "end": 1011
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 1011,
-            "end": 1012
-        },
-        {
-            "kind": "Text",
-            "text": "\"This",
-            "start": 1012,
-            "end": 1017
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 1017,
-            "end": 1018
-        },
-        {
-            "kind": "Text",
-            "text": "is",
-            "start": 1018,
-            "end": 1020
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 1020,
-            "end": 1021
-        },
-        {
-            "kind": "Text",
-            "text": "a",
-            "start": 1021,
-            "end": 1022
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 1022,
-            "end": 1023
-        },
-        {
-            "kind": "Text",
-            "text": "bash",
-            "start": 1023,
-            "end": 1027
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 1027,
-            "end": 1028
-        },
-        {
-            "kind": "Text",
-            "text": "script\"",
-            "start": 1028,
             "end": 1035
         },
         {
@@ -2409,27 +1959,9 @@
             "end": 1036
         },
         {
-            "kind": "Text",
-            "text": "ls",
+            "kind": "CodeBlock",
+            "text": "ls -la",
             "start": 1036,
-            "end": 1038
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 1038,
-            "end": 1039
-        },
-        {
-            "kind": "Dash",
-            "text": "-",
-            "start": 1039,
-            "end": 1040
-        },
-        {
-            "kind": "Text",
-            "text": "la",
-            "start": 1040,
             "end": 1042
         },
         {
@@ -5715,21 +5247,9 @@
             "end": 2451
         },
         {
-            "kind": "Backtick",
-            "text": "`",
+            "kind": "CodeFence",
+            "text": "```",
             "start": 2451,
-            "end": 2452
-        },
-        {
-            "kind": "Backtick",
-            "text": "`",
-            "start": 2452,
-            "end": 2453
-        },
-        {
-            "kind": "Backtick",
-            "text": "`",
-            "start": 2453,
             "end": 2454
         },
         {
@@ -5751,45 +5271,9 @@
             "end": 2457
         },
         {
-            "kind": "Text",
-            "text": "Code",
+            "kind": "CodeBlock",
+            "text": "Code block in blockquote",
             "start": 2457,
-            "end": 2461
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 2461,
-            "end": 2462
-        },
-        {
-            "kind": "Text",
-            "text": "block",
-            "start": 2462,
-            "end": 2467
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 2467,
-            "end": 2468
-        },
-        {
-            "kind": "Text",
-            "text": "in",
-            "start": 2468,
-            "end": 2470
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 2470,
-            "end": 2471
-        },
-        {
-            "kind": "Text",
-            "text": "blockquote",
-            "start": 2471,
             "end": 2481
         },
         {
@@ -5811,21 +5295,9 @@
             "end": 2484
         },
         {
-            "kind": "Backtick",
-            "text": "`",
+            "kind": "CodeFence",
+            "text": "```",
             "start": 2484,
-            "end": 2485
-        },
-        {
-            "kind": "Backtick",
-            "text": "`",
-            "start": 2485,
-            "end": 2486
-        },
-        {
-            "kind": "Backtick",
-            "text": "`",
-            "start": 2486,
             "end": 2487
         },
         {
@@ -10305,57 +9777,9 @@
             "end": 4252
         },
         {
-            "kind": "Hash",
-            "text": "#",
+            "kind": "CodeBlock",
+            "text": "# Code block with Markdown",
             "start": 4252,
-            "end": 4253
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 4253,
-            "end": 4254
-        },
-        {
-            "kind": "Text",
-            "text": "Code",
-            "start": 4254,
-            "end": 4258
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 4258,
-            "end": 4259
-        },
-        {
-            "kind": "Text",
-            "text": "block",
-            "start": 4259,
-            "end": 4264
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 4264,
-            "end": 4265
-        },
-        {
-            "kind": "Text",
-            "text": "with",
-            "start": 4265,
-            "end": 4269
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 4269,
-            "end": 4270
-        },
-        {
-            "kind": "Text",
-            "text": "Markdown",
-            "start": 4270,
             "end": 4278
         },
         {
@@ -10365,123 +9789,9 @@
             "end": 4279
         },
         {
-            "kind": "Text",
-            "text": "This",
+            "kind": "CodeBlock",
+            "text": "This is a **code block** that contains Markdown syntax.",
             "start": 4279,
-            "end": 4283
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 4283,
-            "end": 4284
-        },
-        {
-            "kind": "Text",
-            "text": "is",
-            "start": 4284,
-            "end": 4286
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 4286,
-            "end": 4287
-        },
-        {
-            "kind": "Text",
-            "text": "a",
-            "start": 4287,
-            "end": 4288
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 4288,
-            "end": 4289
-        },
-        {
-            "kind": "Strong",
-            "text": "**",
-            "start": 4289,
-            "end": 4291
-        },
-        {
-            "kind": "Text",
-            "text": "code",
-            "start": 4291,
-            "end": 4295
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 4295,
-            "end": 4296
-        },
-        {
-            "kind": "Text",
-            "text": "block",
-            "start": 4296,
-            "end": 4301
-        },
-        {
-            "kind": "Strong",
-            "text": "**",
-            "start": 4301,
-            "end": 4303
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 4303,
-            "end": 4304
-        },
-        {
-            "kind": "Text",
-            "text": "that",
-            "start": 4304,
-            "end": 4308
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 4308,
-            "end": 4309
-        },
-        {
-            "kind": "Text",
-            "text": "contains",
-            "start": 4309,
-            "end": 4317
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 4317,
-            "end": 4318
-        },
-        {
-            "kind": "Text",
-            "text": "Markdown",
-            "start": 4318,
-            "end": 4326
-        },
-        {
-            "kind": "Whitespace",
-            "text": " ",
-            "start": 4326,
-            "end": 4327
-        },
-        {
-            "kind": "Text",
-            "text": "syntax",
-            "start": 4327,
-            "end": 4333
-        },
-        {
-            "kind": "Dot",
-            "text": ".",
-            "start": 4333,
             "end": 4334
         },
         {
