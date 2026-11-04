@@ -1,0 +1,58 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "styled-inline-to-html",
+    "assertions": [
+        {
+            "kind": "exit-code",
+            "expected": 0
+        },
+        {
+            "kind": "report-status",
+            "expected": "success"
+        },
+        {
+            "kind": "loss-codes",
+            "expected": []
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "<strong>bold</strong>"
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "href=\"https://example.com\""
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "<em>italic</em>"
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "<a href=\"https://example.com\">link</a>"
+        }
+    ],
+    "provenance": [
+        {
+            "author": "document.rs 迁移",
+            "reason": "document.convert 的 markdown_reader_lowers_inline_styles_and_links 只断言样式与链接被保留",
+            "semantic": "行内粗体降为 strong，链接目标保留在 href",
+            "updatedAt": "2026-11-04T00:00:00.000Z"
+        },
+        {
+            "author": "document-harness",
+            "reason": "document.convert 的行内样式用例要求 emphasis 与 strong 同时到达 html writer",
+            "semantic": "markdown 的 *italic* 必须降为 <em>",
+            "updatedAt": "2026-11-04T16:09:17.775Z"
+        },
+        {
+            "author": "document-harness",
+            "reason": "document.convert 的行内样式用例要求链接同时保留 href 与锚文本",
+            "semantic": "markdown 链接必须降为带原文锚文本的 <a>",
+            "updatedAt": "2026-11-04T16:09:17.875Z"
+        }
+    ]
+}

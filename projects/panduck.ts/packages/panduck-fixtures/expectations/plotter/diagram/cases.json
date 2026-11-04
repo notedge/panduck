@@ -1,0 +1,126 @@
+{
+    "schema": "panduck.fixtures.plotter.diagram",
+    "provenance": {
+        "repo": "document.rs",
+        "crates": ["plotter.diagram", "plotter.input.dot", "plotter.input.mermaid", "plotter.input.plantuml"],
+        "tests": "projects/plotter/plotter.diagram/tests",
+        "catalog": "projects/plotter/plotter.types/catalog/rejections.json",
+        "note": "DOT, Mermaid and PlantUML are active inputs. Accepted sources must lower and render, rejected sources must name a code."
+    },
+    "specs": [
+        {
+            "id": "diagram-mermaid-flowchart",
+            "language": "mermaid",
+            "classification": "accept",
+            "source": "flowchart TD\n  A[Start] --> B{Ready?}\n  B -->|yes| C[Stop]\n  B -->|no| D[Retry]\n",
+            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+        },
+        {
+            "id": "diagram-mermaid-class",
+            "language": "mermaid",
+            "classification": "accept",
+            "source": "classDiagram\n  class A {\n    +run()\n  }\n  A <|-- B\n",
+            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+        },
+        {
+            "id": "diagram-mermaid-subgraph",
+            "language": "mermaid",
+            "classification": "accept",
+            "source": "flowchart LR\n  subgraph group[Group]\n    A --> B\n  end\n",
+            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+        },
+        {
+            "id": "diagram-mermaid-sequence",
+            "language": "mermaid",
+            "classification": "accept",
+            "source": "sequenceDiagram\n  participant A\n  participant B\n  A->>B: hello\n  B-->>A: world\n",
+            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+        },
+        {
+            "id": "diagram-dot-ranked",
+            "language": "dot",
+            "classification": "accept",
+            "source": "digraph rank {\n  rankdir=LR;\n  node [shape=box];\n  A [shape=circle];\n  B [label=\"Work\"];\n  A -> B [label=\"go\"];\n}\n",
+            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+        },
+        {
+            "id": "diagram-dot-cluster",
+            "language": "dot",
+            "classification": "accept",
+            "source": "digraph groups {\n  subgraph cluster_core {\n    label=\"Core\";\n    A -> B;\n  }\n  B -> C;\n}\n",
+            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+        },
+        {
+            "id": "diagram-dot-undirected",
+            "language": "dot",
+            "classification": "accept",
+            "source": "graph plain {\n  A -- B;\n}\n",
+            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+        },
+        {
+            "id": "diagram-plantuml-sequence",
+            "language": "plantuml",
+            "classification": "accept",
+            "source": "@startuml\nAlice -> Bob: hello\n@enduml\n",
+            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+        }
+    ],
+    "rejections": [
+        {
+            "id": "diagram-mermaid-note-over",
+            "language": "mermaid",
+            "source": "sequenceDiagram\n  participant Alice\n  participant Bob\n  Note over Alice,Bob: shared\n  Alice->>Bob: Hello\n",
+            "code": "davinci.diagram.unsupported",
+            "severity": "error",
+            "spanText": "Note over Alice,Bob: shared"
+        },
+        {
+            "id": "diagram-mermaid-second-header",
+            "language": "mermaid",
+            "source": "graph LR\n    A --> B\ngraph LR\n    C --> D\n",
+            "code": "davinci.diagram.unsupported",
+            "severity": "error",
+            "spanText": "graph LR"
+        },
+        {
+            "id": "diagram-dot-html-label",
+            "language": "dot",
+            "source": "digraph {\n  a [label=<b>bold</b>]\n}\n",
+            "code": "davinci.diagram.unsupported",
+            "severity": "error",
+            "spanText": "<b>bold</b>"
+        },
+        {
+            "id": "diagram-dot-record-shape",
+            "language": "dot",
+            "source": "digraph {\n  a [shape=record]\n}\n",
+            "code": "davinci.diagram.unsupported",
+            "severity": "error",
+            "spanText": "shape=record"
+        },
+        {
+            "id": "diagram-dot-color-attribute",
+            "language": "dot",
+            "source": "digraph {\n  a [fillcolor=\"#ff0000\"]\n}\n",
+            "code": "davinci.diagram.unsupported",
+            "severity": "error",
+            "spanText": "fillcolor=\"#ff0000\""
+        },
+        {
+            "id": "diagram-plantuml-skinparam",
+            "language": "plantuml",
+            "source": "@startuml\nskinparam monochrome true\nA -> B\n@enduml\n",
+            "code": "davinci.diagram.unsupported",
+            "severity": "error",
+            "spanText": "skinparam monochrome true"
+        },
+        {
+            "id": "diagram-plantuml-missing-header",
+            "language": "plantuml",
+            "source": "A -> B\n@enduml\n",
+            "code": "davinci.diagram.unsupported",
+            "severity": "error",
+            "spanText": "A -> B"
+        }
+    ]
+}

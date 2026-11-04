@@ -1,0 +1,29 @@
+{
+    "name": "@notedge/panduck-fixtures",
+    "version": "0.0.18",
+    "private": true,
+    "type": "module",
+    "description": "Corpus home for downstream Panduck conformance fixtures",
+    "license": "MPL-2.0",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        }
+    },
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "fixtures",
+        "expectations",
+        "readme.md"
+    ],
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "typecheck": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@types/node": "^22.13.10",
+        "typescript": "^5.8.3"
+    }
+}

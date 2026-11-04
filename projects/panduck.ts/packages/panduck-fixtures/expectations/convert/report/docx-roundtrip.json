@@ -1,0 +1,21 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "docx-roundtrip",
+    "assertions": [
+        { "kind": "exit-code", "leg": 0, "expected": 0 },
+        { "kind": "exit-code", "leg": 1, "expected": 0 },
+        { "kind": "report-status", "leg": 1, "expected": "success_with_loss" },
+        { "kind": "loss-codes", "leg": 1, "expected": ["import.docx.partial_coverage"] },
+        { "kind": "contains", "leg": 1, "target": "text", "value": "Roundtrip" },
+        { "kind": "contains", "leg": 1, "target": "text", "value": "Hello roundtrip paragraph." },
+        { "kind": "contains", "leg": 1, "target": "text", "value": "```dot" }
+    ],
+    "provenance": [
+        {
+            "author": "document-harness",
+            "reason": "The docx path must keep the heading, paragraph and fenced DOT source across both directions",
+            "semantic": "markdown to docx to markdown preserves text and the DOT fence with the declared partial coverage loss",
+            "updatedAt": "2026-11-04T00:00:00.000Z"
+        }
+    ]
+}

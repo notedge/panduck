@@ -1,0 +1,48 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "inline-html-to-html",
+    "assertions": [
+        {
+            "kind": "exit-code",
+            "expected": 0
+        },
+        {
+            "kind": "report-status",
+            "expected": "success"
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "<h1><Route></h1>"
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "<strong>world</strong>"
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "<b>markup</b>"
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "Inline <b>markup</b> stays verbatim."
+        }
+    ],
+    "provenance": [
+        {
+            "author": "document.rs 迁移",
+            "reason": "document.convert 的 markdown_to_html_route_keeps_authored_inline_html 断言作者手写的行内 HTML 不被清洗",
+            "semantic": "标题里的尖括号按作者原文保留，行内 <b> 不被改写",
+            "updatedAt": "2026-11-04T00:00:00.000Z"
+        },
+        {
+            "author": "document-harness",
+            "reason": "document.convert 断言作者手写的行内 HTML 原样保留",
+            "semantic": "整句输出必须逐字保留行内 <b> 标签",
+            "updatedAt": "2026-11-04T16:09:20.852Z"
+        }
+    ]
+}

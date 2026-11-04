@@ -1,0 +1,118 @@
+{
+    "schema": "panduck.fixtures.ir",
+    "provenance": {
+        "repo": "document.rs",
+        "crate": "document.ir",
+        "tests": "projects/document/document.ir/tests",
+        "note": "Validation rules and contract outcomes only. Graph construction stays in the Rust smoke layer, so these rows carry no test code."
+    },
+    "cases": [
+        {
+            "id": "ir-unresolved-link-endpoint",
+            "area": "inline",
+            "classification": "accept",
+            "contract": "an unresolved link target is a legal endpoint",
+            "issues": []
+        },
+        {
+            "id": "ir-unknown-link-target",
+            "area": "inline",
+            "classification": "reject",
+            "contract": "a node, asset or document endpoint that was never pushed",
+            "issues": ["UnknownInlineLinkTarget"]
+        },
+        {
+            "id": "ir-unknown-inline-reference",
+            "area": "inline",
+            "classification": "reject",
+            "contract": "a reference names a node id that does not exist",
+            "issues": ["UnknownInlineReference"]
+        },
+        {
+            "id": "ir-unbound-inline-image",
+            "area": "inline",
+            "classification": "reject",
+            "contract": "an inline image names an asset id that was never pushed",
+            "issues": ["UnknownInlineImageAsset"]
+        },
+        {
+            "id": "ir-empty-inline-label",
+            "area": "inline",
+            "classification": "reject",
+            "contract": "two links and images carry no display text",
+            "issues": ["EmptyInlineLabel"],
+            "issueCount": 2
+        },
+        {
+            "id": "ir-duplicate-asset-id",
+            "area": "graph",
+            "classification": "reject",
+            "contract": "the same asset id is pushed twice",
+            "issues": ["DuplicateAssetId"]
+        },
+        {
+            "id": "ir-duplicate-node-and-link-ids",
+            "area": "graph",
+            "classification": "reject",
+            "contract": "node 7 and link 3 are each pushed twice",
+            "issues": ["DuplicateNodeId", "DuplicateLinkId"]
+        },
+        {
+            "id": "ir-unknown-relation-endpoints",
+            "area": "graph",
+            "classification": "reject",
+            "contract": "three relations point at node 11, asset 12 and document 2 which were never pushed",
+            "issues": ["UnknownRelationEndpoint"],
+            "issueCount": 3
+        },
+        {
+            "id": "ir-unknown-node-source",
+            "area": "graph",
+            "classification": "reject",
+            "contract": "a source reference names node 10 which does not exist",
+            "issues": ["UnknownNode"]
+        },
+        {
+            "id": "ir-containment-cycle",
+            "area": "graph",
+            "classification": "reject",
+            "contract": "section and list containment loops back on itself",
+            "issues": ["ContainmentCycle"]
+        },
+        {
+            "id": "ir-unknown-section-and-list-children",
+            "area": "graph",
+            "classification": "reject",
+            "contract": "section and list children point at missing node ids",
+            "issues": ["UnknownSectionChild", "UnknownListChild"]
+        },
+        {
+            "id": "ir-list-item-numbering",
+            "area": "graph",
+            "classification": "reject",
+            "contract": "an ordered item omits its number or repeats a previous one",
+            "issues": ["MissingListItemNumber", "OutOfOrderListItemNumber", "UnexpectedListItemNumber"]
+        },
+        {
+            "id": "ir-table-span-bounds",
+            "area": "graph",
+            "classification": "reject",
+            "contract": "a cell declares zero or out of bounds colspan and rowspan",
+            "issues": ["ZeroColspan", "ZeroRowspan", "ColspanOutOfBounds", "RowspanOutOfBounds"]
+        },
+        {
+            "id": "ir-envelope-roundtrip",
+            "area": "contract",
+            "classification": "accept",
+            "contract": "identity, relations and assets survive serialize then deserialize",
+            "issues": []
+        },
+        {
+            "id": "ir-provenance-boundaries",
+            "area": "contract",
+            "classification": "accept",
+            "contract": "resolved and inferred sources coexist on one node without loss",
+            "issues": []
+        }
+    ]
+}

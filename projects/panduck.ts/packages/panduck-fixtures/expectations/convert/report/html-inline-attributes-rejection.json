@@ -1,0 +1,18 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "html-inline-attributes-rejection",
+    "assertions": [
+        { "kind": "exit-code", "expected": 1 },
+        { "kind": "report-status", "expected": "failed" },
+        { "kind": "loss-codes", "expected": [] },
+        { "kind": "diagnostic-codes", "expected": ["notedown.format.unsupported"] }
+    ],
+    "provenance": [
+        {
+            "author": "document-harness",
+            "reason": "The migrated html corpus carries inline `id` and `class` attributes that Markdown cannot represent, so the declared behavior is a visible refusal rather than a silent drop",
+            "semantic": "html inline attributes are refused with notedown.format.unsupported",
+            "updatedAt": "2026-11-04T00:00:00.000Z"
+        }
+    ]
+}

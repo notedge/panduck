@@ -1,0 +1,20 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "rejected-dot-attribute",
+    "assertions": [
+        { "kind": "exit-code", "expected": 0 },
+        { "kind": "report-status", "expected": "success_with_loss" },
+        { "kind": "loss-codes", "expected": ["davinci.diagram.unsupported"] },
+        { "kind": "contains", "target": "html", "value": "<pre class=\"diagram\" data-diagram-language=\"dot\"" },
+        { "kind": "contains", "target": "html", "value": "splines=ortho" },
+        { "kind": "not-contains", "target": "html", "value": "<figure" }
+    ],
+    "provenance": [
+        {
+            "author": "document-harness",
+            "reason": "`splines=ortho` is outside the declared DOT subset, so the block must stay visible as source with a loss instead of disappearing",
+            "semantic": "declared DOT rejection keeps the source and reports davinci.diagram.unsupported",
+            "updatedAt": "2026-11-04T00:00:00.000Z"
+        }
+    ]
+}

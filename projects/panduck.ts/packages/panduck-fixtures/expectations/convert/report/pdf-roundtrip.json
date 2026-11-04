@@ -1,0 +1,21 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "pdf-roundtrip",
+    "assertions": [
+        { "kind": "exit-code", "leg": 0, "expected": 0 },
+        { "kind": "exit-code", "leg": 1, "expected": 0 },
+        { "kind": "report-status", "leg": 1, "expected": "success_with_loss" },
+        { "kind": "loss-codes", "leg": 1, "expected": ["import.pdf.partial_coverage"] },
+        { "kind": "contains", "leg": 1, "target": "text", "value": "Roundtrip" },
+        { "kind": "contains", "leg": 1, "target": "text", "value": "Hello roundtrip paragraph." },
+        { "kind": "not-contains", "leg": 1, "target": "text", "value": "```dot" }
+    ],
+    "provenance": [
+        {
+            "author": "document-harness",
+            "reason": "The pdf path is expected to keep text while losing the diagram and to report the declared partial coverage loss",
+            "semantic": "markdown to pdf to markdown keeps prose and declares the diagram loss",
+            "updatedAt": "2026-11-04T00:00:00.000Z"
+        }
+    ]
+}

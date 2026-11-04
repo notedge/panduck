@@ -1,0 +1,64 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "diagram-render",
+    "assertions": [
+        {
+            "kind": "exit-code",
+            "expected": 0
+        },
+        {
+            "kind": "report-status",
+            "expected": "success"
+        },
+        {
+            "kind": "loss-codes",
+            "expected": []
+        },
+        {
+            "kind": "count",
+            "target": "html",
+            "pattern": "<figure class=\"diagram\"",
+            "expected": 3
+        },
+        {
+            "kind": "count",
+            "target": "html",
+            "pattern": "<svg",
+            "expected": 3
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "data-diagram-language=\"dot\""
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "data-diagram-language=\"mermaid\""
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "data-diagram-language=\"plantuml\""
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "data-diagram-source-hex"
+        }
+    ],
+    "provenance": [
+        {
+            "author": "document-harness",
+            "reason": "DOT, Mermaid and PlantUML are active inputs and each block must be parsed and rendered rather than refused",
+            "semantic": "three diagram fences produce three rendered figures with inline SVG",
+            "updatedAt": "2026-11-04T00:00:00.000Z"
+        },
+        {
+            "author": "document-harness",
+            "reason": "renderer must carry the diagram source on the figure for downstream re-edit",
+            "semantic": "rendered diagram figure exposes data-diagram-source-hex",
+            "updatedAt": "2026-11-04T15:53:38.738Z"
+        }
+    ]
+}

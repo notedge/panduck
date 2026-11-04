@@ -1,0 +1,19 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "legacy-doc",
+    "assertions": [
+        { "kind": "exit-code", "expected": 0 },
+        { "kind": "report-status", "expected": "success_with_loss" },
+        { "kind": "loss-codes", "expected": ["import.doc.partial_coverage"] },
+        { "kind": "contains", "target": "text", "value": "Hello legacy DOC" },
+        { "kind": "contains", "target": "text", "value": "Second paragraph" }
+    ],
+    "provenance": [
+        {
+            "author": "document-harness",
+            "reason": "The migrated acorn binary fixture carries two paragraphs and the legacy doc reader must keep both",
+            "semantic": "legacy binary doc extraction keeps both paragraphs and declares partial coverage",
+            "updatedAt": "2026-11-04T00:00:00.000Z"
+        }
+    ]
+}

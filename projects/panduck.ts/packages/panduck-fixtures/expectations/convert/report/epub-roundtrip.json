@@ -1,0 +1,25 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "epub-roundtrip",
+    "assertions": [
+        { "kind": "exit-code", "leg": 0, "expected": 0 },
+        { "kind": "exit-code", "leg": 1, "expected": 0 },
+        { "kind": "report-status", "leg": 1, "expected": "success_with_loss" },
+        {
+            "kind": "loss-codes",
+            "leg": 1,
+            "expected": ["import.epub.navigation_unresolved", "import.epub.partial_coverage"]
+        },
+        { "kind": "contains", "leg": 1, "target": "text", "value": "Roundtrip" },
+        { "kind": "contains", "leg": 1, "target": "text", "value": "Hello roundtrip paragraph." },
+        { "kind": "not-contains", "leg": 1, "target": "text", "value": "```dot" }
+    ],
+    "provenance": [
+        {
+            "author": "document-harness",
+            "reason": "The epub path is expected to keep text while losing the diagram and unresolved navigation, and both losses are reported",
+            "semantic": "markdown to epub to markdown keeps prose and declares diagram and navigation losses",
+            "updatedAt": "2026-11-04T00:00:00.000Z"
+        }
+    ]
+}

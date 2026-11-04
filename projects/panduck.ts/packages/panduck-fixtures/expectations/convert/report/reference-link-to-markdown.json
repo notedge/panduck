@@ -1,0 +1,42 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "reference-link-to-markdown",
+    "assertions": [
+        {
+            "kind": "exit-code",
+            "expected": 0
+        },
+        {
+            "kind": "report-status",
+            "expected": "success"
+        },
+        {
+            "kind": "loss-codes",
+            "expected": []
+        },
+        {
+            "kind": "contains",
+            "target": "text",
+            "value": "[guide](https://example.com/guide \"Docs\")"
+        },
+        {
+            "kind": "not-contains",
+            "target": "text",
+            "value": "[docs]:"
+        }
+    ],
+    "provenance": [
+        {
+            "author": "document.rs 迁移",
+            "reason": "document.convert 的 markdown_reference_link_route_preserves_title_without_loss 断言引用定义展开后标题仍在且零损耗",
+            "semantic": "引用式链接展开为内联链接，title 保留，loss 为空",
+            "updatedAt": "2026-11-04T00:00:00.000Z"
+        },
+        {
+            "author": "document-harness",
+            "reason": "引用定义展开后不应在原位残留定义行",
+            "semantic": "引用式链接转换为内联链接后不再留 [docs]: 定义",
+            "updatedAt": "2026-11-04T16:09:19.280Z"
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "basic-markdown-to-html",
+    "assertions": [
+        { "kind": "exit-code", "expected": 0 },
+        { "kind": "report-status", "expected": "success" },
+        { "kind": "loss-codes", "expected": [] },
+        { "kind": "contains", "target": "html", "value": "<h1>Oak Markdown Test Suite</h1>" },
+        { "kind": "contains", "target": "html", "value": "<h2>Lists</h2>" },
+        { "kind": "contains", "target": "html", "value": "<h2>Tables</h2>" },
+        { "kind": "contains", "target": "html", "value": "<table" },
+        { "kind": "not-contains", "target": "html", "value": "| Header 1 |" }
+    ],
+    "provenance": [
+        {
+            "author": "document-harness",
+            "reason": "The corpus declares 14 sections and two tables, so the HTML route must keep structure after fenced code blocks and must render tables",
+            "semantic": "markdown reader must not stop structuring after a fenced code block and must not silently drop tables",
+            "updatedAt": "2026-11-04T00:00:00.000Z"
+        }
+    ]
+}

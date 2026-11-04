@@ -1,0 +1,71 @@
+{
+    "schema": "panduck.fixtures.plotter.runtime",
+    "provenance": {
+        "repo": "document.rs",
+        "crate": "plotter.runtime",
+        "tests": "projects/plotter/plotter.runtime/tests/steps",
+        "note": "Pass derivation for each action or invalidation scope. Viewport work must never recompile or relayout."
+    },
+    "cases": [
+        {
+            "id": "runtime-hover",
+            "trigger": "action",
+            "action": "Hover",
+            "passes": ["RepaintOverlay"]
+        },
+        {
+            "id": "runtime-focus-press-select-clear",
+            "trigger": "action",
+            "action": "Focus, Press, Select, ClearSelection",
+            "passes": ["RepaintOverlay"]
+        },
+        {
+            "id": "runtime-data-scope",
+            "trigger": "scope",
+            "scope": "Data",
+            "passes": ["RecompileData", "Remeasure", "Relayout"]
+        },
+        {
+            "id": "runtime-set-parameter",
+            "trigger": "action",
+            "action": "SetParameter",
+            "passes": ["RecompileData", "Remeasure", "Relayout", "RetargetMotion"]
+        },
+        {
+            "id": "runtime-zoom",
+            "trigger": "action",
+            "action": "Zoom",
+            "passes": ["RecomputeViewport"]
+        },
+        {
+            "id": "runtime-resize",
+            "trigger": "action",
+            "action": "Resize",
+            "passes": ["Remeasure", "Relayout"]
+        },
+        {
+            "id": "runtime-measurement-scope",
+            "trigger": "scope",
+            "scope": "Measurement",
+            "passes": ["Remeasure", "Relayout"]
+        },
+        {
+            "id": "runtime-layout-scope",
+            "trigger": "scope",
+            "scope": "Layout",
+            "passes": ["Relayout"]
+        },
+        {
+            "id": "runtime-set-theme",
+            "trigger": "action",
+            "action": "SetTheme",
+            "passes": ["Restyle"]
+        },
+        {
+            "id": "runtime-play",
+            "trigger": "action",
+            "action": "Play",
+            "passes": ["RetargetMotion"]
+        }
+    ]
+}
