@@ -6,12 +6,9 @@
     "description": "Runnable examples for Panduck document consumers",
     "license": "MPL-2.0",
     "scripts": {
+        "start": "node convert-markdown/index.mjs",
         "convert-markdown": "node convert-markdown/index.mjs",
-        "conformance": "node conformance/index.mjs",
-        "markdown-to-html": "node markdown-to-html.mjs",
-        "roundtrip-docx": "node roundtrip-docx.mjs",
-        "pdf-route": "node pdf-route.mjs",
-        "html-refusal": "node html-refusal.mjs"
+        "conformance": "node conformance/index.mjs"
     },
     "dependencies": {
         "@notedge/panduck": "workspace:*",
