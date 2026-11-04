@@ -11,6 +11,11 @@ export type NotedownManifestCase = {
     readonly language: string;
     readonly oracle: string | null;
     readonly comparison: string;
+    /** Set when the recorded snapshot predates a known lexer fix in its source repo. */
+    readonly snapshotLag?: {
+        readonly reason: string;
+        readonly evidence: string;
+    };
 };
 
 /** The `manifest.json` schema moved downstream from `notedown-fixtures`. */
@@ -110,14 +115,27 @@ function parseManifestCase(row: unknown, index: number): NotedownManifestCase {
         throw new Error(`notedown manifest case ${index} must be an object`);
     }
     const record = row as Record<string, unknown>;
+    const label = `notedown manifest case ${index}`;
+    let snapshotLag: NotedownManifestCase["snapshotLag"];
+    if (record.snapshotLag !== undefined) {
+        if (typeof record.snapshotLag !== "object" || record.snapshotLag === null) {
+            throw new Error(`${label}: \`snapshotLag\` must be an object`);
+        }
+        const lag = record.snapshotLag as Record<string, unknown>;
+        snapshotLag = {
+            reason: requiredString(lag, "reason", `${label} snapshotLag`),
+            evidence: requiredString(lag, "evidence", `${label} snapshotLag`),
+        };
+    }
     return {
-        id: requiredString(record, "id", `notedown manifest case ${index}`),
-        source: requiredString(record, "source", `notedown manifest case ${index}`),
-        snapshot: requiredString(record, "snapshot", `notedown manifest case ${index}`),
-        extension: requiredString(record, "extension", `notedown manifest case ${index}`),
-        language: requiredString(record, "language", `notedown manifest case ${index}`),
-        oracle: record.oracle === null ? null : requiredString(record, "oracle", `notedown manifest case ${index}`),
-        comparison: requiredString(record, "comparison", `notedown manifest case ${index}`),
+        id: requiredString(record, "id", label),
+        source: requiredString(record, "source", label),
+        snapshot: requiredString(record, "snapshot", label),
+        extension: requiredString(record, "extension", label),
+        language: requiredString(record, "language", label),
+        oracle: record.oracle === null ? null : requiredString(record, "oracle", label),
+        comparison: requiredString(record, "comparison", label),
+        ...(snapshotLag === undefined ? {} : { snapshotLag }),
     };
 }
 

@@ -1,0 +1,44 @@
+{
+    "id": 1,
+    "revision": 0,
+    "metadata": {
+        "title": null,
+        "language": null,
+        "authors": [],
+        "tags": []
+    },
+    "blocks": [
+        {
+            "id": 1,
+            "block": {
+                "Paragraph": {
+                    "content": [
+                        {
+                            "Link": {
+                                "target": {
+                                    "Unresolved": {
+                                        "label": "missing-page"
+                                    }
+                                },
+                                "display": [
+                                    {
+                                        "Text": {
+                                            "text": "missing page"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "relations": [],
+    "assets": [],
+    "sources": [],
+    "coverage": {
+        "complete": true,
+        "loss": []
+    }
+}

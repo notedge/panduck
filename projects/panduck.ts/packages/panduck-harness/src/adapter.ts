@@ -8,7 +8,9 @@ import type {
     CaseObservation,
     CaseDefinition,
     CapabilitySnapshot,
+    ChartObservation,
     DiagramObservation,
+    IrObservation,
     LegObservation,
     LexObservation,
 } from "./types.js";
@@ -198,6 +200,70 @@ export function renderDiagramSource(language: string, source: string): DiagramOb
             success: false,
             svg: null,
             diagnostics: [],
+            error: error instanceof Error ? error.message : String(error),
+        };
+    }
+}
+
+/** Renders a Vega-Lite spec through the public `renderChart` entry. */
+export function renderChartSource(vegaLiteJson: string): ChartObservation {
+    const render = bindings().renderChart;
+    if (typeof render !== "function") {
+        return {
+            success: false,
+            svg: null,
+            diagnostics: [],
+            error: "missing-entry: `PanduckBindings.renderChart` is not exposed by this build",
+        };
+    }
+    try {
+        const response = render(vegaLiteJson);
+        return {
+            success: response.success,
+            svg: response.svg ?? null,
+            diagnostics: response.diagnostics.map((diagnostic) => ({
+                code: diagnostic.code,
+                severity: diagnostic.severity,
+                message: diagnostic.message,
+                spanText: diagnostic.spanText,
+                path: diagnostic.path,
+            })),
+        };
+    } catch (error) {
+        return {
+            success: false,
+            svg: null,
+            diagnostics: [],
+            error: error instanceof Error ? error.message : String(error),
+        };
+    }
+}
+
+/** Validates a serialized graph through the public `validateDocumentGraph` entry. */
+export function validateGraphSource(graphJson: string): IrObservation {
+    const validate = bindings().validateDocumentGraph;
+    if (typeof validate !== "function") {
+        return {
+            valid: false,
+            issues: [],
+            error: "missing-entry: `PanduckBindings.validateDocumentGraph` is not exposed by this build",
+        };
+    }
+    try {
+        const response = validate(graphJson);
+        return {
+            valid: response.valid,
+            issues: response.issues.map((issue) => ({
+                code: issue.code,
+                path: issue.path,
+                detail: issue.detail,
+            })),
+            error: response.error ?? undefined,
+        };
+    } catch (error) {
+        return {
+            valid: false,
+            issues: [],
             error: error instanceof Error ? error.message : String(error),
         };
     }

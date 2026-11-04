@@ -1,0 +1,64 @@
+{
+    "id": 1,
+    "revision": 0,
+    "metadata": {
+        "title": null,
+        "language": null,
+        "authors": [],
+        "tags": []
+    },
+    "blocks": [
+        {
+            "id": 1,
+            "block": {
+                "Paragraph": {
+                    "content": [
+                        {
+                            "Text": {
+                                "text": "origin"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "relations": [
+        {
+            "id": 1,
+            "kind": "References",
+            "source": {
+                "Node": 1
+            },
+            "target": {
+                "Node": 11
+            }
+        },
+        {
+            "id": 2,
+            "kind": "Embeds",
+            "source": {
+                "Node": 1
+            },
+            "target": {
+                "Asset": 12
+            }
+        },
+        {
+            "id": 3,
+            "kind": "Cites",
+            "source": {
+                "Node": 1
+            },
+            "target": {
+                "Document": 2
+            }
+        }
+    ],
+    "assets": [],
+    "sources": [],
+    "coverage": {
+        "complete": true,
+        "loss": []
+    }
+}

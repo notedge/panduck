@@ -1,0 +1,49 @@
+{
+    "id": 1,
+    "revision": 0,
+    "metadata": {
+        "title": null,
+        "language": null,
+        "authors": [],
+        "tags": []
+    },
+    "blocks": [
+        {
+            "id": 1,
+            "block": {
+                "Paragraph": {
+                    "content": [
+                        {
+                            "Text": {
+                                "text": "dual provenance"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "relations": [],
+    "assets": [],
+    "sources": [
+        {
+            "node": 1,
+            "kind": {
+                "TextSpan": {
+                    "start": 0,
+                    "end": 4
+                }
+            },
+            "precision": "Resolved"
+        },
+        {
+            "node": 1,
+            "kind": "Manual",
+            "precision": "Inferred"
+        }
+    ],
+    "coverage": {
+        "complete": true,
+        "loss": []
+    }
+}

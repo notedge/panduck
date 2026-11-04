@@ -36,6 +36,7 @@ export function loadSnapshotCases(): readonly SnapshotCaseDefinition[] {
         language: grammarFor(entry.language),
         oracle: entry.oracle,
         comparison: entry.comparison,
+        ...(entry.snapshotLag === undefined ? {} : { snapshotLag: entry.snapshotLag }),
     }));
 }
 

@@ -1,0 +1,42 @@
+{
+    "id": 1,
+    "revision": 0,
+    "metadata": {
+        "title": null,
+        "language": null,
+        "authors": [],
+        "tags": []
+    },
+    "blocks": [
+        {
+            "id": 1,
+            "block": {
+                "Paragraph": {
+                    "content": [
+                        {
+                            "Link": {
+                                "target": {
+                                    "Node": 99
+                                },
+                                "display": [
+                                    {
+                                        "Text": {
+                                            "text": "dangling"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "relations": [],
+    "assets": [],
+    "sources": [],
+    "coverage": {
+        "complete": true,
+        "loss": []
+    }
+}

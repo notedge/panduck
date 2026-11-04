@@ -86,6 +86,48 @@ export type DiagramRenderResponse = {
     diagnostics: DiagramDiagnostic[];
 };
 
+/** One structural invariant violation found on a document graph. */
+export type IrValidationIssue = {
+    /** Invariant name such as `UnknownInlineLinkTarget` or `ContainmentCycle`. */
+    code: string;
+    /** Graph location the issue points at, such as `node:7` or `relation:3`. */
+    path: string;
+    /** Human readable explanation of the violation. */
+    detail: string;
+};
+
+export type IrValidationResponse = {
+    /** True when the graph satisfies every structural invariant. */
+    valid: boolean;
+    /** Violations in the order the validator discovered them. */
+    issues: IrValidationIssue[];
+    /** Set when the payload was not a deserializable document graph. */
+    error: string | null;
+};
+
+/** One diagnostic produced while lowering or rendering a chart. */
+export type ChartDiagnostic = {
+    /** Stable diagnostic code such as `plotter.chart.unsupported_mark`. */
+    code: string;
+    /** Severity label such as `error` or `warning`. */
+    severity: string;
+    /** Human readable explanation. */
+    message: string;
+    /** Source text covered by the diagnostic, empty when it has no span. */
+    spanText: string;
+    /** JSON path inside the Vega-Lite spec, empty when it has none. */
+    path: string;
+};
+
+export type ChartRenderResponse = {
+    /** True when the spec lowered and rendered without an error diagnostic. */
+    success: boolean;
+    /** Rendered SVG document, `null` on failure. */
+    svg: string | null;
+    /** Diagnostics emitted while lowering and rendering. */
+    diagnostics: ChartDiagnostic[];
+};
+
 /** Shared Panduck binding surface for Node-API and WebAssembly backends. */
 export type PanduckBindings = {
     panduckVersion: () => string;
@@ -132,6 +174,10 @@ export type PanduckBindings = {
     lexDocument?: (language: string, source: string) => LexResponse;
     /** Render a diagram source through the matching plotter frontend. */
     renderDiagram?: (language: string, source: string) => DiagramRenderResponse;
+    /** Validate a serialized `document.ir` graph against its structural invariants. */
+    validateDocumentGraph?: (graphJson: string) => IrValidationResponse;
+    /** Render a Vega-Lite spec to SVG through `plotter.chart`. */
+    renderChart?: (vegaLiteJson: string) => ChartRenderResponse;
     installLoggerLogFile?: (path: string) => void;
     installConsoleLogFile?: (path: string) => void;
 };

@@ -1,0 +1,41 @@
+{
+    "id": 1,
+    "revision": 0,
+    "metadata": {
+        "title": null,
+        "language": null,
+        "authors": [],
+        "tags": []
+    },
+    "blocks": [
+        {
+            "id": 1,
+            "block": {
+                "Paragraph": {
+                    "content": [
+                        {
+                            "Image": {
+                                "source": "img.png",
+                                "alt": [
+                                    {
+                                        "Text": {
+                                            "text": "figure"
+                                        }
+                                    }
+                                ],
+                                "asset": 12
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "relations": [],
+    "assets": [],
+    "sources": [],
+    "coverage": {
+        "complete": true,
+        "loss": []
+    }
+}

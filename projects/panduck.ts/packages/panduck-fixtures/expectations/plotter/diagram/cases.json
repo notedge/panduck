@@ -143,6 +143,7 @@
             "source": "\\begin{tikzpicture}\n\\draw (0,0) -- (2,1);\n\\end{tikzpicture}\n",
             "expect": {
                 "lower": "scene",
+                "render": "svg",
                 "deterministic": true
             }
         },
@@ -153,6 +154,7 @@
             "source": "\\draw[red] (0,0) rectangle (1,1);\n",
             "expect": {
                 "lower": "scene",
+                "render": "svg",
                 "deterministic": true
             }
         }

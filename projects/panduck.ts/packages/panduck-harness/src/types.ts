@@ -46,6 +46,8 @@ export type Assertion =
           readonly leg?: number;
           readonly target: AssertionTarget;
           readonly required: readonly string[];
+          /** Loss codes a `success_with_loss` report must actually name. */
+          readonly losses?: readonly string[];
       };
 
 /** One conversion leg observed from the public Panduck binding. */
@@ -175,6 +177,11 @@ export type SnapshotCaseDefinition = {
     readonly language: string | null;
     readonly oracle: string | null;
     readonly comparison: string;
+    /** Set when the recorded snapshot predates a known lexer fix in its source repo. */
+    readonly snapshotLag?: {
+        readonly reason: string;
+        readonly evidence: string;
+    };
 };
 
 /** Observation of one public `renderDiagram` call. */
@@ -186,6 +193,31 @@ export type DiagramObservation = {
         readonly severity: string;
         readonly message: string;
         readonly spanText: string;
+    }[];
+    readonly error?: string;
+};
+
+/** Observation of one public `renderChart` call. */
+export type ChartObservation = {
+    readonly success: boolean;
+    readonly svg: string | null;
+    readonly diagnostics: readonly {
+        readonly code: string;
+        readonly severity: string;
+        readonly message: string;
+        readonly spanText: string;
+        readonly path: string;
+    }[];
+    readonly error?: string;
+};
+
+/** Observation of one public `validateDocumentGraph` call. */
+export type IrObservation = {
+    readonly valid: boolean;
+    readonly issues: readonly {
+        readonly code: string;
+        readonly path: string;
+        readonly detail: string;
     }[];
     readonly error?: string;
 };

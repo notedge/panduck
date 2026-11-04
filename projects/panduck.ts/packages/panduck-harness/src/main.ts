@@ -7,15 +7,21 @@ import {
     loadFormatManifest,
     loadIrCases,
     loadRuntimePasses,
+    readChartSpec,
+    readIrGraph,
+    type ChartCase,
     type DiagramRejectionCase,
     type DiagramSpecCase,
+    type IrCase,
 } from "@notedge/panduck-fixtures";
 import {
     bindingLocation,
     capabilities,
     lexSource,
+    renderChartSource,
     renderDiagramSource,
     runCase,
+    validateGraphSource,
 } from "./adapter.js";
 import { aggregateCategory, evaluateExpectation, evaluateSnapshot } from "./assertions.js";
 import { addAssertion } from "./accept.js";
@@ -43,10 +49,10 @@ import { writeBaseline, writeRun } from "./archive.js";
 import { measureCoverage, printCoverage, writeCoverage } from "./coverage.js";
 
 type Command = "run" | "list" | "verify" | "baseline" | "accept" | "oracle" | "coverage" | "help";
-type Suite = "all" | "convert" | "notedown" | "diagram";
+type Suite = "all" | "convert" | "notedown" | "diagram" | "ir" | "chart";
 
 const USAGE = [
-    "panduck-harness <command> [--suite all|convert|notedown|diagram] [--name <baseline>]",
+    "panduck-harness <command> [--suite all|convert|notedown|diagram|ir|chart] [--name <baseline>]",
     "",
     "  run        Execute the runnable suites and archive observations under results/",
     "  verify     Validate the checked-in corpus without loading the binding",
@@ -55,7 +61,7 @@ const USAGE = [
     "  list       Print the corpus inventory",
     "  baseline   Copy results/latest.json into baselines/<name>.json",
     "  accept     Add one passing assertion to a case expectation and record provenance",
-    "             --case <id> --add '<json>' --why <reason> --semantic <changed>",
+    "             --case <id> --add '<json>' --why <reason> --semantic <changed> [--replace true]",
     "  oracle     Add one known red assertion as a reproduction oracle, records the observed status",
     "             --case <id> --add '<json>' --why <reason> --semantic <changed>",
 ].join("\n");
@@ -76,7 +82,14 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
         const argument = argv[index];
         if (argument === "--suite") {
             const value = argv[index + 1];
-            if (value !== "all" && value !== "convert" && value !== "notedown" && value !== "diagram") {
+            if (
+                value !== "all" &&
+                value !== "convert" &&
+                value !== "notedown" &&
+                value !== "diagram" &&
+                value !== "ir" &&
+                value !== "chart"
+            ) {
                 throw new Error(`unsupported suite: ${String(value)}`);
             }
             suite = value;
@@ -135,30 +148,6 @@ function corpusResults(): readonly CaseResult[] {
 }
 
 const CORPUS_GAPS: readonly GapRecord[] = [
-    {
-        id: "gap-ir-validation",
-        repo: "panduck",
-        capability: "document.ir graph validation",
-        neededEntry: "a binding entry that returns validation issues for an authored graph",
-        evidence: "expectations/ir/cases.json",
-        affectedCases: ["ir-*"],
-    },
-    {
-        id: "gap-chart-render",
-        repo: "panduck",
-        capability: "plotter.chart lowering and render",
-        neededEntry: "a binding entry that lowers a Vega-Lite spec to SVG",
-        evidence: "fixtures/chart/manifest.json",
-        affectedCases: ["chart-*"],
-    },
-    {
-        id: "gap-diagram-tikz",
-        repo: "panduck",
-        capability: "plotter.diagram TikZ frontend",
-        neededEntry: "a TikZ lowering entry in the plotter family, plus its binding here",
-        evidence: "expectations/plotter/diagram/cases.json",
-        affectedCases: ["diagram-tikz-*"],
-    },
     {
         id: "gap-runtime-passes",
         repo: "panduck",
@@ -301,8 +290,6 @@ function classifications(cases: readonly CaseResult[]): RunReport["classificatio
     };
 }
 
-const TIKZ_GAP = "TikZ has no plotter frontend in Panduck, so this case stays a gap";
-
 function diagramRun(
     id: string,
     title: string,
@@ -333,20 +320,7 @@ function diagramRun(
     };
 }
 
-function diagramGapRun(id: string, title: string): CaseRun {
-    return diagramRun(
-        id,
-        title,
-        [corpusIntegrity("diagram-frontend", false, TIKZ_GAP)],
-        { gap: TIKZ_GAP },
-        "gap-diagram-tikz",
-    );
-}
-
 function describeDiagramSpec(definition: DiagramSpecCase): CaseRun {
-    if (definition.language === "tikz") {
-        return diagramGapRun(definition.id, `${definition.language} source lowers to a scene`);
-    }
     const first = renderDiagramSource(definition.language, definition.source);
     if (first.error !== undefined) {
         return diagramRun(
@@ -390,9 +364,6 @@ function describeDiagramSpec(definition: DiagramSpecCase): CaseRun {
 }
 
 function describeDiagramRejection(definition: DiagramRejectionCase): CaseRun {
-    if (definition.language === "tikz") {
-        return diagramGapRun(definition.id, `${definition.language} rejection is reported`);
-    }
     const observation = renderDiagramSource(definition.language, definition.source);
     if (observation.error !== undefined) {
         return diagramRun(
@@ -434,6 +405,202 @@ function diagramRuns(): readonly CaseRun[] {
         ...corpus.specs.map(describeDiagramSpec),
         ...corpus.rejections.map(describeDiagramRejection),
     ];
+}
+
+function chartRun(
+    id: string,
+    title: string,
+    assertions: readonly AssertionResult[],
+    details: Readonly<Record<string, unknown>>,
+): CaseRun {
+    const category = aggregateCategory(assertions);
+    return {
+        observation: {
+            caseId: id,
+            kind: "convert",
+            legs: [],
+            durationMs: 0,
+            capabilities: { version: "unavailable", formats: [], conversions: [] },
+            details,
+        },
+        result: {
+            id,
+            title,
+            kind: "convert",
+            status: category === undefined ? "pass" : "fail",
+            category,
+            assertions,
+            durationMs: 0,
+        },
+    };
+}
+
+function describeChartCase(definition: ChartCase): CaseRun {
+    const source = readChartSpec(definition);
+    const first = renderChartSource(source);
+    if (first.error !== undefined) {
+        return chartRun(
+            definition.id,
+            `${definition.language} ${definition.classification} sample`,
+            [corpusIntegrity("chart-entry", false, first.error)],
+            { language: definition.language, error: first.error },
+        );
+    }
+    const assertion = (check: string, ok: boolean, detail: string): AssertionResult =>
+        ok
+            ? { assertion: { kind: "corpus-integrity", check }, status: "pass", detail }
+            : { assertion: { kind: "corpus-integrity", check }, status: "fail", detail, category: "implementation-defect" };
+    if (definition.classification === "supported") {
+        const second = renderChartSource(source);
+        const deterministic = first.svg !== null && first.svg === second.svg;
+        return chartRun(
+            definition.id,
+            `${definition.language} spec renders`,
+            [
+                assertion("chart-render", first.success, `success is ${first.success}`),
+                assertion(
+                    "chart-svg",
+                    first.svg !== null && first.svg.includes("<svg"),
+                    first.svg === null ? "svg is missing" : `svg carries ${first.svg.length} bytes`,
+                ),
+                assertion(
+                    "chart-deterministic",
+                    deterministic,
+                    deterministic ? "two renders are byte identical" : "two renders differ",
+                ),
+            ],
+            {
+                language: definition.language,
+                svgBytes: first.svg?.length ?? 0,
+                diagnostics: first.diagnostics.length,
+            },
+        );
+    }
+    const expectedCode = String(definition.expect.code ?? "");
+    const expectedSeverity = String(definition.expect.severity ?? "");
+    const expectedSpan = String(definition.expect.spanText ?? "");
+    const diagnostic = first.diagnostics[0];
+    return chartRun(
+        definition.id,
+        `${definition.language} rejection is reported`,
+        [
+            assertion("chart-rejected", !first.success, `success is ${first.success}`),
+            assertion(
+                "chart-code",
+                diagnostic?.code === expectedCode,
+                `code is ${diagnostic?.code ?? "absent"}, expected ${expectedCode}`,
+            ),
+            assertion(
+                "chart-severity",
+                diagnostic?.severity === expectedSeverity,
+                `severity is ${diagnostic?.severity ?? "absent"}, expected ${expectedSeverity}`,
+            ),
+            assertion(
+                "chart-span",
+                diagnostic?.spanText === expectedSpan,
+                `spanText is ${JSON.stringify(diagnostic?.spanText ?? "")}, expected ${JSON.stringify(expectedSpan)}`,
+            ),
+        ],
+        {
+            language: definition.language,
+            code: diagnostic?.code ?? null,
+            severity: diagnostic?.severity ?? null,
+            spanText: diagnostic?.spanText ?? null,
+        },
+    );
+}
+
+function chartRuns(): readonly CaseRun[] {
+    return loadChartCases().map(describeChartCase);
+}
+
+function irRun(
+    id: string,
+    title: string,
+    assertions: readonly AssertionResult[],
+    details: Readonly<Record<string, unknown>>,
+    gap?: string,
+): CaseRun {
+    const category = aggregateCategory(assertions);
+    return {
+        observation: {
+            caseId: id,
+            kind: "convert",
+            legs: [],
+            durationMs: 0,
+            capabilities: { version: "unavailable", formats: [], conversions: [] },
+            details,
+        },
+        result: {
+            id,
+            title,
+            kind: "convert",
+            status: category === undefined ? "pass" : "fail",
+            category,
+            assertions,
+            durationMs: 0,
+            gap,
+        },
+    };
+}
+
+function describeIrCase(definition: IrCase): CaseRun {
+    const observation = validateGraphSource(readIrGraph(definition));
+    if (observation.error !== undefined) {
+        return irRun(
+            definition.id,
+            `${definition.area} graph ${definition.classification === "accept" ? "is valid" : "is rejected"}`,
+            [corpusIntegrity("ir-entry", false, observation.error)],
+            { area: definition.area, error: observation.error },
+            "gap-ir-validation",
+        );
+    }
+    const actual = observation.issues.map((issue) => issue.code).sort();
+    const actualCodes = [...new Set(actual)];
+    const expected = [...new Set(definition.issues)].sort();
+    const sameCodes =
+        actualCodes.length === expected.length && actualCodes.every((code, index) => code === expected[index]);
+    const assertion = (check: string, ok: boolean, detail: string): AssertionResult =>
+        ok
+            ? { assertion: { kind: "corpus-integrity", check }, status: "pass", detail }
+            : { assertion: { kind: "corpus-integrity", check }, status: "fail", detail, category: "implementation-defect" };
+    const expectedValidity = definition.classification === "accept";
+    const assertions = [
+        assertion(
+            "ir-validity",
+            observation.valid === expectedValidity,
+            `valid is ${observation.valid}, expected ${expectedValidity}`,
+        ),
+        assertion(
+            "ir-issue-codes",
+            sameCodes,
+            `issues are [${actual.join(", ")}], expected [${expected.join(", ")}]`,
+        ),
+    ];
+    if (definition.issueCount !== undefined) {
+        assertions.push(
+            assertion(
+                "ir-issue-count",
+                observation.issues.length === definition.issueCount,
+                `issue count is ${observation.issues.length}, expected ${definition.issueCount}`,
+            ),
+        );
+    }
+    return irRun(
+        definition.id,
+        `${definition.area} graph ${expectedValidity ? "is valid" : "is rejected"}`,
+        assertions,
+        {
+            area: definition.area,
+            contract: definition.contract,
+            issueCodes: actual,
+            issueCount: observation.issues.length,
+        },
+    );
+}
+
+function irRuns(): readonly CaseRun[] {
+    return loadIrCases().map(describeIrCase);
 }
 
 function report(suite: Suite, cases: readonly CaseResult[], bindingsAvailable: boolean): RunReport {
@@ -494,6 +661,18 @@ async function commandRun(suite: Suite): Promise<number> {
             observations.push(run.observation);
         }
     }
+    if (suite === "all" || suite === "ir") {
+        for (const run of irRuns()) {
+            cases.push(run.result);
+            observations.push(run.observation);
+        }
+    }
+    if (suite === "all" || suite === "chart") {
+        for (const run of chartRuns()) {
+            cases.push(run.result);
+            observations.push(run.observation);
+        }
+    }
     const run = report(suite, cases, bindingsAvailable);
     const archive = writeRun(run, observations);
     printReport(run, archive);
@@ -546,6 +725,7 @@ function commandAccept(options: Readonly<Record<string, string>>, redOracle: boo
             assertionFile: options["add-file"],
             reason: why,
             semantic,
+            replace: options.replace === "true",
             redOracle,
         });
         console.log(`accepted ${result.caseId} · assertions ${result.assertionCount} · observed ${result.observedStatus}`);

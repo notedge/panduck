@@ -1,0 +1,50 @@
+{
+    "id": 1,
+    "revision": 0,
+    "metadata": {
+        "title": null,
+        "language": null,
+        "authors": [],
+        "tags": []
+    },
+    "blocks": [
+        {
+            "id": 1,
+            "block": {
+                "Paragraph": {
+                    "content": [
+                        {
+                            "Text": {
+                                "text": "asset owner"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "relations": [],
+    "assets": [
+        {
+            "id": 12,
+            "kind": "Image",
+            "content_identity": null,
+            "source": null,
+            "media_type": "image/png",
+            "status": "Resolved"
+        },
+        {
+            "id": 12,
+            "kind": "Image",
+            "content_identity": null,
+            "source": null,
+            "media_type": "image/png",
+            "status": "Resolved"
+        }
+    ],
+    "sources": [],
+    "coverage": {
+        "complete": true,
+        "loss": []
+    }
+}

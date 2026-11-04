@@ -118,6 +118,26 @@ type NativeBinding = {
             spanText: string;
         }>;
     };
+    validateDocumentGraph?: (graphJson: string) => {
+        valid: boolean;
+        issues: Array<{
+            code: string;
+            path: string;
+            detail: string;
+        }>;
+        error: string | null;
+    };
+    renderChart?: (vegaLiteJson: string) => {
+        success: boolean;
+        svg?: string;
+        diagnostics: Array<{
+            code: string;
+            severity: string;
+            message: string;
+            spanText: string;
+            path: string;
+        }>;
+    };
 };
 
 const PLATFORM_PACKAGES: Record<string, string> = {
@@ -268,6 +288,36 @@ export function loadPanduckNode(): PanduckBindings {
                           severity: diagnostic.severity,
                           message: diagnostic.message,
                           spanText: diagnostic.spanText,
+                      })),
+                  };
+              }
+            : undefined,
+        validateDocumentGraph: binding.validateDocumentGraph
+            ? (graphJson) => {
+                  const response = binding.validateDocumentGraph!(graphJson);
+                  return {
+                      valid: response.valid,
+                      issues: response.issues.map((issue) => ({
+                          code: issue.code,
+                          path: issue.path,
+                          detail: issue.detail,
+                      })),
+                      error: response.error ?? null,
+                  };
+              }
+            : undefined,
+        renderChart: binding.renderChart
+            ? (vegaLiteJson) => {
+                  const response = binding.renderChart!(vegaLiteJson);
+                  return {
+                      success: response.success,
+                      svg: response.svg ?? null,
+                      diagnostics: response.diagnostics.map((diagnostic) => ({
+                          code: diagnostic.code,
+                          severity: diagnostic.severity,
+                          message: diagnostic.message,
+                          spanText: diagnostic.spanText,
+                          path: diagnostic.path,
                       })),
                   };
               }

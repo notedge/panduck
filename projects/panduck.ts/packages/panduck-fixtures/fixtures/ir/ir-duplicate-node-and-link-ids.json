@@ -1,0 +1,68 @@
+{
+    "id": 1,
+    "revision": 0,
+    "metadata": {
+        "title": null,
+        "language": null,
+        "authors": [],
+        "tags": []
+    },
+    "blocks": [
+        {
+            "id": 7,
+            "block": {
+                "Paragraph": {
+                    "content": [
+                        {
+                            "Text": {
+                                "text": "first"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": 7,
+            "block": {
+                "Paragraph": {
+                    "content": [
+                        {
+                            "Text": {
+                                "text": "second"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "relations": [
+        {
+            "id": 3,
+            "kind": "References",
+            "source": {
+                "Node": 7
+            },
+            "target": {
+                "Node": 7
+            }
+        },
+        {
+            "id": 3,
+            "kind": "References",
+            "source": {
+                "Node": 7
+            },
+            "target": {
+                "Node": 7
+            }
+        }
+    ],
+    "assets": [],
+    "sources": [],
+    "coverage": {
+        "complete": true,
+        "loss": []
+    }
+}

@@ -1,0 +1,73 @@
+{
+    "id": 1,
+    "revision": 0,
+    "metadata": {
+        "title": null,
+        "language": null,
+        "authors": [],
+        "tags": []
+    },
+    "blocks": [
+        {
+            "id": 1,
+            "block": {
+                "Paragraph": {
+                    "content": [
+                        {
+                            "Text": {
+                                "text": "roundtrip"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": 2,
+            "block": {
+                "Paragraph": {
+                    "content": [
+                        {
+                            "Text": {
+                                "text": "target"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "relations": [
+        {
+            "id": 1,
+            "kind": "References",
+            "source": {
+                "Node": 1
+            },
+            "target": {
+                "Asset": 12
+            }
+        }
+    ],
+    "assets": [
+        {
+            "id": 12,
+            "kind": "Image",
+            "content_identity": "sha256:abc",
+            "source": "assets/abc.png",
+            "media_type": "image/png",
+            "status": "Resolved"
+        }
+    ],
+    "sources": [
+        {
+            "node": 1,
+            "kind": "Manual",
+            "precision": "Resolved"
+        }
+    ],
+    "coverage": {
+        "complete": true,
+        "loss": []
+    }
+}

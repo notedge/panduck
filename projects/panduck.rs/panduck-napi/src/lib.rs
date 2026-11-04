@@ -271,6 +271,10 @@ pub fn render_diagram(language: String, source: String) -> DiagramRenderResponse
         "dot" => lower_diagram(plotter_input_dot::dot_to_scene(&source), &source),
         "mermaid" => lower_diagram(plotter_input_mermaid::mermaid_to_scene(&source), &source),
         "plantuml" => lower_diagram(plotter_input_plantuml::plantuml_to_scene(&source), &source),
+        "tikz" => match plotter_input_tikz::tikz_to_scene(&source) {
+            Ok(scene) => render_scene(scene, Vec::new()),
+            Err(error) => diagram_error_response(error, &source),
+        },
         other => DiagramRenderResponse {
             success: false,
             svg: None,
@@ -290,30 +294,35 @@ fn lower_diagram(
 ) -> DiagramRenderResponse {
     let lowered = match lowered {
         Ok(lowered) => lowered,
-        Err(error) => {
-            let span_text = error
-                .span()
-                .and_then(|span| source.get(span))
-                .unwrap_or_default()
-                .to_string();
-            return DiagramRenderResponse {
-                success: false,
-                svg: None,
-                diagnostics: vec![DiagramDiagnostic {
-                    code: error.code().to_string(),
-                    severity: "error".to_string(),
-                    message: error.message().to_string(),
-                    span_text,
-                }],
-            };
-        }
+        Err(error) => return diagram_error_response(error, source),
     };
-    let mut diagnostics: Vec<DiagramDiagnostic> =
-        lowered.diagnostics.iter().map(diagram_diagnostic).collect();
-    match lowered
-        .scene
-        .to_svg_with_hooks("panduck-diagram", "panduck-diagram", &plotter_types::DIAGRAM_THEME)
-    {
+    let diagnostics: Vec<DiagramDiagnostic> = lowered.diagnostics.iter().map(diagram_diagnostic).collect();
+    render_scene(lowered.scene, diagnostics)
+}
+
+fn diagram_error_response(error: plotter_diagram::DiagramError, source: &str) -> DiagramRenderResponse {
+    let span_text = error
+        .span()
+        .and_then(|span| source.get(span))
+        .unwrap_or_default()
+        .to_string();
+    DiagramRenderResponse {
+        success: false,
+        svg: None,
+        diagnostics: vec![DiagramDiagnostic {
+            code: error.code().to_string(),
+            severity: "error".to_string(),
+            message: error.message().to_string(),
+            span_text,
+        }],
+    }
+}
+
+fn render_scene(
+    scene: plotter_scene::DisplayScene,
+    mut diagnostics: Vec<DiagramDiagnostic>,
+) -> DiagramRenderResponse {
+    match scene.to_svg_with_hooks("panduck-diagram", "panduck-diagram", &plotter_types::DIAGRAM_THEME) {
         Ok(svg) => DiagramRenderResponse { success: true, svg: Some(svg), diagnostics },
         Err(error) => {
             diagnostics.push(DiagramDiagnostic {
@@ -323,6 +332,90 @@ fn lower_diagram(
                 span_text: String::new(),
             });
             DiagramRenderResponse { success: false, svg: None, diagnostics }
+        }
+    }
+}
+
+/// One diagnostic produced while lowering or rendering a chart.
+#[napi(object)]
+pub struct ChartDiagnostic {
+    /// Stable diagnostic code such as `plotter.chart.unsupported_mark`.
+    pub code: String,
+    /// Severity label such as `error` or `warning`.
+    pub severity: String,
+    /// Human readable explanation.
+    pub message: String,
+    /// Source text covered by the diagnostic, empty when it has no span.
+    pub span_text: String,
+    /// JSON path inside the Vega-Lite spec, empty when the diagnostic has none.
+    pub path: String,
+}
+
+/// N-API chart render response.
+#[napi(object)]
+pub struct ChartRenderResponse {
+    /// True when the spec lowered and rendered without an error diagnostic.
+    pub success: bool,
+    /// Rendered SVG document, `None` on failure.
+    pub svg: Option<String>,
+    /// Diagnostics emitted while lowering and rendering.
+    pub diagnostics: Vec<ChartDiagnostic>,
+}
+
+/// Renders a Vega-Lite spec to an SVG scene through `plotter.chart`.
+///
+/// The input is the canonical Vega-Lite JSON payload, so callers do not need a
+/// separate compilation step. A spec that cannot be lowered is reported through
+/// the same diagnostics shape as warnings, which keeps failure and degradation
+/// in one channel.
+#[napi]
+pub fn render_chart(vega_lite_json: String) -> ChartRenderResponse {
+    let chart = match plotter_chart::vega_lite::lower(&vega_lite_json) {
+        Ok(chart) => chart,
+        Err(error) => {
+            return ChartRenderResponse {
+                success: false,
+                svg: None,
+                diagnostics: vec![ChartDiagnostic {
+                    code: error.code().to_string(),
+                    severity: "error".to_string(),
+                    message: error.message().to_string(),
+                    span_text: error
+                        .span()
+                        .and_then(|span| vega_lite_json.get(span))
+                        .unwrap_or_default()
+                        .to_string(),
+                    path: error.path().unwrap_or_default().to_string(),
+                }],
+            };
+        }
+    };
+    let mut diagnostics: Vec<ChartDiagnostic> = chart
+        .diagnostics
+        .iter()
+        .map(|diagnostic| ChartDiagnostic {
+            code: diagnostic.code().as_str().to_string(),
+            severity: diagnostic.severity().to_string(),
+            message: diagnostic
+                .message()
+                .fallback()
+                .unwrap_or_else(|| diagnostic.message().key())
+                .to_string(),
+            span_text: String::new(),
+            path: String::new(),
+        })
+        .collect();
+    match chart.to_svg_with_hooks("panduck-chart", "panduck-chart") {
+        Ok(svg) => ChartRenderResponse { success: true, svg: Some(svg), diagnostics },
+        Err(error) => {
+            diagnostics.push(ChartDiagnostic {
+                code: "plotter.chart.svg".to_string(),
+                severity: "error".to_string(),
+                message: error.to_string(),
+                span_text: String::new(),
+                path: String::new(),
+            });
+            ChartRenderResponse { success: false, svg: None, diagnostics }
         }
     }
 }
@@ -337,6 +430,176 @@ fn diagram_diagnostic(diagnostic: &boost_diagnostic::Diagnostic) -> DiagramDiagn
             .unwrap_or_else(|| diagnostic.message().key())
             .to_string(),
         span_text: String::new(),
+    }
+}
+
+/// One structural invariant violation found on a document graph.
+#[napi(object)]
+pub struct IrValidationIssue {
+    /// Invariant name such as `UnknownInlineLinkTarget` or `ContainmentCycle`.
+    pub code: String,
+    /// Graph location the issue points at, such as `node:7` or `relation:3`.
+    pub path: String,
+    /// Human readable explanation of the violation.
+    pub detail: String,
+}
+
+/// N-API IR validation response.
+#[napi(object)]
+pub struct IrValidationResponse {
+    /// True when the graph satisfies every structural invariant.
+    pub valid: bool,
+    /// Violations in the order `DocumentGraph::validate` discovered them.
+    pub issues: Vec<IrValidationIssue>,
+    /// Set when the payload was not a deserializable document graph.
+    pub error: Option<String>,
+}
+
+/// Validates a serialized `document.ir` graph against its structural invariants.
+///
+/// The graph JSON uses the same schema as `document.ir`'s serde encoding, so
+/// consumers that build semantic graphs outside Rust can check identity
+/// uniqueness, endpoint existence, reference integrity and containment
+/// acyclicity before trusting the payload. A payload that is not a document
+/// graph is reported through `error` instead of being mixed into `issues`.
+#[napi]
+pub fn validate_document_graph(graph_json: String) -> IrValidationResponse {
+    let graph: document_ir::DocumentGraph = match serde_json::from_str(&graph_json) {
+        Ok(graph) => graph,
+        Err(error) => {
+            return IrValidationResponse {
+                valid: false,
+                issues: Vec::new(),
+                error: Some(format!("graph is not a document graph: {error}")),
+            };
+        }
+    };
+    let report = graph.validate();
+    IrValidationResponse {
+        valid: report.is_valid(),
+        issues: report.issues.iter().map(issue_record).collect(),
+        error: None,
+    }
+}
+
+fn issue_record(issue: &document_ir::ValidationIssue) -> IrValidationIssue {
+    use document_ir::ValidationIssue as Issue;
+
+    let (code, path, detail) = match issue {
+        Issue::DuplicateNodeId { id } => (
+            "DuplicateNodeId",
+            format!("node:{}", id.0),
+            format!("node id {} is pushed more than once", id.0),
+        ),
+        Issue::DuplicateAssetId { id } => (
+            "DuplicateAssetId",
+            format!("asset:{}", id.0),
+            format!("asset id {} is pushed more than once", id.0),
+        ),
+        Issue::DuplicateLinkId { id } => (
+            "DuplicateLinkId",
+            format!("relation:{}", id.0),
+            format!("relation id {} is pushed more than once", id.0),
+        ),
+        Issue::UnknownNode { id } => (
+            "UnknownNode",
+            format!("node:{}", id.0),
+            format!("provenance points at node {} which is absent from `blocks`", id.0),
+        ),
+        Issue::UnknownSectionChild { section, child } => (
+            "UnknownSectionChild",
+            format!("node:{}", section.0),
+            format!("section {} names child {} which is absent from `blocks`", section.0, child.0),
+        ),
+        Issue::UnknownListChild { list, child } => (
+            "UnknownListChild",
+            format!("node:{}", list.0),
+            format!("list {} names child {} which is absent from `blocks`", list.0, child.0),
+        ),
+        Issue::UnknownQuoteChild { quote, child } => (
+            "UnknownQuoteChild",
+            format!("node:{}", quote.0),
+            format!("quote {} names child {} which is absent from `blocks`", quote.0, child.0),
+        ),
+        Issue::UnknownInlineReference { from, target } => (
+            "UnknownInlineReference",
+            format!("node:{}", from.0),
+            format!("reference on node {} names node {} which is absent", from.0, target.0),
+        ),
+        Issue::UnknownInlineLinkTarget { from, target } => (
+            "UnknownInlineLinkTarget",
+            format!("node:{}", from.0),
+            format!("link on node {} targets {target:?} which was never pushed", from.0),
+        ),
+        Issue::UnknownInlineImageAsset { from, asset } => (
+            "UnknownInlineImageAsset",
+            format!("node:{}", from.0),
+            format!("image on node {} binds asset {} which was never pushed", from.0, asset.0),
+        ),
+        Issue::EmptyInlineLabel { from, kind } => (
+            "EmptyInlineLabel",
+            format!("node:{}", from.0),
+            format!("inline {kind} on node {} carries an empty label", from.0),
+        ),
+        Issue::UnknownRelationEndpoint { link } => (
+            "UnknownRelationEndpoint",
+            format!("relation:{}", link.0),
+            format!("relation {} has an endpoint that is neither a node, asset nor document", link.0),
+        ),
+        Issue::ContainmentCycle { from, to } => (
+            "ContainmentCycle",
+            format!("node:{}", from.0),
+            format!("containment from node {} loops back to node {}", from.0, to.0),
+        ),
+        Issue::MissingListItemNumber { list, item_index } => (
+            "MissingListItemNumber",
+            format!("node:{}[{}]", list.0, item_index),
+            format!("ordered list {} leaves item {} without a number", list.0, item_index),
+        ),
+        Issue::OutOfOrderListItemNumber { list, item_index, found, previous } => (
+            "OutOfOrderListItemNumber",
+            format!("node:{}[{}]", list.0, item_index),
+            format!(
+                "ordered list {} item {} has number {:?} after {:?}",
+                list.0, item_index, found, previous
+            ),
+        ),
+        Issue::UnexpectedListItemNumber { list, item_index, found } => (
+            "UnexpectedListItemNumber",
+            format!("node:{}[{}]", list.0, item_index),
+            format!("unordered list {} item {} carries number {}", list.0, item_index, found),
+        ),
+        Issue::ZeroColspan { table, row_index, cell_index } => (
+            "ZeroColspan",
+            format!("node:{}[{}][{}]", table.0, row_index, cell_index),
+            format!("table {} cell ({}, {}) declares colspan 0", table.0, row_index, cell_index),
+        ),
+        Issue::ZeroRowspan { table, row_index, cell_index } => (
+            "ZeroRowspan",
+            format!("node:{}[{}][{}]", table.0, row_index, cell_index),
+            format!("table {} cell ({}, {}) declares rowspan 0", table.0, row_index, cell_index),
+        ),
+        Issue::ColspanOutOfBounds { table, row_index, cell_index, found, max_columns } => (
+            "ColspanOutOfBounds",
+            format!("node:{}[{}][{}]", table.0, row_index, cell_index),
+            format!(
+                "table {} cell ({}, {}) declares colspan {} with only {} columns",
+                table.0, row_index, cell_index, found, max_columns
+            ),
+        ),
+        Issue::RowspanOutOfBounds { table, row_index, cell_index, found, total_rows } => (
+            "RowspanOutOfBounds",
+            format!("node:{}[{}][{}]", table.0, row_index, cell_index),
+            format!(
+                "table {} cell ({}, {}) declares rowspan {} with only {} rows",
+                table.0, row_index, cell_index, found, total_rows
+            ),
+        ),
+    };
+    IrValidationIssue {
+        code: code.to_string(),
+        path,
+        detail,
     }
 }
 

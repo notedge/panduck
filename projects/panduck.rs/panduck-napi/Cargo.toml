@@ -16,16 +16,20 @@ crate-type = ["cdylib", "rlib"]
 napi = { workspace = true }
 napi-derive = { workspace = true }
 document-convert = { workspace = true, features = ["logger"] }
+document-ir = { workspace = true }
 document-types = { workspace = true }
 oak-core = { workspace = true }
 oak-notedown = { workspace = true }
 oak-markdown = { workspace = true }
 oak-html = { workspace = true }
 oak-xml = { workspace = true }
+plotter-chart = { workspace = true }
 plotter-diagram = { workspace = true }
 plotter-input-dot = { workspace = true }
+plotter-input-tikz = { workspace = true }
 plotter-input-mermaid = { workspace = true }
 plotter-input-plantuml = { workspace = true }
+plotter-scene = { workspace = true }
 plotter-types = { workspace = true }
 boost-diagnostic = { workspace = true }
 boost-log = { workspace = true }

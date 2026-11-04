@@ -36,6 +36,8 @@ export type IrCase = {
     readonly contract: string;
     readonly issues: readonly string[];
     readonly issueCount?: number;
+    /** Fixture-relative path to the authored graph JSON. */
+    readonly graph: string;
 };
 
 /** One accepted diagram source that must lower and render. */
@@ -191,6 +193,11 @@ export function loadChartCases(): readonly ChartCase[] {
     return uniqueIds(cases, "chart");
 }
 
+/** Reads the Vega-Lite JSON payload for one chart case. */
+export function readChartSpec(entry: ChartCase): string {
+    return readFixtureText(`chart/${entry.path}`);
+}
+
 /** Loads `expectations/ir/cases.json`. */
 export function loadIrCases(): readonly IrCase[] {
     const file = "ir/cases.json";
@@ -211,6 +218,8 @@ export function loadIrCases(): readonly IrCase[] {
         if (issueCount !== undefined && (typeof issueCount !== "number" || issueCount <= 0)) {
             throw new Error(`${label}: \`issueCount\` must be a positive number`);
         }
+        const graph = stringField(row, "graph", label);
+        assertExists(resolveFixture(`ir/${graph}`), label);
         return {
             id,
             area: stringField(row, "area", label) as IrCase["area"],
@@ -218,9 +227,15 @@ export function loadIrCases(): readonly IrCase[] {
             contract: stringField(row, "contract", label),
             issues,
             ...(issueCount === undefined ? {} : { issueCount }),
+            graph,
         } satisfies IrCase;
     });
     return uniqueIds(cases, "ir");
+}
+
+/** Reads the authored graph JSON for one IR rule row. */
+export function readIrGraph(entry: IrCase): string {
+    return readFixtureText(`ir/${entry.graph}`);
 }
 
 /** Loads `expectations/plotter/diagram/cases.json` and validates accepted and rejected rows. */

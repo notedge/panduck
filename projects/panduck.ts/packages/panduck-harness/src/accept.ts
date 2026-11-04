@@ -72,6 +72,10 @@ export function validateAssertion(value: unknown): Assertion {
         if (!Array.isArray(required) || required.some((entry) => typeof entry !== "string") || required.length === 0) {
             throw new Error("assertion `honest-success` needs a non empty `required` string array");
         }
+        const losses = record.losses;
+        if (losses !== undefined && (!Array.isArray(losses) || losses.some((entry) => typeof entry !== "string"))) {
+            throw new Error("assertion `honest-success` `losses` must be a string array");
+        }
     }
     return record as unknown as Assertion;
 }
@@ -84,12 +88,29 @@ function findCase(caseId: string): CaseDefinition {
     return definition;
 }
 
+/** Identity used for duplicate detection and for replacing an assertion in place. */
+function assertionIdentity(assertion: Assertion): string {
+    switch (assertion.kind) {
+        case "contains":
+        case "not-contains":
+            return `${assertion.kind}:${assertion.target ?? "text"}:${assertion.value}`;
+        case "count":
+            return `${assertion.kind}:${assertion.target ?? "text"}:${assertion.pattern}`;
+        case "honest-success":
+            return `${assertion.kind}:${assertion.target ?? "text"}`;
+        default:
+            return assertion.kind;
+    }
+}
+
 export type AcceptOptions = {
     readonly caseId: string;
     readonly assertionJson?: string;
     readonly assertionFile?: string;
     readonly reason: string;
     readonly semantic: string;
+    /** Replace the single assertion with the same identity instead of appending. */
+    readonly replace?: boolean;
     /**
      * `oracle` writes a tightening that is expected to stay red until the owning
      * crate fixes the implementation. It still refuses duplicates and still
@@ -118,7 +139,15 @@ export function addAssertion(options: AcceptOptions): AcceptResult {
     const raw = options.assertionJson ?? readFileSync(resolve(options.assertionFile ?? ""), "utf8");
     const assertion = validateAssertion(JSON.parse(raw) as unknown);
     const serialized = JSON.stringify(assertion);
-    if (expectation.assertions.some((entry) => JSON.stringify(entry) === serialized)) {
+    const identity = assertionIdentity(assertion);
+    const matches = expectation.assertions.filter((entry) => assertionIdentity(entry) === identity);
+    if (options.replace === true) {
+        if (matches.length !== 1) {
+            throw new Error(
+                `\`${definition.id}\` has ${matches.length} assertions with identity \`${identity}\`, so it cannot be replaced in place`,
+            );
+        }
+    } else if (matches.length > 0) {
         throw new Error(`assertion already exists on \`${definition.id}\``);
     }
 
@@ -130,9 +159,13 @@ export function addAssertion(options: AcceptOptions): AcceptResult {
         throw new Error(`refusing to accept an assertion that does not pass: ${failed.detail}`);
     }
 
+    const assertions =
+        options.replace === true
+            ? expectation.assertions.map((entry) => (assertionIdentity(entry) === identity ? assertion : entry))
+            : [...expectation.assertions, assertion];
     const updated: Expectation = {
         ...expectation,
-        assertions: [...expectation.assertions, assertion],
+        assertions,
         provenance: [
             ...expectation.provenance,
             {
@@ -140,7 +173,7 @@ export function addAssertion(options: AcceptOptions): AcceptResult {
                 reason: options.reason,
                 semantic: options.semantic,
                 updatedAt: new Date().toISOString(),
-                assertionDiff: `+ ${serialized}`,
+                assertionDiff: `${options.replace === true ? "~" : "+"} ${serialized}`,
                 observedStatus: failed ? "fail" : "pass",
             },
         ],

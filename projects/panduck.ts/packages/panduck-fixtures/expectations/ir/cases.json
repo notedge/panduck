@@ -4,7 +4,8 @@
         "repo": "document.rs",
         "crate": "document.ir",
         "tests": "projects/document/document.ir/tests",
-        "note": "Validation rules and contract outcomes only. Graph construction stays in the Rust smoke layer, so these rows carry no test code."
+        "note": "Validation rules and contract outcomes only. Graph construction stays in the Rust smoke layer, so these rows carry no test code.",
+        "construction": "graphs authored as `document.ir` serde JSON, one authored defect per reject row"
     },
     "cases": [
         {
@@ -12,107 +13,153 @@
             "area": "inline",
             "classification": "accept",
             "contract": "an unresolved link target is a legal endpoint",
-            "issues": []
+            "issues": [],
+            "graph": "ir-unresolved-link-endpoint.json"
         },
         {
             "id": "ir-unknown-link-target",
             "area": "inline",
             "classification": "reject",
             "contract": "a node, asset or document endpoint that was never pushed",
-            "issues": ["UnknownInlineLinkTarget"]
+            "issues": [
+                "UnknownInlineLinkTarget"
+            ],
+            "graph": "ir-unknown-link-target.json"
         },
         {
             "id": "ir-unknown-inline-reference",
             "area": "inline",
             "classification": "reject",
             "contract": "a reference names a node id that does not exist",
-            "issues": ["UnknownInlineReference"]
+            "issues": [
+                "UnknownInlineReference"
+            ],
+            "graph": "ir-unknown-inline-reference.json"
         },
         {
             "id": "ir-unbound-inline-image",
             "area": "inline",
             "classification": "reject",
             "contract": "an inline image names an asset id that was never pushed",
-            "issues": ["UnknownInlineImageAsset"]
+            "issues": [
+                "UnknownInlineImageAsset"
+            ],
+            "graph": "ir-unbound-inline-image.json"
         },
         {
             "id": "ir-empty-inline-label",
             "area": "inline",
             "classification": "reject",
             "contract": "two links and images carry no display text",
-            "issues": ["EmptyInlineLabel"],
-            "issueCount": 2
+            "issues": [
+                "EmptyInlineLabel"
+            ],
+            "issueCount": 2,
+            "graph": "ir-empty-inline-label.json"
         },
         {
             "id": "ir-duplicate-asset-id",
             "area": "graph",
             "classification": "reject",
             "contract": "the same asset id is pushed twice",
-            "issues": ["DuplicateAssetId"]
+            "issues": [
+                "DuplicateAssetId"
+            ],
+            "graph": "ir-duplicate-asset-id.json"
         },
         {
             "id": "ir-duplicate-node-and-link-ids",
             "area": "graph",
             "classification": "reject",
             "contract": "node 7 and link 3 are each pushed twice",
-            "issues": ["DuplicateNodeId", "DuplicateLinkId"]
+            "issues": [
+                "DuplicateNodeId",
+                "DuplicateLinkId"
+            ],
+            "graph": "ir-duplicate-node-and-link-ids.json"
         },
         {
             "id": "ir-unknown-relation-endpoints",
             "area": "graph",
             "classification": "reject",
             "contract": "three relations point at node 11, asset 12 and document 2 which were never pushed",
-            "issues": ["UnknownRelationEndpoint"],
-            "issueCount": 3
+            "issues": [
+                "UnknownRelationEndpoint"
+            ],
+            "issueCount": 3,
+            "graph": "ir-unknown-relation-endpoints.json"
         },
         {
             "id": "ir-unknown-node-source",
             "area": "graph",
             "classification": "reject",
             "contract": "a source reference names node 10 which does not exist",
-            "issues": ["UnknownNode"]
+            "issues": [
+                "UnknownNode"
+            ],
+            "graph": "ir-unknown-node-source.json"
         },
         {
             "id": "ir-containment-cycle",
             "area": "graph",
             "classification": "reject",
             "contract": "section and list containment loops back on itself",
-            "issues": ["ContainmentCycle"]
+            "issues": [
+                "ContainmentCycle"
+            ],
+            "graph": "ir-containment-cycle.json"
         },
         {
             "id": "ir-unknown-section-and-list-children",
             "area": "graph",
             "classification": "reject",
             "contract": "section and list children point at missing node ids",
-            "issues": ["UnknownSectionChild", "UnknownListChild"]
+            "issues": [
+                "UnknownSectionChild",
+                "UnknownListChild"
+            ],
+            "graph": "ir-unknown-section-and-list-children.json"
         },
         {
             "id": "ir-list-item-numbering",
             "area": "graph",
             "classification": "reject",
             "contract": "an ordered item omits its number or repeats a previous one",
-            "issues": ["MissingListItemNumber", "OutOfOrderListItemNumber", "UnexpectedListItemNumber"]
+            "issues": [
+                "MissingListItemNumber",
+                "OutOfOrderListItemNumber",
+                "UnexpectedListItemNumber"
+            ],
+            "graph": "ir-list-item-numbering.json"
         },
         {
             "id": "ir-table-span-bounds",
             "area": "graph",
             "classification": "reject",
             "contract": "a cell declares zero or out of bounds colspan and rowspan",
-            "issues": ["ZeroColspan", "ZeroRowspan", "ColspanOutOfBounds", "RowspanOutOfBounds"]
+            "issues": [
+                "ZeroColspan",
+                "ZeroRowspan",
+                "ColspanOutOfBounds",
+                "RowspanOutOfBounds"
+            ],
+            "graph": "ir-table-span-bounds.json"
         },
         {
             "id": "ir-envelope-roundtrip",
             "area": "contract",
             "classification": "accept",
             "contract": "identity, relations and assets survive serialize then deserialize",
-            "issues": []
+            "issues": [],
+            "graph": "ir-envelope-roundtrip.json"
         },
         {
             "id": "ir-provenance-boundaries",
             "area": "contract",
             "classification": "accept",
             "contract": "resolved and inferred sources coexist on one node without loss",
-            "issues": []
+            "issues": [],
+            "graph": "ir-provenance-boundaries.json"
         }
     ]
 }
