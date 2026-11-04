@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:r><w:rPr><w:b/></w:rPr><w:t>Bold</w:t></w:r>
+      <w:r><w:rPr><w:i/></w:rPr><w:t> italic</w:t></w:r>
+    </w:p>
+  </w:body>
+</w:document>

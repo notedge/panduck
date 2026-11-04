@@ -1,0 +1,17 @@
+{
+    "width": 640,
+    "height": 400,
+    "data": {
+        "values": [
+            {"region": "A", "segment": "upper", "step": 1, "value": 3, "group": "g1", "alpha": 0.35},
+            {"region": "B", "segment": "lower", "step": 2, "value": 7, "group": "g2", "alpha": 0.55},
+            {"region": "C", "segment": "upper", "step": 3, "value": 5, "group": "g1", "alpha": 0.75},
+            {"region": "D", "segment": "lower", "step": 4, "value": 9, "group": "g2", "alpha": 0.95}
+        ]
+    },
+    "mark": "line",
+    "encoding": {
+        "x": {"field": "step", "type": "quantitative"},
+        "y": {"field": "value", "type": "quantitative"}
+    }
+}

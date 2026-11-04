@@ -1,0 +1,1 @@
+{"data":{"values":[{"c":"A","v":1}]},"mark":"bar","transform":[{"filter":"datum.v > 0"}],"encoding":{"x":{"field":"c","type":"nominal"},"y":{"field":"v","type":"quantitative"}}}

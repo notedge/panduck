@@ -1,0 +1,96 @@
+{
+    "schema": "panduck.fixtures.chart",
+    "provenance": {
+        "repo": "document.rs",
+        "crate": "plotter.chart",
+        "tests": "projects/plotter/plotter.chart/tests",
+        "catalog": "projects/plotter/plotter.types/catalog/rejections.json",
+        "note": "Mark x channel specs come from the golden matrix. Rejection rows are copied verbatim from the shared rejection catalog so this corpus owns no private expectations."
+    },
+    "cases": [
+        {
+            "id": "chart-bar",
+            "path": "specs/bar.json",
+            "language": "vega-lite",
+            "classification": "supported",
+            "expect": {"render": "svg", "deterministic": true}
+        },
+        {
+            "id": "chart-point",
+            "path": "specs/point.json",
+            "language": "vega-lite",
+            "classification": "supported",
+            "expect": {"render": "svg", "deterministic": true}
+        },
+        {
+            "id": "chart-tick",
+            "path": "specs/tick.json",
+            "language": "vega-lite",
+            "classification": "supported",
+            "expect": {"render": "svg", "deterministic": true}
+        },
+        {
+            "id": "chart-rect",
+            "path": "specs/rect.json",
+            "language": "vega-lite",
+            "classification": "supported",
+            "expect": {"render": "svg", "deterministic": true}
+        },
+        {
+            "id": "chart-line",
+            "path": "specs/line.json",
+            "language": "vega-lite",
+            "classification": "supported",
+            "expect": {"render": "svg", "deterministic": true}
+        },
+        {
+            "id": "chart-area",
+            "path": "specs/area.json",
+            "language": "vega-lite",
+            "classification": "supported",
+            "expect": {"render": "svg", "deterministic": true}
+        },
+        {
+            "id": "chart-bar-styled",
+            "path": "specs/bar-styled.json",
+            "language": "vega-lite",
+            "classification": "supported",
+            "expect": {"render": "svg", "deterministic": true, "note": "constant mark styling changes paint but not geometry"}
+        },
+        {
+            "id": "chart-unsupported-mark",
+            "path": "rejections/unsupported-mark.json",
+            "language": "vega-lite",
+            "classification": "rejected",
+            "expect": {"code": "davinci.chart.unsupported-mark", "severity": "error", "spanText": "\"rule\""}
+        },
+        {
+            "id": "chart-unsupported-channel",
+            "path": "rejections/unsupported-channel.json",
+            "language": "vega-lite",
+            "classification": "rejected",
+            "expect": {"code": "davinci.chart.unsupported-channel", "severity": "error", "spanText": "{\"field\":\"k\",\"type\":\"nominal\"}"}
+        },
+        {
+            "id": "chart-unknown-key",
+            "path": "rejections/unknown-key.json",
+            "language": "vega-lite",
+            "classification": "rejected",
+            "expect": {"code": "davinci.chart.unknown-key", "severity": "error", "spanText": "true"}
+        },
+        {
+            "id": "chart-invalid-spec",
+            "path": "rejections/invalid-spec.json",
+            "language": "vega-lite",
+            "classification": "rejected",
+            "expect": {"code": "davinci.chart.invalid-spec", "severity": "error", "spanText": "\"yes\""}
+        },
+        {
+            "id": "chart-unsupported-transform",
+            "path": "rejections/unsupported-transform.json",
+            "language": "vega-lite",
+            "classification": "rejected",
+            "expect": {"code": "davinci.chart.unsupported-transform", "severity": "error", "spanText": "[{\"filter\":\"datum.v > 0\"}]"}
+        }
+    ]
+}

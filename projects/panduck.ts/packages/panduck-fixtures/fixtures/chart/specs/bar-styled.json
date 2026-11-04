@@ -1,0 +1,10 @@
+{
+    "data": {
+        "values": [{"c": "A", "v": 3}, {"c": "B", "v": 7}]
+    },
+    "mark": {"type": "bar", "color": "#3366cc", "opacity": 0.5},
+    "encoding": {
+        "x": {"field": "c", "type": "nominal"},
+        "y": {"field": "v", "type": "quantitative"}
+    }
+}

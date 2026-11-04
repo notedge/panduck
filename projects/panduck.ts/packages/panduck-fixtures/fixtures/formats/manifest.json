@@ -1,0 +1,147 @@
+{
+    "schema": "panduck.fixtures.formats",
+    "provenance": {
+        "repo": "document.rs",
+        "crate": "document.formats",
+        "tests": "projects/document/document.formats/tests",
+        "note": "Imported only the authored inputs and the expectations those tests assert. No Rust test source moved downstream."
+    },
+    "cases": [
+        {
+            "id": "docx-footnote-run",
+            "path": "docx/footnote-document.xml",
+            "format": "docx",
+            "container": "package-part",
+            "classification": "import",
+            "expect": {
+                "export": "markdown",
+                "contains": ["See[^1] for details."],
+                "lossCodes": ["reader.docx.footnote_body"]
+            }
+        },
+        {
+            "id": "docx-styled-runs",
+            "path": "docx/styled-document.xml",
+            "format": "docx",
+            "container": "package-part",
+            "classification": "import",
+            "expect": {
+                "export": "markdown",
+                "contains": ["**Bold**", "* italic*"]
+            }
+        },
+        {
+            "id": "epub-chapter",
+            "path": "epub/chapter.xhtml",
+            "format": "epub",
+            "container": "xhtml",
+            "classification": "import",
+            "expect": {
+                "export": "markdown",
+                "contains": ["# Chapter One", "**EPUB**"]
+            }
+        },
+        {
+            "id": "epub-table-nested-list",
+            "path": "epub/table-list.xhtml",
+            "format": "epub",
+            "container": "xhtml",
+            "classification": "import",
+            "expect": {
+                "export": "markdown",
+                "contains": ["| H | V |", "- Top", "  - Nested"]
+            }
+        },
+        {
+            "id": "epub-nav",
+            "path": "epub/nav.xhtml",
+            "format": "epub",
+            "container": "xhtml",
+            "classification": "inspect",
+            "expect": {
+                "kind": "nav-toc",
+                "entries": 1,
+                "firstLabel": "Part One",
+                "firstHref": "part.xhtml",
+                "firstChildLabel": "Chapter 1"
+            }
+        },
+        {
+            "id": "markdown-styled",
+            "path": "markdown/styled.md",
+            "format": "markdown",
+            "container": "plain",
+            "classification": "import",
+            "expect": {
+                "blocks": 2,
+                "contains": ["# Title", "Hello **bold** and *italic* with [link](https://example.com)."]
+            }
+        },
+        {
+            "id": "markdown-reference-link",
+            "path": "markdown/reference-link.md",
+            "format": "markdown",
+            "container": "plain",
+            "classification": "roundtrip",
+            "expect": {
+                "contains": ["[guide](https://example.com/guide \"Docs\")"],
+                "lossCodes": []
+            }
+        },
+        {
+            "id": "markdown-inline-html",
+            "path": "markdown/inline-html.md",
+            "format": "markdown",
+            "container": "plain",
+            "classification": "import",
+            "expect": {
+                "export": "html",
+                "contains": ["<h1><Route></h1>", "<strong>world</strong>", "<b>markup</b>"]
+            }
+        },
+        {
+            "id": "tex-sections",
+            "path": "tex/sections.tex",
+            "format": "tex",
+            "container": "plain",
+            "classification": "import",
+            "expect": {
+                "sectionLevels": [1, 2, 3],
+                "sectionTitles": ["1 One", "1.1 Two", "1.1.1 Three"],
+                "contains": ["Body."]
+            }
+        },
+        {
+            "id": "tex-styles",
+            "path": "tex/styles.tex",
+            "format": "tex",
+            "container": "plain",
+            "classification": "import",
+            "expect": {
+                "styles": ["strong:bold", "emphasis:soft"]
+            }
+        },
+        {
+            "id": "typst-heading",
+            "path": "typst/heading.typ",
+            "format": "typst",
+            "container": "plain",
+            "classification": "import",
+            "expect": {
+                "sectionLevels": [1],
+                "sectionTitles": ["Title"],
+                "paragraphs": ["Intro text.", "Second paragraph."]
+            }
+        },
+        {
+            "id": "typst-styles",
+            "path": "typst/styles.typ",
+            "format": "typst",
+            "container": "plain",
+            "classification": "import",
+            "expect": {
+                "plainText": "A bold and soft word."
+            }
+        }
+    ]
+}

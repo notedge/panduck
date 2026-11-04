@@ -1,0 +1,110 @@
+{
+    "schema": "panduck.fixtures.convert",
+    "provenance": {
+        "repo": "document.rs",
+        "crate": "document.convert",
+        "tests": "projects/document/document.convert/tests",
+        "note": "Inputs live under `fixtures/convert/`, report expectations under `expectations/convert/report/`."
+    },
+    "cases": [
+        {
+            "id": "basic-markdown-to-html",
+            "kind": "convert",
+            "title": "Migrated markdown corpus keeps section structure and tables",
+            "input": "notedown/basic.markdown",
+            "from": "markdown",
+            "to": "html",
+            "expectation": "convert/report/basic-markdown-to-html.json"
+        },
+        {
+            "id": "styled-inline-to-html",
+            "kind": "convert",
+            "title": "Inline bold and links survive the markdown to html route",
+            "input": "convert/styled-inline.md",
+            "from": "markdown",
+            "to": "html",
+            "expectation": "convert/report/styled-inline-to-html.json"
+        },
+        {
+            "id": "inline-html-to-html",
+            "kind": "convert",
+            "title": "Author written inline HTML stays verbatim",
+            "input": "formats/markdown/inline-html.md",
+            "from": "markdown",
+            "to": "html",
+            "expectation": "convert/report/inline-html-to-html.json"
+        },
+        {
+            "id": "reference-link-to-markdown",
+            "kind": "convert",
+            "title": "Reference links expand with their title and lose nothing",
+            "input": "formats/markdown/reference-link.md",
+            "from": "markdown",
+            "to": "markdown",
+            "expectation": "convert/report/reference-link-to-markdown.json"
+        },
+        {
+            "id": "diagram-render",
+            "kind": "convert",
+            "title": "DOT, Mermaid and PlantUML render as inline SVG",
+            "input": "convert/diagrams.md",
+            "from": "markdown",
+            "to": "html",
+            "expectation": "convert/report/diagram-render.json"
+        },
+        {
+            "id": "docx-roundtrip",
+            "kind": "roundtrip",
+            "title": "Markdown survives a docx roundtrip including the DOT fence",
+            "input": "convert/roundtrip.md",
+            "from": "markdown",
+            "via": "docx",
+            "expectation": "convert/report/docx-roundtrip.json"
+        },
+        {
+            "id": "epub-roundtrip",
+            "kind": "roundtrip",
+            "title": "Markdown text survives an epub roundtrip and the diagram is a declared loss",
+            "input": "convert/roundtrip.md",
+            "from": "markdown",
+            "via": "epub",
+            "expectation": "convert/report/epub-roundtrip.json"
+        },
+        {
+            "id": "pdf-roundtrip",
+            "kind": "roundtrip",
+            "title": "Markdown text survives a pdf roundtrip and the diagram is a declared loss",
+            "input": "convert/roundtrip.md",
+            "from": "markdown",
+            "via": "pdf",
+            "expectation": "convert/report/pdf-roundtrip.json"
+        },
+        {
+            "id": "rejected-dot-attribute",
+            "kind": "rejection",
+            "title": "Declared DOT rejection keeps visible source and reports a loss",
+            "input": "convert/rejected-dot.md",
+            "from": "markdown",
+            "to": "html",
+            "expectation": "convert/report/rejected-dot-attribute.json"
+        },
+        {
+            "id": "legacy-doc",
+            "kind": "convert",
+            "title": "Legacy binary doc keeps both paragraphs",
+            "input": "acorn/doc/legacy_plain.doc",
+            "from": "doc",
+            "to": "markdown",
+            "expectation": "convert/report/legacy-doc.json"
+        },
+        {
+            "id": "html-inline-attributes-rejection",
+            "kind": "rejection",
+            "title": "HTML inline id and class attributes are refused instead of dropped",
+            "input": "notedown/basic.html",
+            "from": "html",
+            "to": "markdown",
+            "expectation": "convert/report/html-inline-attributes-rejection.json"
+        }
+    ]
+}
