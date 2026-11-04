@@ -207,3 +207,4 @@ export function loadConvertManifest(): {
 }
 
 export * from "./corpus.js";
+export * from "./coverage.js";

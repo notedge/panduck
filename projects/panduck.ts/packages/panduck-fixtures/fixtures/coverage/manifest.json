@@ -1,0 +1,33 @@
+{
+    "schema": "panduck.coverage",
+    "formats": [
+        {
+            "format": "markdown",
+            "spec": "CommonMark 0.31.2 plus GFM extensions and math/footnote extensions",
+            "route": { "from": "markdown", "to": "html", "field": "html" },
+            "matrix": "markdown/matrix.json",
+            "gap": null
+        },
+        {
+            "format": "html",
+            "spec": "WHATWG HTML Standard, tree construction algorithm",
+            "route": { "from": "html", "to": "html", "field": "html" },
+            "matrix": "html/matrix.json",
+            "gap": null
+        },
+        {
+            "format": "tex",
+            "spec": "LaTeX2e reference manual plus amsmath user guide",
+            "route": null,
+            "matrix": "tex/matrix.json",
+            "gap": "`supportedConversions` carries no `tex:*` route, so no public entry can drive TeX samples"
+        },
+        {
+            "format": "typst",
+            "spec": "Typst syntax reference",
+            "route": null,
+            "matrix": "typst/matrix.json",
+            "gap": "`supportedConversions` carries no `typst:*` route, so no public entry can drive Typst samples"
+        }
+    ]
+}

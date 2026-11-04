@@ -1,0 +1,112 @@
+{
+    "schema": "panduck.coverage.matrix",
+    "format": "typst",
+    "spec": "Typst syntax reference",
+    "features": [
+        {
+            "id": "typst-markup-text",
+            "spec": "Typst syntax reference, Markup",
+            "semantics": "plain markup text becomes paragraph text",
+            "source": "plain text\n",
+            "probe": null
+        },
+        {
+            "id": "typst-heading",
+            "spec": "Typst syntax reference, Headings",
+            "semantics": "`= Title` becomes a first level heading",
+            "source": "= Title\n",
+            "probe": null
+        },
+        {
+            "id": "typst-bullet-list",
+            "spec": "Typst syntax reference, Lists",
+            "semantics": "dash items become an unordered list",
+            "source": "- a\n- b\n",
+            "probe": null
+        },
+        {
+            "id": "typst-numbered-list",
+            "spec": "Typst syntax reference, Lists",
+            "semantics": "plus items become an ordered list",
+            "source": "+ a\n+ b\n",
+            "probe": null
+        },
+        {
+            "id": "typst-let-binding",
+            "spec": "Typst syntax reference, Code mode and bindings",
+            "semantics": "`#let` binds a value without rendering it",
+            "source": "#let x = 1\n",
+            "probe": null
+        },
+        {
+            "id": "typst-inline-math",
+            "spec": "Typst syntax reference, Math",
+            "semantics": "`$x$` becomes inline math",
+            "source": "inline $x$ math\n",
+            "probe": null
+        },
+        {
+            "id": "typst-block-math",
+            "spec": "Typst syntax reference, Math",
+            "semantics": "`$ x = 1 $` becomes display math",
+            "source": "$ x = 1 $\n",
+            "probe": null
+        },
+        {
+            "id": "typst-set-rule",
+            "spec": "Typst syntax reference, Set rules",
+            "semantics": "`#set text(size: 10pt)` changes styling for following content",
+            "source": "#set text(size: 10pt)\ntext\n",
+            "probe": null
+        },
+        {
+            "id": "typst-show-rule",
+            "spec": "Typst syntax reference, Show rules",
+            "semantics": "`#show heading: it => it` rewrites heading output",
+            "source": "#show heading: it => it\n= Title\n",
+            "probe": null
+        },
+        {
+            "id": "typst-function-call",
+            "spec": "Typst syntax reference, Function calls and content blocks",
+            "semantics": "`#text(...)[...]` applies a style to the bracketed content",
+            "source": "#text(fill: red)[hi]\n",
+            "probe": null
+        },
+        {
+            "id": "typst-comment",
+            "spec": "Typst syntax reference, Comments",
+            "semantics": "text after `//` to the line end contributes nothing",
+            "source": "a // hidden\n",
+            "probe": null
+        },
+        {
+            "id": "typst-escape",
+            "spec": "Typst syntax reference, Escaping",
+            "semantics": "`\\#` is a literal hash rather than code syntax",
+            "source": "\\# tag\n",
+            "probe": null
+        },
+        {
+            "id": "typst-table",
+            "spec": "Typst syntax reference, Tables",
+            "semantics": "`#table` lays cells out as a grid with two columns",
+            "source": "#table(columns: 2, [a], [b])\n",
+            "probe": null
+        },
+        {
+            "id": "typst-figure",
+            "spec": "Typst syntax reference, Figures",
+            "semantics": "`#figure` keeps its body and caption together",
+            "source": "#figure([x], caption: [C])\n",
+            "probe": null
+        },
+        {
+            "id": "typst-dynamic-content",
+            "spec": "Typst syntax reference, Code mode expressions",
+            "semantics": "`#(1 + 2)` evaluates to the text 3",
+            "source": "#(1 + 2)\n",
+            "probe": null
+        }
+    ]
+}

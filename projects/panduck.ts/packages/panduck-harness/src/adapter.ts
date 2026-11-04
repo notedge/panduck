@@ -169,6 +169,11 @@ export function runCase(definition: CaseDefinition): CaseObservation {
     return definition.kind === "roundtrip" ? runRoundtrip(definition) : runConvertOrRejection(definition);
 }
 
+/** Runs one format pair in memory so the coverage matrix can measure a feature. */
+export function probeConversion(from: string, to: string, text: string): LegObservation {
+    return convertLeg(from, to, `coverage.${from}`, Buffer.from(text, "utf8")).observation;
+}
+
 /** Lexes source text through the public `lexDocument` entry. */
 export function lexSource(language: string, source: string): LexObservation {
     const lex = bindings().lexDocument;

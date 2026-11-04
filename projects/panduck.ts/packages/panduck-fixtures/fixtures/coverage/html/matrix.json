@@ -1,0 +1,161 @@
+{
+    "schema": "panduck.coverage.matrix",
+    "format": "html",
+    "spec": "WHATWG HTML Standard, tree construction algorithm",
+    "features": [
+        {
+            "id": "html-doctype",
+            "spec": "HTML Standard §13.2.5.54 DOCTYPE state and §13.2.6.4.1 initial insertion mode",
+            "semantics": "a doctype selects no-quirks mode and is never rendered as text",
+            "source": "<!DOCTYPE html><html><head><title>t</title></head><body><p>x</p></body></html>",
+            "probe": { "contains": ["<p>x</p>"], "excludes": ["&lt;!DOCTYPE"] }
+        },
+        {
+            "id": "html-comment",
+            "spec": "HTML Standard §13.2.5.46 comment states",
+            "semantics": "a comment contributes no text nodes",
+            "source": "<p>a<!--c-->b</p>",
+            "probe": { "contains": ["ab"], "excludes": ["c-->"] }
+        },
+        {
+            "id": "html-named-entity",
+            "spec": "HTML Standard §13.2.5.72 named character reference state",
+            "semantics": "`&amp;` is decoded to an ampersand character and re-escaped on output",
+            "source": "<p>&amp;</p>",
+            "probe": { "contains": ["&amp;"] }
+        },
+        {
+            "id": "html-numeric-entity",
+            "spec": "HTML Standard §13.2.5.78 numeric character reference end state",
+            "semantics": "`&#65;` decodes to the letter A",
+            "source": "<p>&#65;</p>",
+            "probe": { "contains": ["A"] }
+        },
+        {
+            "id": "html-unknown-entity",
+            "spec": "HTML Standard §13.2.5.72 named character reference state",
+            "semantics": "an unknown named reference stays literal text",
+            "source": "<p>&unknown;</p>",
+            "probe": { "contains": ["unknown"] }
+        },
+        {
+            "id": "html-script-raw-text",
+            "spec": "HTML Standard §13.2.5.5 script data state",
+            "semantics": "script content is raw text and the element carries no document body content",
+            "source": "<script>if (a < b) { x() }</script><p>after</p>",
+            "probe": { "unsupported": true }
+        },
+        {
+            "id": "html-textarea-rcdata",
+            "spec": "HTML Standard §13.2.5.2 RCDATA state",
+            "semantics": "textarea content is RCDATA, so `a < b` is text rather than markup",
+            "source": "<textarea>a < b</textarea>",
+            "probe": { "unsupported": true }
+        },
+        {
+            "id": "html-attribute-quoted",
+            "spec": "HTML Standard §13.2.5.33 attribute value (double-quoted) state",
+            "semantics": "a quoted attribute value is preserved verbatim",
+            "source": "<a title=\"q\" href=\"/x\">x</a>",
+            "probe": { "contains": ["title=\"q\""] }
+        },
+        {
+            "id": "html-attribute-unquoted",
+            "spec": "HTML Standard §13.2.5.37 attribute value (unquoted) state",
+            "semantics": "an unquoted value is parsed and serialised with quotes",
+            "source": "<a href=/x>x</a>",
+            "probe": { "contains": ["href=\"/x\""] }
+        },
+        {
+            "id": "html-attribute-boolean",
+            "spec": "HTML Standard §13.2.5.35 before attribute name state",
+            "semantics": "a boolean attribute keeps its empty value",
+            "source": "<a hidden href=\"/x\">x</a>",
+            "probe": { "contains": ["hidden"] }
+        },
+        {
+            "id": "html-void-element",
+            "spec": "HTML Standard §13.2.5.42 self-closing start tag state",
+            "semantics": "`<br/>` is a void br and adds no closing tag",
+            "source": "<p>a<br/>b</p>",
+            "probe": { "contains": ["<br>"] }
+        },
+        {
+            "id": "html-implicit-tbody",
+            "spec": "HTML Standard §13.2.6.4.9 in table insertion mode",
+            "semantics": "rows inside a table without tbody are still table rows",
+            "source": "<table><tr><td>x</td></tr></table>",
+            "probe": { "contains": ["<td>x</td>"] }
+        },
+        {
+            "id": "html-nested-table",
+            "spec": "HTML Standard §13.2.6.4.9 in table insertion mode",
+            "semantics": "a nested table stays a separate table element with its own cell",
+            "source": "<table><tr><td><table><tr><td>i</td></tr></table></td></tr></table>",
+            "probe": { "count": { "<table>": 2 } }
+        },
+        {
+            "id": "html-foster-parenting",
+            "spec": "HTML Standard §13.2.6.4.9 in table insertion mode (foster parenting)",
+            "semantics": "stray text inside a table is moved before the table",
+            "source": "<table>stray<tr><td>x</td></tr></table>",
+            "probe": { "contains": ["stray"], "order": ["stray", "<table>"] }
+        },
+        {
+            "id": "html-implied-p-close",
+            "spec": "HTML Standard §13.2.6.4.7 in body insertion mode",
+            "semantics": "a p start tag closes the open p",
+            "source": "<p>a<p>b",
+            "probe": { "count": { "<p>": 2 } }
+        },
+        {
+            "id": "html-implied-li-close",
+            "spec": "HTML Standard §13.2.6.4.7 in body insertion mode",
+            "semantics": "an li start tag closes the open li",
+            "source": "<ul><li>a<li>b</ul>",
+            "probe": { "count": { "<li>": 2 } }
+        },
+        {
+            "id": "html-nested-form",
+            "spec": "HTML Standard §13.2.6.4.7 in body insertion mode (form element pointer)",
+            "semantics": "a nested form start tag is ignored, leaving one form",
+            "source": "<form><form><input></form></form>",
+            "probe": { "count": { "<form>": 1 } }
+        },
+        {
+            "id": "html-cdata",
+            "spec": "HTML Standard §13.2.5.44 CDATA section state",
+            "semantics": "CDATA inside svg is preserved as foreign content",
+            "source": "<svg><![CDATA[<c/>]]></svg>",
+            "probe": { "contains": ["<![CDATA["] }
+        },
+        {
+            "id": "html-duplicate-attribute",
+            "spec": "HTML Standard §13.2.5.33 attribute value (double-quoted) state",
+            "semantics": "a repeated attribute keeps the first value and drops the later one",
+            "source": "<a href=\"1\" href=\"2\">x</a>",
+            "probe": { "contains": ["href=\"1\""], "excludes": ["href=\"2\""] }
+        },
+        {
+            "id": "html-template-contents",
+            "spec": "HTML Standard §4.12.3 template element",
+            "semantics": "template contents stay inert and are not rendered inline",
+            "source": "<template><p>x</p></template>",
+            "probe": { "contains": ["<template"], "excludes": ["<p>x</p>"] }
+        },
+        {
+            "id": "html-self-closing-nonvoid",
+            "spec": "HTML Standard §13.2.5.42 self-closing start tag state",
+            "semantics": "`<div/>` is a div start tag, so the following text stays in the document",
+            "source": "<div/>after",
+            "probe": { "contains": ["<div>", "after"] }
+        },
+        {
+            "id": "html-table-sections",
+            "spec": "HTML Standard §13.2.6.4.9 in table insertion mode (thead and tbody)",
+            "semantics": "thead cells stay header cells and tbody cells stay data cells",
+            "source": "<table><caption>c</caption><colgroup><col span=2></colgroup><thead><tr><th>h</th></tr></thead><tbody><tr><td>b</td></tr></tbody></table>",
+            "probe": { "contains": ["<th>h</th>", "<td>b</td>"] }
+        }
+    ]
+}

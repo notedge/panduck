@@ -1,0 +1,224 @@
+{
+    "schema": "panduck.coverage.matrix",
+    "format": "markdown",
+    "spec": "CommonMark 0.31.2 plus GFM extensions and math/footnote extensions",
+    "features": [
+        {
+            "id": "markdown-atx-heading",
+            "spec": "CommonMark §4.2 ATX headings",
+            "semantics": "`# Title` is an h1 block, not paragraph text",
+            "source": "# Title\n",
+            "probe": { "contains": ["<h1>Title</h1>"] }
+        },
+        {
+            "id": "markdown-setext-heading",
+            "spec": "CommonMark §4.3 Setext headings",
+            "semantics": "a line underlined with `===` is an h1 block",
+            "source": "Title\n===\n",
+            "probe": { "contains": ["<h1>Title</h1>"], "excludes": ["==="] }
+        },
+        {
+            "id": "markdown-thematic-break",
+            "spec": "CommonMark §4.1 Thematic breaks",
+            "semantics": "`***` produces an hr, not a paragraph",
+            "source": "***\n",
+            "probe": { "contains": ["<hr"] }
+        },
+        {
+            "id": "markdown-indented-code",
+            "spec": "CommonMark §4.4 Indented code blocks",
+            "semantics": "four-space indented text is a code block, not a paragraph",
+            "source": "    x = 1\n",
+            "probe": { "contains": ["<pre>", "<code>"], "excludes": ["<p>x = 1</p>"] }
+        },
+        {
+            "id": "markdown-fenced-code",
+            "spec": "CommonMark §4.5 Fenced code blocks",
+            "semantics": "a fenced block keeps its info string as the code language",
+            "source": "```js\nx = 1\n```\n",
+            "probe": { "contains": ["<pre><code class=\"language-js\">"] }
+        },
+        {
+            "id": "markdown-html-block",
+            "spec": "CommonMark §4.6 HTML blocks",
+            "semantics": "a block level HTML tag passes through as HTML",
+            "source": "<div>\nraw\n</div>\n",
+            "probe": { "contains": ["<div>"], "excludes": ["&lt;div&gt;"] }
+        },
+        {
+            "id": "markdown-link-reference",
+            "spec": "CommonMark §4.7 Link reference definitions",
+            "semantics": "`[r]` resolves through the earlier definition",
+            "source": "[r]: /u\n\n[r]\n",
+            "probe": { "contains": ["<a href=\"/u\">r</a>"] }
+        },
+        {
+            "id": "markdown-paragraph-split",
+            "spec": "CommonMark §4.8 Paragraphs and §4.9 Blank lines",
+            "semantics": "a blank line ends a paragraph and starts a second one",
+            "source": "a\n\nb\n",
+            "probe": { "count": { "<p>": 2 } }
+        },
+        {
+            "id": "markdown-blockquote",
+            "spec": "CommonMark §5.1 Block quotes",
+            "semantics": "`> q` is a blockquote block",
+            "source": "> q\n",
+            "probe": { "contains": ["<blockquote>"] }
+        },
+        {
+            "id": "markdown-ordered-list",
+            "spec": "CommonMark §5.2 List items and §5.3 Lists",
+            "semantics": "ordered markers produce an ol with two items",
+            "source": "1. a\n2. b\n",
+            "probe": { "contains": ["<ol>"], "count": { "<li>": 2 } }
+        },
+        {
+            "id": "markdown-unordered-list",
+            "spec": "CommonMark §5.2 List items and §5.3 Lists",
+            "semantics": "dash markers produce a ul with two items",
+            "source": "- a\n- b\n",
+            "probe": { "contains": ["<ul>"], "count": { "<li>": 2 } }
+        },
+        {
+            "id": "markdown-nested-list",
+            "spec": "CommonMark §5.3 Lists (nesting)",
+            "semantics": "an indented marker opens a nested list",
+            "source": "- a\n  - b\n",
+            "probe": { "count": { "<ul>": 2 } }
+        },
+        {
+            "id": "markdown-backslash-escape",
+            "spec": "CommonMark §6.1 Backslash escapes",
+            "semantics": "escaped asterisks stay literal text and never open emphasis",
+            "source": "\\*a\\*\n",
+            "probe": { "contains": ["*a*"], "excludes": ["<em>"] }
+        },
+        {
+            "id": "markdown-named-entity",
+            "spec": "CommonMark §6.2 Entity and numeric character references",
+            "semantics": "`&amp;` is a character reference, not literal ampersand text",
+            "source": "&amp;\n",
+            "probe": { "contains": ["&amp;"] }
+        },
+        {
+            "id": "markdown-numeric-entity",
+            "spec": "CommonMark §6.2 Entity and numeric character references",
+            "semantics": "`&#65;` decodes to the letter A",
+            "source": "&#65;\n",
+            "probe": { "contains": ["A"] }
+        },
+        {
+            "id": "markdown-code-span",
+            "spec": "CommonMark §6.3 Code spans",
+            "semantics": "backtick content is code, so emphasis markers inside stay literal",
+            "source": "`a*b`\n",
+            "probe": { "contains": ["<code>a*b</code>"], "excludes": ["<em>"] }
+        },
+        {
+            "id": "markdown-emphasis",
+            "spec": "CommonMark §6.4 Emphasis and strong emphasis",
+            "semantics": "single asterisks produce em",
+            "source": "*i*\n",
+            "probe": { "contains": ["<em>i</em>"] }
+        },
+        {
+            "id": "markdown-strong",
+            "spec": "CommonMark §6.4 Emphasis and strong emphasis",
+            "semantics": "double asterisks produce strong",
+            "source": "**b**\n",
+            "probe": { "contains": ["<strong>b</strong>"] }
+        },
+        {
+            "id": "markdown-inline-link",
+            "spec": "CommonMark §6.5 Links",
+            "semantics": "an inline link keeps its destination as href",
+            "source": "[t](/u)\n",
+            "probe": { "contains": ["<a href=\"/u\">t</a>"] }
+        },
+        {
+            "id": "markdown-image",
+            "spec": "CommonMark §6.6 Images",
+            "semantics": "an image keeps alt text and source",
+            "source": "![a](i.png)\n",
+            "probe": { "contains": ["<img alt=\"a\" src=\"i.png\">"] }
+        },
+        {
+            "id": "markdown-autolink",
+            "spec": "CommonMark §6.7 Autolinks",
+            "semantics": "`<https://e.com>` becomes an anchor, not raw text",
+            "source": "<https://e.com>\n",
+            "probe": { "contains": ["<a href=\"https://e.com\""], "excludes": ["<https://e.com>"] }
+        },
+        {
+            "id": "markdown-inline-html",
+            "spec": "CommonMark §6.8 Raw HTML",
+            "semantics": "inline HTML passes through unchanged",
+            "source": "<span>x</span>\n",
+            "probe": { "contains": ["<span>x</span>"] }
+        },
+        {
+            "id": "markdown-hard-break",
+            "spec": "CommonMark §6.9 Hard line breaks",
+            "semantics": "two trailing spaces produce br",
+            "source": "a  \nb\n",
+            "probe": { "contains": ["<br"] }
+        },
+        {
+            "id": "markdown-soft-break",
+            "spec": "CommonMark §6.10 Soft line breaks",
+            "semantics": "a bare newline stays a soft break and must not become br",
+            "source": "a\nb\n",
+            "probe": { "excludes": ["<br"] }
+        },
+        {
+            "id": "markdown-table",
+            "spec": "GFM §4.10 Tables extension",
+            "semantics": "a pipe table renders header cells as th",
+            "source": "|a|b|\n|-|-|\n|1|2|\n",
+            "probe": { "contains": ["<table>", "<th>a</th>"] }
+        },
+        {
+            "id": "markdown-task-list",
+            "spec": "GFM §5.3 Task list items",
+            "semantics": "a task marker renders as a disabled checkbox",
+            "source": "- [ ] t\n",
+            "probe": { "contains": ["type=\"checkbox\"", "task-list-item"] }
+        },
+        {
+            "id": "markdown-strikethrough",
+            "spec": "GFM §6.5 Strikethrough extension",
+            "semantics": "double tildes produce strikethrough markup",
+            "source": "~~x~~\n",
+            "probe": { "contains": ["<s>x</s>"] }
+        },
+        {
+            "id": "markdown-front-matter",
+            "spec": "not a CommonMark construct: YAML front matter extension",
+            "semantics": "a leading `---` fence carries metadata and must not render as heading or hr",
+            "source": "---\ntitle: v\n---\n\nbody\n",
+            "probe": { "excludes": ["<h2>title: v</h2>"], "contains": ["body"] }
+        },
+        {
+            "id": "markdown-footnote",
+            "spec": "footnote extension (not CommonMark)",
+            "semantics": "a footnote reference links to a generated footnote section",
+            "source": "a[^1]\n\n[^1]: n\n",
+            "probe": { "contains": ["footnote-reference"] }
+        },
+        {
+            "id": "markdown-math-inline",
+            "spec": "math extension (not CommonMark)",
+            "semantics": "inline dollar math becomes a math span",
+            "source": "$x$\n",
+            "probe": { "contains": ["class=\"math\""] }
+        },
+        {
+            "id": "markdown-math-block",
+            "spec": "math extension (not CommonMark)",
+            "semantics": "double dollar math becomes a math block",
+            "source": "$$y$$\n",
+            "probe": { "contains": ["class=\"math\""] }
+        }
+    ]
+}

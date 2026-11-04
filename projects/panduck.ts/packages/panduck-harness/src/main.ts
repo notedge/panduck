@@ -36,8 +36,9 @@ import type {
 } from "./types.js";
 import { runIdFromDate, sha256 } from "./util.js";
 import { writeBaseline, writeRun } from "./archive.js";
+import { measureCoverage, printCoverage, writeCoverage } from "./coverage.js";
 
-type Command = "run" | "list" | "verify" | "baseline" | "accept" | "oracle" | "help";
+type Command = "run" | "list" | "verify" | "baseline" | "accept" | "oracle" | "coverage" | "help";
 type Suite = "all" | "convert" | "notedown";
 
 const USAGE = [
@@ -45,6 +46,8 @@ const USAGE = [
     "",
     "  run        Execute the runnable suites and archive observations under results/",
     "  verify     Validate the checked-in corpus without loading the binding",
+    "  coverage   Measure every spec feature and report the status distribution",
+    "             --format markdown|html|tex|typst",
     "  list       Print the corpus inventory",
     "  baseline   Copy results/latest.json into baselines/<name>.json",
     "  accept     Add one passing assertion to a case expectation and record provenance",
@@ -424,6 +427,12 @@ export async function main(argv: readonly string[]): Promise<number> {
             return commandRun(parsed.suite);
         case "verify":
             return commandVerify();
+        case "coverage": {
+            const report = measureCoverage(parsed.options.format ?? null);
+            const archive = writeCoverage(report);
+            printCoverage(report, archive);
+            return report.totals["silent-loss"] > 0 ? 1 : 0;
+        }
         case "list":
             return commandList();
         case "accept":
