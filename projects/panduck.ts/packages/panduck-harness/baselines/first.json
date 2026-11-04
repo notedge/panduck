@@ -1,0 +1,1125 @@
+{
+    "schema": "panduck.harness.run",
+    "runId": "20261104T160930Z",
+    "startedAt": "2026-11-04T16:09:30.011Z",
+    "durationMs": 18,
+    "suite": "all",
+    "environment": {
+        "node": "v24.18.0",
+        "platform": "win32",
+        "arch": "x64",
+        "panduckVersion": "0.0.18",
+        "formats": [
+            "doc",
+            "docx",
+            "epub",
+            "html",
+            "markdown",
+            "notedown",
+            "pdf"
+        ],
+        "conversions": [
+            "docx:markdown",
+            "docx:docx",
+            "docx:pdf",
+            "docx:html",
+            "docx:epub",
+            "doc:markdown",
+            "doc:docx",
+            "doc:pdf",
+            "doc:html",
+            "doc:epub",
+            "pdf:markdown",
+            "pdf:docx",
+            "pdf:pdf",
+            "pdf:html",
+            "pdf:epub",
+            "epub:markdown",
+            "epub:docx",
+            "epub:pdf",
+            "epub:html",
+            "epub:epub",
+            "html:markdown",
+            "html:docx",
+            "html:pdf",
+            "html:html",
+            "html:epub",
+            "markdown:markdown",
+            "markdown:docx",
+            "markdown:pdf",
+            "markdown:html",
+            "markdown:epub",
+            "notedown:markdown",
+            "notedown:docx",
+            "notedown:pdf",
+            "notedown:html",
+            "notedown:epub"
+        ],
+        "bindingPath": "E:\\文档研究\\panduck\\projects\\panduck.ts\\platforms\\panduck-win32-x64\\index.js",
+        "bindingInsideRepo": true
+    },
+    "totals": {
+        "cases": 16,
+        "passed": 10,
+        "failed": 6,
+        "assertions": 93,
+        "assertionsPassed": 82,
+        "assertionsFailed": 11
+    },
+    "classifications": {
+        "implementation-defect": 1,
+        "stale-expectation": 0,
+        "undetermined": 5
+    },
+    "cases": [
+        {
+            "id": "basic-markdown-to-html",
+            "title": "Migrated markdown corpus keeps section structure and tables",
+            "kind": "convert",
+            "status": "fail",
+            "category": "implementation-defect",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "report-status",
+                        "expected": "success"
+                    },
+                    "status": "pass",
+                    "detail": "report status success, expected success"
+                },
+                {
+                    "assertion": {
+                        "kind": "loss-codes",
+                        "expected": []
+                    },
+                    "status": "pass",
+                    "detail": "loss codes [], expected []"
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "<h1>Oak Markdown Test Suite</h1>"
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"<h1>Oak Markdown Test Suite</h1>\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "<h2>Lists</h2>"
+                    },
+                    "status": "fail",
+                    "detail": "html does not contain \"<h2>Lists</h2>\"",
+                    "category": "implementation-defect"
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "<h2>Tables</h2>"
+                    },
+                    "status": "fail",
+                    "detail": "html does not contain \"<h2>Tables</h2>\"",
+                    "category": "implementation-defect"
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "<table"
+                    },
+                    "status": "fail",
+                    "detail": "html does not contain \"<table\"",
+                    "category": "implementation-defect"
+                },
+                {
+                    "assertion": {
+                        "kind": "not-contains",
+                        "target": "html",
+                        "value": "| Header 1 |"
+                    },
+                    "status": "fail",
+                    "detail": "html still contains \"| Header 1 |\"",
+                    "category": "implementation-defect"
+                }
+            ],
+            "durationMs": 2,
+            "oracle": null
+        },
+        {
+            "id": "styled-inline-to-html",
+            "title": "Inline bold and links survive the markdown to html route",
+            "kind": "convert",
+            "status": "pass",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "report-status",
+                        "expected": "success"
+                    },
+                    "status": "pass",
+                    "detail": "report status success, expected success"
+                },
+                {
+                    "assertion": {
+                        "kind": "loss-codes",
+                        "expected": []
+                    },
+                    "status": "pass",
+                    "detail": "loss codes [], expected []"
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "<strong>bold</strong>"
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"<strong>bold</strong>\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "href=\"https://example.com\""
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"href=\\\"https://example.com\\\"\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "<em>italic</em>"
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"<em>italic</em>\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "<a href=\"https://example.com\">link</a>"
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"<a href=\\\"https://example.com\\\">link</a>\""
+                }
+            ],
+            "durationMs": 0,
+            "oracle": null
+        },
+        {
+            "id": "inline-html-to-html",
+            "title": "Author written inline HTML stays verbatim",
+            "kind": "convert",
+            "status": "pass",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "report-status",
+                        "expected": "success"
+                    },
+                    "status": "pass",
+                    "detail": "report status success, expected success"
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "<h1><Route></h1>"
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"<h1><Route></h1>\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "<strong>world</strong>"
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"<strong>world</strong>\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "<b>markup</b>"
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"<b>markup</b>\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "Inline <b>markup</b> stays verbatim."
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"Inline <b>markup</b> stays verbatim.\""
+                }
+            ],
+            "durationMs": 0,
+            "oracle": null
+        },
+        {
+            "id": "reference-link-to-markdown",
+            "title": "Reference links expand with their title and lose nothing",
+            "kind": "convert",
+            "status": "pass",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "report-status",
+                        "expected": "success"
+                    },
+                    "status": "pass",
+                    "detail": "report status success, expected success"
+                },
+                {
+                    "assertion": {
+                        "kind": "loss-codes",
+                        "expected": []
+                    },
+                    "status": "pass",
+                    "detail": "loss codes [], expected []"
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "text",
+                        "value": "[guide](https://example.com/guide \"Docs\")"
+                    },
+                    "status": "pass",
+                    "detail": "text contains \"[guide](https://example.com/guide \\\"Docs\\\")\""
+                },
+                {
+                    "assertion": {
+                        "kind": "not-contains",
+                        "target": "text",
+                        "value": "[docs]:"
+                    },
+                    "status": "pass",
+                    "detail": "text does not contain \"[docs]:\""
+                }
+            ],
+            "durationMs": 0,
+            "oracle": null
+        },
+        {
+            "id": "diagram-render",
+            "title": "DOT, Mermaid and PlantUML render as inline SVG",
+            "kind": "convert",
+            "status": "pass",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "report-status",
+                        "expected": "success"
+                    },
+                    "status": "pass",
+                    "detail": "report status success, expected success"
+                },
+                {
+                    "assertion": {
+                        "kind": "loss-codes",
+                        "expected": []
+                    },
+                    "status": "pass",
+                    "detail": "loss codes [], expected []"
+                },
+                {
+                    "assertion": {
+                        "kind": "count",
+                        "target": "html",
+                        "pattern": "<figure class=\"diagram\"",
+                        "expected": 3
+                    },
+                    "status": "pass",
+                    "detail": "html matched <figure class=\"diagram\" 3 times, expected 3"
+                },
+                {
+                    "assertion": {
+                        "kind": "count",
+                        "target": "html",
+                        "pattern": "<svg",
+                        "expected": 3
+                    },
+                    "status": "pass",
+                    "detail": "html matched <svg 3 times, expected 3"
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "data-diagram-language=\"dot\""
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"data-diagram-language=\\\"dot\\\"\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "data-diagram-language=\"mermaid\""
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"data-diagram-language=\\\"mermaid\\\"\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "data-diagram-language=\"plantuml\""
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"data-diagram-language=\\\"plantuml\\\"\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "data-diagram-source-hex"
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"data-diagram-source-hex\""
+                }
+            ],
+            "durationMs": 1,
+            "oracle": null
+        },
+        {
+            "id": "docx-roundtrip",
+            "title": "Markdown survives a docx roundtrip including the DOT fence",
+            "kind": "roundtrip",
+            "status": "pass",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "leg": 0,
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "leg": 1,
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "report-status",
+                        "leg": 1,
+                        "expected": "success_with_loss"
+                    },
+                    "status": "pass",
+                    "detail": "report status success_with_loss, expected success_with_loss"
+                },
+                {
+                    "assertion": {
+                        "kind": "loss-codes",
+                        "leg": 1,
+                        "expected": [
+                            "import.docx.partial_coverage"
+                        ]
+                    },
+                    "status": "pass",
+                    "detail": "loss codes [\"import.docx.partial_coverage\"], expected [\"import.docx.partial_coverage\"]"
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "leg": 1,
+                        "target": "text",
+                        "value": "Roundtrip"
+                    },
+                    "status": "pass",
+                    "detail": "text contains \"Roundtrip\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "leg": 1,
+                        "target": "text",
+                        "value": "Hello roundtrip paragraph."
+                    },
+                    "status": "pass",
+                    "detail": "text contains \"Hello roundtrip paragraph.\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "leg": 1,
+                        "target": "text",
+                        "value": "```dot"
+                    },
+                    "status": "pass",
+                    "detail": "text contains \"```dot\""
+                }
+            ],
+            "durationMs": 9,
+            "oracle": null
+        },
+        {
+            "id": "epub-roundtrip",
+            "title": "Markdown text survives an epub roundtrip and the diagram is a declared loss",
+            "kind": "roundtrip",
+            "status": "pass",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "leg": 0,
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "leg": 1,
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "report-status",
+                        "leg": 1,
+                        "expected": "success_with_loss"
+                    },
+                    "status": "pass",
+                    "detail": "report status success_with_loss, expected success_with_loss"
+                },
+                {
+                    "assertion": {
+                        "kind": "loss-codes",
+                        "leg": 1,
+                        "expected": [
+                            "import.epub.navigation_unresolved",
+                            "import.epub.partial_coverage"
+                        ]
+                    },
+                    "status": "pass",
+                    "detail": "loss codes [\"import.epub.navigation_unresolved\",\"import.epub.partial_coverage\"], expected [\"import.epub.navigation_unresolved\",\"import.epub.partial_coverage\"]"
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "leg": 1,
+                        "target": "text",
+                        "value": "Roundtrip"
+                    },
+                    "status": "pass",
+                    "detail": "text contains \"Roundtrip\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "leg": 1,
+                        "target": "text",
+                        "value": "Hello roundtrip paragraph."
+                    },
+                    "status": "pass",
+                    "detail": "text contains \"Hello roundtrip paragraph.\""
+                },
+                {
+                    "assertion": {
+                        "kind": "not-contains",
+                        "leg": 1,
+                        "target": "text",
+                        "value": "```dot"
+                    },
+                    "status": "pass",
+                    "detail": "text does not contain \"```dot\""
+                }
+            ],
+            "durationMs": 1,
+            "oracle": null
+        },
+        {
+            "id": "pdf-roundtrip",
+            "title": "Markdown text survives a pdf roundtrip and the diagram is a declared loss",
+            "kind": "roundtrip",
+            "status": "pass",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "leg": 0,
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "leg": 1,
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "report-status",
+                        "leg": 1,
+                        "expected": "success_with_loss"
+                    },
+                    "status": "pass",
+                    "detail": "report status success_with_loss, expected success_with_loss"
+                },
+                {
+                    "assertion": {
+                        "kind": "loss-codes",
+                        "leg": 1,
+                        "expected": [
+                            "import.pdf.partial_coverage"
+                        ]
+                    },
+                    "status": "pass",
+                    "detail": "loss codes [\"import.pdf.partial_coverage\"], expected [\"import.pdf.partial_coverage\"]"
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "leg": 1,
+                        "target": "text",
+                        "value": "Roundtrip"
+                    },
+                    "status": "pass",
+                    "detail": "text contains \"Roundtrip\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "leg": 1,
+                        "target": "text",
+                        "value": "Hello roundtrip paragraph."
+                    },
+                    "status": "pass",
+                    "detail": "text contains \"Hello roundtrip paragraph.\""
+                },
+                {
+                    "assertion": {
+                        "kind": "not-contains",
+                        "leg": 1,
+                        "target": "text",
+                        "value": "```dot"
+                    },
+                    "status": "pass",
+                    "detail": "text does not contain \"```dot\""
+                }
+            ],
+            "durationMs": 3,
+            "oracle": null
+        },
+        {
+            "id": "rejected-dot-attribute",
+            "title": "Declared DOT rejection keeps visible source and reports a loss",
+            "kind": "rejection",
+            "status": "pass",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "report-status",
+                        "expected": "success_with_loss"
+                    },
+                    "status": "pass",
+                    "detail": "report status success_with_loss, expected success_with_loss"
+                },
+                {
+                    "assertion": {
+                        "kind": "loss-codes",
+                        "expected": [
+                            "davinci.diagram.unsupported"
+                        ]
+                    },
+                    "status": "pass",
+                    "detail": "loss codes [\"davinci.diagram.unsupported\"], expected [\"davinci.diagram.unsupported\"]"
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "<pre class=\"diagram\" data-diagram-language=\"dot\""
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"<pre class=\\\"diagram\\\" data-diagram-language=\\\"dot\\\"\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "html",
+                        "value": "splines=ortho"
+                    },
+                    "status": "pass",
+                    "detail": "html contains \"splines=ortho\""
+                },
+                {
+                    "assertion": {
+                        "kind": "not-contains",
+                        "target": "html",
+                        "value": "<figure"
+                    },
+                    "status": "pass",
+                    "detail": "html does not contain \"<figure\""
+                }
+            ],
+            "durationMs": 1,
+            "oracle": null
+        },
+        {
+            "id": "legacy-doc",
+            "title": "Legacy binary doc keeps both paragraphs",
+            "kind": "convert",
+            "status": "pass",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "expected": 0
+                    },
+                    "status": "pass",
+                    "detail": "exit code 0, expected 0"
+                },
+                {
+                    "assertion": {
+                        "kind": "report-status",
+                        "expected": "success_with_loss"
+                    },
+                    "status": "pass",
+                    "detail": "report status success_with_loss, expected success_with_loss"
+                },
+                {
+                    "assertion": {
+                        "kind": "loss-codes",
+                        "expected": [
+                            "import.doc.partial_coverage"
+                        ]
+                    },
+                    "status": "pass",
+                    "detail": "loss codes [\"import.doc.partial_coverage\"], expected [\"import.doc.partial_coverage\"]"
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "text",
+                        "value": "Hello legacy DOC"
+                    },
+                    "status": "pass",
+                    "detail": "text contains \"Hello legacy DOC\""
+                },
+                {
+                    "assertion": {
+                        "kind": "contains",
+                        "target": "text",
+                        "value": "Second paragraph"
+                    },
+                    "status": "pass",
+                    "detail": "text contains \"Second paragraph\""
+                }
+            ],
+            "durationMs": 0,
+            "oracle": null
+        },
+        {
+            "id": "html-inline-attributes-rejection",
+            "title": "HTML inline id and class attributes are refused instead of dropped",
+            "kind": "rejection",
+            "status": "pass",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "exit-code",
+                        "expected": 1
+                    },
+                    "status": "pass",
+                    "detail": "exit code 1, expected 1"
+                },
+                {
+                    "assertion": {
+                        "kind": "report-status",
+                        "expected": "failed"
+                    },
+                    "status": "pass",
+                    "detail": "report status failed, expected failed"
+                },
+                {
+                    "assertion": {
+                        "kind": "loss-codes",
+                        "expected": []
+                    },
+                    "status": "pass",
+                    "detail": "loss codes [], expected []"
+                },
+                {
+                    "assertion": {
+                        "kind": "diagnostic-codes",
+                        "expected": [
+                            "notedown.format.unsupported"
+                        ]
+                    },
+                    "status": "pass",
+                    "detail": "diagnostic codes [\"notedown.format.unsupported\"], expected subset of [\"notedown.format.unsupported\"]"
+                }
+            ],
+            "durationMs": 1,
+            "oracle": null
+        },
+        {
+            "id": "notedown-basic",
+            "title": "oak-notedown token snapshot",
+            "kind": "lexer-snapshot",
+            "status": "fail",
+            "category": "undetermined",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-success"
+                    },
+                    "status": "pass",
+                    "detail": "snapshot success flag is true"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-shape"
+                    },
+                    "status": "pass",
+                    "detail": "snapshot carries 1358 tokens but declares count 1358"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-offsets"
+                    },
+                    "status": "pass",
+                    "detail": "token offsets must be monotonic and inside 0..4715"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-equality"
+                    },
+                    "status": "fail",
+                    "category": "undetermined",
+                    "detail": "no lexer token entry is exposed by the public Panduck binding, so `notedown-basic` cannot compare its snapshot"
+                }
+            ],
+            "durationMs": 0,
+            "oracle": null,
+            "gap": "gap-lexer-snapshot"
+        },
+        {
+            "id": "markdown-basic",
+            "title": "oak-markdown token snapshot",
+            "kind": "lexer-snapshot",
+            "status": "fail",
+            "category": "undetermined",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-success"
+                    },
+                    "status": "pass",
+                    "detail": "snapshot success flag is true"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-shape"
+                    },
+                    "status": "pass",
+                    "detail": "snapshot carries 1354 tokens but declares count 1354"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-offsets"
+                    },
+                    "status": "pass",
+                    "detail": "token offsets must be monotonic and inside 0..4759"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-equality"
+                    },
+                    "status": "fail",
+                    "category": "undetermined",
+                    "detail": "no lexer token entry is exposed by the public Panduck binding, so `markdown-basic` cannot compare its snapshot"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "oracle-summary"
+                    },
+                    "status": "fail",
+                    "category": "undetermined",
+                    "detail": "reference oracle \"pulldown-cmark with strikethrough enabled plus markdown-rs to_html\" has no exposed summary runner in this harness"
+                }
+            ],
+            "durationMs": 0,
+            "oracle": "pulldown-cmark with strikethrough enabled plus markdown-rs to_html",
+            "gap": "gap-lexer-snapshot"
+        },
+        {
+            "id": "html-basic",
+            "title": "oak-html token snapshot",
+            "kind": "lexer-snapshot",
+            "status": "fail",
+            "category": "undetermined",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-success"
+                    },
+                    "status": "pass",
+                    "detail": "snapshot success flag is true"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-shape"
+                    },
+                    "status": "pass",
+                    "detail": "snapshot carries 596 tokens but declares count 596"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-offsets"
+                    },
+                    "status": "pass",
+                    "detail": "token offsets must be monotonic and inside 0..4546"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-equality"
+                    },
+                    "status": "fail",
+                    "category": "undetermined",
+                    "detail": "no lexer token entry is exposed by the public Panduck binding, so `html-basic` cannot compare its snapshot"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "oracle-summary"
+                    },
+                    "status": "fail",
+                    "category": "undetermined",
+                    "detail": "reference oracle \"html5ever tokenizer\" has no exposed summary runner in this harness"
+                }
+            ],
+            "durationMs": 0,
+            "oracle": "html5ever tokenizer",
+            "gap": "gap-lexer-snapshot"
+        },
+        {
+            "id": "org-basic",
+            "title": "oak-org-mode token snapshot",
+            "kind": "lexer-snapshot",
+            "status": "fail",
+            "category": "undetermined",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-success"
+                    },
+                    "status": "pass",
+                    "detail": "snapshot success flag is true"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-shape"
+                    },
+                    "status": "pass",
+                    "detail": "snapshot carries 566 tokens but declares count 566"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-offsets"
+                    },
+                    "status": "pass",
+                    "detail": "token offsets must be monotonic and inside 0..2076"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-equality"
+                    },
+                    "status": "fail",
+                    "category": "undetermined",
+                    "detail": "no lexer token entry is exposed by the public Panduck binding, so `org-basic` cannot compare its snapshot"
+                }
+            ],
+            "durationMs": 0,
+            "oracle": null,
+            "gap": "gap-lexer-snapshot"
+        },
+        {
+            "id": "xml-basic",
+            "title": "oak-xml token snapshot",
+            "kind": "lexer-snapshot",
+            "status": "fail",
+            "category": "undetermined",
+            "assertions": [
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-success"
+                    },
+                    "status": "pass",
+                    "detail": "snapshot success flag is true"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-shape"
+                    },
+                    "status": "pass",
+                    "detail": "snapshot carries 211 tokens but declares count 211"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-offsets"
+                    },
+                    "status": "pass",
+                    "detail": "token offsets must be monotonic and inside 0..3382"
+                },
+                {
+                    "assertion": {
+                        "kind": "corpus-integrity",
+                        "check": "snapshot-equality"
+                    },
+                    "status": "fail",
+                    "category": "undetermined",
+                    "detail": "no lexer token entry is exposed by the public Panduck binding, so `xml-basic` cannot compare its snapshot"
+                }
+            ],
+            "durationMs": 0,
+            "oracle": null,
+            "gap": "gap-lexer-snapshot"
+        }
+    ],
+    "gaps": [
+        {
+            "id": "gap-ir-validation",
+            "repo": "panduck",
+            "capability": "document.ir graph validation",
+            "neededEntry": "a binding entry that returns validation issues for an authored graph",
+            "evidence": "expectations/ir/cases.json",
+            "affectedCases": [
+                "ir-*"
+            ]
+        },
+        {
+            "id": "gap-chart-render",
+            "repo": "panduck",
+            "capability": "plotter.chart lowering and render",
+            "neededEntry": "a binding entry that lowers a Vega-Lite spec to SVG",
+            "evidence": "fixtures/chart/manifest.json",
+            "affectedCases": [
+                "chart-*"
+            ]
+        },
+        {
+            "id": "gap-diagram-render",
+            "repo": "panduck",
+            "capability": "plotter.diagram DOT, Mermaid and PlantUML render",
+            "neededEntry": "a binding entry that lowers a diagram language to SVG",
+            "evidence": "expectations/plotter/diagram/cases.json",
+            "affectedCases": [
+                "diagram-*"
+            ]
+        },
+        {
+            "id": "gap-runtime-passes",
+            "repo": "panduck",
+            "capability": "plotter.runtime pass derivation",
+            "neededEntry": "a binding entry that derives invalidation steps for an action",
+            "evidence": "expectations/plotter/runtime/passes.json",
+            "affectedCases": [
+                "runtime-*"
+            ]
+        },
+        {
+            "id": "gap-formats-inspect",
+            "repo": "panduck",
+            "capability": "document.formats package inspection and import",
+            "neededEntry": "an entry that inspects a package part or imports a single format sample",
+            "evidence": "fixtures/formats/manifest.json",
+            "affectedCases": [
+                "formats-*"
+            ]
+        }
+    ]
+}

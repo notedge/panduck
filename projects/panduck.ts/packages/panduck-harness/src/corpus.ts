@@ -1,0 +1,73 @@
+import { fileURLToPath } from "node:url";
+
+import {
+    loadConvertManifest,
+    loadNotedownManifest,
+    readFixtureBytes,
+    readFixtureJson,
+    resolveExpectation,
+} from "@notedge/panduck-fixtures";
+
+import type { CaseDefinition, Expectation, LexedSnapshot, SnapshotCaseDefinition } from "./types.js";
+import { readJsonFile } from "./util.js";
+
+export const resultsRoot = fileURLToPath(new URL("../results/", import.meta.url));
+export const baselinesRoot = fileURLToPath(new URL("../baselines/", import.meta.url));
+export const packageRoot = fileURLToPath(new URL("../", import.meta.url));
+
+/** Loads `convert/manifest.json` from the corpus package and verifies expectations exist. */
+export function loadConversionCases(): readonly CaseDefinition[] {
+    const loaded = loadConvertManifest();
+    for (const entry of loaded.cases) {
+        resolveExpectation(entry.expectation);
+    }
+    return loaded.cases;
+}
+
+/** Loads the manifest driven lexer snapshot cases from `panduck-fixtures`. */
+export function loadSnapshotCases(): readonly SnapshotCaseDefinition[] {
+    const loaded = loadNotedownManifest();
+    return loaded.cases.map((entry) => ({
+        id: entry.id,
+        kind: "lexer-snapshot" as const,
+        title: `${entry.language} token snapshot`,
+        input: `${loaded.directory}/${entry.source}`,
+        snapshot: `${loaded.directory}/${entry.snapshot}`,
+        oracle: entry.oracle,
+        comparison: entry.comparison,
+    }));
+}
+
+/** Reads source bytes for a snapshot case through the fixtures package. */
+export function snapshotSource(caseDefinition: SnapshotCaseDefinition): Uint8Array {
+    return readFixtureBytes(caseDefinition.input);
+}
+
+/** Reads the expected lexer token stream for a snapshot case. */
+export function snapshotValue(caseDefinition: SnapshotCaseDefinition): LexedSnapshot {
+    return readFixtureJson<LexedSnapshot>(caseDefinition.snapshot);
+}
+
+/** Reads one expectation file by case id. */
+export function loadExpectation(caseId: string, fileName: string): Expectation {
+    const path = resolveExpectation(fileName);
+    const expectation = readJsonFile<Expectation>(path);
+    if (expectation.schema !== "panduck.harness.expectation") {
+        throw new Error(`unexpected expectation schema for \`${caseId}\`: ${expectation.schema}`);
+    }
+    if (expectation.caseId !== caseId) {
+        throw new Error(`expectation file ${fileName} is for \`${expectation.caseId}\`, not \`${caseId}\``);
+    }
+    if (!Array.isArray(expectation.assertions) || expectation.assertions.length === 0) {
+        throw new Error(`expectation for \`${caseId}\` must carry at least one assertion`);
+    }
+    if (!Array.isArray(expectation.provenance) || expectation.provenance.length === 0) {
+        throw new Error(`expectation for \`${caseId}\` must carry provenance`);
+    }
+    return expectation;
+}
+
+/** Resolves the expectation file name for a conversion case. */
+export function expectationFile(caseDefinition: CaseDefinition): string {
+    return caseDefinition.expectation;
+}

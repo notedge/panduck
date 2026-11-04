@@ -1,0 +1,41 @@
+{
+    "name": "@notedge/panduck-harness",
+    "version": "0.0.18",
+    "private": true,
+    "type": "module",
+    "description": "Data driven conformance harness for Panduck document consumers",
+    "license": "MPL-2.0",
+    "bin": {
+        "panduck-harness": "bin/cli.mjs"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/main.d.ts",
+            "default": "./dist/main.js"
+        }
+    },
+    "types": "./dist/main.d.ts",
+    "files": [
+        "bin",
+        "baselines",
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "typecheck": "tsc --noEmit",
+        "run": "node bin/cli.mjs run",
+        "run:convert": "node bin/cli.mjs run --suite convert",
+        "run:notedown": "node bin/cli.mjs run --suite notedown",
+        "baseline": "node bin/cli.mjs baseline",
+        "list": "node bin/cli.mjs list",
+        "verify": "node bin/cli.mjs verify"
+    },
+    "dependencies": {
+        "@notedge/panduck": "workspace:*",
+        "@notedge/panduck-fixtures": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^22.13.10",
+        "typescript": "^5.8.3"
+    }
+}
