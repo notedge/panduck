@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Comprehensive XML Lexer Test -->
+
+<!-- Document Type Definition -->
+<!DOCTYPE note [
+        <!ELEMENT note (to,from,heading,body)>
+        <!ELEMENT to (#PCDATA)>
+        <!ELEMENT from (#PCDATA)>
+        <!ELEMENT heading (#PCDATA)>
+        <!ELEMENT body (#PCDATA)>
+        <!ENTITY writer "Donald Duck.">
+        <!ENTITY copyright "Copyright W3Schools.">
+        <!ATTLIST note id ID #REQUIRED>
+        ]>
+
+<root xmlns:h="http://www.w3.org/TR/html4/"
+      xmlns:f="https://www.w3schools.com/furniture">
+
+    <!-- Basic Element -->
+    <note id="1">
+        <to>Tove</to>
+        <from>Jani</from>
+        <heading>Reminder</heading>
+        <body>Don't forget me this weekend!</body>
+    </note>
+
+    <!-- Attributes with different quotes -->
+    <item id='101' class="highlight" data-val='test'>Item 1</item>
+
+    <!-- Self-closing tag -->
+    <br/>
+    <hr width="50%"/>
+
+    <!-- Namespaces -->
+    <h:table>
+        <h:tr>
+            <h:td>Apples</h:td>
+            <h:td>Bananas</h:td>
+        </h:tr>
+    </h:table>
+
+    <f:table>
+        <f:name>African Coffee Table</f:name>
+        <f:width>80</f:width>
+        <f:length>120</f:length>
+    </f:table>
+
+    <!-- Special Characters & Entities -->
+    <math>
+        <expression>5 &lt; 10</expression>
+        <expression>10 &gt; 5</expression>
+        <expression>Age &amp; Experience</expression>
+        <quote>&quot;Hello&quot;</quote>
+        <apostrophe>&apos;World&apos;</apostrophe>
+        <copyright>&copyright;</copyright>
+    </math>
+
+    <!-- CDATA Section -->
+    <script>
+        <![CDATA[
+        function matchwo(a,b) {
+            if (a < b && a < 0) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+        ]]>
+    </script>
+
+    <!-- Processing Instructions -->
+    <?xml-stylesheet type="text/xsl" href="style.xsl"?>
+    <?php echo "Hello World"; ?>
+
+    <!-- Comments with special characters -->
+    <!-- This is a comment with <brackets> and &amp; ampersands -->
+
+    <!-- Nested Elements -->
+    <catalog>
+        <book id="bk101">
+            <author>Gambardella, Matthew</author>
+            <title>XML Developer's Guide</title>
+            <genre>Computer</genre>
+            <price>44.95</price>
+            <publish_date>2000-10-01</publish_date>
+            <description>An in-depth look at creating applications
+                with XML.
+            </description>
+        </book>
+        <book id="bk102">
+            <author>Ralls, Kim</author>
+            <title>Midnight Rain</title>
+            <genre>Fantasy</genre>
+            <price>5.95</price>
+            <publish_date>2000-12-16</publish_date>
+            <description>A former architect battles corporate zombies,
+                an evil sorceress, and her own childhood to become queen
+                of the world.
+            </description>
+        </book>
+    </catalog>
+
+    <!-- Unicode Characters -->
+    <unicode>
+        <char>☃</char> <!-- Snowman -->
+        <char>★</char> <!-- Star -->
+        <char>汉字</char> <!-- Chinese Characters -->
+    </unicode>
+
+    <!-- Whitespace Handling -->
+    <text xml:space="preserve">
+        This text has
+        preserved whitespace.
+    </text>
+
+</root>

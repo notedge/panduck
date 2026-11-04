@@ -1,0 +1,1273 @@
+{
+    "success": true,
+    "count": 211,
+    "tokens": [
+        {
+            "kind": "DoctypeDeclaration",
+            "text": "<!DOCTYPE note [\n        <!ELEMENT note (to,from,heading,body)>\n        <!ELEMENT to (#PCDATA)>\n        <!ELEMENT from (#PCDATA)>\n        <!ELEMENT heading (#PCDATA)>\n        <!ELEMENT body (#PCDATA)>\n        <!ENTITY writer \"Donald Duck.\">\n        <!ENTITY copyright \"Copyright W3Schools.\">\n        <!ATTLIST note id ID #REQUIRED>\n        ]>",
+            "start": 112,
+            "end": 454
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 456,
+            "end": 457
+        },
+        {
+            "kind": "Identifier",
+            "text": "root",
+            "start": 457,
+            "end": 461
+        },
+        {
+            "kind": "Identifier",
+            "text": "xmlns:h",
+            "start": 462,
+            "end": 469
+        },
+        {
+            "kind": "Equals",
+            "text": "=",
+            "start": 469,
+            "end": 470
+        },
+        {
+            "kind": "StringLiteral",
+            "text": "\"http://www.w3.org/TR/html4/\"",
+            "start": 470,
+            "end": 499
+        },
+        {
+            "kind": "Identifier",
+            "text": "xmlns:f",
+            "start": 506,
+            "end": 513
+        },
+        {
+            "kind": "Equals",
+            "text": "=",
+            "start": 513,
+            "end": 514
+        },
+        {
+            "kind": "StringLiteral",
+            "text": "\"https://www.w3schools.com/furniture\"",
+            "start": 514,
+            "end": 551
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 551,
+            "end": 552
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 585,
+            "end": 586
+        },
+        {
+            "kind": "Identifier",
+            "text": "note",
+            "start": 586,
+            "end": 590
+        },
+        {
+            "kind": "Identifier",
+            "text": "id",
+            "start": 591,
+            "end": 593
+        },
+        {
+            "kind": "Equals",
+            "text": "=",
+            "start": 593,
+            "end": 594
+        },
+        {
+            "kind": "StringLiteral",
+            "text": "\"1\"",
+            "start": 594,
+            "end": 597
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 597,
+            "end": 598
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 607,
+            "end": 608
+        },
+        {
+            "kind": "Identifier",
+            "text": "to",
+            "start": 608,
+            "end": 610
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 610,
+            "end": 611
+        },
+        {
+            "kind": "Identifier",
+            "text": "Tove",
+            "start": 611,
+            "end": 615
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 615,
+            "end": 617
+        },
+        {
+            "kind": "Identifier",
+            "text": "to",
+            "start": 617,
+            "end": 619
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 619,
+            "end": 620
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 629,
+            "end": 630
+        },
+        {
+            "kind": "Identifier",
+            "text": "from",
+            "start": 630,
+            "end": 634
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 634,
+            "end": 635
+        },
+        {
+            "kind": "Identifier",
+            "text": "Jani",
+            "start": 635,
+            "end": 639
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 639,
+            "end": 641
+        },
+        {
+            "kind": "Identifier",
+            "text": "from",
+            "start": 641,
+            "end": 645
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 645,
+            "end": 646
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 655,
+            "end": 656
+        },
+        {
+            "kind": "Identifier",
+            "text": "heading",
+            "start": 656,
+            "end": 663
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 663,
+            "end": 664
+        },
+        {
+            "kind": "Identifier",
+            "text": "Reminder",
+            "start": 664,
+            "end": 672
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 672,
+            "end": 674
+        },
+        {
+            "kind": "Identifier",
+            "text": "heading",
+            "start": 674,
+            "end": 681
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 681,
+            "end": 682
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 691,
+            "end": 692
+        },
+        {
+            "kind": "Identifier",
+            "text": "body",
+            "start": 692,
+            "end": 696
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 696,
+            "end": 697
+        },
+        {
+            "kind": "Identifier",
+            "text": "Don",
+            "start": 697,
+            "end": 700
+        },
+        {
+            "kind": "StringLiteral",
+            "text": "'t forget me this weekend!</body>\n    </note>\n\n    <!-- Attributes with different quotes -->\n    <item id='",
+            "start": 700,
+            "end": 807
+        },
+        {
+            "kind": "Text",
+            "text": "101",
+            "start": 807,
+            "end": 810
+        },
+        {
+            "kind": "StringLiteral",
+            "text": "' class=\"highlight\" data-val='",
+            "start": 810,
+            "end": 840
+        },
+        {
+            "kind": "Identifier",
+            "text": "test",
+            "start": 840,
+            "end": 844
+        },
+        {
+            "kind": "StringLiteral",
+            "text": "'>Item 1</item>\n\n    <!-- Self-closing tag -->\n    <br/>\n    <hr width=\"50%\"/>\n\n    <!-- Namespaces -->\n    <h:table>\n        <h:tr>\n            <h:td>Apples</h:td>\n            <h:td>Bananas</h:td>\n        </h:tr>\n    </h:table>\n\n    <f:table>\n        <f:name>African Coffee Table</f:name>\n        <f:width>80</f:width>\n        <f:length>120</f:length>\n    </f:table>\n\n    <!-- Special Characters & Entities -->\n    <math>\n        <expression>5 &lt; 10</expression>\n        <expression>10 &gt; 5</expression>\n        <expression>Age &amp; Experience</expression>\n        <quote>&quot;Hello&quot;</quote>\n        <apostrophe>&apos;World&apos;</apostrophe>\n        <copyright>&copyright;</copyright>\n    </math>\n\n    <!-- CDATA Section -->\n    <script>\n        <![CDATA[\n        function matchwo(a,b) {\n            if (a < b && a < 0) {\n                return 1;\n            } else {\n                return 0;\n            }\n        }\n        ]]>\n    </script>\n\n    <!-- Processing Instructions -->\n    <?xml-stylesheet type=\"text/xsl\" href=\"style.xsl\"?>\n    <?php echo \"Hello World\"; ?>\n\n    <!-- Comments with special characters -->\n    <!-- This is a comment with <brackets> and &amp; ampersands -->\n\n    <!-- Nested Elements -->\n    <catalog>\n        <book id=\"bk101\">\n            <author>Gambardella, Matthew</author>\n            <title>XML Developer'",
+            "start": 844,
+            "end": 2197
+        },
+        {
+            "kind": "Identifier",
+            "text": "s",
+            "start": 2197,
+            "end": 2198
+        },
+        {
+            "kind": "Identifier",
+            "text": "Guide",
+            "start": 2199,
+            "end": 2204
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2204,
+            "end": 2206
+        },
+        {
+            "kind": "Identifier",
+            "text": "title",
+            "start": 2206,
+            "end": 2211
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2211,
+            "end": 2212
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2225,
+            "end": 2226
+        },
+        {
+            "kind": "Identifier",
+            "text": "genre",
+            "start": 2226,
+            "end": 2231
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2231,
+            "end": 2232
+        },
+        {
+            "kind": "Identifier",
+            "text": "Computer",
+            "start": 2232,
+            "end": 2240
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2240,
+            "end": 2242
+        },
+        {
+            "kind": "Identifier",
+            "text": "genre",
+            "start": 2242,
+            "end": 2247
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2247,
+            "end": 2248
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2261,
+            "end": 2262
+        },
+        {
+            "kind": "Identifier",
+            "text": "price",
+            "start": 2262,
+            "end": 2267
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2267,
+            "end": 2268
+        },
+        {
+            "kind": "Text",
+            "text": "44.95",
+            "start": 2268,
+            "end": 2273
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2273,
+            "end": 2275
+        },
+        {
+            "kind": "Identifier",
+            "text": "price",
+            "start": 2275,
+            "end": 2280
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2280,
+            "end": 2281
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2294,
+            "end": 2295
+        },
+        {
+            "kind": "Identifier",
+            "text": "publish_date",
+            "start": 2295,
+            "end": 2307
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2307,
+            "end": 2308
+        },
+        {
+            "kind": "Text",
+            "text": "2000-10-01",
+            "start": 2308,
+            "end": 2318
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2318,
+            "end": 2320
+        },
+        {
+            "kind": "Identifier",
+            "text": "publish_date",
+            "start": 2320,
+            "end": 2332
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2332,
+            "end": 2333
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2346,
+            "end": 2347
+        },
+        {
+            "kind": "Identifier",
+            "text": "description",
+            "start": 2347,
+            "end": 2358
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2358,
+            "end": 2359
+        },
+        {
+            "kind": "Identifier",
+            "text": "An",
+            "start": 2359,
+            "end": 2361
+        },
+        {
+            "kind": "Identifier",
+            "text": "in-depth",
+            "start": 2362,
+            "end": 2370
+        },
+        {
+            "kind": "Identifier",
+            "text": "look",
+            "start": 2371,
+            "end": 2375
+        },
+        {
+            "kind": "Identifier",
+            "text": "at",
+            "start": 2376,
+            "end": 2378
+        },
+        {
+            "kind": "Identifier",
+            "text": "creating",
+            "start": 2379,
+            "end": 2387
+        },
+        {
+            "kind": "Identifier",
+            "text": "applications",
+            "start": 2388,
+            "end": 2400
+        },
+        {
+            "kind": "Identifier",
+            "text": "with",
+            "start": 2417,
+            "end": 2421
+        },
+        {
+            "kind": "Identifier",
+            "text": "XML.",
+            "start": 2422,
+            "end": 2426
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2439,
+            "end": 2441
+        },
+        {
+            "kind": "Identifier",
+            "text": "description",
+            "start": 2441,
+            "end": 2452
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2452,
+            "end": 2453
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2462,
+            "end": 2464
+        },
+        {
+            "kind": "Identifier",
+            "text": "book",
+            "start": 2464,
+            "end": 2468
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2468,
+            "end": 2469
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2478,
+            "end": 2479
+        },
+        {
+            "kind": "Identifier",
+            "text": "book",
+            "start": 2479,
+            "end": 2483
+        },
+        {
+            "kind": "Identifier",
+            "text": "id",
+            "start": 2484,
+            "end": 2486
+        },
+        {
+            "kind": "Equals",
+            "text": "=",
+            "start": 2486,
+            "end": 2487
+        },
+        {
+            "kind": "StringLiteral",
+            "text": "\"bk102\"",
+            "start": 2487,
+            "end": 2494
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2494,
+            "end": 2495
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2508,
+            "end": 2509
+        },
+        {
+            "kind": "Identifier",
+            "text": "author",
+            "start": 2509,
+            "end": 2515
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2515,
+            "end": 2516
+        },
+        {
+            "kind": "Identifier",
+            "text": "Ralls",
+            "start": 2516,
+            "end": 2521
+        },
+        {
+            "kind": "Text",
+            "text": ",",
+            "start": 2521,
+            "end": 2522
+        },
+        {
+            "kind": "Identifier",
+            "text": "Kim",
+            "start": 2523,
+            "end": 2526
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2526,
+            "end": 2528
+        },
+        {
+            "kind": "Identifier",
+            "text": "author",
+            "start": 2528,
+            "end": 2534
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2534,
+            "end": 2535
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2548,
+            "end": 2549
+        },
+        {
+            "kind": "Identifier",
+            "text": "title",
+            "start": 2549,
+            "end": 2554
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2554,
+            "end": 2555
+        },
+        {
+            "kind": "Identifier",
+            "text": "Midnight",
+            "start": 2555,
+            "end": 2563
+        },
+        {
+            "kind": "Identifier",
+            "text": "Rain",
+            "start": 2564,
+            "end": 2568
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2568,
+            "end": 2570
+        },
+        {
+            "kind": "Identifier",
+            "text": "title",
+            "start": 2570,
+            "end": 2575
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2575,
+            "end": 2576
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2589,
+            "end": 2590
+        },
+        {
+            "kind": "Identifier",
+            "text": "genre",
+            "start": 2590,
+            "end": 2595
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2595,
+            "end": 2596
+        },
+        {
+            "kind": "Identifier",
+            "text": "Fantasy",
+            "start": 2596,
+            "end": 2603
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2603,
+            "end": 2605
+        },
+        {
+            "kind": "Identifier",
+            "text": "genre",
+            "start": 2605,
+            "end": 2610
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2610,
+            "end": 2611
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2624,
+            "end": 2625
+        },
+        {
+            "kind": "Identifier",
+            "text": "price",
+            "start": 2625,
+            "end": 2630
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2630,
+            "end": 2631
+        },
+        {
+            "kind": "Text",
+            "text": "5.95",
+            "start": 2631,
+            "end": 2635
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2635,
+            "end": 2637
+        },
+        {
+            "kind": "Identifier",
+            "text": "price",
+            "start": 2637,
+            "end": 2642
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2642,
+            "end": 2643
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2656,
+            "end": 2657
+        },
+        {
+            "kind": "Identifier",
+            "text": "publish_date",
+            "start": 2657,
+            "end": 2669
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2669,
+            "end": 2670
+        },
+        {
+            "kind": "Text",
+            "text": "2000-12-16",
+            "start": 2670,
+            "end": 2680
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2680,
+            "end": 2682
+        },
+        {
+            "kind": "Identifier",
+            "text": "publish_date",
+            "start": 2682,
+            "end": 2694
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2694,
+            "end": 2695
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2708,
+            "end": 2709
+        },
+        {
+            "kind": "Identifier",
+            "text": "description",
+            "start": 2709,
+            "end": 2720
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2720,
+            "end": 2721
+        },
+        {
+            "kind": "Identifier",
+            "text": "A",
+            "start": 2721,
+            "end": 2722
+        },
+        {
+            "kind": "Identifier",
+            "text": "former",
+            "start": 2723,
+            "end": 2729
+        },
+        {
+            "kind": "Identifier",
+            "text": "architect",
+            "start": 2730,
+            "end": 2739
+        },
+        {
+            "kind": "Identifier",
+            "text": "battles",
+            "start": 2740,
+            "end": 2747
+        },
+        {
+            "kind": "Identifier",
+            "text": "corporate",
+            "start": 2748,
+            "end": 2757
+        },
+        {
+            "kind": "Identifier",
+            "text": "zombies",
+            "start": 2758,
+            "end": 2765
+        },
+        {
+            "kind": "Text",
+            "text": ",",
+            "start": 2765,
+            "end": 2766
+        },
+        {
+            "kind": "Identifier",
+            "text": "an",
+            "start": 2783,
+            "end": 2785
+        },
+        {
+            "kind": "Identifier",
+            "text": "evil",
+            "start": 2786,
+            "end": 2790
+        },
+        {
+            "kind": "Identifier",
+            "text": "sorceress",
+            "start": 2791,
+            "end": 2800
+        },
+        {
+            "kind": "Text",
+            "text": ",",
+            "start": 2800,
+            "end": 2801
+        },
+        {
+            "kind": "Identifier",
+            "text": "and",
+            "start": 2802,
+            "end": 2805
+        },
+        {
+            "kind": "Identifier",
+            "text": "her",
+            "start": 2806,
+            "end": 2809
+        },
+        {
+            "kind": "Identifier",
+            "text": "own",
+            "start": 2810,
+            "end": 2813
+        },
+        {
+            "kind": "Identifier",
+            "text": "childhood",
+            "start": 2814,
+            "end": 2823
+        },
+        {
+            "kind": "Identifier",
+            "text": "to",
+            "start": 2824,
+            "end": 2826
+        },
+        {
+            "kind": "Identifier",
+            "text": "become",
+            "start": 2827,
+            "end": 2833
+        },
+        {
+            "kind": "Identifier",
+            "text": "queen",
+            "start": 2834,
+            "end": 2839
+        },
+        {
+            "kind": "Identifier",
+            "text": "of",
+            "start": 2856,
+            "end": 2858
+        },
+        {
+            "kind": "Identifier",
+            "text": "the",
+            "start": 2859,
+            "end": 2862
+        },
+        {
+            "kind": "Identifier",
+            "text": "world.",
+            "start": 2863,
+            "end": 2869
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2882,
+            "end": 2884
+        },
+        {
+            "kind": "Identifier",
+            "text": "description",
+            "start": 2884,
+            "end": 2895
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2895,
+            "end": 2896
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2905,
+            "end": 2907
+        },
+        {
+            "kind": "Identifier",
+            "text": "book",
+            "start": 2907,
+            "end": 2911
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2911,
+            "end": 2912
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2917,
+            "end": 2919
+        },
+        {
+            "kind": "Identifier",
+            "text": "catalog",
+            "start": 2919,
+            "end": 2926
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2926,
+            "end": 2927
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2965,
+            "end": 2966
+        },
+        {
+            "kind": "Identifier",
+            "text": "unicode",
+            "start": 2966,
+            "end": 2973
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2973,
+            "end": 2974
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 2983,
+            "end": 2984
+        },
+        {
+            "kind": "Identifier",
+            "text": "char",
+            "start": 2984,
+            "end": 2988
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2988,
+            "end": 2989
+        },
+        {
+            "kind": "Text",
+            "text": "☃",
+            "start": 2989,
+            "end": 2992
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 2992,
+            "end": 2994
+        },
+        {
+            "kind": "Identifier",
+            "text": "char",
+            "start": 2994,
+            "end": 2998
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 2998,
+            "end": 2999
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 3025,
+            "end": 3026
+        },
+        {
+            "kind": "Identifier",
+            "text": "char",
+            "start": 3026,
+            "end": 3030
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 3030,
+            "end": 3031
+        },
+        {
+            "kind": "Text",
+            "text": "★",
+            "start": 3031,
+            "end": 3034
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 3034,
+            "end": 3036
+        },
+        {
+            "kind": "Identifier",
+            "text": "char",
+            "start": 3036,
+            "end": 3040
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 3040,
+            "end": 3041
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 3064,
+            "end": 3065
+        },
+        {
+            "kind": "Identifier",
+            "text": "char",
+            "start": 3065,
+            "end": 3069
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 3069,
+            "end": 3070
+        },
+        {
+            "kind": "Text",
+            "text": "汉字",
+            "start": 3070,
+            "end": 3076
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 3076,
+            "end": 3078
+        },
+        {
+            "kind": "Identifier",
+            "text": "char",
+            "start": 3078,
+            "end": 3082
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 3082,
+            "end": 3083
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 3116,
+            "end": 3118
+        },
+        {
+            "kind": "Identifier",
+            "text": "unicode",
+            "start": 3118,
+            "end": 3125
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 3125,
+            "end": 3126
+        },
+        {
+            "kind": "LeftAngle",
+            "text": "<",
+            "start": 3165,
+            "end": 3166
+        },
+        {
+            "kind": "Identifier",
+            "text": "text",
+            "start": 3166,
+            "end": 3170
+        },
+        {
+            "kind": "Identifier",
+            "text": "xml:space",
+            "start": 3171,
+            "end": 3180
+        },
+        {
+            "kind": "Equals",
+            "text": "=",
+            "start": 3180,
+            "end": 3181
+        },
+        {
+            "kind": "StringLiteral",
+            "text": "\"preserve\"",
+            "start": 3181,
+            "end": 3191
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 3191,
+            "end": 3192
+        },
+        {
+            "kind": "Identifier",
+            "text": "This",
+            "start": 3201,
+            "end": 3205
+        },
+        {
+            "kind": "Identifier",
+            "text": "text",
+            "start": 3206,
+            "end": 3210
+        },
+        {
+            "kind": "Identifier",
+            "text": "has",
+            "start": 3211,
+            "end": 3214
+        },
+        {
+            "kind": "Identifier",
+            "text": "preserved",
+            "start": 3223,
+            "end": 3232
+        },
+        {
+            "kind": "Identifier",
+            "text": "whitespace.",
+            "start": 3233,
+            "end": 3244
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 3249,
+            "end": 3251
+        },
+        {
+            "kind": "Identifier",
+            "text": "text",
+            "start": 3251,
+            "end": 3255
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 3255,
+            "end": 3256
+        },
+        {
+            "kind": "LeftAngleSlash",
+            "text": "</",
+            "start": 3258,
+            "end": 3260
+        },
+        {
+            "kind": "Identifier",
+            "text": "root",
+            "start": 3260,
+            "end": 3264
+        },
+        {
+            "kind": "RightAngle",
+            "text": ">",
+            "start": 3264,
+            "end": 3265
+        },
+        {
+            "kind": "Error",
+            "text": "",
+            "start": 3266,
+            "end": 3266
+        }
+    ],
+    "errors": []
+}

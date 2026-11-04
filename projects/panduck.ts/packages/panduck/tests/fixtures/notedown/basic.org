@@ -1,0 +1,92 @@
+#+TITLE: Comprehensive Org-mode Lexer Test
+#+AUTHOR: Oak Developer
+#+DATE: [2024-03-15 Fri]
+#+TAGS: test lexer feature
+#+OPTIONS: toc:t num:nil
+
+* Top Level Heading :tag1:tag2:
+This is a paragraph under the first heading. It contains *bold*, /italic/, _underlined_, =verbatim=, ~code~, and +strikethrough+ text.
+
+** Second Level Heading
+This section contains a list.
+
+- Unordered list item 1
+- Unordered list item 2
+  - Nested item
+    - Deeply nested item
+- [ ] Checklist item (unchecked)
+- [X] Checklist item (checked)
+- [-] Checklist item (partial)
+
+1. Ordered list item 1
+2. Ordered list item 2
+   1. Nested ordered item
+
+*** Third Level Heading (TODO Items)
+TODO This is a TODO item
+DONE This is a DONE item
+WAITING This is a WAITING item
+
+**** TODO [#A] High priority task
+SCHEDULED: <2024-03-16 Sat> DEADLINE: <2024-03-20 Wed>
+:PROPERTIES:
+:Effort:   2h
+:END:
+
+** Blocks and Source Code
+#+BEGIN_QUOTE
+This is a block quote.
+It can span multiple lines.
+#+END_QUOTE
+
+#+BEGIN_SRC python :results output
+def hello():
+    print("Hello, Org-mode!")
+hello()
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+This is an example block.
+It preserves whitespace.
+#+END_EXAMPLE
+
+** Tables
+| Name  | Age | Role      |
+|-------+-----+-----------|
+| Alice |  30 | Developer |
+| Bob   |  25 | Designer  |
+| Carol |  35 | Manager   |
+
+** Links and Images
+[[https://example.com][External Link]]
+[[file:./other_file.org][Internal Link]]
+[[file:image.png]]
+
+** Drawers and Footnotes
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-03-15 Fri 10:00]
+:END:
+
+This is a footnote reference[fn:1].
+
+[fn:1] This is the footnote definition.
+
+** Horizontal Rule
+-----
+
+** LaTeX Integration
+Here is an equation: \( E = mc^2 \)
+
+#+BEGIN_latex
+\begin{equation}
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+\end{equation}
+#+END_latex
+
+** Dynamic Blocks
+#+BEGIN: clocktable :scope file :maxlevel 2
+#+CAPTION: Clock summary at [2024-03-15 Fri 12:00]
+| Headline     | Time   |
+|--------------+--------|
+| *Total time* | *0:00* |
+#+END:

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>HTML Lexer Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>HTML Lexer Test Form</h1>
+
+    <form action="/submit" method="post">
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input id="name" name="name" placeholder="Enter your name" required type="text">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input id="email" name="email" placeholder="Enter your email" required type="email">
+        </div>
+
+        <div class="form-group">
+            <label for="age">Age:</label>
+            <input id="age" max="120" min="1" name="age" placeholder="Enter your age" type="number">
+        </div>
+
+        <div class="form-group">
+            <label for="country">Country:</label>
+            <select id="country" name="country">
+                <option value="">Select a country</option>
+                <option value="us">United States</option>
+                <option value="uk">United Kingdom</option>
+                <option value="ca">Canada</option>
+                <option value="au">Australia</option>
+                <option value="de">Germany</option>
+                <option value="fr">France</option>
+                <option value="jp">Japan</option>
+                <option value="cn">China</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" placeholder="Enter your message here..." rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input name="newsletter" type="checkbox" value="yes">
+                Subscribe to newsletter
+            </label>
+        </div>
+
+        <button type="submit">Submit Form</button>
+    </form>
+
+    <hr>
+
+    <h2>Sample Content</h2>
+    <p>This is a <strong>paragraph</strong> with <em>emphasis</em> and <a href="https://example.com" target="_blank"
+                                                                          title="Example Link">a link</a>.</p>
+
+    <ul>
+        <li>First item</li>
+        <li>Second item with <code>inline code</code></li>
+        <li>Third item</li>
+    </ul>
+
+    <table border="1" cellpadding="10" cellspacing="0">
+        <thead>
+        <tr>
+            <th>Feature</th>
+            <th>Support</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>HTML5</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>CSS3</td>
+            <td>Yes</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <img alt="Sample Image" height="200" src="https://via.placeholder.com/300x200" width="300">
+
+    <div class="footer">
+        <p>&copy; 2024 HTML Lexer Test. All rights reserved.</p>
+    </div>
+</div>
+
+<script>
+    // Simple JavaScript for form validation
+    document.querySelector('form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        alert('Form submitted successfully!');
+    });
+</script>
+</body>
+</html>

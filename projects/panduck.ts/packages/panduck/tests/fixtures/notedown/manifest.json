@@ -1,0 +1,60 @@
+{
+    "schema": "panduck.fixtures.notedown",
+    "provenance": {
+        "repo": "notedown",
+        "crate": "notedown-fixtures",
+        "rev": "eb1a0a1",
+        "note": "Lexer conformance pairs moved downstream because panduck owns the corpus home"
+    },
+    "cases": [
+        {
+            "id": "notedown-basic",
+            "source": "basic.nd",
+            "snapshot": "basic.nd.lexed.json",
+            "extension": "nd",
+            "language": "oak-notedown",
+            "oracle": null,
+            "comparison": "snapshot equality of the lexer token stream"
+        },
+        {
+            "id": "markdown-basic",
+            "source": "basic.markdown",
+            "snapshot": "basic.markdown.lexed.json",
+            "extension": "markdown",
+            "language": "oak-markdown",
+            "oracle": "pulldown-cmark with strikethrough enabled plus markdown-rs to_html",
+            "comparison": "snapshot equality of the lexer token stream, throughput parity with both reference renderers"
+        },
+        {
+            "id": "html-basic",
+            "source": "basic.html",
+            "snapshot": "basic.html.lexed.json",
+            "extension": "html",
+            "language": "oak-html",
+            "oracle": "html5ever tokenizer",
+            "comparison": "snapshot equality of the lexer token stream, throughput parity with the reference tokenizer"
+        },
+        {
+            "id": "org-basic",
+            "source": "basic.org",
+            "snapshot": "basic.org.lexed.json",
+            "extension": "org",
+            "language": "oak-org-mode",
+            "oracle": null,
+            "comparison": "snapshot equality of the lexer token stream"
+        },
+        {
+            "id": "xml-basic",
+            "source": "basic.xml",
+            "snapshot": "basic.xml.lexed.json",
+            "extension": "xml",
+            "language": "oak-xml",
+            "oracle": null,
+            "comparison": "snapshot equality of the lexer token stream"
+        }
+    ],
+    "benchReferences": [
+        "notedown-fixtures/benches/compare_markdown.rs",
+        "notedown-fixtures/benches/compare_html.rs"
+    ]
+}

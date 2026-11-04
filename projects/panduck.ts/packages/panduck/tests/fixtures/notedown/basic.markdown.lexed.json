@@ -1,0 +1,8131 @@
+{
+    "success": true,
+    "count": 1354,
+    "tokens": [
+        {
+            "kind": "Heading1",
+            "text": "#",
+            "start": 0,
+            "end": 1
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 1,
+            "end": 2
+        },
+        {
+            "kind": "Text",
+            "text": "Oak",
+            "start": 2,
+            "end": 5
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 5,
+            "end": 6
+        },
+        {
+            "kind": "Text",
+            "text": "Markdown",
+            "start": 6,
+            "end": 14
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 14,
+            "end": 15
+        },
+        {
+            "kind": "Text",
+            "text": "Test",
+            "start": 15,
+            "end": 19
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 19,
+            "end": 20
+        },
+        {
+            "kind": "Text",
+            "text": "Suite",
+            "start": 20,
+            "end": 25
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 25,
+            "end": 26
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 26,
+            "end": 27
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 27,
+            "end": 31
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 31,
+            "end": 32
+        },
+        {
+            "kind": "Text",
+            "text": "is",
+            "start": 32,
+            "end": 34
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 34,
+            "end": 35
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 35,
+            "end": 36
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 36,
+            "end": 37
+        },
+        {
+            "kind": "Text",
+            "text": "comprehensive",
+            "start": 37,
+            "end": 50
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 50,
+            "end": 51
+        },
+        {
+            "kind": "Text",
+            "text": "test",
+            "start": 51,
+            "end": 55
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 55,
+            "end": 56
+        },
+        {
+            "kind": "Text",
+            "text": "file",
+            "start": 56,
+            "end": 60
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 60,
+            "end": 61
+        },
+        {
+            "kind": "Text",
+            "text": "for",
+            "start": 61,
+            "end": 64
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 64,
+            "end": 65
+        },
+        {
+            "kind": "Text",
+            "text": "the",
+            "start": 65,
+            "end": 68
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 68,
+            "end": 69
+        },
+        {
+            "kind": "Text",
+            "text": "Oak",
+            "start": 69,
+            "end": 72
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 72,
+            "end": 73
+        },
+        {
+            "kind": "Text",
+            "text": "Markdown",
+            "start": 73,
+            "end": 81
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 81,
+            "end": 82
+        },
+        {
+            "kind": "Text",
+            "text": "lexer,",
+            "start": 82,
+            "end": 88
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 88,
+            "end": 89
+        },
+        {
+            "kind": "Text",
+            "text": "covering",
+            "start": 89,
+            "end": 97
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 97,
+            "end": 98
+        },
+        {
+            "kind": "Text",
+            "text": "various",
+            "start": 98,
+            "end": 105
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 105,
+            "end": 106
+        },
+        {
+            "kind": "Text",
+            "text": "Markdown",
+            "start": 106,
+            "end": 114
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 114,
+            "end": 115
+        },
+        {
+            "kind": "Text",
+            "text": "syntax",
+            "start": 115,
+            "end": 121
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 121,
+            "end": 122
+        },
+        {
+            "kind": "Text",
+            "text": "elements",
+            "start": 122,
+            "end": 130
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 130,
+            "end": 131
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 131,
+            "end": 132
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 132,
+            "end": 133
+        },
+        {
+            "kind": "Heading2",
+            "text": "##",
+            "start": 133,
+            "end": 135
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 135,
+            "end": 136
+        },
+        {
+            "kind": "Text",
+            "text": "Headings",
+            "start": 136,
+            "end": 144
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 144,
+            "end": 145
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 145,
+            "end": 146
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 146,
+            "end": 149
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 149,
+            "end": 150
+        },
+        {
+            "kind": "Text",
+            "text": "Different",
+            "start": 150,
+            "end": 159
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 159,
+            "end": 160
+        },
+        {
+            "kind": "Text",
+            "text": "Heading",
+            "start": 160,
+            "end": 167
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 167,
+            "end": 168
+        },
+        {
+            "kind": "Text",
+            "text": "Levels",
+            "start": 168,
+            "end": 174
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 174,
+            "end": 175
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 175,
+            "end": 176
+        },
+        {
+            "kind": "Heading1",
+            "text": "#",
+            "start": 176,
+            "end": 177
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 177,
+            "end": 178
+        },
+        {
+            "kind": "Text",
+            "text": "Heading",
+            "start": 178,
+            "end": 185
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 185,
+            "end": 186
+        },
+        {
+            "kind": "Text",
+            "text": "1",
+            "start": 186,
+            "end": 187
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 187,
+            "end": 188
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 188,
+            "end": 189
+        },
+        {
+            "kind": "Heading2",
+            "text": "##",
+            "start": 189,
+            "end": 191
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 191,
+            "end": 192
+        },
+        {
+            "kind": "Text",
+            "text": "Heading",
+            "start": 192,
+            "end": 199
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 199,
+            "end": 200
+        },
+        {
+            "kind": "Text",
+            "text": "2",
+            "start": 200,
+            "end": 201
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 201,
+            "end": 202
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 202,
+            "end": 203
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 203,
+            "end": 206
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 206,
+            "end": 207
+        },
+        {
+            "kind": "Text",
+            "text": "Heading",
+            "start": 207,
+            "end": 214
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 214,
+            "end": 215
+        },
+        {
+            "kind": "Text",
+            "text": "3",
+            "start": 215,
+            "end": 216
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 216,
+            "end": 217
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 217,
+            "end": 218
+        },
+        {
+            "kind": "Heading4",
+            "text": "####",
+            "start": 218,
+            "end": 222
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 222,
+            "end": 223
+        },
+        {
+            "kind": "Text",
+            "text": "Heading",
+            "start": 223,
+            "end": 230
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 230,
+            "end": 231
+        },
+        {
+            "kind": "Text",
+            "text": "4",
+            "start": 231,
+            "end": 232
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 232,
+            "end": 233
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 233,
+            "end": 234
+        },
+        {
+            "kind": "Heading5",
+            "text": "#####",
+            "start": 234,
+            "end": 239
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 239,
+            "end": 240
+        },
+        {
+            "kind": "Text",
+            "text": "Heading",
+            "start": 240,
+            "end": 247
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 247,
+            "end": 248
+        },
+        {
+            "kind": "Text",
+            "text": "5",
+            "start": 248,
+            "end": 249
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 249,
+            "end": 250
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 250,
+            "end": 251
+        },
+        {
+            "kind": "Heading6",
+            "text": "######",
+            "start": 251,
+            "end": 257
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 257,
+            "end": 258
+        },
+        {
+            "kind": "Text",
+            "text": "Heading",
+            "start": 258,
+            "end": 265
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 265,
+            "end": 266
+        },
+        {
+            "kind": "Text",
+            "text": "6",
+            "start": 266,
+            "end": 267
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 267,
+            "end": 268
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 268,
+            "end": 269
+        },
+        {
+            "kind": "Heading2",
+            "text": "##",
+            "start": 269,
+            "end": 271
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 271,
+            "end": 272
+        },
+        {
+            "kind": "Text",
+            "text": "Text",
+            "start": 272,
+            "end": 276
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 276,
+            "end": 277
+        },
+        {
+            "kind": "Text",
+            "text": "Formatting",
+            "start": 277,
+            "end": 287
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 287,
+            "end": 288
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 288,
+            "end": 289
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 289,
+            "end": 292
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 292,
+            "end": 293
+        },
+        {
+            "kind": "Text",
+            "text": "Emphasis",
+            "start": 293,
+            "end": 301
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 301,
+            "end": 302
+        },
+        {
+            "kind": "Text",
+            "text": "and",
+            "start": 302,
+            "end": 305
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 305,
+            "end": 306
+        },
+        {
+            "kind": "Text",
+            "text": "Strong",
+            "start": 306,
+            "end": 312
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 312,
+            "end": 313
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 313,
+            "end": 314
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 314,
+            "end": 318
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 318,
+            "end": 319
+        },
+        {
+            "kind": "Text",
+            "text": "text",
+            "start": 319,
+            "end": 323
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 323,
+            "end": 324
+        },
+        {
+            "kind": "Text",
+            "text": "contains",
+            "start": 324,
+            "end": 332
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 332,
+            "end": 333
+        },
+        {
+            "kind": "Emphasis",
+            "text": "*",
+            "start": 333,
+            "end": 334
+        },
+        {
+            "kind": "Text",
+            "text": "italic",
+            "start": 334,
+            "end": 340
+        },
+        {
+            "kind": "Emphasis",
+            "text": "*",
+            "start": 340,
+            "end": 341
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 341,
+            "end": 342
+        },
+        {
+            "kind": "Text",
+            "text": "and",
+            "start": 342,
+            "end": 345
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 345,
+            "end": 346
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 346,
+            "end": 348
+        },
+        {
+            "kind": "Text",
+            "text": "bold",
+            "start": 348,
+            "end": 352
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 352,
+            "end": 354
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 354,
+            "end": 355
+        },
+        {
+            "kind": "Text",
+            "text": "formatting",
+            "start": 355,
+            "end": 365
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 365,
+            "end": 366
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 366,
+            "end": 367
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 367,
+            "end": 368
+        },
+        {
+            "kind": "Text",
+            "text": "You",
+            "start": 368,
+            "end": 371
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 371,
+            "end": 372
+        },
+        {
+            "kind": "Text",
+            "text": "can",
+            "start": 372,
+            "end": 375
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 375,
+            "end": 376
+        },
+        {
+            "kind": "Text",
+            "text": "also",
+            "start": 376,
+            "end": 380
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 380,
+            "end": 381
+        },
+        {
+            "kind": "Text",
+            "text": "use",
+            "start": 381,
+            "end": 384
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 384,
+            "end": 385
+        },
+        {
+            "kind": "Emphasis",
+            "text": "_",
+            "start": 385,
+            "end": 386
+        },
+        {
+            "kind": "Text",
+            "text": "underscores",
+            "start": 386,
+            "end": 397
+        },
+        {
+            "kind": "Emphasis",
+            "text": "_",
+            "start": 397,
+            "end": 398
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 398,
+            "end": 399
+        },
+        {
+            "kind": "Text",
+            "text": "for",
+            "start": 399,
+            "end": 402
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 402,
+            "end": 403
+        },
+        {
+            "kind": "Text",
+            "text": "italic",
+            "start": 403,
+            "end": 409
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 409,
+            "end": 410
+        },
+        {
+            "kind": "Text",
+            "text": "and",
+            "start": 410,
+            "end": 413
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 413,
+            "end": 414
+        },
+        {
+            "kind": "Strong",
+            "text": "__",
+            "start": 414,
+            "end": 416
+        },
+        {
+            "kind": "Text",
+            "text": "double",
+            "start": 416,
+            "end": 422
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 422,
+            "end": 423
+        },
+        {
+            "kind": "Text",
+            "text": "underscores",
+            "start": 423,
+            "end": 434
+        },
+        {
+            "kind": "Strong",
+            "text": "__",
+            "start": 434,
+            "end": 436
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 436,
+            "end": 437
+        },
+        {
+            "kind": "Text",
+            "text": "for",
+            "start": 437,
+            "end": 440
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 440,
+            "end": 441
+        },
+        {
+            "kind": "Text",
+            "text": "bold",
+            "start": 441,
+            "end": 445
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 445,
+            "end": 446
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 446,
+            "end": 447
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 447,
+            "end": 448
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 448,
+            "end": 451
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 451,
+            "end": 452
+        },
+        {
+            "kind": "Text",
+            "text": "Combined",
+            "start": 452,
+            "end": 460
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 460,
+            "end": 461
+        },
+        {
+            "kind": "Text",
+            "text": "Formatting",
+            "start": 461,
+            "end": 471
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 471,
+            "end": 472
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 472,
+            "end": 473
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 473,
+            "end": 477
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 477,
+            "end": 478
+        },
+        {
+            "kind": "Text",
+            "text": "text",
+            "start": 478,
+            "end": 482
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 482,
+            "end": 483
+        },
+        {
+            "kind": "Text",
+            "text": "is",
+            "start": 483,
+            "end": 485
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 485,
+            "end": 486
+        },
+        {
+            "kind": "Strong",
+            "text": "***",
+            "start": 486,
+            "end": 489
+        },
+        {
+            "kind": "Text",
+            "text": "bold",
+            "start": 489,
+            "end": 493
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 493,
+            "end": 494
+        },
+        {
+            "kind": "Text",
+            "text": "and",
+            "start": 494,
+            "end": 497
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 497,
+            "end": 498
+        },
+        {
+            "kind": "Text",
+            "text": "italic",
+            "start": 498,
+            "end": 504
+        },
+        {
+            "kind": "Strong",
+            "text": "***",
+            "start": 504,
+            "end": 507
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 507,
+            "end": 508
+        },
+        {
+            "kind": "Text",
+            "text": "and",
+            "start": 508,
+            "end": 511
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 511,
+            "end": 512
+        },
+        {
+            "kind": "Text",
+            "text": "can",
+            "start": 512,
+            "end": 515
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 515,
+            "end": 516
+        },
+        {
+            "kind": "Text",
+            "text": "also",
+            "start": 516,
+            "end": 520
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 520,
+            "end": 521
+        },
+        {
+            "kind": "Text",
+            "text": "be",
+            "start": 521,
+            "end": 523
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 523,
+            "end": 524
+        },
+        {
+            "kind": "Text",
+            "text": "written",
+            "start": 524,
+            "end": 531
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 531,
+            "end": 532
+        },
+        {
+            "kind": "Text",
+            "text": "as",
+            "start": 532,
+            "end": 534
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 534,
+            "end": 535
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 535,
+            "end": 537
+        },
+        {
+            "kind": "Emphasis",
+            "text": "_",
+            "start": 537,
+            "end": 538
+        },
+        {
+            "kind": "Text",
+            "text": "bold",
+            "start": 538,
+            "end": 542
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 542,
+            "end": 543
+        },
+        {
+            "kind": "Text",
+            "text": "and",
+            "start": 543,
+            "end": 546
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 546,
+            "end": 547
+        },
+        {
+            "kind": "Text",
+            "text": "italic",
+            "start": 547,
+            "end": 553
+        },
+        {
+            "kind": "Emphasis",
+            "text": "_",
+            "start": 553,
+            "end": 554
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 554,
+            "end": 556
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 556,
+            "end": 557
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 557,
+            "end": 558
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 558,
+            "end": 559
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 559,
+            "end": 562
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 562,
+            "end": 563
+        },
+        {
+            "kind": "Text",
+            "text": "Strikethrough",
+            "start": 563,
+            "end": 576
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 576,
+            "end": 577
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 577,
+            "end": 578
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 578,
+            "end": 582
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 582,
+            "end": 583
+        },
+        {
+            "kind": "Text",
+            "text": "text",
+            "start": 583,
+            "end": 587
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 587,
+            "end": 588
+        },
+        {
+            "kind": "Text",
+            "text": "has",
+            "start": 588,
+            "end": 591
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 591,
+            "end": 592
+        },
+        {
+            "kind": "Text",
+            "text": "been",
+            "start": 592,
+            "end": 596
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 596,
+            "end": 597
+        },
+        {
+            "kind": "Strikethrough",
+            "text": "~~",
+            "start": 597,
+            "end": 599
+        },
+        {
+            "kind": "Text",
+            "text": "struck",
+            "start": 599,
+            "end": 605
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 605,
+            "end": 606
+        },
+        {
+            "kind": "Text",
+            "text": "through",
+            "start": 606,
+            "end": 613
+        },
+        {
+            "kind": "Strikethrough",
+            "text": "~~",
+            "start": 613,
+            "end": 615
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 615,
+            "end": 616
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 616,
+            "end": 617
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 617,
+            "end": 618
+        },
+        {
+            "kind": "Heading2",
+            "text": "##",
+            "start": 618,
+            "end": 620
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 620,
+            "end": 621
+        },
+        {
+            "kind": "Text",
+            "text": "Code",
+            "start": 621,
+            "end": 625
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 625,
+            "end": 626
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 626,
+            "end": 627
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 627,
+            "end": 630
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 630,
+            "end": 631
+        },
+        {
+            "kind": "Text",
+            "text": "Inline",
+            "start": 631,
+            "end": 637
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 637,
+            "end": 638
+        },
+        {
+            "kind": "Text",
+            "text": "Code",
+            "start": 638,
+            "end": 642
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 642,
+            "end": 643
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 643,
+            "end": 644
+        },
+        {
+            "kind": "Text",
+            "text": "Use",
+            "start": 644,
+            "end": 647
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 647,
+            "end": 648
+        },
+        {
+            "kind": "InlineCode",
+            "text": "`inline code`",
+            "start": 648,
+            "end": 661
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 661,
+            "end": 662
+        },
+        {
+            "kind": "Text",
+            "text": "for",
+            "start": 662,
+            "end": 665
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 665,
+            "end": 666
+        },
+        {
+            "kind": "Text",
+            "text": "short",
+            "start": 666,
+            "end": 671
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 671,
+            "end": 672
+        },
+        {
+            "kind": "Text",
+            "text": "code",
+            "start": 672,
+            "end": 676
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 676,
+            "end": 677
+        },
+        {
+            "kind": "Text",
+            "text": "snippets",
+            "start": 677,
+            "end": 685
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 685,
+            "end": 686
+        },
+        {
+            "kind": "Text",
+            "text": "within",
+            "start": 686,
+            "end": 692
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 692,
+            "end": 693
+        },
+        {
+            "kind": "Text",
+            "text": "text",
+            "start": 693,
+            "end": 697
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 697,
+            "end": 698
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 698,
+            "end": 699
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 699,
+            "end": 700
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 700,
+            "end": 703
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 703,
+            "end": 704
+        },
+        {
+            "kind": "Text",
+            "text": "Code",
+            "start": 704,
+            "end": 708
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 708,
+            "end": 709
+        },
+        {
+            "kind": "Text",
+            "text": "Blocks",
+            "start": 709,
+            "end": 715
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 715,
+            "end": 716
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 716,
+            "end": 717
+        },
+        {
+            "kind": "CodeFence",
+            "text": "```",
+            "start": 717,
+            "end": 720
+        },
+        {
+            "kind": "CodeLanguage",
+            "text": "rust",
+            "start": 720,
+            "end": 724
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 724,
+            "end": 725
+        },
+        {
+            "kind": "Text",
+            "text": "fn",
+            "start": 725,
+            "end": 727
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 727,
+            "end": 728
+        },
+        {
+            "kind": "Text",
+            "text": "main",
+            "start": 728,
+            "end": 732
+        },
+        {
+            "kind": "LParen",
+            "text": "(",
+            "start": 732,
+            "end": 733
+        },
+        {
+            "kind": "RParen",
+            "text": ")",
+            "start": 733,
+            "end": 734
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 734,
+            "end": 735
+        },
+        {
+            "kind": "Text",
+            "text": "{",
+            "start": 735,
+            "end": 736
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 736,
+            "end": 737
+        },
+        {
+            "kind": "CodeBlock",
+            "text": "    ",
+            "start": 737,
+            "end": 741
+        },
+        {
+            "kind": "Text",
+            "text": "println",
+            "start": 741,
+            "end": 748
+        },
+        {
+            "kind": "Exclamation",
+            "text": "!",
+            "start": 748,
+            "end": 749
+        },
+        {
+            "kind": "LParen",
+            "text": "(",
+            "start": 749,
+            "end": 750
+        },
+        {
+            "kind": "Text",
+            "text": "\"Hello,",
+            "start": 750,
+            "end": 757
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 757,
+            "end": 758
+        },
+        {
+            "kind": "Text",
+            "text": "world",
+            "start": 758,
+            "end": 763
+        },
+        {
+            "kind": "Exclamation",
+            "text": "!",
+            "start": 763,
+            "end": 764
+        },
+        {
+            "kind": "Text",
+            "text": "\"",
+            "start": 764,
+            "end": 765
+        },
+        {
+            "kind": "RParen",
+            "text": ")",
+            "start": 765,
+            "end": 766
+        },
+        {
+            "kind": "Text",
+            "text": ";",
+            "start": 766,
+            "end": 767
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 767,
+            "end": 768
+        },
+        {
+            "kind": "Text",
+            "text": "}",
+            "start": 768,
+            "end": 769
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 769,
+            "end": 770
+        },
+        {
+            "kind": "CodeFence",
+            "text": "```",
+            "start": 770,
+            "end": 773
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 773,
+            "end": 774
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 774,
+            "end": 775
+        },
+        {
+            "kind": "CodeFence",
+            "text": "```",
+            "start": 775,
+            "end": 778
+        },
+        {
+            "kind": "CodeLanguage",
+            "text": "javascript",
+            "start": 778,
+            "end": 788
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 788,
+            "end": 789
+        },
+        {
+            "kind": "Text",
+            "text": "function",
+            "start": 789,
+            "end": 797
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 797,
+            "end": 798
+        },
+        {
+            "kind": "Text",
+            "text": "greet",
+            "start": 798,
+            "end": 803
+        },
+        {
+            "kind": "LParen",
+            "text": "(",
+            "start": 803,
+            "end": 804
+        },
+        {
+            "kind": "Text",
+            "text": "name",
+            "start": 804,
+            "end": 808
+        },
+        {
+            "kind": "RParen",
+            "text": ")",
+            "start": 808,
+            "end": 809
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 809,
+            "end": 810
+        },
+        {
+            "kind": "Text",
+            "text": "{",
+            "start": 810,
+            "end": 811
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 811,
+            "end": 812
+        },
+        {
+            "kind": "CodeBlock",
+            "text": "    ",
+            "start": 812,
+            "end": 816
+        },
+        {
+            "kind": "Text",
+            "text": "return",
+            "start": 816,
+            "end": 822
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 822,
+            "end": 823
+        },
+        {
+            "kind": "InlineCode",
+            "text": "`Hello, ${name}!`",
+            "start": 823,
+            "end": 840
+        },
+        {
+            "kind": "Text",
+            "text": ";",
+            "start": 840,
+            "end": 841
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 841,
+            "end": 842
+        },
+        {
+            "kind": "Text",
+            "text": "}",
+            "start": 842,
+            "end": 843
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 843,
+            "end": 844
+        },
+        {
+            "kind": "CodeFence",
+            "text": "```",
+            "start": 844,
+            "end": 847
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 847,
+            "end": 848
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 848,
+            "end": 849
+        },
+        {
+            "kind": "CodeFence",
+            "text": "```",
+            "start": 849,
+            "end": 852
+        },
+        {
+            "kind": "CodeLanguage",
+            "text": "python",
+            "start": 852,
+            "end": 858
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 858,
+            "end": 859
+        },
+        {
+            "kind": "Text",
+            "text": "def",
+            "start": 859,
+            "end": 862
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 862,
+            "end": 863
+        },
+        {
+            "kind": "Text",
+            "text": "fibonacci",
+            "start": 863,
+            "end": 872
+        },
+        {
+            "kind": "LParen",
+            "text": "(",
+            "start": 872,
+            "end": 873
+        },
+        {
+            "kind": "Text",
+            "text": "n",
+            "start": 873,
+            "end": 874
+        },
+        {
+            "kind": "RParen",
+            "text": ")",
+            "start": 874,
+            "end": 875
+        },
+        {
+            "kind": "Colon",
+            "text": ":",
+            "start": 875,
+            "end": 876
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 876,
+            "end": 877
+        },
+        {
+            "kind": "CodeBlock",
+            "text": "    ",
+            "start": 877,
+            "end": 881
+        },
+        {
+            "kind": "Text",
+            "text": "if",
+            "start": 881,
+            "end": 883
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 883,
+            "end": 884
+        },
+        {
+            "kind": "Text",
+            "text": "n",
+            "start": 884,
+            "end": 885
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 885,
+            "end": 886
+        },
+        {
+            "kind": "HtmlTag",
+            "text": "<= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n```\n\n### Code Block with Language\n\n```bash\n#!/bin/bash\necho \"This is a bash script\"\nls -la\n```\n\n## Lists\n\n### Unordered Lists\n\n- First item\n- Second item\n- Third item\n\n* Alternative bullet style\n* Another item\n* Final item\n\n+ Plus style bullet\n+ Another item\n+ Last item\n\n### Ordered Lists\n\n1. First step\n2. Second step\n3. Third step\n\n42. Number can start at any value\n43. Second item\n44. Third item\n\n### Nested Lists\n\n1. First main item\n    - Sub-item A\n    - Sub-item B\n2. Second main item\n    - Sub-item C\n\n    * Alternative sub-bullet\n\n    + Another style\n\n### Task Lists\n\n- [ ] Unchecked task\n- [x] Completed task\n- [X] Also completed task\n- [ ] Another unchecked task\n\n## Links and Images\n\n### Basic Links\n\n[Oak Parser Framework](https://github.com/oak/oak)\n\n[Link with title](https://example.com \"This is a title\")\n\n### Reference Links\n\n[Reference link][ref1]\n\n[Another reference][ref2]\n\n[ref1]: https://example.com \"Reference 1\"\n[ref2]: https://another.com 'Reference 2'\n\n### Images\n\n![Oak Logo](https://oak.dev/logo.png)\n\n![Image with alt text](image.jpg \"Image title\")\n\n## Blockquotes\n\n>",
+            "start": 886,
+            "end": 2049
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2049,
+            "end": 2050
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 2050,
+            "end": 2054
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2054,
+            "end": 2055
+        },
+        {
+            "kind": "Text",
+            "text": "is",
+            "start": 2055,
+            "end": 2057
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2057,
+            "end": 2058
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 2058,
+            "end": 2059
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2059,
+            "end": 2060
+        },
+        {
+            "kind": "Text",
+            "text": "simple",
+            "start": 2060,
+            "end": 2066
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2066,
+            "end": 2067
+        },
+        {
+            "kind": "Text",
+            "text": "blockquote",
+            "start": 2067,
+            "end": 2077
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 2077,
+            "end": 2078
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2078,
+            "end": 2079
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2079,
+            "end": 2080
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2080,
+            "end": 2081
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2081,
+            "end": 2082
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 2082,
+            "end": 2086
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2086,
+            "end": 2087
+        },
+        {
+            "kind": "Text",
+            "text": "is",
+            "start": 2087,
+            "end": 2089
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2089,
+            "end": 2090
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 2090,
+            "end": 2091
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2091,
+            "end": 2092
+        },
+        {
+            "kind": "Text",
+            "text": "longer",
+            "start": 2092,
+            "end": 2098
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2098,
+            "end": 2099
+        },
+        {
+            "kind": "Text",
+            "text": "blockquote",
+            "start": 2099,
+            "end": 2109
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2109,
+            "end": 2110
+        },
+        {
+            "kind": "Text",
+            "text": "that",
+            "start": 2110,
+            "end": 2114
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2114,
+            "end": 2115
+        },
+        {
+            "kind": "Text",
+            "text": "spans",
+            "start": 2115,
+            "end": 2120
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2120,
+            "end": 2121
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2121,
+            "end": 2122
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2122,
+            "end": 2123
+        },
+        {
+            "kind": "Text",
+            "text": "multiple",
+            "start": 2123,
+            "end": 2131
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2131,
+            "end": 2132
+        },
+        {
+            "kind": "Text",
+            "text": "lines",
+            "start": 2132,
+            "end": 2137
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 2137,
+            "end": 2138
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2138,
+            "end": 2139
+        },
+        {
+            "kind": "Text",
+            "text": "Each",
+            "start": 2139,
+            "end": 2143
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2143,
+            "end": 2144
+        },
+        {
+            "kind": "Text",
+            "text": "line",
+            "start": 2144,
+            "end": 2148
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2148,
+            "end": 2149
+        },
+        {
+            "kind": "Text",
+            "text": "starts",
+            "start": 2149,
+            "end": 2155
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2155,
+            "end": 2156
+        },
+        {
+            "kind": "Text",
+            "text": "with",
+            "start": 2156,
+            "end": 2160
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2160,
+            "end": 2161
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2161,
+            "end": 2162
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2162,
+            "end": 2163
+        },
+        {
+            "kind": "Text",
+            "text": "the",
+            "start": 2163,
+            "end": 2166
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2166,
+            "end": 2167
+        },
+        {
+            "kind": "Text",
+            "text": "greater",
+            "start": 2167,
+            "end": 2174
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2174,
+            "end": 2175
+        },
+        {
+            "kind": "Text",
+            "text": "than",
+            "start": 2175,
+            "end": 2179
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2179,
+            "end": 2180
+        },
+        {
+            "kind": "Text",
+            "text": "symbol",
+            "start": 2180,
+            "end": 2186
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 2186,
+            "end": 2187
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2187,
+            "end": 2188
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2188,
+            "end": 2189
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 2189,
+            "end": 2192
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2192,
+            "end": 2193
+        },
+        {
+            "kind": "Text",
+            "text": "Nested",
+            "start": 2193,
+            "end": 2199
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2199,
+            "end": 2200
+        },
+        {
+            "kind": "Text",
+            "text": "Blockquotes",
+            "start": 2200,
+            "end": 2211
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2211,
+            "end": 2212
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2212,
+            "end": 2213
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2213,
+            "end": 2214
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2214,
+            "end": 2215
+        },
+        {
+            "kind": "Text",
+            "text": "First",
+            "start": 2215,
+            "end": 2220
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2220,
+            "end": 2221
+        },
+        {
+            "kind": "Text",
+            "text": "level",
+            "start": 2221,
+            "end": 2226
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2226,
+            "end": 2227
+        },
+        {
+            "kind": "Text",
+            "text": "of",
+            "start": 2227,
+            "end": 2229
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2229,
+            "end": 2230
+        },
+        {
+            "kind": "Text",
+            "text": "quoting",
+            "start": 2230,
+            "end": 2237
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2237,
+            "end": 2238
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2238,
+            "end": 2239
+        },
+        {
+            "kind": "Greater",
+            "text": ">",
+            "start": 2239,
+            "end": 2240
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2240,
+            "end": 2241
+        },
+        {
+            "kind": "Text",
+            "text": "Second",
+            "start": 2241,
+            "end": 2247
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2247,
+            "end": 2248
+        },
+        {
+            "kind": "Text",
+            "text": "level",
+            "start": 2248,
+            "end": 2253
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2253,
+            "end": 2254
+        },
+        {
+            "kind": "Text",
+            "text": "of",
+            "start": 2254,
+            "end": 2256
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2256,
+            "end": 2257
+        },
+        {
+            "kind": "Text",
+            "text": "quoting",
+            "start": 2257,
+            "end": 2264
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2264,
+            "end": 2265
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2265,
+            "end": 2266
+        },
+        {
+            "kind": "Greater",
+            "text": ">",
+            "start": 2266,
+            "end": 2267
+        },
+        {
+            "kind": "Greater",
+            "text": ">",
+            "start": 2267,
+            "end": 2268
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2268,
+            "end": 2269
+        },
+        {
+            "kind": "Text",
+            "text": "Third",
+            "start": 2269,
+            "end": 2274
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2274,
+            "end": 2275
+        },
+        {
+            "kind": "Text",
+            "text": "level",
+            "start": 2275,
+            "end": 2280
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2280,
+            "end": 2281
+        },
+        {
+            "kind": "Text",
+            "text": "of",
+            "start": 2281,
+            "end": 2283
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2283,
+            "end": 2284
+        },
+        {
+            "kind": "Text",
+            "text": "quoting",
+            "start": 2284,
+            "end": 2291
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2291,
+            "end": 2292
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2292,
+            "end": 2293
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 2293,
+            "end": 2296
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2296,
+            "end": 2297
+        },
+        {
+            "kind": "Text",
+            "text": "Blockquote",
+            "start": 2297,
+            "end": 2307
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2307,
+            "end": 2308
+        },
+        {
+            "kind": "Text",
+            "text": "with",
+            "start": 2308,
+            "end": 2312
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2312,
+            "end": 2313
+        },
+        {
+            "kind": "Text",
+            "text": "Other",
+            "start": 2313,
+            "end": 2318
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2318,
+            "end": 2319
+        },
+        {
+            "kind": "Text",
+            "text": "Elements",
+            "start": 2319,
+            "end": 2327
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2327,
+            "end": 2328
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2328,
+            "end": 2329
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2329,
+            "end": 2330
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2330,
+            "end": 2331
+        },
+        {
+            "kind": "Hash",
+            "text": "#",
+            "start": 2331,
+            "end": 2332
+        },
+        {
+            "kind": "Hash",
+            "text": "#",
+            "start": 2332,
+            "end": 2333
+        },
+        {
+            "kind": "Hash",
+            "text": "#",
+            "start": 2333,
+            "end": 2334
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2334,
+            "end": 2335
+        },
+        {
+            "kind": "Text",
+            "text": "Heading",
+            "start": 2335,
+            "end": 2342
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2342,
+            "end": 2343
+        },
+        {
+            "kind": "Text",
+            "text": "in",
+            "start": 2343,
+            "end": 2345
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2345,
+            "end": 2346
+        },
+        {
+            "kind": "Text",
+            "text": "Blockquote",
+            "start": 2346,
+            "end": 2356
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2356,
+            "end": 2357
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2357,
+            "end": 2358
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2358,
+            "end": 2359
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2359,
+            "end": 2360
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2360,
+            "end": 2361
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 2361,
+            "end": 2365
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2365,
+            "end": 2366
+        },
+        {
+            "kind": "Text",
+            "text": "is",
+            "start": 2366,
+            "end": 2368
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2368,
+            "end": 2369
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 2369,
+            "end": 2371
+        },
+        {
+            "kind": "Text",
+            "text": "bold",
+            "start": 2371,
+            "end": 2375
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 2375,
+            "end": 2377
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2377,
+            "end": 2378
+        },
+        {
+            "kind": "Text",
+            "text": "text",
+            "start": 2378,
+            "end": 2382
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2382,
+            "end": 2383
+        },
+        {
+            "kind": "Text",
+            "text": "in",
+            "start": 2383,
+            "end": 2385
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2385,
+            "end": 2386
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 2386,
+            "end": 2387
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2387,
+            "end": 2388
+        },
+        {
+            "kind": "Text",
+            "text": "blockquote",
+            "start": 2388,
+            "end": 2398
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 2398,
+            "end": 2399
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2399,
+            "end": 2400
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2400,
+            "end": 2401
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2401,
+            "end": 2402
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2402,
+            "end": 2403
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2403,
+            "end": 2404
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2404,
+            "end": 2405
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2405,
+            "end": 2406
+        },
+        {
+            "kind": "Text",
+            "text": "List",
+            "start": 2406,
+            "end": 2410
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2410,
+            "end": 2411
+        },
+        {
+            "kind": "Text",
+            "text": "item",
+            "start": 2411,
+            "end": 2415
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2415,
+            "end": 2416
+        },
+        {
+            "kind": "Text",
+            "text": "in",
+            "start": 2416,
+            "end": 2418
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2418,
+            "end": 2419
+        },
+        {
+            "kind": "Text",
+            "text": "blockquote",
+            "start": 2419,
+            "end": 2429
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2429,
+            "end": 2430
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2430,
+            "end": 2431
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2431,
+            "end": 2432
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2432,
+            "end": 2433
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2433,
+            "end": 2434
+        },
+        {
+            "kind": "Text",
+            "text": "Another",
+            "start": 2434,
+            "end": 2441
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2441,
+            "end": 2442
+        },
+        {
+            "kind": "Text",
+            "text": "item",
+            "start": 2442,
+            "end": 2446
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2446,
+            "end": 2447
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2447,
+            "end": 2448
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2448,
+            "end": 2449
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2449,
+            "end": 2450
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2450,
+            "end": 2451
+        },
+        {
+            "kind": "Backtick",
+            "text": "`",
+            "start": 2451,
+            "end": 2452
+        },
+        {
+            "kind": "Backtick",
+            "text": "`",
+            "start": 2452,
+            "end": 2453
+        },
+        {
+            "kind": "Backtick",
+            "text": "`",
+            "start": 2453,
+            "end": 2454
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2454,
+            "end": 2455
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2455,
+            "end": 2456
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2456,
+            "end": 2457
+        },
+        {
+            "kind": "Text",
+            "text": "Code",
+            "start": 2457,
+            "end": 2461
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2461,
+            "end": 2462
+        },
+        {
+            "kind": "Text",
+            "text": "block",
+            "start": 2462,
+            "end": 2467
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2467,
+            "end": 2468
+        },
+        {
+            "kind": "Text",
+            "text": "in",
+            "start": 2468,
+            "end": 2470
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2470,
+            "end": 2471
+        },
+        {
+            "kind": "Text",
+            "text": "blockquote",
+            "start": 2471,
+            "end": 2481
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2481,
+            "end": 2482
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 2482,
+            "end": 2483
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2483,
+            "end": 2484
+        },
+        {
+            "kind": "Backtick",
+            "text": "`",
+            "start": 2484,
+            "end": 2485
+        },
+        {
+            "kind": "Backtick",
+            "text": "`",
+            "start": 2485,
+            "end": 2486
+        },
+        {
+            "kind": "Backtick",
+            "text": "`",
+            "start": 2486,
+            "end": 2487
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2487,
+            "end": 2488
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2488,
+            "end": 2489
+        },
+        {
+            "kind": "Heading2",
+            "text": "##",
+            "start": 2489,
+            "end": 2491
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2491,
+            "end": 2492
+        },
+        {
+            "kind": "Text",
+            "text": "Tables",
+            "start": 2492,
+            "end": 2498
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2498,
+            "end": 2499
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2499,
+            "end": 2500
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 2500,
+            "end": 2503
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2503,
+            "end": 2504
+        },
+        {
+            "kind": "Text",
+            "text": "Basic",
+            "start": 2504,
+            "end": 2509
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2509,
+            "end": 2510
+        },
+        {
+            "kind": "Text",
+            "text": "Table",
+            "start": 2510,
+            "end": 2515
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2515,
+            "end": 2516
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2516,
+            "end": 2517
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2517,
+            "end": 2518
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2518,
+            "end": 2519
+        },
+        {
+            "kind": "Text",
+            "text": "Header",
+            "start": 2519,
+            "end": 2525
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2525,
+            "end": 2526
+        },
+        {
+            "kind": "Text",
+            "text": "1",
+            "start": 2526,
+            "end": 2527
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2527,
+            "end": 2528
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2528,
+            "end": 2529
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2529,
+            "end": 2530
+        },
+        {
+            "kind": "Text",
+            "text": "Header",
+            "start": 2530,
+            "end": 2536
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2536,
+            "end": 2537
+        },
+        {
+            "kind": "Text",
+            "text": "2",
+            "start": 2537,
+            "end": 2538
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2538,
+            "end": 2539
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2539,
+            "end": 2540
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2540,
+            "end": 2541
+        },
+        {
+            "kind": "Text",
+            "text": "Header",
+            "start": 2541,
+            "end": 2547
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2547,
+            "end": 2548
+        },
+        {
+            "kind": "Text",
+            "text": "3",
+            "start": 2548,
+            "end": 2549
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2549,
+            "end": 2550
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2550,
+            "end": 2551
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2551,
+            "end": 2552
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2552,
+            "end": 2553
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2553,
+            "end": 2554
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2554,
+            "end": 2555
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2555,
+            "end": 2556
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2556,
+            "end": 2557
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2557,
+            "end": 2558
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2558,
+            "end": 2559
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2559,
+            "end": 2560
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2560,
+            "end": 2561
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2561,
+            "end": 2562
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2562,
+            "end": 2563
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2563,
+            "end": 2564
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2564,
+            "end": 2565
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2565,
+            "end": 2566
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2566,
+            "end": 2567
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2567,
+            "end": 2568
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2568,
+            "end": 2569
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2569,
+            "end": 2570
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2570,
+            "end": 2571
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2571,
+            "end": 2572
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2572,
+            "end": 2573
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2573,
+            "end": 2574
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2574,
+            "end": 2575
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2575,
+            "end": 2576
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2576,
+            "end": 2577
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2577,
+            "end": 2578
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2578,
+            "end": 2579
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2579,
+            "end": 2580
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2580,
+            "end": 2581
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2581,
+            "end": 2582
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2582,
+            "end": 2583
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2583,
+            "end": 2584
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2584,
+            "end": 2585
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2585,
+            "end": 2586
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2586,
+            "end": 2587
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2587,
+            "end": 2588
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2588,
+            "end": 2589
+        },
+        {
+            "kind": "Text",
+            "text": "Cell",
+            "start": 2589,
+            "end": 2593
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2593,
+            "end": 2594
+        },
+        {
+            "kind": "Text",
+            "text": "1",
+            "start": 2594,
+            "end": 2595
+        },
+        {
+            "kind": "Whitespace",
+            "text": "   ",
+            "start": 2595,
+            "end": 2598
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2598,
+            "end": 2599
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2599,
+            "end": 2600
+        },
+        {
+            "kind": "Text",
+            "text": "Cell",
+            "start": 2600,
+            "end": 2604
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2604,
+            "end": 2605
+        },
+        {
+            "kind": "Text",
+            "text": "2",
+            "start": 2605,
+            "end": 2606
+        },
+        {
+            "kind": "Whitespace",
+            "text": "   ",
+            "start": 2606,
+            "end": 2609
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2609,
+            "end": 2610
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2610,
+            "end": 2611
+        },
+        {
+            "kind": "Text",
+            "text": "Cell",
+            "start": 2611,
+            "end": 2615
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2615,
+            "end": 2616
+        },
+        {
+            "kind": "Text",
+            "text": "3",
+            "start": 2616,
+            "end": 2617
+        },
+        {
+            "kind": "Whitespace",
+            "text": "   ",
+            "start": 2617,
+            "end": 2620
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2620,
+            "end": 2621
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2621,
+            "end": 2622
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2622,
+            "end": 2623
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2623,
+            "end": 2624
+        },
+        {
+            "kind": "Text",
+            "text": "Cell",
+            "start": 2624,
+            "end": 2628
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2628,
+            "end": 2629
+        },
+        {
+            "kind": "Text",
+            "text": "4",
+            "start": 2629,
+            "end": 2630
+        },
+        {
+            "kind": "Whitespace",
+            "text": "   ",
+            "start": 2630,
+            "end": 2633
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2633,
+            "end": 2634
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2634,
+            "end": 2635
+        },
+        {
+            "kind": "Text",
+            "text": "Cell",
+            "start": 2635,
+            "end": 2639
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2639,
+            "end": 2640
+        },
+        {
+            "kind": "Text",
+            "text": "5",
+            "start": 2640,
+            "end": 2641
+        },
+        {
+            "kind": "Whitespace",
+            "text": "   ",
+            "start": 2641,
+            "end": 2644
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2644,
+            "end": 2645
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2645,
+            "end": 2646
+        },
+        {
+            "kind": "Text",
+            "text": "Cell",
+            "start": 2646,
+            "end": 2650
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2650,
+            "end": 2651
+        },
+        {
+            "kind": "Text",
+            "text": "6",
+            "start": 2651,
+            "end": 2652
+        },
+        {
+            "kind": "Whitespace",
+            "text": "   ",
+            "start": 2652,
+            "end": 2655
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2655,
+            "end": 2656
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2656,
+            "end": 2657
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2657,
+            "end": 2658
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 2658,
+            "end": 2661
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2661,
+            "end": 2662
+        },
+        {
+            "kind": "Text",
+            "text": "Aligned",
+            "start": 2662,
+            "end": 2669
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2669,
+            "end": 2670
+        },
+        {
+            "kind": "Text",
+            "text": "Table",
+            "start": 2670,
+            "end": 2675
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2675,
+            "end": 2676
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2676,
+            "end": 2677
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2677,
+            "end": 2678
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2678,
+            "end": 2679
+        },
+        {
+            "kind": "Text",
+            "text": "Left",
+            "start": 2679,
+            "end": 2683
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2683,
+            "end": 2684
+        },
+        {
+            "kind": "Text",
+            "text": "Aligned",
+            "start": 2684,
+            "end": 2691
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2691,
+            "end": 2692
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2692,
+            "end": 2693
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2693,
+            "end": 2694
+        },
+        {
+            "kind": "Text",
+            "text": "Center",
+            "start": 2694,
+            "end": 2700
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2700,
+            "end": 2701
+        },
+        {
+            "kind": "Text",
+            "text": "Aligned",
+            "start": 2701,
+            "end": 2708
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2708,
+            "end": 2709
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2709,
+            "end": 2710
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2710,
+            "end": 2711
+        },
+        {
+            "kind": "Text",
+            "text": "Right",
+            "start": 2711,
+            "end": 2716
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2716,
+            "end": 2717
+        },
+        {
+            "kind": "Text",
+            "text": "Aligned",
+            "start": 2717,
+            "end": 2724
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2724,
+            "end": 2725
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2725,
+            "end": 2726
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2726,
+            "end": 2727
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2727,
+            "end": 2728
+        },
+        {
+            "kind": "Colon",
+            "text": ":",
+            "start": 2728,
+            "end": 2729
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2729,
+            "end": 2730
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2730,
+            "end": 2731
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2731,
+            "end": 2732
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2732,
+            "end": 2733
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2733,
+            "end": 2734
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2734,
+            "end": 2735
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2735,
+            "end": 2736
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2736,
+            "end": 2737
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2737,
+            "end": 2738
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2738,
+            "end": 2739
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2739,
+            "end": 2740
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2740,
+            "end": 2741
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2741,
+            "end": 2742
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2742,
+            "end": 2743
+        },
+        {
+            "kind": "Colon",
+            "text": ":",
+            "start": 2743,
+            "end": 2744
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2744,
+            "end": 2745
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2745,
+            "end": 2746
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2746,
+            "end": 2747
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2747,
+            "end": 2748
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2748,
+            "end": 2749
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2749,
+            "end": 2750
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2750,
+            "end": 2751
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2751,
+            "end": 2752
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2752,
+            "end": 2753
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2753,
+            "end": 2754
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2754,
+            "end": 2755
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2755,
+            "end": 2756
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2756,
+            "end": 2757
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2757,
+            "end": 2758
+        },
+        {
+            "kind": "Colon",
+            "text": ":",
+            "start": 2758,
+            "end": 2759
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2759,
+            "end": 2760
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2760,
+            "end": 2761
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2761,
+            "end": 2762
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2762,
+            "end": 2763
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2763,
+            "end": 2764
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2764,
+            "end": 2765
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2765,
+            "end": 2766
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2766,
+            "end": 2767
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2767,
+            "end": 2768
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2768,
+            "end": 2769
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2769,
+            "end": 2770
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2770,
+            "end": 2771
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2771,
+            "end": 2772
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2772,
+            "end": 2773
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2773,
+            "end": 2774
+        },
+        {
+            "kind": "Colon",
+            "text": ":",
+            "start": 2774,
+            "end": 2775
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2775,
+            "end": 2776
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2776,
+            "end": 2777
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2777,
+            "end": 2778
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2778,
+            "end": 2779
+        },
+        {
+            "kind": "Text",
+            "text": "Left",
+            "start": 2779,
+            "end": 2783
+        },
+        {
+            "kind": "Whitespace",
+            "text": "         ",
+            "start": 2783,
+            "end": 2792
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2792,
+            "end": 2793
+        },
+        {
+            "kind": "Whitespace",
+            "text": "     ",
+            "start": 2793,
+            "end": 2798
+        },
+        {
+            "kind": "Text",
+            "text": "Center",
+            "start": 2798,
+            "end": 2804
+        },
+        {
+            "kind": "Whitespace",
+            "text": "     ",
+            "start": 2804,
+            "end": 2809
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2809,
+            "end": 2810
+        },
+        {
+            "kind": "Whitespace",
+            "text": "         ",
+            "start": 2810,
+            "end": 2819
+        },
+        {
+            "kind": "Text",
+            "text": "Right",
+            "start": 2819,
+            "end": 2824
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2824,
+            "end": 2825
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2825,
+            "end": 2826
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2826,
+            "end": 2827
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2827,
+            "end": 2828
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2828,
+            "end": 2829
+        },
+        {
+            "kind": "Text",
+            "text": "Text",
+            "start": 2829,
+            "end": 2833
+        },
+        {
+            "kind": "Whitespace",
+            "text": "         ",
+            "start": 2833,
+            "end": 2842
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2842,
+            "end": 2843
+        },
+        {
+            "kind": "Whitespace",
+            "text": "      ",
+            "start": 2843,
+            "end": 2849
+        },
+        {
+            "kind": "Text",
+            "text": "Text",
+            "start": 2849,
+            "end": 2853
+        },
+        {
+            "kind": "Whitespace",
+            "text": "      ",
+            "start": 2853,
+            "end": 2859
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2859,
+            "end": 2860
+        },
+        {
+            "kind": "Whitespace",
+            "text": "          ",
+            "start": 2860,
+            "end": 2870
+        },
+        {
+            "kind": "Text",
+            "text": "Text",
+            "start": 2870,
+            "end": 2874
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2874,
+            "end": 2875
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2875,
+            "end": 2876
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2876,
+            "end": 2877
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2877,
+            "end": 2878
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 2878,
+            "end": 2881
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2881,
+            "end": 2882
+        },
+        {
+            "kind": "Text",
+            "text": "Complex",
+            "start": 2882,
+            "end": 2889
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2889,
+            "end": 2890
+        },
+        {
+            "kind": "Text",
+            "text": "Table",
+            "start": 2890,
+            "end": 2895
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2895,
+            "end": 2896
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2896,
+            "end": 2897
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2897,
+            "end": 2898
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2898,
+            "end": 2899
+        },
+        {
+            "kind": "Text",
+            "text": "Feature",
+            "start": 2899,
+            "end": 2906
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2906,
+            "end": 2907
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2907,
+            "end": 2908
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2908,
+            "end": 2909
+        },
+        {
+            "kind": "Text",
+            "text": "Description",
+            "start": 2909,
+            "end": 2920
+        },
+        {
+            "kind": "Whitespace",
+            "text": "     ",
+            "start": 2920,
+            "end": 2925
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2925,
+            "end": 2926
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2926,
+            "end": 2927
+        },
+        {
+            "kind": "Text",
+            "text": "Status",
+            "start": 2927,
+            "end": 2933
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2933,
+            "end": 2934
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2934,
+            "end": 2935
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2935,
+            "end": 2936
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2936,
+            "end": 2937
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2937,
+            "end": 2938
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2938,
+            "end": 2939
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2939,
+            "end": 2940
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2940,
+            "end": 2941
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2941,
+            "end": 2942
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2942,
+            "end": 2943
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2943,
+            "end": 2944
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2944,
+            "end": 2945
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2945,
+            "end": 2946
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2946,
+            "end": 2947
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2947,
+            "end": 2948
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2948,
+            "end": 2949
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2949,
+            "end": 2950
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2950,
+            "end": 2951
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2951,
+            "end": 2952
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2952,
+            "end": 2953
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2953,
+            "end": 2954
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2954,
+            "end": 2955
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2955,
+            "end": 2956
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2956,
+            "end": 2957
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2957,
+            "end": 2958
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2958,
+            "end": 2959
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2959,
+            "end": 2960
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2960,
+            "end": 2961
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2961,
+            "end": 2962
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2962,
+            "end": 2963
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2963,
+            "end": 2964
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2964,
+            "end": 2965
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2965,
+            "end": 2966
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2966,
+            "end": 2967
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2967,
+            "end": 2968
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2968,
+            "end": 2969
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2969,
+            "end": 2970
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2970,
+            "end": 2971
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2971,
+            "end": 2972
+        },
+        {
+            "kind": "Dash",
+            "text": "-",
+            "start": 2972,
+            "end": 2973
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2973,
+            "end": 2974
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 2974,
+            "end": 2975
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2975,
+            "end": 2976
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2976,
+            "end": 2977
+        },
+        {
+            "kind": "Text",
+            "text": "Lexer",
+            "start": 2977,
+            "end": 2982
+        },
+        {
+            "kind": "Whitespace",
+            "text": "   ",
+            "start": 2982,
+            "end": 2985
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 2985,
+            "end": 2986
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2986,
+            "end": 2987
+        },
+        {
+            "kind": "Text",
+            "text": "Tokenizes",
+            "start": 2987,
+            "end": 2996
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 2996,
+            "end": 2997
+        },
+        {
+            "kind": "Text",
+            "text": "input",
+            "start": 2997,
+            "end": 3002
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3002,
+            "end": 3003
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 3003,
+            "end": 3004
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3004,
+            "end": 3005
+        },
+        {
+            "kind": "Text",
+            "text": "✅",
+            "start": 3005,
+            "end": 3008
+        },
+        {
+            "kind": "CodeBlock",
+            "text": "    ",
+            "start": 3008,
+            "end": 3012
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3012,
+            "end": 3013
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 3013,
+            "end": 3014
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3014,
+            "end": 3015
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 3015,
+            "end": 3016
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3016,
+            "end": 3017
+        },
+        {
+            "kind": "Text",
+            "text": "Parser",
+            "start": 3017,
+            "end": 3023
+        },
+        {
+            "kind": "Whitespace",
+            "text": "  ",
+            "start": 3023,
+            "end": 3025
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 3025,
+            "end": 3026
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3026,
+            "end": 3027
+        },
+        {
+            "kind": "Text",
+            "text": "Builds",
+            "start": 3027,
+            "end": 3033
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3033,
+            "end": 3034
+        },
+        {
+            "kind": "Text",
+            "text": "AST",
+            "start": 3034,
+            "end": 3037
+        },
+        {
+            "kind": "Whitespace",
+            "text": "      ",
+            "start": 3037,
+            "end": 3043
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 3043,
+            "end": 3044
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3044,
+            "end": 3045
+        },
+        {
+            "kind": "Text",
+            "text": "✅",
+            "start": 3045,
+            "end": 3048
+        },
+        {
+            "kind": "CodeBlock",
+            "text": "    ",
+            "start": 3048,
+            "end": 3052
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3052,
+            "end": 3053
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 3053,
+            "end": 3054
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3054,
+            "end": 3055
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 3055,
+            "end": 3056
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3056,
+            "end": 3057
+        },
+        {
+            "kind": "Text",
+            "text": "Linter",
+            "start": 3057,
+            "end": 3063
+        },
+        {
+            "kind": "Whitespace",
+            "text": "  ",
+            "start": 3063,
+            "end": 3065
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 3065,
+            "end": 3066
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3066,
+            "end": 3067
+        },
+        {
+            "kind": "Text",
+            "text": "Finds",
+            "start": 3067,
+            "end": 3072
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3072,
+            "end": 3073
+        },
+        {
+            "kind": "Text",
+            "text": "issues",
+            "start": 3073,
+            "end": 3079
+        },
+        {
+            "kind": "Whitespace",
+            "text": "    ",
+            "start": 3079,
+            "end": 3083
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 3083,
+            "end": 3084
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3084,
+            "end": 3085
+        },
+        {
+            "kind": "Text",
+            "text": "🚧",
+            "start": 3085,
+            "end": 3089
+        },
+        {
+            "kind": "CodeBlock",
+            "text": "    ",
+            "start": 3089,
+            "end": 3093
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3093,
+            "end": 3094
+        },
+        {
+            "kind": "Pipe",
+            "text": "|",
+            "start": 3094,
+            "end": 3095
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3095,
+            "end": 3096
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3096,
+            "end": 3097
+        },
+        {
+            "kind": "Heading2",
+            "text": "##",
+            "start": 3097,
+            "end": 3099
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3099,
+            "end": 3100
+        },
+        {
+            "kind": "Text",
+            "text": "Horizontal",
+            "start": 3100,
+            "end": 3110
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3110,
+            "end": 3111
+        },
+        {
+            "kind": "Text",
+            "text": "Rules",
+            "start": 3111,
+            "end": 3116
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3116,
+            "end": 3117
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3117,
+            "end": 3118
+        },
+        {
+            "kind": "HorizontalRule",
+            "text": "---",
+            "start": 3118,
+            "end": 3121
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3121,
+            "end": 3122
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3122,
+            "end": 3123
+        },
+        {
+            "kind": "HorizontalRule",
+            "text": "***",
+            "start": 3123,
+            "end": 3126
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3126,
+            "end": 3127
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3127,
+            "end": 3128
+        },
+        {
+            "kind": "HorizontalRule",
+            "text": "___",
+            "start": 3128,
+            "end": 3131
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3131,
+            "end": 3132
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3132,
+            "end": 3133
+        },
+        {
+            "kind": "HorizontalRule",
+            "text": "- - -",
+            "start": 3133,
+            "end": 3138
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3138,
+            "end": 3139
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3139,
+            "end": 3140
+        },
+        {
+            "kind": "HorizontalRule",
+            "text": "* * *",
+            "start": 3140,
+            "end": 3145
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3145,
+            "end": 3146
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3146,
+            "end": 3147
+        },
+        {
+            "kind": "HorizontalRule",
+            "text": "_ _ _",
+            "start": 3147,
+            "end": 3152
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3152,
+            "end": 3153
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3153,
+            "end": 3154
+        },
+        {
+            "kind": "Heading2",
+            "text": "##",
+            "start": 3154,
+            "end": 3156
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3156,
+            "end": 3157
+        },
+        {
+            "kind": "Text",
+            "text": "Special",
+            "start": 3157,
+            "end": 3164
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3164,
+            "end": 3165
+        },
+        {
+            "kind": "Text",
+            "text": "Elements",
+            "start": 3165,
+            "end": 3173
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3173,
+            "end": 3174
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3174,
+            "end": 3175
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 3175,
+            "end": 3178
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3178,
+            "end": 3179
+        },
+        {
+            "kind": "Text",
+            "text": "Escaping",
+            "start": 3179,
+            "end": 3187
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3187,
+            "end": 3188
+        },
+        {
+            "kind": "Text",
+            "text": "Characters",
+            "start": 3188,
+            "end": 3198
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3198,
+            "end": 3199
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3199,
+            "end": 3200
+        },
+        {
+            "kind": "Text",
+            "text": "Use",
+            "start": 3200,
+            "end": 3203
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3203,
+            "end": 3204
+        },
+        {
+            "kind": "Escape",
+            "text": "\\*",
+            "start": 3204,
+            "end": 3206
+        },
+        {
+            "kind": "Text",
+            "text": "escaped",
+            "start": 3206,
+            "end": 3213
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3213,
+            "end": 3214
+        },
+        {
+            "kind": "Text",
+            "text": "asterisks",
+            "start": 3214,
+            "end": 3223
+        },
+        {
+            "kind": "Escape",
+            "text": "\\*",
+            "start": 3223,
+            "end": 3225
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3225,
+            "end": 3226
+        },
+        {
+            "kind": "Text",
+            "text": "and",
+            "start": 3226,
+            "end": 3229
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3229,
+            "end": 3230
+        },
+        {
+            "kind": "Escape",
+            "text": "\\`",
+            "start": 3230,
+            "end": 3232
+        },
+        {
+            "kind": "Text",
+            "text": "escaped",
+            "start": 3232,
+            "end": 3239
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3239,
+            "end": 3240
+        },
+        {
+            "kind": "Text",
+            "text": "backticks",
+            "start": 3240,
+            "end": 3249
+        },
+        {
+            "kind": "Escape",
+            "text": "\\`",
+            "start": 3249,
+            "end": 3251
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 3251,
+            "end": 3252
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3252,
+            "end": 3253
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3253,
+            "end": 3254
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 3254,
+            "end": 3257
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3257,
+            "end": 3258
+        },
+        {
+            "kind": "Text",
+            "text": "HTML",
+            "start": 3258,
+            "end": 3262
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3262,
+            "end": 3263
+        },
+        {
+            "kind": "Text",
+            "text": "Entities",
+            "start": 3263,
+            "end": 3271
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3271,
+            "end": 3272
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3272,
+            "end": 3273
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 3273,
+            "end": 3277
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3277,
+            "end": 3278
+        },
+        {
+            "kind": "Text",
+            "text": "text",
+            "start": 3278,
+            "end": 3282
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3282,
+            "end": 3283
+        },
+        {
+            "kind": "Text",
+            "text": "contains",
+            "start": 3283,
+            "end": 3291
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3291,
+            "end": 3292
+        },
+        {
+            "kind": "Text",
+            "text": "&copy;",
+            "start": 3292,
+            "end": 3298
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3298,
+            "end": 3299
+        },
+        {
+            "kind": "Text",
+            "text": "copyright",
+            "start": 3299,
+            "end": 3308
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3308,
+            "end": 3309
+        },
+        {
+            "kind": "Text",
+            "text": "symbol",
+            "start": 3309,
+            "end": 3315
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3315,
+            "end": 3316
+        },
+        {
+            "kind": "Text",
+            "text": "and",
+            "start": 3316,
+            "end": 3319
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3319,
+            "end": 3320
+        },
+        {
+            "kind": "Text",
+            "text": "&trade;",
+            "start": 3320,
+            "end": 3327
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3327,
+            "end": 3328
+        },
+        {
+            "kind": "Text",
+            "text": "trademark",
+            "start": 3328,
+            "end": 3337
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3337,
+            "end": 3338
+        },
+        {
+            "kind": "Text",
+            "text": "symbol",
+            "start": 3338,
+            "end": 3344
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 3344,
+            "end": 3345
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3345,
+            "end": 3346
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3346,
+            "end": 3347
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 3347,
+            "end": 3350
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3350,
+            "end": 3351
+        },
+        {
+            "kind": "Text",
+            "text": "Line",
+            "start": 3351,
+            "end": 3355
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3355,
+            "end": 3356
+        },
+        {
+            "kind": "Text",
+            "text": "Breaks",
+            "start": 3356,
+            "end": 3362
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3362,
+            "end": 3363
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3363,
+            "end": 3364
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 3364,
+            "end": 3368
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3368,
+            "end": 3369
+        },
+        {
+            "kind": "Text",
+            "text": "line",
+            "start": 3369,
+            "end": 3373
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3373,
+            "end": 3374
+        },
+        {
+            "kind": "Text",
+            "text": "ends",
+            "start": 3374,
+            "end": 3378
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3378,
+            "end": 3379
+        },
+        {
+            "kind": "Text",
+            "text": "with",
+            "start": 3379,
+            "end": 3383
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3383,
+            "end": 3384
+        },
+        {
+            "kind": "Text",
+            "text": "two",
+            "start": 3384,
+            "end": 3387
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3387,
+            "end": 3388
+        },
+        {
+            "kind": "Text",
+            "text": "spaces",
+            "start": 3388,
+            "end": 3394
+        },
+        {
+            "kind": "Whitespace",
+            "text": "  ",
+            "start": 3394,
+            "end": 3396
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3396,
+            "end": 3397
+        },
+        {
+            "kind": "Text",
+            "text": "Which",
+            "start": 3397,
+            "end": 3402
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3402,
+            "end": 3403
+        },
+        {
+            "kind": "Text",
+            "text": "creates",
+            "start": 3403,
+            "end": 3410
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3410,
+            "end": 3411
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 3411,
+            "end": 3412
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3412,
+            "end": 3413
+        },
+        {
+            "kind": "Text",
+            "text": "line",
+            "start": 3413,
+            "end": 3417
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3417,
+            "end": 3418
+        },
+        {
+            "kind": "Text",
+            "text": "break",
+            "start": 3418,
+            "end": 3423
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 3423,
+            "end": 3424
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3424,
+            "end": 3425
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3425,
+            "end": 3426
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 3426,
+            "end": 3430
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3430,
+            "end": 3431
+        },
+        {
+            "kind": "Text",
+            "text": "is",
+            "start": 3431,
+            "end": 3433
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3433,
+            "end": 3434
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 3434,
+            "end": 3435
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3435,
+            "end": 3436
+        },
+        {
+            "kind": "Text",
+            "text": "new",
+            "start": 3436,
+            "end": 3439
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3439,
+            "end": 3440
+        },
+        {
+            "kind": "Text",
+            "text": "paragraph",
+            "start": 3440,
+            "end": 3449
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 3449,
+            "end": 3450
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3450,
+            "end": 3451
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3451,
+            "end": 3452
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 3452,
+            "end": 3455
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3455,
+            "end": 3456
+        },
+        {
+            "kind": "Text",
+            "text": "Emojis",
+            "start": 3456,
+            "end": 3462
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3462,
+            "end": 3463
+        },
+        {
+            "kind": "LParen",
+            "text": "(",
+            "start": 3463,
+            "end": 3464
+        },
+        {
+            "kind": "Text",
+            "text": "if",
+            "start": 3464,
+            "end": 3466
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3466,
+            "end": 3467
+        },
+        {
+            "kind": "Text",
+            "text": "supported",
+            "start": 3467,
+            "end": 3476
+        },
+        {
+            "kind": "RParen",
+            "text": ")",
+            "start": 3476,
+            "end": 3477
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3477,
+            "end": 3478
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3478,
+            "end": 3479
+        },
+        {
+            "kind": "Text",
+            "text": "🎉",
+            "start": 3479,
+            "end": 3483
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3483,
+            "end": 3484
+        },
+        {
+            "kind": "Text",
+            "text": "🚀",
+            "start": 3484,
+            "end": 3488
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3488,
+            "end": 3489
+        },
+        {
+            "kind": "Text",
+            "text": "💻",
+            "start": 3489,
+            "end": 3493
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3493,
+            "end": 3494
+        },
+        {
+            "kind": "Text",
+            "text": "📚",
+            "start": 3494,
+            "end": 3498
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3498,
+            "end": 3499
+        },
+        {
+            "kind": "Text",
+            "text": "🔧",
+            "start": 3499,
+            "end": 3503
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3503,
+            "end": 3504
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3504,
+            "end": 3505
+        },
+        {
+            "kind": "Heading2",
+            "text": "##",
+            "start": 3505,
+            "end": 3507
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3507,
+            "end": 3508
+        },
+        {
+            "kind": "Text",
+            "text": "Advanced",
+            "start": 3508,
+            "end": 3516
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3516,
+            "end": 3517
+        },
+        {
+            "kind": "Text",
+            "text": "Features",
+            "start": 3517,
+            "end": 3525
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3525,
+            "end": 3526
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3526,
+            "end": 3527
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 3527,
+            "end": 3530
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3530,
+            "end": 3531
+        },
+        {
+            "kind": "Text",
+            "text": "Definition",
+            "start": 3531,
+            "end": 3541
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3541,
+            "end": 3542
+        },
+        {
+            "kind": "Text",
+            "text": "Lists",
+            "start": 3542,
+            "end": 3547
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3547,
+            "end": 3548
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3548,
+            "end": 3549
+        },
+        {
+            "kind": "Text",
+            "text": "Term",
+            "start": 3549,
+            "end": 3553
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3553,
+            "end": 3554
+        },
+        {
+            "kind": "Text",
+            "text": "1",
+            "start": 3554,
+            "end": 3555
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3555,
+            "end": 3556
+        },
+        {
+            "kind": "Colon",
+            "text": ":",
+            "start": 3556,
+            "end": 3557
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3557,
+            "end": 3558
+        },
+        {
+            "kind": "Text",
+            "text": "Definition",
+            "start": 3558,
+            "end": 3568
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3568,
+            "end": 3569
+        },
+        {
+            "kind": "Text",
+            "text": "1",
+            "start": 3569,
+            "end": 3570
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3570,
+            "end": 3571
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3571,
+            "end": 3572
+        },
+        {
+            "kind": "Text",
+            "text": "Term",
+            "start": 3572,
+            "end": 3576
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3576,
+            "end": 3577
+        },
+        {
+            "kind": "Text",
+            "text": "2",
+            "start": 3577,
+            "end": 3578
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3578,
+            "end": 3579
+        },
+        {
+            "kind": "Colon",
+            "text": ":",
+            "start": 3579,
+            "end": 3580
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3580,
+            "end": 3581
+        },
+        {
+            "kind": "Text",
+            "text": "Definition",
+            "start": 3581,
+            "end": 3591
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3591,
+            "end": 3592
+        },
+        {
+            "kind": "Text",
+            "text": "2a",
+            "start": 3592,
+            "end": 3594
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3594,
+            "end": 3595
+        },
+        {
+            "kind": "Colon",
+            "text": ":",
+            "start": 3595,
+            "end": 3596
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3596,
+            "end": 3597
+        },
+        {
+            "kind": "Text",
+            "text": "Definition",
+            "start": 3597,
+            "end": 3607
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3607,
+            "end": 3608
+        },
+        {
+            "kind": "Text",
+            "text": "2b",
+            "start": 3608,
+            "end": 3610
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3610,
+            "end": 3611
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3611,
+            "end": 3612
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 3612,
+            "end": 3615
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3615,
+            "end": 3616
+        },
+        {
+            "kind": "Text",
+            "text": "Footnotes",
+            "start": 3616,
+            "end": 3625
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3625,
+            "end": 3626
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3626,
+            "end": 3627
+        },
+        {
+            "kind": "Text",
+            "text": "Here's",
+            "start": 3627,
+            "end": 3633
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3633,
+            "end": 3634
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 3634,
+            "end": 3635
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3635,
+            "end": 3636
+        },
+        {
+            "kind": "Text",
+            "text": "sentence",
+            "start": 3636,
+            "end": 3644
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3644,
+            "end": 3645
+        },
+        {
+            "kind": "Text",
+            "text": "with",
+            "start": 3645,
+            "end": 3649
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3649,
+            "end": 3650
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 3650,
+            "end": 3651
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3651,
+            "end": 3652
+        },
+        {
+            "kind": "Text",
+            "text": "footnote",
+            "start": 3652,
+            "end": 3660
+        },
+        {
+            "kind": "FootnoteReference",
+            "text": "[^1]",
+            "start": 3660,
+            "end": 3664
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 3664,
+            "end": 3665
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3665,
+            "end": 3666
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3666,
+            "end": 3667
+        },
+        {
+            "kind": "FootnoteDefinition",
+            "text": "[^1]:",
+            "start": 3667,
+            "end": 3672
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3672,
+            "end": 3673
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 3673,
+            "end": 3677
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3677,
+            "end": 3678
+        },
+        {
+            "kind": "Text",
+            "text": "is",
+            "start": 3678,
+            "end": 3680
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3680,
+            "end": 3681
+        },
+        {
+            "kind": "Text",
+            "text": "the",
+            "start": 3681,
+            "end": 3684
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3684,
+            "end": 3685
+        },
+        {
+            "kind": "Text",
+            "text": "footnote",
+            "start": 3685,
+            "end": 3693
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 3693,
+            "end": 3694
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3694,
+            "end": 3695
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3695,
+            "end": 3696
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 3696,
+            "end": 3699
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3699,
+            "end": 3700
+        },
+        {
+            "kind": "Text",
+            "text": "Admonitions",
+            "start": 3700,
+            "end": 3711
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3711,
+            "end": 3712
+        },
+        {
+            "kind": "LParen",
+            "text": "(",
+            "start": 3712,
+            "end": 3713
+        },
+        {
+            "kind": "Text",
+            "text": "if",
+            "start": 3713,
+            "end": 3715
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3715,
+            "end": 3716
+        },
+        {
+            "kind": "Text",
+            "text": "supported",
+            "start": 3716,
+            "end": 3725
+        },
+        {
+            "kind": "RParen",
+            "text": ")",
+            "start": 3725,
+            "end": 3726
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3726,
+            "end": 3727
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3727,
+            "end": 3728
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 3728,
+            "end": 3729
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3729,
+            "end": 3730
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 3730,
+            "end": 3732
+        },
+        {
+            "kind": "Text",
+            "text": "Note",
+            "start": 3732,
+            "end": 3736
+        },
+        {
+            "kind": "Colon",
+            "text": ":",
+            "start": 3736,
+            "end": 3737
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 3737,
+            "end": 3739
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3739,
+            "end": 3740
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 3740,
+            "end": 3744
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3744,
+            "end": 3745
+        },
+        {
+            "kind": "Text",
+            "text": "is",
+            "start": 3745,
+            "end": 3747
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3747,
+            "end": 3748
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 3748,
+            "end": 3749
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3749,
+            "end": 3750
+        },
+        {
+            "kind": "Text",
+            "text": "note",
+            "start": 3750,
+            "end": 3754
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3754,
+            "end": 3755
+        },
+        {
+            "kind": "Text",
+            "text": "admonition",
+            "start": 3755,
+            "end": 3765
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 3765,
+            "end": 3766
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3766,
+            "end": 3767
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 3767,
+            "end": 3768
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3768,
+            "end": 3769
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 3769,
+            "end": 3770
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3770,
+            "end": 3771
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 3771,
+            "end": 3773
+        },
+        {
+            "kind": "Text",
+            "text": "Warning",
+            "start": 3773,
+            "end": 3780
+        },
+        {
+            "kind": "Colon",
+            "text": ":",
+            "start": 3780,
+            "end": 3781
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 3781,
+            "end": 3783
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3783,
+            "end": 3784
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 3784,
+            "end": 3788
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3788,
+            "end": 3789
+        },
+        {
+            "kind": "Text",
+            "text": "is",
+            "start": 3789,
+            "end": 3791
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3791,
+            "end": 3792
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 3792,
+            "end": 3793
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3793,
+            "end": 3794
+        },
+        {
+            "kind": "Text",
+            "text": "warning",
+            "start": 3794,
+            "end": 3801
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3801,
+            "end": 3802
+        },
+        {
+            "kind": "Text",
+            "text": "admonition",
+            "start": 3802,
+            "end": 3812
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 3812,
+            "end": 3813
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3813,
+            "end": 3814
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3814,
+            "end": 3815
+        },
+        {
+            "kind": "Heading3",
+            "text": "###",
+            "start": 3815,
+            "end": 3818
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3818,
+            "end": 3819
+        },
+        {
+            "kind": "Text",
+            "text": "Math",
+            "start": 3819,
+            "end": 3823
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3823,
+            "end": 3824
+        },
+        {
+            "kind": "LParen",
+            "text": "(",
+            "start": 3824,
+            "end": 3825
+        },
+        {
+            "kind": "Text",
+            "text": "if",
+            "start": 3825,
+            "end": 3827
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3827,
+            "end": 3828
+        },
+        {
+            "kind": "Text",
+            "text": "supported",
+            "start": 3828,
+            "end": 3837
+        },
+        {
+            "kind": "RParen",
+            "text": ")",
+            "start": 3837,
+            "end": 3838
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3838,
+            "end": 3839
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3839,
+            "end": 3840
+        },
+        {
+            "kind": "Text",
+            "text": "When",
+            "start": 3840,
+            "end": 3844
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3844,
+            "end": 3845
+        },
+        {
+            "kind": "MathInline",
+            "text": "$a \\ne 0$",
+            "start": 3845,
+            "end": 3854
+        },
+        {
+            "kind": "Text",
+            "text": ",",
+            "start": 3854,
+            "end": 3855
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3855,
+            "end": 3856
+        },
+        {
+            "kind": "Text",
+            "text": "there",
+            "start": 3856,
+            "end": 3861
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3861,
+            "end": 3862
+        },
+        {
+            "kind": "Text",
+            "text": "are",
+            "start": 3862,
+            "end": 3865
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3865,
+            "end": 3866
+        },
+        {
+            "kind": "Text",
+            "text": "two",
+            "start": 3866,
+            "end": 3869
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3869,
+            "end": 3870
+        },
+        {
+            "kind": "Text",
+            "text": "solutions",
+            "start": 3870,
+            "end": 3879
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3879,
+            "end": 3880
+        },
+        {
+            "kind": "Text",
+            "text": "to",
+            "start": 3880,
+            "end": 3882
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3882,
+            "end": 3883
+        },
+        {
+            "kind": "MathInline",
+            "text": "$(ax^2 + bx + c = 0)$",
+            "start": 3883,
+            "end": 3904
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 3904,
+            "end": 3905
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3905,
+            "end": 3906
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3906,
+            "end": 3907
+        },
+        {
+            "kind": "MathBlock",
+            "text": "$$\n\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\n$$",
+            "start": 3907,
+            "end": 3947
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3947,
+            "end": 3948
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3948,
+            "end": 3949
+        },
+        {
+            "kind": "Heading2",
+            "text": "##",
+            "start": 3949,
+            "end": 3951
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3951,
+            "end": 3952
+        },
+        {
+            "kind": "Text",
+            "text": "Mixed",
+            "start": 3952,
+            "end": 3957
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3957,
+            "end": 3958
+        },
+        {
+            "kind": "Text",
+            "text": "Content",
+            "start": 3958,
+            "end": 3965
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3965,
+            "end": 3966
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 3966,
+            "end": 3967
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 3967,
+            "end": 3971
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3971,
+            "end": 3972
+        },
+        {
+            "kind": "Text",
+            "text": "paragraph",
+            "start": 3972,
+            "end": 3981
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3981,
+            "end": 3982
+        },
+        {
+            "kind": "Text",
+            "text": "contains",
+            "start": 3982,
+            "end": 3990
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 3990,
+            "end": 3991
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 3991,
+            "end": 3993
+        },
+        {
+            "kind": "Text",
+            "text": "bold",
+            "start": 3993,
+            "end": 3997
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 3997,
+            "end": 3999
+        },
+        {
+            "kind": "Text",
+            "text": ",",
+            "start": 3999,
+            "end": 4000
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4000,
+            "end": 4001
+        },
+        {
+            "kind": "Emphasis",
+            "text": "*",
+            "start": 4001,
+            "end": 4002
+        },
+        {
+            "kind": "Text",
+            "text": "italic",
+            "start": 4002,
+            "end": 4008
+        },
+        {
+            "kind": "Emphasis",
+            "text": "*",
+            "start": 4008,
+            "end": 4009
+        },
+        {
+            "kind": "Text",
+            "text": ",",
+            "start": 4009,
+            "end": 4010
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4010,
+            "end": 4011
+        },
+        {
+            "kind": "InlineCode",
+            "text": "`code`",
+            "start": 4011,
+            "end": 4017
+        },
+        {
+            "kind": "Text",
+            "text": ",",
+            "start": 4017,
+            "end": 4018
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4018,
+            "end": 4019
+        },
+        {
+            "kind": "Text",
+            "text": "and",
+            "start": 4019,
+            "end": 4022
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4022,
+            "end": 4023
+        },
+        {
+            "kind": "Link",
+            "text": "[",
+            "start": 4023,
+            "end": 4024
+        },
+        {
+            "kind": "Text",
+            "text": "links",
+            "start": 4024,
+            "end": 4029
+        },
+        {
+            "kind": "RBracket",
+            "text": "]",
+            "start": 4029,
+            "end": 4030
+        },
+        {
+            "kind": "LParen",
+            "text": "(",
+            "start": 4030,
+            "end": 4031
+        },
+        {
+            "kind": "AutoLink",
+            "text": "https://example.com",
+            "start": 4031,
+            "end": 4050
+        },
+        {
+            "kind": "RParen",
+            "text": ")",
+            "start": 4050,
+            "end": 4051
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 4051,
+            "end": 4052
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4052,
+            "end": 4053
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4053,
+            "end": 4054
+        },
+        {
+            "kind": "BlockquoteMarker",
+            "text": ">",
+            "start": 4054,
+            "end": 4055
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4055,
+            "end": 4056
+        },
+        {
+            "kind": "Text",
+            "text": "A",
+            "start": 4056,
+            "end": 4057
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4057,
+            "end": 4058
+        },
+        {
+            "kind": "Text",
+            "text": "blockquote",
+            "start": 4058,
+            "end": 4068
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4068,
+            "end": 4069
+        },
+        {
+            "kind": "Text",
+            "text": "with",
+            "start": 4069,
+            "end": 4073
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4073,
+            "end": 4074
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 4074,
+            "end": 4076
+        },
+        {
+            "kind": "Text",
+            "text": "formatting",
+            "start": 4076,
+            "end": 4086
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 4086,
+            "end": 4088
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4088,
+            "end": 4089
+        },
+        {
+            "kind": "Text",
+            "text": "and",
+            "start": 4089,
+            "end": 4092
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4092,
+            "end": 4093
+        },
+        {
+            "kind": "Link",
+            "text": "[",
+            "start": 4093,
+            "end": 4094
+        },
+        {
+            "kind": "Text",
+            "text": "links",
+            "start": 4094,
+            "end": 4099
+        },
+        {
+            "kind": "RBracket",
+            "text": "]",
+            "start": 4099,
+            "end": 4100
+        },
+        {
+            "kind": "LParen",
+            "text": "(",
+            "start": 4100,
+            "end": 4101
+        },
+        {
+            "kind": "AutoLink",
+            "text": "https://example.com",
+            "start": 4101,
+            "end": 4120
+        },
+        {
+            "kind": "RParen",
+            "text": ")",
+            "start": 4120,
+            "end": 4121
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 4121,
+            "end": 4122
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4122,
+            "end": 4123
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4123,
+            "end": 4124
+        },
+        {
+            "kind": "ListMarker",
+            "text": "-",
+            "start": 4124,
+            "end": 4125
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4125,
+            "end": 4126
+        },
+        {
+            "kind": "Text",
+            "text": "A",
+            "start": 4126,
+            "end": 4127
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4127,
+            "end": 4128
+        },
+        {
+            "kind": "Text",
+            "text": "list",
+            "start": 4128,
+            "end": 4132
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4132,
+            "end": 4133
+        },
+        {
+            "kind": "Text",
+            "text": "item",
+            "start": 4133,
+            "end": 4137
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4137,
+            "end": 4138
+        },
+        {
+            "kind": "Text",
+            "text": "with",
+            "start": 4138,
+            "end": 4142
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4142,
+            "end": 4143
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 4143,
+            "end": 4145
+        },
+        {
+            "kind": "Text",
+            "text": "bold",
+            "start": 4145,
+            "end": 4149
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 4149,
+            "end": 4151
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4151,
+            "end": 4152
+        },
+        {
+            "kind": "Text",
+            "text": "text",
+            "start": 4152,
+            "end": 4156
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4156,
+            "end": 4157
+        },
+        {
+            "kind": "ListMarker",
+            "text": "-",
+            "start": 4157,
+            "end": 4158
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4158,
+            "end": 4159
+        },
+        {
+            "kind": "Text",
+            "text": "Another",
+            "start": 4159,
+            "end": 4166
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4166,
+            "end": 4167
+        },
+        {
+            "kind": "Text",
+            "text": "item",
+            "start": 4167,
+            "end": 4171
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4171,
+            "end": 4172
+        },
+        {
+            "kind": "Text",
+            "text": "with",
+            "start": 4172,
+            "end": 4176
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4176,
+            "end": 4177
+        },
+        {
+            "kind": "InlineCode",
+            "text": "`inline code`",
+            "start": 4177,
+            "end": 4190
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4190,
+            "end": 4191
+        },
+        {
+            "kind": "ListMarker",
+            "text": "-",
+            "start": 4191,
+            "end": 4192
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4192,
+            "end": 4193
+        },
+        {
+            "kind": "TaskMarker",
+            "text": "[ ]",
+            "start": 4193,
+            "end": 4196
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4196,
+            "end": 4197
+        },
+        {
+            "kind": "Text",
+            "text": "A",
+            "start": 4197,
+            "end": 4198
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4198,
+            "end": 4199
+        },
+        {
+            "kind": "Text",
+            "text": "task",
+            "start": 4199,
+            "end": 4203
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4203,
+            "end": 4204
+        },
+        {
+            "kind": "Text",
+            "text": "with",
+            "start": 4204,
+            "end": 4208
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4208,
+            "end": 4209
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 4209,
+            "end": 4210
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4210,
+            "end": 4211
+        },
+        {
+            "kind": "Link",
+            "text": "[",
+            "start": 4211,
+            "end": 4212
+        },
+        {
+            "kind": "Text",
+            "text": "link",
+            "start": 4212,
+            "end": 4216
+        },
+        {
+            "kind": "RBracket",
+            "text": "]",
+            "start": 4216,
+            "end": 4217
+        },
+        {
+            "kind": "LParen",
+            "text": "(",
+            "start": 4217,
+            "end": 4218
+        },
+        {
+            "kind": "AutoLink",
+            "text": "https://example.com",
+            "start": 4218,
+            "end": 4237
+        },
+        {
+            "kind": "RParen",
+            "text": ")",
+            "start": 4237,
+            "end": 4238
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4238,
+            "end": 4239
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4239,
+            "end": 4240
+        },
+        {
+            "kind": "CodeFence",
+            "text": "```",
+            "start": 4240,
+            "end": 4243
+        },
+        {
+            "kind": "CodeLanguage",
+            "text": "markdown",
+            "start": 4243,
+            "end": 4251
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4251,
+            "end": 4252
+        },
+        {
+            "kind": "Heading1",
+            "text": "#",
+            "start": 4252,
+            "end": 4253
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4253,
+            "end": 4254
+        },
+        {
+            "kind": "Text",
+            "text": "Code",
+            "start": 4254,
+            "end": 4258
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4258,
+            "end": 4259
+        },
+        {
+            "kind": "Text",
+            "text": "block",
+            "start": 4259,
+            "end": 4264
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4264,
+            "end": 4265
+        },
+        {
+            "kind": "Text",
+            "text": "with",
+            "start": 4265,
+            "end": 4269
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4269,
+            "end": 4270
+        },
+        {
+            "kind": "Text",
+            "text": "Markdown",
+            "start": 4270,
+            "end": 4278
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4278,
+            "end": 4279
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 4279,
+            "end": 4283
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4283,
+            "end": 4284
+        },
+        {
+            "kind": "Text",
+            "text": "is",
+            "start": 4284,
+            "end": 4286
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4286,
+            "end": 4287
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 4287,
+            "end": 4288
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4288,
+            "end": 4289
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 4289,
+            "end": 4291
+        },
+        {
+            "kind": "Text",
+            "text": "code",
+            "start": 4291,
+            "end": 4295
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4295,
+            "end": 4296
+        },
+        {
+            "kind": "Text",
+            "text": "block",
+            "start": 4296,
+            "end": 4301
+        },
+        {
+            "kind": "Strong",
+            "text": "**",
+            "start": 4301,
+            "end": 4303
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4303,
+            "end": 4304
+        },
+        {
+            "kind": "Text",
+            "text": "that",
+            "start": 4304,
+            "end": 4308
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4308,
+            "end": 4309
+        },
+        {
+            "kind": "Text",
+            "text": "contains",
+            "start": 4309,
+            "end": 4317
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4317,
+            "end": 4318
+        },
+        {
+            "kind": "Text",
+            "text": "Markdown",
+            "start": 4318,
+            "end": 4326
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4326,
+            "end": 4327
+        },
+        {
+            "kind": "Text",
+            "text": "syntax",
+            "start": 4327,
+            "end": 4333
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 4333,
+            "end": 4334
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4334,
+            "end": 4335
+        },
+        {
+            "kind": "CodeFence",
+            "text": "```",
+            "start": 4335,
+            "end": 4338
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4338,
+            "end": 4339
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4339,
+            "end": 4340
+        },
+        {
+            "kind": "HorizontalRule",
+            "text": "---",
+            "start": 4340,
+            "end": 4343
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4343,
+            "end": 4344
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4344,
+            "end": 4345
+        },
+        {
+            "kind": "Emphasis",
+            "text": "*",
+            "start": 4345,
+            "end": 4346
+        },
+        {
+            "kind": "Text",
+            "text": "This",
+            "start": 4346,
+            "end": 4350
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4350,
+            "end": 4351
+        },
+        {
+            "kind": "Text",
+            "text": "document",
+            "start": 4351,
+            "end": 4359
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4359,
+            "end": 4360
+        },
+        {
+            "kind": "Text",
+            "text": "serves",
+            "start": 4360,
+            "end": 4366
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4366,
+            "end": 4367
+        },
+        {
+            "kind": "Text",
+            "text": "as",
+            "start": 4367,
+            "end": 4369
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4369,
+            "end": 4370
+        },
+        {
+            "kind": "Text",
+            "text": "a",
+            "start": 4370,
+            "end": 4371
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4371,
+            "end": 4372
+        },
+        {
+            "kind": "Text",
+            "text": "comprehensive",
+            "start": 4372,
+            "end": 4385
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4385,
+            "end": 4386
+        },
+        {
+            "kind": "Text",
+            "text": "test",
+            "start": 4386,
+            "end": 4390
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4390,
+            "end": 4391
+        },
+        {
+            "kind": "Text",
+            "text": "suite",
+            "start": 4391,
+            "end": 4396
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4396,
+            "end": 4397
+        },
+        {
+            "kind": "Text",
+            "text": "for",
+            "start": 4397,
+            "end": 4400
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4400,
+            "end": 4401
+        },
+        {
+            "kind": "Text",
+            "text": "the",
+            "start": 4401,
+            "end": 4404
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4404,
+            "end": 4405
+        },
+        {
+            "kind": "Text",
+            "text": "Oak",
+            "start": 4405,
+            "end": 4408
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4408,
+            "end": 4409
+        },
+        {
+            "kind": "Text",
+            "text": "Markdown",
+            "start": 4409,
+            "end": 4417
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4417,
+            "end": 4418
+        },
+        {
+            "kind": "Text",
+            "text": "lexer,",
+            "start": 4418,
+            "end": 4424
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4424,
+            "end": 4425
+        },
+        {
+            "kind": "Text",
+            "text": "covering",
+            "start": 4425,
+            "end": 4433
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4433,
+            "end": 4434
+        },
+        {
+            "kind": "Text",
+            "text": "all",
+            "start": 4434,
+            "end": 4437
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4437,
+            "end": 4438
+        },
+        {
+            "kind": "Text",
+            "text": "major",
+            "start": 4438,
+            "end": 4443
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4443,
+            "end": 4444
+        },
+        {
+            "kind": "Text",
+            "text": "Markdown",
+            "start": 4444,
+            "end": 4452
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4452,
+            "end": 4453
+        },
+        {
+            "kind": "Text",
+            "text": "syntax",
+            "start": 4453,
+            "end": 4459
+        },
+        {
+            "kind": "Newline",
+            "text": "\n",
+            "start": 4459,
+            "end": 4460
+        },
+        {
+            "kind": "Text",
+            "text": "elements",
+            "start": 4460,
+            "end": 4468
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4468,
+            "end": 4469
+        },
+        {
+            "kind": "Text",
+            "text": "and",
+            "start": 4469,
+            "end": 4472
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4472,
+            "end": 4473
+        },
+        {
+            "kind": "Text",
+            "text": "edge",
+            "start": 4473,
+            "end": 4477
+        },
+        {
+            "kind": "Whitespace",
+            "text": " ",
+            "start": 4477,
+            "end": 4478
+        },
+        {
+            "kind": "Text",
+            "text": "cases",
+            "start": 4478,
+            "end": 4483
+        },
+        {
+            "kind": "Dot",
+            "text": ".",
+            "start": 4483,
+            "end": 4484
+        },
+        {
+            "kind": "Emphasis",
+            "text": "*",
+            "start": 4484,
+            "end": 4485
+        },
+        {
+            "kind": "EndOfStream",
+            "text": "",
+            "start": 4485,
+            "end": 4485
+        }
+    ],
+    "errors": []
+}
