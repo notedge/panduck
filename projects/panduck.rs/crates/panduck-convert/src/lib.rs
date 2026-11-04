@@ -131,6 +131,7 @@ fn losses_with_spans(graph: &DocumentGraph) -> serde_json::Value {
                 "code": loss.code,
                 "message": loss.message,
                 "status": loss.status,
+                "severity": panduck_diagnostic::loss_severity(loss.status).to_string(),
                 "span": match span {
                     Some(span) => serde_json::json!({ "start": span.start, "end": span.end }),
                     None => serde_json::Value::Null,

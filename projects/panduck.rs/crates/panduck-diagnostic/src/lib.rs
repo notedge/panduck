@@ -85,11 +85,17 @@ fn build(code: DiagnosticCode, severity: DiagnosticSeverity, message: impl Into<
     )
 }
 
-fn loss_severity(status: SemanticStatus) -> DiagnosticSeverity {
+/// Severity for a semantic status.
+///
+/// `Unsupported` is an error: the construct was rejected and the author has to
+/// fix the source. Chart and diagram rejections therefore report the same
+/// severity here as in the library entry that produced them.
+pub fn loss_severity(status: SemanticStatus) -> DiagnosticSeverity {
     match status {
         SemanticStatus::Resolved => DiagnosticSeverity::Info,
         SemanticStatus::Inferred | SemanticStatus::Partial => DiagnosticSeverity::Warning,
-        SemanticStatus::Lossy | SemanticStatus::Unsupported => DiagnosticSeverity::Warning,
+        SemanticStatus::Lossy => DiagnosticSeverity::Warning,
+        SemanticStatus::Unsupported => DiagnosticSeverity::Error,
         SemanticStatus::Unresolved => DiagnosticSeverity::Error,
     }
 }
