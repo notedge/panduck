@@ -1,6 +1,6 @@
 {
     "success": true,
-    "count": 1803,
+    "count": 1801,
     "tokens": [
         {
             "kind": "Heading1",
@@ -5385,21 +5385,9 @@
             "end": 2331
         },
         {
-            "kind": "Hash",
-            "text": "#",
+            "kind": "Heading3",
+            "text": "###",
             "start": 2331,
-            "end": 2332
-        },
-        {
-            "kind": "Hash",
-            "text": "#",
-            "start": 2332,
-            "end": 2333
-        },
-        {
-            "kind": "Hash",
-            "text": "#",
-            "start": 2333,
             "end": 2334
         },
         {
@@ -10317,7 +10305,7 @@
             "end": 4252
         },
         {
-            "kind": "Heading1",
+            "kind": "Hash",
             "text": "#",
             "start": 4252,
             "end": 4253
