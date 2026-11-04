@@ -105,6 +105,24 @@
             "from": "html",
             "to": "markdown",
             "expectation": "convert/report/html-inline-attributes-rejection.json"
+        },
+        {
+            "id": "pdf-geometry-italic",
+            "kind": "convert",
+            "title": "Italic Latin run keeps the width layout reserved when painted into PDF",
+            "input": "convert/pdf-geometry-italic.md",
+            "from": "markdown",
+            "to": "pdf",
+            "expectation": "convert/report/pdf-geometry-italic.json"
+        },
+        {
+            "id": "pdf-geometry-regular",
+            "kind": "convert",
+            "title": "Regular Latin run keeps the width layout reserved when painted into PDF",
+            "input": "convert/pdf-geometry-regular.md",
+            "from": "markdown",
+            "to": "pdf",
+            "expectation": "convert/report/pdf-geometry-regular.json"
         }
     ]
 }

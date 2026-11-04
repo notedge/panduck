@@ -1,0 +1,17 @@
+{
+    "schema": "panduck.harness.expectation",
+    "caseId": "pdf-geometry-regular",
+    "assertions": [
+        { "kind": "exit-code", "leg": 0, "expected": 0 },
+        { "kind": "report-status", "leg": 0, "expected": "success" },
+        { "kind": "pdf-run-advance", "leg": 0, "runs": [{ "text": "English words", "tolerance": 0.01 }] }
+    ],
+    "provenance": [
+        {
+            "author": "panduck-harness",
+            "reason": "The regular Latin run is a real inline run boundary because the words are a link; the rendered sentence text is unchanged and the face is still Tinos-Regular",
+            "semantic": "layout reserved width of a regular Latin run equals the advance painted into the PDF",
+            "updatedAt": "2026-11-05T00:00:00.000Z"
+        }
+    ]
+}
