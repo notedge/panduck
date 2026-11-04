@@ -3,7 +3,7 @@
     "provenance": {
         "repo": "notedown",
         "crate": "notedown-fixtures",
-        "rev": "eb1a0a1",
+        "rev": "813bfa245fa038583145e0879d2f266fef4e9a50",
         "note": "Lexer conformance pairs moved downstream because panduck owns the corpus home"
     },
     "cases": [
@@ -23,11 +23,7 @@
             "extension": "markdown",
             "language": "oak-markdown",
             "oracle": "pulldown-cmark with strikethrough enabled plus markdown-rs to_html",
-            "comparison": "snapshot equality of the lexer token stream, throughput parity with both reference renderers",
-            "snapshotLag": {
-                "reason": "上游 `oak` 在 `002ffe82` 修掉跨行 `lex_any_tag`，而 `notedown-fixtures` 的快照尚未重新生成",
-                "evidence": "`notedown-fixtures` 的 `e1e2b4c` 快照在偏移 886 仍记录跨行 `HtmlTag`，新词法器在该偏移输出 `Less`"
-            }
+            "comparison": "snapshot equality of the lexer token stream, throughput parity with both reference renderers"
         },
         {
             "id": "html-basic",
