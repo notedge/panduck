@@ -119,6 +119,40 @@ function evaluateOne(observation: CaseObservation, assertion: Assertion): Assert
                 ok ? undefined : "implementation-defect",
             );
         }
+        case "pdf-run-advance": {
+            const geometry = leg.geometry;
+            if (geometry === undefined) {
+                return result(
+                    assertion,
+                    "fail",
+                    `leg ${legIndex} carries no PDF geometry`,
+                    "implementation-defect",
+                );
+            }
+            const lines: string[] = [];
+            let ok = true;
+            for (const required of assertion.runs) {
+                const entry = geometry.runs.find((run) => run.runText === required.text);
+                if (entry === undefined) {
+                    ok = false;
+                    lines.push(`run ${JSON.stringify(required.text)} | 期望(预留)=absent | 实测(PDF)=absent | 差=absent`);
+                    continue;
+                }
+                if (entry.paintedAdvance === null || entry.delta === null) {
+                    ok = false;
+                    lines.push(
+                        `run ${JSON.stringify(entry.runText)} | 期望(预留)=${entry.reservedWidth.toFixed(6)} pt | 实测(PDF)=absent | 差=absent | ${entry.note ?? "no follower glyph"}`,
+                    );
+                    continue;
+                }
+                const passed = entry.delta <= required.tolerance;
+                ok = ok && passed;
+                lines.push(
+                    `run ${JSON.stringify(entry.runText)} | 期望(预留)=${entry.reservedWidth.toFixed(6)} pt | 实测(PDF)=${entry.paintedAdvance.toFixed(6)} pt | 差=${entry.delta.toFixed(6)} pt | 容差=${required.tolerance.toFixed(6)} pt ${passed ? "通过" : "超出"}`,
+                );
+            }
+            return result(assertion, ok ? "pass" : "fail", lines.join(" ; "), ok ? undefined : "implementation-defect");
+        }
         case "honest-success": {
             const value = targetValue(leg, assertion.target);
             if (value === undefined) {

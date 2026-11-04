@@ -1,5 +1,7 @@
 /** Harness vocabulary shared by the runner, assertions and archive. */
 
+export type { PdfLayoutRun } from "@notedge/panduck";
+
 export type CaseKind = "convert" | "roundtrip" | "rejection" | "lexer-snapshot";
 
 export type AssertionStatus = "pass" | "fail";
@@ -48,7 +50,47 @@ export type Assertion =
           readonly required: readonly string[];
           /** Loss codes a `success_with_loss` report must actually name. */
           readonly losses?: readonly string[];
+      }
+    | {
+          /**
+           * Compares a layout run's reserved width with the advance painted into
+           * the PDF, measured from glyph origins rather than glyph width sums.
+           */
+          readonly kind: "pdf-run-advance";
+          readonly leg?: number;
+          readonly runs: readonly {
+              /** Exact `TextRun` text the layout pass reported. */
+              readonly text: string;
+              /** Allowed absolute difference in points. */
+              readonly tolerance: number;
+          }[];
       };
+
+/** One layout run measured against the PDF glyph sequence. */
+export type PdfRunAdvance = {
+    readonly runText: string;
+    readonly style: string;
+    readonly fontFamily: string;
+    readonly page: number;
+    /** Origin of the run's first painted glyph, in PDF points. */
+    readonly startX: number | null;
+    /** Origin of the next painted glyph, which starts the follower run. */
+    readonly nextX: number | null;
+    /** Width the layout pass reserved for the run. */
+    readonly reservedWidth: number;
+    /** `nextX - startX`, or null when no follower glyph was painted. */
+    readonly paintedAdvance: number | null;
+    /** Absolute difference between the reserved width and the painted advance. */
+    readonly delta: number | null;
+    readonly note?: string;
+};
+
+/** Geometry derived from one PDF plus the layout runs that produced it. */
+export type PdfGeometryObservation = {
+    readonly pages: number;
+    readonly glyphs: number;
+    readonly runs: readonly PdfRunAdvance[];
+};
 
 /** One conversion leg observed from the public Panduck binding. */
 export type LegObservation = {
@@ -65,6 +107,8 @@ export type LegObservation = {
     readonly binarySha256?: string;
     readonly reportSha256?: string;
     readonly error?: string;
+    /** PDF glyph geometry, present when the leg produced a PDF and layout runs. */
+    readonly geometry?: PdfGeometryObservation;
 };
 
 export type CapabilitySnapshot = {

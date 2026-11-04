@@ -19,6 +19,7 @@ const ASSERTION_KINDS = new Set([
     "loss-codes",
     "diagnostic-codes",
     "honest-success",
+    "pdf-run-advance",
 ]);
 
 function gitValue(arguments_: readonly string[]): string {
@@ -77,6 +78,22 @@ export function validateAssertion(value: unknown): Assertion {
             throw new Error("assertion `honest-success` `losses` must be a string array");
         }
     }
+    if (record.kind === "pdf-run-advance") {
+        const runs = record.runs;
+        if (
+            !Array.isArray(runs) ||
+            runs.length === 0 ||
+            runs.some(
+                (entry) =>
+                    typeof entry !== "object" ||
+                    entry === null ||
+                    typeof (entry as Record<string, unknown>).text !== "string" ||
+                    typeof (entry as Record<string, unknown>).tolerance !== "number",
+            )
+        ) {
+            throw new Error('assertion `pdf-run-advance` needs a non empty `runs` array of `{ text, tolerance }`');
+        }
+    }
     return record as unknown as Assertion;
 }
 
@@ -127,7 +144,7 @@ export type AcceptResult = {
 };
 
 /** Adds one assertion to an expectation and records who, why, the diff and the observed status. */
-export function addAssertion(options: AcceptOptions): AcceptResult {
+export async function addAssertion(options: AcceptOptions): Promise<AcceptResult> {
     if (options.assertionJson === undefined && options.assertionFile === undefined) {
         throw new Error("accept needs `--add` JSON or `--add-file`");
     }
@@ -151,7 +168,7 @@ export function addAssertion(options: AcceptOptions): AcceptResult {
         throw new Error(`assertion already exists on \`${definition.id}\``);
     }
 
-    const observation = runCase(definition);
+    const observation = await runCase(definition);
     const probe: Expectation = { ...expectation, assertions: [assertion] };
     const probeResults = evaluateExpectation(observation, probe);
     const failed = probeResults.find((entry) => entry.status === "fail");

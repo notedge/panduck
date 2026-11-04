@@ -32,7 +32,8 @@
     },
     "dependencies": {
         "@notedge/panduck": "workspace:*",
-        "@notedge/panduck-fixtures": "workspace:*"
+        "@notedge/panduck-fixtures": "workspace:*",
+        "pdfjs-dist": "4.10.38"
     },
     "devDependencies": {
         "@types/node": "^22.13.10",

@@ -16,6 +16,7 @@ import type {
     LexObservation,
 } from "./types.js";
 import { diagnosticCodes, lossCodes, parseReportJson, reportStatus, sha256 } from "./util.js";
+import { probePdfGeometry } from "./geometry.js";
 
 type LegRun = {
     readonly observation: LegObservation;
@@ -121,6 +122,56 @@ function convertLeg(from: string, to: string, label: string, bytes: Uint8Array):
     }
 }
 
+/**
+ * Adds PDF geometry to a leg that produced a PDF.
+ *
+ * The probe returns the PDF and the layout runs from one binding call, so the
+ * reserved widths and the painted bytes describe the same conversion. The
+ * separate `convertBytesMemory` leg above supplies the report and loss codes.
+ */
+async function withPdfGeometry(
+    definition: CaseDefinition,
+    leg: LegRun,
+): Promise<LegRun> {
+    if (leg.observation.to !== "pdf" || leg.binary === undefined) {
+        return leg;
+    }
+    const probe = bindings().pdfLayoutProbe;
+    if (typeof probe !== "function") {
+        return {
+            observation: {
+                ...leg.observation,
+                error: "missing-entry: `PanduckBindings.pdfLayoutProbe` is not exposed by this build",
+            },
+        };
+    }
+    const response = probe(labelFor(definition), caseInputBytes(definition));
+    if (response.exitCode !== 0 || response.pdf === undefined) {
+        return {
+            observation: {
+                ...leg.observation,
+                error: `pdf-layout-probe failed: ${response.error ?? "no PDF produced"}`,
+            },
+        };
+    }
+    const probeSha = sha256(response.pdf);
+    if (leg.observation.binarySha256 !== undefined && leg.observation.binarySha256 !== probeSha) {
+        return {
+            observation: {
+                ...leg.observation,
+                error: `pdf-layout-probe rendered ${probeSha} but the report leg rendered ${leg.observation.binarySha256}`,
+            },
+        };
+    }
+    const geometry = await probePdfGeometry(response.pdf, response.runs);
+    return {
+        observation: {
+            ...leg.observation,
+            geometry: { pages: geometry.pages, glyphs: geometry.glyphs, runs: geometry.runs },
+        },
+    };
+}
+
 function caseInputBytes(definition: CaseDefinition): Uint8Array {
     return readFixtureBytes(definition.input);
 }
@@ -129,10 +180,13 @@ function labelFor(definition: CaseDefinition): string {
     return definition.input.split("/").pop() ?? definition.input;
 }
 
-function runConvertOrRejection(definition: CaseDefinition): CaseObservation {
+async function runConvertOrRejection(definition: CaseDefinition): Promise<CaseObservation> {
     const started = performance.now();
     const to = definition.to ?? "";
-    const leg = convertLeg(definition.from, to, labelFor(definition), caseInputBytes(definition));
+    const leg = await withPdfGeometry(
+        definition,
+        convertLeg(definition.from, to, labelFor(definition), caseInputBytes(definition)),
+    );
     return {
         caseId: definition.id,
         kind: definition.kind,
@@ -142,7 +196,7 @@ function runConvertOrRejection(definition: CaseDefinition): CaseObservation {
     };
 }
 
-function runRoundtrip(definition: CaseDefinition): CaseObservation {
+async function runRoundtrip(definition: CaseDefinition): Promise<CaseObservation> {
     const started = performance.now();
     const via = definition.via ?? "";
     const forward = convertLeg("markdown", via, labelFor(definition), caseInputBytes(definition));
@@ -169,7 +223,7 @@ function runRoundtrip(definition: CaseDefinition): CaseObservation {
 }
 
 /** Runs a conversion, roundtrip or rejection definition through the public binding. */
-export function runCase(definition: CaseDefinition): CaseObservation {
+export async function runCase(definition: CaseDefinition): Promise<CaseObservation> {
     return definition.kind === "roundtrip" ? runRoundtrip(definition) : runConvertOrRejection(definition);
 }
 

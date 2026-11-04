@@ -174,10 +174,10 @@ const CORPUS_GAPS: readonly GapRecord[] = [
 
 type CaseRun = { readonly observation: CaseObservation; readonly result: CaseResult };
 
-function describeCase(definition: CaseDefinition, expectation: ReturnType<typeof loadExpectation>): CaseRun {
+async function describeCase(definition: CaseDefinition, expectation: ReturnType<typeof loadExpectation>): Promise<CaseRun> {
     let observation: CaseObservation;
     try {
-        observation = runCase(definition);
+        observation = await runCase(definition);
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         const detail = `binding could not run \`${definition.id}\`: ${message}`;
@@ -733,7 +733,7 @@ async function commandRun(suite: Suite): Promise<number> {
     if (suite === "all" || suite === "convert") {
         for (const definition of loadConversionCases()) {
             const expectation = loadExpectation(definition.id, expectationFile(definition));
-            const run = describeCase(definition, expectation);
+            const run = await describeCase(definition, expectation);
             cases.push(run.result);
             observations.push(run.observation);
         }
@@ -806,31 +806,32 @@ function commandList(): number {
     return 0;
 }
 
-function commandAccept(options: Readonly<Record<string, string>>, redOracle: boolean): number {
+function commandAccept(options: Readonly<Record<string, string>>, redOracle: boolean): Promise<number> {
     const caseId = options.case;
     const why = options.why;
     const semantic = options.semantic;
     if (caseId === undefined || why === undefined || semantic === undefined) {
         console.error("accept needs `--case`, `--why` and `--semantic`");
-        return 2;
+        return Promise.resolve(2);
     }
-    try {
-        const result = addAssertion({
-            caseId,
-            assertionJson: options.add,
-            assertionFile: options["add-file"],
-            reason: why,
-            semantic,
-            replace: options.replace === "true",
-            redOracle,
+    return addAssertion({
+        caseId,
+        assertionJson: options.add,
+        assertionFile: options["add-file"],
+        reason: why,
+        semantic,
+        replace: options.replace === "true",
+        redOracle,
+    })
+        .then((accepted) => {
+            console.log(`accepted ${accepted.caseId} · assertions ${accepted.assertionCount} · observed ${accepted.observedStatus}`);
+            console.log(`expectation ${accepted.expectationPath}`);
+            return 0;
+        })
+        .catch((error: unknown) => {
+            console.error(error instanceof Error ? error.message : String(error));
+            return 1;
         });
-        console.log(`accepted ${result.caseId} · assertions ${result.assertionCount} · observed ${result.observedStatus}`);
-        console.log(`expectation ${result.expectationPath}`);
-        return 0;
-    } catch (error) {
-        console.error(error instanceof Error ? error.message : String(error));
-        return 1;
-    }
 }
 
 /** Entry point used by `bin/cli.mjs` and the examples. */
