@@ -2,14 +2,57 @@
     "schema": "panduck.harness.expectation",
     "caseId": "basic-markdown-to-html",
     "assertions": [
-        { "kind": "exit-code", "expected": 0 },
-        { "kind": "report-status", "expected": "success" },
-        { "kind": "loss-codes", "expected": [] },
-        { "kind": "contains", "target": "html", "value": "<h1>Oak Markdown Test Suite</h1>" },
-        { "kind": "contains", "target": "html", "value": "<h2>Lists</h2>" },
-        { "kind": "contains", "target": "html", "value": "<h2>Tables</h2>" },
-        { "kind": "contains", "target": "html", "value": "<table" },
-        { "kind": "not-contains", "target": "html", "value": "| Header 1 |" }
+        {
+            "kind": "exit-code",
+            "expected": 0
+        },
+        {
+            "kind": "report-status",
+            "expected": "success"
+        },
+        {
+            "kind": "loss-codes",
+            "expected": []
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "<h1>Oak Markdown Test Suite</h1>"
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "<h2>Lists</h2>"
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "<h2>Tables</h2>"
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "<table"
+        },
+        {
+            "kind": "not-contains",
+            "target": "html",
+            "value": "| Header 1 |"
+        },
+        {
+            "kind": "count",
+            "target": "html",
+            "pattern": "<table",
+            "expected": 3
+        },
+        {
+            "kind": "honest-success",
+            "target": "html",
+            "required": [
+                "<h2>Lists</h2>",
+                "<table"
+            ]
+        }
     ],
     "provenance": [
         {
@@ -17,6 +60,22 @@
             "reason": "The corpus declares 14 sections and two tables, so the HTML route must keep structure after fenced code blocks and must render tables",
             "semantic": "markdown reader must not stop structuring after a fenced code block and must not silently drop tables",
             "updatedAt": "2026-11-04T00:00:00.000Z"
+        },
+        {
+            "author": "aster <aster@vers.site> @ f610a21bfb82864953cdad9238894131a735353d",
+            "reason": "语料声明三张表，fence 之后的表格必须结构化渲染",
+            "semantic": "HTML 输出中的 table 元素数量从 0 收紧到 3",
+            "updatedAt": "2026-11-04T16:24:32.134Z",
+            "assertionDiff": "+ {\"kind\":\"count\",\"target\":\"html\",\"pattern\":\"<table\",\"expected\":3}",
+            "observedStatus": "fail"
+        },
+        {
+            "author": "aster <aster@vers.site> @ f610a21bfb82864953cdad9238894131a735353d",
+            "reason": "报告在丢内容时不得仍报 success，success 必须由结构化标记背书",
+            "semantic": "新增 success 诚实性不变量：status success 蕴含列表标题与表格结构性出现",
+            "updatedAt": "2026-11-04T16:24:37.203Z",
+            "assertionDiff": "+ {\"kind\":\"honest-success\",\"target\":\"html\",\"required\":[\"<h2>Lists</h2>\",\"<table\"]}",
+            "observedStatus": "fail"
         }
     ]
 }
