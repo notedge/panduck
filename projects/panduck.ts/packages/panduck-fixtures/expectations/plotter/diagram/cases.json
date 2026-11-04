@@ -60,6 +60,28 @@
             }
         },
         {
+            "id": "diagram-mermaid-state",
+            "language": "mermaid",
+            "classification": "accept",
+            "source": "stateDiagram-v2\n  [*] --> Idle\n  Idle --> Busy: start\n  Busy --> [*]\n",
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            }
+        },
+        {
+            "id": "diagram-mermaid-er",
+            "language": "mermaid",
+            "classification": "accept",
+            "source": "erDiagram\n  CUSTOMER {\n    string id PK\n  }\n  ORDER {\n    int id PK\n  }\n  CUSTOMER ||--o{ ORDER : places\n",
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            }
+        },
+        {
             "id": "diagram-dot-ranked",
             "language": "dot",
             "classification": "accept",
@@ -157,6 +179,16 @@
                 "render": "svg",
                 "deterministic": true
             }
+        },
+        {
+            "id": "diagram-tikz-node-label",
+            "language": "tikz",
+            "classification": "accept",
+            "source": "\\node[above, text=red] at (0,0) {label};\n",
+            "expect": {
+                "lower": "scene",
+                "deterministic": true
+            }
         }
     ],
     "rejections": [
@@ -223,6 +255,14 @@
             "code": "davinci.diagram.unsupported",
             "severity": "error",
             "spanText": "Note over Alice,Bob: click -> here"
+        },
+        {
+            "id": "diagram-mermaid-state-note",
+            "language": "mermaid",
+            "source": "stateDiagram-v2\n  [*] --> Idle\n  note right of Idle: waiting\n",
+            "code": "davinci.diagram.unsupported",
+            "severity": "error",
+            "spanText": "note right of Idle: waiting"
         },
         {
             "id": "diagram-mermaid-state-family",
