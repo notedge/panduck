@@ -33,9 +33,42 @@ export function loadSnapshotCases(): readonly SnapshotCaseDefinition[] {
         title: `${entry.language} token snapshot`,
         input: `${loaded.directory}/${entry.source}`,
         snapshot: `${loaded.directory}/${entry.snapshot}`,
+        language: grammarFor(entry.language),
         oracle: entry.oracle,
         comparison: entry.comparison,
     }));
+}
+
+/**
+ * Maps a corpus grammar label onto the product `lexDocument` language name.
+ * Grammars Panduck does not read have no product entry, so they stay gaps
+ * instead of getting an invented API.
+ */
+function grammarFor(language: string): string | null {
+    switch (language) {
+        case "oak-notedown":
+            return "notedown";
+        case "oak-markdown":
+            return "markdown";
+        case "oak-html":
+            return "html";
+        case "oak-xml":
+            return "xml";
+        default:
+            return null;
+    }
+}
+
+/**
+ * Reads snapshot source text with LF endings.
+ *
+ * The checked out corpus may carry CRLF because of host git settings, while
+ * every `.lexed.json` snapshot records byte offsets over LF text. Normalising
+ * here keeps the oracle and the input byte-for-byte comparable; the harness
+ * reports this normalisation in the case observation.
+ */
+export function snapshotSourceText(caseDefinition: SnapshotCaseDefinition): string {
+    return Buffer.from(snapshotSource(caseDefinition)).toString("utf8").replace(/\r\n/g, "\n");
 }
 
 /** Reads source bytes for a snapshot case through the fixtures package. */

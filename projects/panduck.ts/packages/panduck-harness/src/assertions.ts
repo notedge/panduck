@@ -6,6 +6,7 @@ import type {
     Expectation,
     FailureCategory,
     LegObservation,
+    LexObservation,
     LexedSnapshot,
     SnapshotCaseDefinition,
 } from "./types.js";
@@ -156,11 +157,12 @@ function integrity(assertion: AssertionResult["assertion"], ok: boolean, detail:
     return ok ? { assertion, status: "pass", detail } : { assertion, status: "fail", category: "undetermined", detail };
 }
 
-/** Evaluates the corpus and the unavailable conformance axes for a snapshot case. */
+/** Evaluates the corpus and the public lexer against a recorded snapshot. */
 export function evaluateSnapshot(
     definition: SnapshotCaseDefinition,
-    source: Uint8Array,
+    source: string,
     snapshot: LexedSnapshot,
+    lex: LexObservation,
 ): readonly AssertionResult[] {
     const assertions: AssertionResult[] = [];
     assertions.push(
@@ -208,23 +210,56 @@ export function evaluateSnapshot(
         ),
     );
 
-    assertions.push(
-        integrity(
-            { kind: "corpus-integrity", check: "snapshot-equality" },
-            false,
-            `no lexer token entry is exposed by the public Panduck binding, so \`${definition.id}\` cannot compare its snapshot`,
-        ),
-    );
-
-    if (definition.oracle !== null) {
+    if (definition.language === null) {
         assertions.push(
             integrity(
-                { kind: "corpus-integrity", check: "oracle-summary" },
+                { kind: "corpus-integrity", check: "product-grammar" },
                 false,
-                `reference oracle ${JSON.stringify(definition.oracle)} has no exposed summary runner in this harness`,
+                `\`${definition.id}\` uses a grammar that Panduck has no reader for, so it stays a gap instead of getting an invented lexer entry`,
             ),
         );
+        return assertions;
     }
+
+    if (lex.error) {
+        assertions.push(
+            result({ kind: "corpus-integrity", check: "lexer-entry" }, "fail", lex.error, "undetermined"),
+        );
+        return assertions;
+    }
+
+    const actual = lex.tokens.filter((token) => !token.ignored);
+    let firstDiff = -1;
+    for (let index = 0; index < Math.max(actual.length, tokens.length); index += 1) {
+        const left = actual[index];
+        const right = tokens[index];
+        if (
+            left === undefined ||
+            right === undefined ||
+            left.kind !== right.kind ||
+            left.text !== right.text ||
+            left.start !== right.start ||
+            left.end !== right.end
+        ) {
+            firstDiff = index;
+            break;
+        }
+    }
+    const equalityOk = firstDiff === -1 && lex.success === snapshot.success;
+    const diffDetail =
+        firstDiff === -1
+            ? `snapshot success flag is ${snapshot.success}, lexer success is ${lex.success}`
+            : `token ${firstDiff}: lexer ${JSON.stringify(actual[firstDiff] ?? null)} vs snapshot ${JSON.stringify(tokens[firstDiff] ?? null)}`;
+    assertions.push(
+        result(
+            { kind: "corpus-integrity", check: "snapshot-equality" },
+            equalityOk ? "pass" : "fail",
+            equalityOk
+                ? `${actual.length} tokens match the recorded snapshot over LF-normalised source`
+                : `${actual.length} lexer tokens vs ${tokens.length} recorded: ${diffDetail}`,
+            equalityOk ? undefined : "implementation-defect",
+        ),
+    );
     return assertions;
 }
 

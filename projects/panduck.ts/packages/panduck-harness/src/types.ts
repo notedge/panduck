@@ -171,8 +171,24 @@ export type SnapshotCaseDefinition = {
     readonly title: string;
     readonly input: string;
     readonly snapshot: string;
+    /** Product grammar name accepted by `lexDocument`, or `null` when no reader exists. */
+    readonly language: string | null;
     readonly oracle: string | null;
     readonly comparison: string;
+};
+
+/** Observation of one public `lexDocument` call. */
+export type LexObservation = {
+    readonly success: boolean;
+    readonly tokens: readonly {
+        readonly kind: string;
+        readonly text: string;
+        readonly start: number;
+        readonly end: number;
+        readonly ignored: boolean;
+    }[];
+    readonly diagnostics: readonly string[];
+    readonly error?: string;
 };
 
 export type LexedSnapshot = {

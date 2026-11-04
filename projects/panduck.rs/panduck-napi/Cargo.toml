@@ -17,6 +17,11 @@ napi = { workspace = true }
 napi-derive = { workspace = true }
 document-convert = { workspace = true, features = ["logger"] }
 document-types = { workspace = true }
+oak-core = { workspace = true }
+oak-notedown = { workspace = true }
+oak-markdown = { workspace = true }
+oak-html = { workspace = true }
+oak-xml = { workspace = true }
 boost-diagnostic = { workspace = true }
 boost-log = { workspace = true }
 serde_json = { workspace = true }

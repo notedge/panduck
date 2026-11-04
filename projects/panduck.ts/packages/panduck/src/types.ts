@@ -42,6 +42,29 @@ export type InspectDecodeResponse = {
     reportJson: string;
 };
 
+/** One lexical token produced by a Panduck source grammar. */
+export type LexToken = {
+    /** Grammar token kind, such as `Heading1`, `TagName` or `Eof`. */
+    kind: string;
+    /** Source slice covered by this token. */
+    text: string;
+    /** Byte offset of the first source character. */
+    start: number;
+    /** Byte offset one past the last source character. */
+    end: number;
+    /** Whether the grammar classifies this token as trivia. */
+    ignored: boolean;
+};
+
+export type LexResponse = {
+    /** False when the grammar reported a fatal lexical error. */
+    success: boolean;
+    /** Tokens in source order, including grammar trivia. */
+    tokens: LexToken[];
+    /** Lexical diagnostics rendered as text. */
+    diagnostics: string[];
+};
+
 /** Shared Panduck binding surface for Node-API and WebAssembly backends. */
 export type PanduckBindings = {
     panduckVersion: () => string;
@@ -84,6 +107,8 @@ export type PanduckBindings = {
     ) => ConvertProjectResponse;
     inspectIndex?: (inputPath: string) => InspectIndexResponse;
     inspectDecode?: (inputPath: string, partPath?: string) => InspectDecodeResponse;
+    /** Lexically analyse source text with the grammar Panduck reads it as. */
+    lexDocument?: (language: string, source: string) => LexResponse;
     installLoggerLogFile?: (path: string) => void;
     installConsoleLogFile?: (path: string) => void;
 };

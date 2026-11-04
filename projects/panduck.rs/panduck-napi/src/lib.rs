@@ -13,6 +13,7 @@ use document_convert::{
 use document_types::AdapterError;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
+use oak_core::{Lexer, TokenType, lexer::NoLexerCache, source::SourceText};
 
 /// N-API Markdown project conversion response.
 #[napi(object)]
@@ -48,7 +49,34 @@ pub struct ConvertResponse {
     pub report_json: String,
 }
 
+/// One lexical token produced by a Panduck source grammar.
+#[napi(object)]
+pub struct LexToken {
+    /// Grammar token kind, such as `Heading1`, `TagName` or `Eof`.
+    pub kind: String,
+    /// Source slice covered by this token.
+    pub text: String,
+    /// Byte offset of the first source character.
+    pub start: u32,
+    /// Byte offset one past the last source character.
+    pub end: u32,
+    /// Whether the grammar classifies this token as trivia.
+    pub ignored: bool,
+}
+
+/// N-API lexical analysis response.
+#[napi(object)]
+pub struct LexResponse {
+    /// False when the grammar reported a fatal lexical error.
+    pub success: bool,
+    /// Tokens in source order, including grammar trivia.
+    pub tokens: Vec<LexToken>,
+    /// Lexical diagnostics rendered as text.
+    pub diagnostics: Vec<String>,
+}
+
 /// N-API container index response.
+
 #[napi(object)]
 pub struct InspectIndexResponse {
     /// Process exit code. Zero means success.
@@ -126,6 +154,85 @@ pub fn is_supported_format(name: String) -> bool {
 #[napi]
 pub fn supports_conversion(from: String, to: String) -> bool {
     supports_route(&from, &to)
+}
+
+/// Lexically analyses source text with the grammar Panduck reads it as.
+///
+/// Supported `language` values are `notedown`, `markdown`, `html` and `xml`.
+/// `xml` covers the document parts inside OPC containers. The token stream is
+/// the same one the matching reader feeds into its parser, so consumers can
+/// build editors, linters or incremental caches on top of it.
+#[napi]
+pub fn lex_document(language: String, source: String) -> LexResponse {
+    match language.to_ascii_lowercase().as_str() {
+        "notedown" | "nd" => {
+            let config = oak_notedown::NoteLanguage::default();
+            lex_tokens::<oak_notedown::NoteLanguage, _>(&source, &oak_notedown::NoteLexer::new(&config))
+        }
+        "markdown" | "md" => {
+            let config = markdown_grammar_language();
+            lex_tokens::<oak_markdown::MarkdownLanguage, _>(&source, &oak_markdown::MarkdownLexer::new(&config))
+        }
+        "html" => {
+            let config = oak_html::HtmlLanguage::default();
+            lex_tokens::<oak_html::HtmlLanguage, _>(&source, &oak_html::HtmlLexer::new(&config))
+        }
+        "xml" => {
+            let config = oak_xml::XmlLanguage::new();
+            lex_tokens::<oak_xml::XmlLanguage, _>(&source, &oak_xml::XmlLexer::new(&config))
+        }
+        other => LexResponse {
+            success: false,
+            tokens: Vec::new(),
+            diagnostics: vec![format!("lex.unsupported_language: `{other}`")],
+        },
+    }
+}
+
+/// Markdown grammar exposed by the lexer: GFM plus math and footnotes.
+///
+/// The reader layer applies a narrower parse policy, but lexical analysis is a
+/// grammar level contract: a token stream that silently cannot represent
+/// CommonMark core constructs (indented code blocks, autolinks, setext
+/// headings) would be unusable for editors and linters. What the reader does
+/// with those tokens stays a reader concern.
+fn markdown_grammar_language() -> oak_markdown::MarkdownLanguage {
+    let mut language = oak_markdown::MarkdownLanguage::github_flavored();
+    language.allow_math = true;
+    language.allow_footnotes = true;
+    language
+}
+
+fn lex_tokens<L, X>(source: &str, lexer: &X) -> LexResponse
+where
+    L: oak_core::Language,
+    X: Lexer<L>,
+{
+    let text = SourceText::new(source.to_string());
+    let mut cache = NoLexerCache;
+    let output = lexer.lex(&text, &[], &mut cache);
+    let diagnostics = output.diagnostics.iter().map(|error| error.to_string()).collect::<Vec<_>>();
+    match output.result {
+        Ok(tokens) => LexResponse {
+            success: true,
+            tokens: tokens
+                .iter()
+                .map(|token| LexToken {
+                    kind: format!("{:?}", token.kind),
+                    text: source[token.span.start..token.span.end].to_string(),
+                    start: u32::try_from(token.span.start).unwrap_or(u32::MAX),
+                    end: u32::try_from(token.span.end).unwrap_or(u32::MAX),
+                    ignored: token.kind.is_ignored(),
+                })
+                .collect(),
+            diagnostics,
+        },
+        Err(error) => {
+            let mut all = diagnostics;
+            all.push(error.to_string());
+            LexResponse { success: false, tokens: Vec::new(), diagnostics: all }
+        }
+    }
 }
 
 /// Install a JSON lines file sink on the global logger facade.

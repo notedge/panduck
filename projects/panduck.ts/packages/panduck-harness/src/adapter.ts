@@ -4,7 +4,13 @@ import { createRequire } from "node:module";
 import { loadPanduckNode, type PanduckBindings } from "@notedge/panduck";
 import { readFixtureBytes } from "@notedge/panduck-fixtures";
 
-import type { CaseObservation, CaseDefinition, CapabilitySnapshot, LegObservation } from "./types.js";
+import type {
+    CaseObservation,
+    CaseDefinition,
+    CapabilitySnapshot,
+    LegObservation,
+    LexObservation,
+} from "./types.js";
 import { diagnosticCodes, lossCodes, parseReportJson, reportStatus, sha256 } from "./util.js";
 
 type LegRun = {
@@ -161,4 +167,32 @@ function runRoundtrip(definition: CaseDefinition): CaseObservation {
 /** Runs a conversion, roundtrip or rejection definition through the public binding. */
 export function runCase(definition: CaseDefinition): CaseObservation {
     return definition.kind === "roundtrip" ? runRoundtrip(definition) : runConvertOrRejection(definition);
+}
+
+/** Lexes source text through the public `lexDocument` entry. */
+export function lexSource(language: string, source: string): LexObservation {
+    const lex = bindings().lexDocument;
+    if (typeof lex !== "function") {
+        return {
+            success: false,
+            tokens: [],
+            diagnostics: [],
+            error: "missing-entry: `PanduckBindings.lexDocument` is not exposed by this build",
+        };
+    }
+    try {
+        const response = lex(language, source);
+        return {
+            success: response.success,
+            tokens: response.tokens,
+            diagnostics: response.diagnostics,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            tokens: [],
+            diagnostics: [],
+            error: error instanceof Error ? error.message : String(error),
+        };
+    }
 }

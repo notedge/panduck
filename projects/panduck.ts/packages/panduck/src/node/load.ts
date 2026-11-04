@@ -91,6 +91,20 @@ type NativeBinding = {
         }>;
         reportJson: string;
     };
+    lexDocument?: (
+        language: string,
+        source: string,
+    ) => {
+        success: boolean;
+        tokens: Array<{
+            kind: string;
+            text: string;
+            start: number;
+            end: number;
+            ignored: boolean;
+        }>;
+        diagnostics: string[];
+    };
 };
 
 const PLATFORM_PACKAGES: Record<string, string> = {
@@ -214,6 +228,22 @@ export function loadPanduckNode(): PanduckBindings {
                     binding.installConsoleLogFile!(path);
                 }
               : undefined,
+        lexDocument: binding.lexDocument
+            ? (language, source) => {
+                  const response = binding.lexDocument!(language, source);
+                  return {
+                      success: response.success,
+                      tokens: response.tokens.map((token) => ({
+                          kind: token.kind,
+                          text: token.text,
+                          start: token.start,
+                          end: token.end,
+                          ignored: token.ignored,
+                      })),
+                      diagnostics: response.diagnostics,
+                  };
+              }
+            : undefined,
         installConsoleLogFile: binding.installConsoleLogFile
             ? (path) => {
                   binding.installConsoleLogFile!(path);

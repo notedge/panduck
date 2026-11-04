@@ -11,6 +11,7 @@ import {
 import {
     bindingLocation,
     capabilities,
+    lexSource,
     runCase,
 } from "./adapter.js";
 import { aggregateCategory, evaluateExpectation, evaluateSnapshot } from "./assertions.js";
@@ -20,7 +21,7 @@ import {
     loadConversionCases,
     loadExpectation,
     loadSnapshotCases,
-    snapshotSource,
+    snapshotSourceText,
     snapshotValue,
     resultsRoot,
 } from "./corpus.js";
@@ -216,9 +217,13 @@ function describeCase(definition: CaseDefinition, expectation: ReturnType<typeof
 }
 
 function describeSnapshot(definition: SnapshotCaseDefinition): CaseRun {
-    const source = snapshotSource(definition);
+    const source = snapshotSourceText(definition);
     const snapshot = snapshotValue(definition);
-    const assertions = evaluateSnapshot(definition, source, snapshot);
+    const lex = definition.language === null
+        ? { success: false, tokens: [], diagnostics: [], error: undefined }
+        : lexSource(definition.language, source);
+    const assertions = evaluateSnapshot(definition, source, snapshot, lex);
+    const category = aggregateCategory(assertions);
     const observation: CaseObservation = {
         caseId: definition.id,
         kind: definition.kind,
@@ -227,8 +232,13 @@ function describeSnapshot(definition: SnapshotCaseDefinition): CaseRun {
         capabilities: { version: "unavailable", formats: [], conversions: [] },
         details: {
             sourceSha256: sha256(source),
+            sourceLineEndings: "lf",
             snapshotCount: snapshot.count,
+            lexerTokens: lex.tokens.length,
+            lexerSuccess: lex.success,
+            lexerDiagnostics: lex.diagnostics.length,
             comparison: definition.comparison,
+            oracle: definition.oracle,
         },
     };
     return {
@@ -237,12 +247,12 @@ function describeSnapshot(definition: SnapshotCaseDefinition): CaseRun {
             id: definition.id,
             title: definition.title,
             kind: definition.kind,
-            status: "fail",
-            category: aggregateCategory(assertions),
+            status: category === undefined ? "pass" : "fail",
+            category,
             assertions,
             durationMs: 0,
             oracle: definition.oracle,
-            gap: "gap-lexer-snapshot",
+            gap: definition.language === null ? "gap-lexer-grammar" : lex.error?.startsWith("missing-entry:") ? "gap-lexer-entry" : undefined,
         },
     };
 }
