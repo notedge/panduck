@@ -139,6 +139,50 @@ export type RuntimePassResponse = {
 };
 
 /** Shared Panduck binding surface for Node-API and WebAssembly backends. */
+/** One text run whose horizontal width `document-layout` reserved before painting. */
+export type PdfLayoutRun = {
+    /** Zero based page index the run was placed on. */
+    page: number;
+    /** Left edge in points, measured from the page left. */
+    x: number;
+    /** Baseline in points, measured from the page top. */
+    y: number;
+    /** Reserved width in points, measured with the same advances the line breaker used. */
+    width: number;
+    /** Font size in points. */
+    size: number;
+    /** Text carried by the run. */
+    text: string;
+    /** Resolved font family name. */
+    fontFamily: string;
+    /** Resolved face style name such as `Regular` or `Italic`. */
+    style: string;
+};
+
+/** Page box produced by the layout pass. */
+export type PdfLayoutPage = {
+    /** Page width in points. */
+    width: number;
+    /** Page height in points. */
+    height: number;
+};
+
+/** Layout runs paired with the PDF bytes painted from the same graph. */
+export type PdfLayoutProbeResponse = {
+    /** Zero when the probe produced a PDF. */
+    exitCode: number;
+    /** PDF bytes rendered by the production writer. */
+    pdf?: Uint8Array;
+    /** Text runs in paint order. */
+    runs: PdfLayoutRun[];
+    /** Page boxes in document order. */
+    pages: PdfLayoutPage[];
+    /** Layout diagnostics rendered as text. */
+    diagnostics: string[];
+    /** Failure detail when no PDF was produced. */
+    error: string | null;
+};
+
 export type PanduckBindings = {
     panduckVersion: () => string;
     supportedFormats: () => string[];
@@ -192,6 +236,8 @@ export type PanduckBindings = {
     runtimePassesForAction?: (action: string, target?: string) => RuntimePassResponse;
     /** Derive incremental passes for one or more invalidation scopes. */
     runtimePassesForScopes?: (scopes: string[]) => RuntimePassResponse;
+    /** Lay out Markdown and return the PDF plus the run widths layout reserved. */
+    pdfLayoutProbe?: (label: string, bytes: Uint8Array) => PdfLayoutProbeResponse;
     installLoggerLogFile?: (path: string) => void;
     installConsoleLogFile?: (path: string) => void;
 };

@@ -18,6 +18,7 @@ napi-derive = { workspace = true }
 document-convert = { workspace = true, features = ["logger"] }
 document-fonts = { workspace = true }
 document-ir = { workspace = true }
+document-layout = { workspace = true }
 document-types = { workspace = true }
 oak-core = { workspace = true }
 oak-notedown = { workspace = true }

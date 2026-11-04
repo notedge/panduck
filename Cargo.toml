@@ -41,6 +41,7 @@ plotter-types = { git = "https://github.com/notedge/document.rs", rev = "c301d76
 document-diagnostic = { git = "https://github.com/notedge/document.rs", rev = "c301d76da1837f48dc9babb8fc2957de5700a126", default-features = false }
 document-fonts = { git = "https://github.com/notedge/document.rs", rev = "c301d76da1837f48dc9babb8fc2957de5700a126" }
 document-ir = { git = "https://github.com/notedge/document.rs", rev = "c301d76da1837f48dc9babb8fc2957de5700a126" }
+document-layout = { git = "https://github.com/notedge/document.rs", rev = "c301d76da1837f48dc9babb8fc2957de5700a126" }
 document-types = { git = "https://github.com/notedge/document.rs", rev = "c301d76da1837f48dc9babb8fc2957de5700a126" }
 
 # External dependencies

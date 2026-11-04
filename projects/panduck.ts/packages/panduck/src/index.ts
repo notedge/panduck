@@ -1,4 +1,10 @@
-export type { PanduckBindings, PanduckWasmOptions } from "./types.js";
+export type {
+    PanduckBindings,
+    PanduckWasmOptions,
+    PdfLayoutPage,
+    PdfLayoutProbeResponse,
+    PdfLayoutRun,
+} from "./types.js";
 export { loadPanduckNative, loadPanduckNode } from "./node/index.js";
 export { loadPanduckWeb, loadPanduckWasm } from "./wasm/index.js";
 export { buildPanduckCli, runCli, getFormatRegistry, ExitCode, REPORT_SCHEMA_VERSION } from "./cli/index.js";

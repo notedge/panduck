@@ -966,6 +966,126 @@ pub fn convert_bytes_memory(
     }
 }
 
+/// One text run the layout pass reserved space for before PDF painting.
+#[napi(object)]
+pub struct PdfLayoutRun {
+    /// Zero based page index the run was placed on.
+    pub page: u32,
+    /// Left edge in points, measured from the page left.
+    pub x: f64,
+    /// Baseline in points, measured from the page top.
+    pub y: f64,
+    /// Reserved horizontal width in points, measured by the same advances the
+    /// line breaker used.
+    pub width: f64,
+    /// Font size in points.
+    pub size: f64,
+    /// Line text carried by the run.
+    pub text: String,
+    /// Resolved font family name.
+    pub font_family: String,
+    /// Debug name of the resolved face style, such as `Regular` or `Italic`.
+    pub style: String,
+}
+
+/// Page box produced by the layout pass.
+#[napi(object)]
+pub struct PdfLayoutPage {
+    /// Page width in points.
+    pub width: f64,
+    /// Page height in points.
+    pub height: f64,
+}
+
+/// Layout runs plus the PDF bytes they were painted into.
+#[napi(object)]
+pub struct PdfLayoutProbeResponse {
+    /// Process exit code. Zero means the probe produced a PDF.
+    pub exit_code: u32,
+    /// PDF bytes rendered from the same graph by the production writer.
+    pub pdf: Option<Buffer>,
+    /// Text runs in paint order, one entry per `document-layout` `TextRun`.
+    pub runs: Vec<PdfLayoutRun>,
+    /// Page boxes in document order.
+    pub pages: Vec<PdfLayoutPage>,
+    /// Layout diagnostics rendered as text.
+    pub diagnostics: Vec<String>,
+    /// Set when reading, laying out or rendering failed.
+    pub error: Option<String>,
+}
+
+/// Lays out Markdown text and renders its PDF in one call.
+///
+/// The response pairs the PDF bytes with the `TextRun` widths from
+/// `document_layout::document::layout_with_diagnostics` — the exact call the
+/// production PDF writer makes internally. Consumers can therefore check that
+/// a run's painted advance matches the width the layout reserved, instead of
+/// hard coding absolute point values that move whenever font metrics change.
+/// This is a read-only probe: it does not add a route and does not change the
+/// production conversion pipeline.
+#[napi]
+pub fn pdf_layout_probe(label: String, bytes: Buffer) -> PdfLayoutProbeResponse {
+    document_fonts::install_default_math_font();
+    let text = match std::str::from_utf8(&bytes) {
+        Ok(text) => text.to_string(),
+        Err(error) => return pdf_probe_error(format!("input `{label}` is not UTF-8 Markdown: {error}")),
+    };
+    let graph = match document_convert::read_markdown_bytes(&label, text) {
+        Ok(graph) => graph,
+        Err(error) => return pdf_probe_error(error.to_string()),
+    };
+    let (plan, layout_diagnostics) = document_layout::document::layout_with_diagnostics(
+        &graph,
+        &document_layout::LayoutHint::a4(),
+        &document_layout::Diagrams::default(),
+    );
+    let pdf = match document_convert::write_document_pdf(&graph) {
+        Ok(pdf) => pdf,
+        Err(error) => return pdf_probe_error(error.to_string()),
+    };
+    let mut runs = Vec::new();
+    let mut pages = Vec::new();
+    for (index, page) in plan.pages.iter().enumerate() {
+        pages.push(PdfLayoutPage { width: page.width, height: page.height });
+        for item in &page.items {
+            if let document_layout::plan::LayoutItem::TextRun(run) = item {
+                runs.push(PdfLayoutRun {
+                    page: u32::try_from(index).unwrap_or(u32::MAX),
+                    x: run.x,
+                    y: run.y,
+                    width: run.width,
+                    size: run.size,
+                    text: run.text.clone(),
+                    font_family: run.font_family.clone(),
+                    style: format!("{:?}", run.style),
+                });
+            }
+        }
+    }
+    PdfLayoutProbeResponse {
+        exit_code: 0,
+        pdf: Some(Buffer::from(pdf)),
+        runs,
+        pages,
+        diagnostics: layout_diagnostics
+            .iter()
+            .map(|diagnostic| format!("{}: {}", diagnostic.code, diagnostic.message))
+            .collect(),
+        error: None,
+    }
+}
+
+fn pdf_probe_error(message: String) -> PdfLayoutProbeResponse {
+    PdfLayoutProbeResponse {
+        exit_code: 1,
+        pdf: None,
+        runs: Vec::new(),
+        pages: Vec::new(),
+        diagnostics: Vec::new(),
+        error: Some(message),
+    }
+}
+
 /// Build a failure `ConvertResponse` where the report JSON carries a proper
 /// `DiagnosticEnvelope` wrapping the structured `AdapterError::Diagnostic`.
 /// This is the only legitimate path for convert failures — `map_adapter_error`

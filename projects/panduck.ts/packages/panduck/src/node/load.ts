@@ -148,6 +148,29 @@ type NativeBinding = {
         scopes: string[];
         error: string | null;
     };
+    pdfLayoutProbe?: (
+        label: string,
+        bytes: Uint8Array,
+    ) => {
+        exitCode: number;
+        pdf?: Uint8Array;
+        runs: Array<{
+            page: number;
+            x: number;
+            y: number;
+            width: number;
+            size: number;
+            text: string;
+            fontFamily: string;
+            style: string;
+        }>;
+        pages: Array<{
+            width: number;
+            height: number;
+        }>;
+        diagnostics: string[];
+        error: string | null;
+    };
 };
 
 const PLATFORM_PACKAGES: Record<string, string> = {
@@ -348,6 +371,31 @@ export function loadPanduckNode(): PanduckBindings {
                   return {
                       passes: response.passes,
                       scopes: response.scopes,
+                      error: response.error ?? null,
+                  };
+              }
+            : undefined,
+        pdfLayoutProbe: binding.pdfLayoutProbe
+            ? (label, bytes) => {
+                  const response = binding.pdfLayoutProbe!(label, bytes);
+                  return {
+                      exitCode: response.exitCode,
+                      pdf: response.pdf ? new Uint8Array(response.pdf) : undefined,
+                      runs: response.runs.map((run) => ({
+                          page: run.page,
+                          x: run.x,
+                          y: run.y,
+                          width: run.width,
+                          size: run.size,
+                          text: run.text,
+                          fontFamily: run.fontFamily,
+                          style: run.style,
+                      })),
+                      pages: response.pages.map((page) => ({
+                          width: page.width,
+                          height: page.height,
+                      })),
+                      diagnostics: response.diagnostics,
                       error: response.error ?? null,
                   };
               }
