@@ -8,7 +8,7 @@
         },
         {
             "kind": "report-status",
-            "expected": "success"
+            "expected": "success_with_loss"
         },
         {
             "kind": "contains",
@@ -29,6 +29,14 @@
             "kind": "contains",
             "target": "html",
             "value": "Inline <b>markup</b> stays verbatim."
+        },
+        {
+            "kind": "loss-codes",
+            "expected": [
+                "import.markdown.raw_html_unrendered",
+                "import.markdown.raw_html_unrendered",
+                "import.markdown.raw_html_unrendered"
+            ]
         }
     ],
     "provenance": [
@@ -43,6 +51,22 @@
             "reason": "document.convert 断言作者手写的行内 HTML 原样保留",
             "semantic": "整句输出必须逐字保留行内 <b> 标签",
             "updatedAt": "2026-11-04T16:09:20.852Z"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 5d80d646efee4fc8347bf22b12325cb6596cfc31",
+            "reason": "上游改为如实报告原始行内 HTML 未渲染，不再静默报 success",
+            "semantic": "report-status 由 success 改为 success_with_loss",
+            "updatedAt": "2026-11-04T17:36:39.404Z",
+            "assertionDiff": "~ {\"kind\":\"report-status\",\"expected\":\"success_with_loss\"}",
+            "observedStatus": "pass"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 5d80d646efee4fc8347bf22b12325cb6596cfc31",
+            "reason": "三处行内原始 HTML 均被如实标记为未渲染的降级",
+            "semantic": "新增 loss-codes，精确记录三处 raw_html_unrendered",
+            "updatedAt": "2026-11-04T17:36:39.561Z",
+            "assertionDiff": "+ {\"kind\":\"loss-codes\",\"expected\":[\"import.markdown.raw_html_unrendered\",\"import.markdown.raw_html_unrendered\",\"import.markdown.raw_html_unrendered\"]}",
+            "observedStatus": "pass"
         }
     ]
 }

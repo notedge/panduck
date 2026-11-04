@@ -124,7 +124,7 @@ function evaluateOne(observation: CaseObservation, assertion: Assertion): Assert
             if (value === undefined) {
                 return result(assertion, "fail", `leg ${legIndex} produced no ${assertion.target} output`, legCategory(leg));
             }
-            if (leg.status !== "success") {
+            if (leg.status !== "success" && leg.status !== "success_with_loss") {
                 return result(
                     assertion,
                     "pass",
@@ -132,13 +132,24 @@ function evaluateOne(observation: CaseObservation, assertion: Assertion): Assert
                 );
             }
             const missing = assertion.required.filter((marker) => !value.includes(marker));
-            const ok = missing.length === 0;
+            const declared = assertion.losses ?? [];
+            const undeclared = declared.filter((code) => !leg.lossCodes.includes(code));
+            const namesLosses = leg.status !== "success_with_loss" || declared.length > 0;
+            const ok = missing.length === 0 && undeclared.length === 0 && namesLosses;
             return result(
                 assertion,
                 ok ? "pass" : "fail",
                 ok
-                    ? `status success is backed by every required structural marker`
-                    : `status success was reported while ${assertion.target} lost ${JSON.stringify(missing)}`,
+                    ? leg.status === "success"
+                        ? "status success is backed by every required structural marker"
+                        : `status success_with_loss is backed by every required structural marker and names ${declared.length} loss code(s)`
+                    : [
+                          missing.length === 0 ? "" : `status ${leg.status} was reported while ${assertion.target} lost ${JSON.stringify(missing)}`,
+                          undeclared.length === 0 ? "" : `declared loss codes never appeared: ${JSON.stringify(undeclared)}`,
+                          namesLosses ? "" : "status success_with_loss names no loss code",
+                      ]
+                          .filter(Boolean)
+                          .join("; "),
                 ok ? undefined : "implementation-defect",
             );
         }
@@ -256,8 +267,8 @@ export function evaluateSnapshot(
             equalityOk ? "pass" : "fail",
             equalityOk
                 ? `${actual.length} tokens match the recorded snapshot over LF-normalised source`
-                : `${actual.length} lexer tokens vs ${tokens.length} recorded: ${diffDetail}`,
-            equalityOk ? undefined : "implementation-defect",
+                : `${actual.length} lexer tokens vs ${tokens.length} recorded: ${diffDetail}${definition.snapshotLag === undefined ? "" : ` (snapshot lag: ${definition.snapshotLag.reason})`}`,
+            equalityOk ? undefined : definition.snapshotLag === undefined ? "implementation-defect" : "stale-expectation",
         ),
     );
     return assertions;

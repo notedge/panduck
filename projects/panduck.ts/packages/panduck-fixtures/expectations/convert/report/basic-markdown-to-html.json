@@ -8,11 +8,17 @@
         },
         {
             "kind": "report-status",
-            "expected": "success"
+            "expected": "success_with_loss"
         },
         {
             "kind": "loss-codes",
-            "expected": []
+            "expected": [
+                "import.markdown.definition_list",
+                "import.markdown.definition_list",
+                "import.markdown.definition_list",
+                "import.markdown.unresolved_reference_link",
+                "import.markdown.table_alignment"
+            ]
         },
         {
             "kind": "contains",
@@ -50,8 +56,29 @@
             "target": "html",
             "required": [
                 "<h2>Lists</h2>",
+                "<h2>Tables</h2>",
                 "<table"
+            ],
+            "losses": [
+                "import.markdown.definition_list",
+                "import.markdown.table_alignment",
+                "import.markdown.unresolved_reference_link"
             ]
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "println!(\"Hello, world!\");"
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "return `Hello, ${name}!`;"
+        },
+        {
+            "kind": "contains",
+            "target": "html",
+            "value": "return fibonacci(n-1) + fibonacci(n-2)"
         }
     ],
     "provenance": [
@@ -76,6 +103,54 @@
             "updatedAt": "2026-11-04T16:24:37.203Z",
             "assertionDiff": "+ {\"kind\":\"honest-success\",\"target\":\"html\",\"required\":[\"<h2>Lists</h2>\",\"<table\"]}",
             "observedStatus": "fail"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 5d80d646efee4fc8347bf22b12325cb6596cfc31",
+            "reason": "fence 修复后浮出此前被吞掉的五条真实损失，报告状态就是 success_with_loss",
+            "semantic": "把 report-status 从 success 改为 success_with_loss，不改断言意图",
+            "updatedAt": "2026-11-04T17:35:46.097Z",
+            "assertionDiff": "~ {\"kind\":\"report-status\",\"expected\":\"success_with_loss\"}",
+            "observedStatus": "pass"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 5d80d646efee4fc8347bf22b12325cb6596cfc31",
+            "reason": "新增五条损失：定义列表三条、表格对齐一条、未解析引用链接一条",
+            "semantic": "loss-codes 由空集改为五条精确损失码，含三条 definition_list 的重复计数",
+            "updatedAt": "2026-11-04T17:35:55.787Z",
+            "assertionDiff": "~ {\"kind\":\"loss-codes\",\"expected\":[\"import.markdown.definition_list\",\"import.markdown.definition_list\",\"import.markdown.definition_list\",\"import.markdown.unresolved_reference_link\",\"import.markdown.table_alignment\"]}",
+            "observedStatus": "pass"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 5d80d646efee4fc8347bf22b12325cb6596cfc31",
+            "reason": "success_with_loss 也必须由结构性标记背书，且必须点名三类损失",
+            "semantic": "honest-success 扩展到 success_with_loss，并新增 losses 要求声明损失码全部出现",
+            "updatedAt": "2026-11-04T17:36:05.260Z",
+            "assertionDiff": "~ {\"kind\":\"honest-success\",\"target\":\"html\",\"required\":[\"<h2>Lists</h2>\",\"<h2>Tables</h2>\",\"<table\"],\"losses\":[\"import.markdown.definition_list\",\"import.markdown.table_alignment\",\"import.markdown.unresolved_reference_link\"]}",
+            "observedStatus": "pass"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 5d80d646efee4fc8347bf22b12325cb6596cfc31",
+            "reason": "围栏代码块内容必须逐字保留",
+            "semantic": "新增 rust 代码体逐字断言",
+            "updatedAt": "2026-11-04T17:36:16.014Z",
+            "assertionDiff": "+ {\"kind\":\"contains\",\"target\":\"html\",\"value\":\"println!(\\\"Hello, world!\\\");\"}",
+            "observedStatus": "pass"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 5d80d646efee4fc8347bf22b12325cb6596cfc31",
+            "reason": "围栏代码块内容必须逐字保留，含模板字符串",
+            "semantic": "新增 javascript 代码体逐字断言",
+            "updatedAt": "2026-11-04T17:36:16.195Z",
+            "assertionDiff": "+ {\"kind\":\"contains\",\"target\":\"html\",\"value\":\"return `Hello, ${name}!`;\"}",
+            "observedStatus": "pass"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 5d80d646efee4fc8347bf22b12325cb6596cfc31",
+            "reason": "围栏代码块内容必须逐字保留",
+            "semantic": "新增 python 代码体逐字断言",
+            "updatedAt": "2026-11-04T17:36:16.361Z",
+            "assertionDiff": "+ {\"kind\":\"contains\",\"target\":\"html\",\"value\":\"return fibonacci(n-1) + fibonacci(n-2)\"}",
+            "observedStatus": "pass"
         }
     ]
 }
