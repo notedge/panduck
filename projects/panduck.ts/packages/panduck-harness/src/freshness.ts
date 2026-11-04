@@ -11,9 +11,15 @@ type GitDependency = {
     readonly committedAt: number;
 };
 
+/** One local file that feeds the built binding. */
+type LocalInput = {
+    readonly path: string;
+    readonly mtimeMs: number;
+};
+
 /** One reason the built binding cannot be trusted for the current revisions. */
 export type FreshnessIssue = {
-    readonly kind: "missing" | "stale" | "unresolved";
+    readonly kind: "missing" | "stale" | "stale-local" | "unresolved";
     readonly detail: string;
 };
 
@@ -21,6 +27,7 @@ export type FreshnessReport = {
     readonly repoRoot: string;
     readonly artifacts: readonly { readonly path: string; readonly mtimeMs: number }[];
     readonly dependencies: readonly GitDependency[];
+    readonly localInputs: readonly LocalInput[];
     readonly issues: readonly FreshnessIssue[];
 };
 
@@ -112,22 +119,55 @@ function platformArtifacts(repoRoot: string): readonly { readonly path: string; 
         });
 }
 
+/** Collects every `.rs` file under a directory, including subdirectories. */
+function collectRustSources(dir: string, out: string[]): void {
+    if (!existsSync(dir)) {
+        return;
+    }
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) {
+            collectRustSources(path, out);
+            continue;
+        }
+        if (entry.isFile() && entry.name.endsWith(".rs")) {
+            out.push(path);
+        }
+    }
+}
+
+/** Local inputs that end up inside the `.node` artifact; TS sources load at runtime. */
+function localInputs(repoRoot: string): readonly LocalInput[] {
+    const rustSources: string[] = [];
+    collectRustSources(join(repoRoot, "projects/panduck.rs/panduck-napi/src"), rustSources);
+    const manifests = [
+        "projects/panduck.rs/panduck-napi/Cargo.toml",
+        "Cargo.toml",
+        "Cargo.lock",
+    ].map((relative) => join(repoRoot, relative));
+    return [...rustSources, ...manifests]
+        .filter((path) => existsSync(path))
+        .map((path) => ({ path, mtimeMs: statSync(path).mtimeMs }));
+}
+
 function formatTime(ms: number): string {
     return new Date(ms).toISOString();
 }
 
 /**
  * Checks that every built binding is newer than the newest `oak-*` / `document-*`
- * revision pinned by `Cargo.lock`. A stale `.node` silently turns a red corpus green.
+ * revision pinned by `Cargo.lock` and than every local Rust input. A stale `.node`
+ * silently turns a red corpus green.
  */
 export function checkArtifactFreshness(): FreshnessReport {
     const repoRoot = findRepoRoot();
     const lockPath = join(repoRoot, "Cargo.lock");
     const dbRoot = join(process.env.CARGO_HOME ?? join(homedir(), ".cargo"), "git", "db");
     const issues: FreshnessIssue[] = [];
+    const inputs = localInputs(repoRoot);
     if (!existsSync(lockPath)) {
         issues.push({ kind: "unresolved", detail: `missing \`Cargo.lock\` at ${lockPath}, run \`cargo fetch\` first` });
-        return { repoRoot, artifacts: [], dependencies: [], issues };
+        return { repoRoot, artifacts: [], dependencies: [], localInputs: inputs, issues };
     }
     const pins = readPinnedRevisions(lockPath);
     const dependencies: GitDependency[] = [];
@@ -162,7 +202,21 @@ export function checkArtifactFreshness(): FreshnessReport {
             });
         }
     }
-    return { repoRoot, artifacts, dependencies, issues };
+    const newestInput = inputs.reduce<LocalInput | undefined>(
+        (latest, entry) => (latest === undefined || entry.mtimeMs > latest.mtimeMs ? entry : latest),
+        undefined,
+    );
+    if (newestInput !== undefined) {
+        for (const artifact of artifacts) {
+            if (artifact.mtimeMs <= newestInput.mtimeMs) {
+                issues.push({
+                    kind: "stale-local",
+                    detail: `${artifact.path} was written ${formatTime(artifact.mtimeMs)} and is not newer than ${newestInput.path} modified ${formatTime(newestInput.mtimeMs)}`,
+                });
+            }
+        }
+    }
+    return { repoRoot, artifacts, dependencies, localInputs: inputs, issues };
 }
 
 /** Renders the freshness verdict with the artifact, revision and rebuild hint. */
@@ -173,6 +227,13 @@ export function formatFreshnessReport(report: FreshnessReport): string {
     }
     for (const dependency of report.dependencies) {
         lines.push(`  dependency ${dependency.name} · ${dependency.rev.slice(0, 12)} · ${formatTime(dependency.committedAt)}`);
+    }
+    const newestInput = report.localInputs.reduce<LocalInput | undefined>(
+        (latest, entry) => (latest === undefined || entry.mtimeMs > latest.mtimeMs ? entry : latest),
+        undefined,
+    );
+    if (newestInput !== undefined) {
+        lines.push(`  source ${newestInput.path} · ${formatTime(newestInput.mtimeMs)}`);
     }
     for (const issue of report.issues) {
         lines.push(`  ${issue.kind}: ${issue.detail}`);
