@@ -118,6 +118,29 @@ function evaluateOne(observation: CaseObservation, assertion: Assertion): Assert
                 ok ? undefined : "implementation-defect",
             );
         }
+        case "honest-success": {
+            const value = targetValue(leg, assertion.target);
+            if (value === undefined) {
+                return result(assertion, "fail", `leg ${legIndex} produced no ${assertion.target} output`, legCategory(leg));
+            }
+            if (leg.status !== "success") {
+                return result(
+                    assertion,
+                    "pass",
+                    `report already admits a problem with status ${leg.status}, so honesty does not need the structural markers`,
+                );
+            }
+            const missing = assertion.required.filter((marker) => !value.includes(marker));
+            const ok = missing.length === 0;
+            return result(
+                assertion,
+                ok ? "pass" : "fail",
+                ok
+                    ? `status success is backed by every required structural marker`
+                    : `status success was reported while ${assertion.target} lost ${JSON.stringify(missing)}`,
+                ok ? undefined : "implementation-defect",
+            );
+        }
     }
 }
 

@@ -40,6 +40,12 @@ export type Assertion =
           readonly leg?: number;
           readonly expected: readonly string[];
           readonly mode?: "subset" | "exact";
+      }
+    | {
+          readonly kind: "honest-success";
+          readonly leg?: number;
+          readonly target: AssertionTarget;
+          readonly required: readonly string[];
       };
 
 /** One conversion leg observed from the public Panduck binding. */
@@ -141,6 +147,8 @@ export type Expectation = {
         readonly reason: string;
         readonly semantic: string;
         readonly updatedAt: string;
+        readonly assertionDiff?: string;
+        readonly observedStatus?: "pass" | "fail";
     }[];
 };
 

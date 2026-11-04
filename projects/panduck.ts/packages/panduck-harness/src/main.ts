@@ -36,7 +36,7 @@ import type {
 import { runIdFromDate, sha256 } from "./util.js";
 import { writeBaseline, writeRun } from "./archive.js";
 
-type Command = "run" | "list" | "verify" | "baseline" | "accept" | "help";
+type Command = "run" | "list" | "verify" | "baseline" | "accept" | "oracle" | "help";
 type Suite = "all" | "convert" | "notedown";
 
 const USAGE = [
@@ -47,7 +47,9 @@ const USAGE = [
     "  list       Print the corpus inventory",
     "  baseline   Copy results/latest.json into baselines/<name>.json",
     "  accept     Add one passing assertion to a case expectation and record provenance",
-    "             --case <id> --add '<json>' --by <author> --why <reason> --semantic <changed>",
+    "             --case <id> --add '<json>' --why <reason> --semantic <changed>",
+    "  oracle     Add one known red assertion as a reproduction oracle, records the observed status",
+    "             --case <id> --add '<json>' --why <reason> --semantic <changed>",
 ].join("\n");
 
 type ParsedArgs = {
@@ -371,13 +373,12 @@ function commandList(): number {
     return 0;
 }
 
-function commandAccept(options: Readonly<Record<string, string>>): number {
+function commandAccept(options: Readonly<Record<string, string>>, redOracle: boolean): number {
     const caseId = options.case;
-    const by = options.by;
     const why = options.why;
     const semantic = options.semantic;
-    if (caseId === undefined || by === undefined || why === undefined || semantic === undefined) {
-        console.error("accept needs `--case`, `--by`, `--why` and `--semantic`");
+    if (caseId === undefined || why === undefined || semantic === undefined) {
+        console.error("accept needs `--case`, `--why` and `--semantic`");
         return 2;
     }
     try {
@@ -385,11 +386,11 @@ function commandAccept(options: Readonly<Record<string, string>>): number {
             caseId,
             assertionJson: options.add,
             assertionFile: options["add-file"],
-            author: by,
             reason: why,
             semantic,
+            redOracle,
         });
-        console.log(`accepted ${result.caseId} · assertions ${result.assertionCount}`);
+        console.log(`accepted ${result.caseId} · assertions ${result.assertionCount} · observed ${result.observedStatus}`);
         console.log(`expectation ${result.expectationPath}`);
         return 0;
     } catch (error) {
@@ -416,7 +417,9 @@ export async function main(argv: readonly string[]): Promise<number> {
         case "list":
             return commandList();
         case "accept":
-            return commandAccept(parsed.options);
+            return commandAccept(parsed.options, false);
+        case "oracle":
+            return commandAccept(parsed.options, true);
         case "baseline":
             console.log(writeBaseline(parsed.name));
             return 0;
