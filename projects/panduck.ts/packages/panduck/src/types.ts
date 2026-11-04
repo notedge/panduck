@@ -128,6 +128,16 @@ export type ChartRenderResponse = {
     diagnostics: ChartDiagnostic[];
 };
 
+/** Ordered incremental passes implied by one runtime action or scope set. */
+export type RuntimePassResponse = {
+    /** Passes in execution order, from upstream data to downstream paint. */
+    passes: string[];
+    /** Invalidation scopes that produced the passes. */
+    scopes: string[];
+    /** Set when the requested action or scope is outside the runtime vocabulary. */
+    error: string | null;
+};
+
 /** Shared Panduck binding surface for Node-API and WebAssembly backends. */
 export type PanduckBindings = {
     panduckVersion: () => string;
@@ -178,6 +188,10 @@ export type PanduckBindings = {
     validateDocumentGraph?: (graphJson: string) => IrValidationResponse;
     /** Render a Vega-Lite spec to SVG through `plotter.chart`. */
     renderChart?: (vegaLiteJson: string) => ChartRenderResponse;
+    /** Derive incremental passes for one semantic runtime action. */
+    runtimePassesForAction?: (action: string, target?: string) => RuntimePassResponse;
+    /** Derive incremental passes for one or more invalidation scopes. */
+    runtimePassesForScopes?: (scopes: string[]) => RuntimePassResponse;
     installLoggerLogFile?: (path: string) => void;
     installConsoleLogFile?: (path: string) => void;
 };

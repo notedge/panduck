@@ -13,6 +13,7 @@ import {
     type DiagramRejectionCase,
     type DiagramSpecCase,
     type IrCase,
+    type RuntimePassCase,
 } from "@notedge/panduck-fixtures";
 import {
     bindingLocation,
@@ -21,6 +22,8 @@ import {
     renderChartSource,
     renderDiagramSource,
     runCase,
+    runtimePassesForActions,
+    runtimePassesForScopes,
     validateGraphSource,
 } from "./adapter.js";
 import { aggregateCategory, evaluateExpectation, evaluateSnapshot } from "./assertions.js";
@@ -49,10 +52,10 @@ import { writeBaseline, writeRun } from "./archive.js";
 import { measureCoverage, printCoverage, writeCoverage } from "./coverage.js";
 
 type Command = "run" | "list" | "verify" | "baseline" | "accept" | "oracle" | "coverage" | "help";
-type Suite = "all" | "convert" | "notedown" | "diagram" | "ir" | "chart";
+type Suite = "all" | "convert" | "notedown" | "diagram" | "ir" | "chart" | "runtime";
 
 const USAGE = [
-    "panduck-harness <command> [--suite all|convert|notedown|diagram|ir|chart] [--name <baseline>]",
+    "panduck-harness <command> [--suite all|convert|notedown|diagram|ir|chart|runtime] [--name <baseline>]",
     "",
     "  run        Execute the runnable suites and archive observations under results/",
     "  verify     Validate the checked-in corpus without loading the binding",
@@ -88,7 +91,8 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
                 value !== "notedown" &&
                 value !== "diagram" &&
                 value !== "ir" &&
-                value !== "chart"
+                value !== "chart" &&
+                value !== "runtime"
             ) {
                 throw new Error(`unsupported suite: ${String(value)}`);
             }
@@ -148,14 +152,6 @@ function corpusResults(): readonly CaseResult[] {
 }
 
 const CORPUS_GAPS: readonly GapRecord[] = [
-    {
-        id: "gap-runtime-passes",
-        repo: "panduck",
-        capability: "plotter.runtime pass derivation",
-        neededEntry: "a binding entry that derives invalidation steps for an action",
-        evidence: "expectations/plotter/runtime/passes.json",
-        affectedCases: ["runtime-*"],
-    },
     {
         id: "gap-formats-inspect",
         repo: "panduck",
@@ -611,6 +607,85 @@ function irRuns(): readonly CaseRun[] {
     return loadIrCases().map(describeIrCase);
 }
 
+function runtimeRun(
+    id: string,
+    title: string,
+    assertions: readonly AssertionResult[],
+    details: Readonly<Record<string, unknown>>,
+    gap?: string,
+): CaseRun {
+    const category = aggregateCategory(assertions);
+    return {
+        observation: {
+            caseId: id,
+            kind: "convert",
+            legs: [],
+            durationMs: 0,
+            capabilities: { version: "unavailable", formats: [], conversions: [] },
+            details,
+        },
+        result: {
+            id,
+            title,
+            kind: "convert",
+            status: category === undefined ? "pass" : "fail",
+            category,
+            assertions,
+            durationMs: 0,
+            gap,
+        },
+    };
+}
+
+function describeRuntimeCase(definition: RuntimePassCase): CaseRun {
+    const actions =
+        definition.action
+            ?.split(",")
+            .map((entry) => entry.trim())
+            .filter((entry) => entry.length > 0) ?? [];
+    const observation =
+        definition.trigger === "action"
+            ? runtimePassesForActions(actions)
+            : runtimePassesForScopes(definition.scope === undefined ? [] : [definition.scope]);
+    const subject = definition.trigger === "action" ? actions.join(", ") : (definition.scope ?? definition.id);
+    if (observation.error !== undefined) {
+        return runtimeRun(
+            definition.id,
+            `${subject} derives no passes`,
+            [corpusIntegrity("runtime-entry", false, observation.error)],
+            { trigger: definition.trigger, subject, error: observation.error },
+        );
+    }
+    const same =
+        observation.passes.length === definition.passes.length &&
+        observation.passes.every((pass, index) => pass === definition.passes[index]);
+    const assertion = (check: string, ok: boolean, detail: string): AssertionResult =>
+        ok
+            ? { assertion: { kind: "corpus-integrity", check }, status: "pass", detail }
+            : { assertion: { kind: "corpus-integrity", check }, status: "fail", detail, category: "implementation-defect" };
+    return runtimeRun(
+        definition.id,
+        `${subject} derives [${definition.passes.join(", ")}]`,
+        [
+            assertion(
+                "runtime-passes",
+                same,
+                `passes are [${observation.passes.join(", ")}], expected [${definition.passes.join(", ")}]`,
+            ),
+        ],
+        {
+            trigger: definition.trigger,
+            subject,
+            passes: observation.passes,
+            scopes: observation.scopes,
+        },
+    );
+}
+
+function runtimeRuns(): readonly CaseRun[] {
+    return loadRuntimePasses().map(describeRuntimeCase);
+}
+
 function report(suite: Suite, cases: readonly CaseResult[], bindingsAvailable: boolean): RunReport {
     const startedAt = new Date();
     return {
@@ -677,6 +752,12 @@ async function commandRun(suite: Suite): Promise<number> {
     }
     if (suite === "all" || suite === "chart") {
         for (const run of chartRuns()) {
+            cases.push(run.result);
+            observations.push(run.observation);
+        }
+    }
+    if (suite === "all" || suite === "runtime") {
+        for (const run of runtimeRuns()) {
             cases.push(run.result);
             observations.push(run.observation);
         }

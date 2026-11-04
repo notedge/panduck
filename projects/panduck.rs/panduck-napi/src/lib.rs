@@ -420,6 +420,116 @@ pub fn render_chart(vega_lite_json: String) -> ChartRenderResponse {
     }
 }
 
+/// Ordered incremental passes implied by one runtime action or scope set.
+#[napi(object)]
+pub struct RuntimePassResponse {
+    /// Passes in execution order, from upstream data to downstream paint.
+    pub passes: Vec<String>,
+    /// Invalidation scopes that produced the passes.
+    pub scopes: Vec<String>,
+    /// Set when the requested action is outside the runtime vocabulary.
+    pub error: Option<String>,
+}
+
+/// Derives the incremental passes one semantic action invalidates.
+///
+/// Hosts call this before running a frame so a hover stays a pure overlay
+/// repaint and never triggers data reads, measurement or layout. Unknown
+/// actions are an error instead of silently falling back to a full recompile.
+#[napi]
+pub fn runtime_passes_for_action(action: String, target: Option<String>) -> RuntimePassResponse {
+    let mapped = match runtime_action(&action, target.as_deref()) {
+        Some(mapped) => mapped,
+        None => {
+            return RuntimePassResponse {
+                passes: Vec::new(),
+                scopes: Vec::new(),
+                error: Some(format!("`{action}` is not a plotter runtime action")),
+            };
+        }
+    };
+    let invalidation = plotter_runtime::invalidate(&mapped);
+    runtime_pass_response(&invalidation.scopes)
+}
+
+/// Derives the incremental passes one or more invalidation scopes imply.
+#[napi]
+pub fn runtime_passes_for_scopes(scopes: Vec<String>) -> RuntimePassResponse {
+    let mut set = plotter_runtime::InvalidationSet::empty();
+    for name in &scopes {
+        match invalidation_scope(name) {
+            Some(scope) => {
+                set.insert(scope);
+            }
+            None => {
+                return RuntimePassResponse {
+                    passes: Vec::new(),
+                    scopes: Vec::new(),
+                    error: Some(format!("`{name}` is not a plotter invalidation scope")),
+                };
+            }
+        }
+    }
+    runtime_pass_response(&set)
+}
+
+fn runtime_pass_response(invalidation: &plotter_runtime::InvalidationSet) -> RuntimePassResponse {
+    let closed = invalidation.closure();
+    RuntimePassResponse {
+        passes: plotter_runtime::derive_steps(&closed)
+            .into_iter()
+            .map(|pass| format!("{pass:?}"))
+            .collect(),
+        scopes: closed.iter().map(|scope| format!("{scope:?}")).collect(),
+        error: None,
+    }
+}
+
+fn runtime_action(name: &str, target: Option<&str>) -> Option<plotter_runtime::Action> {
+    use plotter_runtime::Action;
+
+    let id = || target.map(str::to_string);
+    Some(match name {
+        "Hover" => Action::Hover(id()),
+        "Focus" => Action::Focus(id()),
+        "Press" => Action::Press(id()),
+        "Release" => Action::Release,
+        "Select" => Action::Select {
+            target: target.unwrap_or_default().to_string(),
+            additive: false,
+        },
+        "ClearSelection" => Action::ClearSelection,
+        "Zoom" => Action::Zoom { factor: 1.0, anchor: None },
+        "Pan" => Action::Pan { dx: 0.0, dy: 0.0 },
+        "Resize" => Action::Resize { width: 0.0, height: 0.0 },
+        "SetParameter" => Action::SetParameter {
+            name: target.unwrap_or_default().to_string(),
+            value: 0.0,
+        },
+        "SetTheme" => Action::SetTheme(id()),
+        "Play" => Action::Play,
+        "Pause" => Action::Pause,
+        "Seek" => Action::Seek(0.0),
+        "Advance" => Action::Advance(0.0),
+        _ => return None,
+    })
+}
+
+fn invalidation_scope(name: &str) -> Option<plotter_runtime::InvalidationScope> {
+    use plotter_runtime::InvalidationScope;
+
+    Some(match name {
+        "Overlay" => InvalidationScope::Overlay,
+        "Style" => InvalidationScope::Style,
+        "Viewport" => InvalidationScope::Viewport,
+        "Measurement" => InvalidationScope::Measurement,
+        "Layout" => InvalidationScope::Layout,
+        "Data" => InvalidationScope::Data,
+        "Motion" => InvalidationScope::Motion,
+        _ => return None,
+    })
+}
+
 fn diagram_diagnostic(diagnostic: &boost_diagnostic::Diagnostic) -> DiagramDiagnostic {
     DiagramDiagnostic {
         code: diagnostic.code().as_str().to_string(),

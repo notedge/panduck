@@ -138,6 +138,16 @@ type NativeBinding = {
             path: string;
         }>;
     };
+    runtimePassesForAction?: (action: string, target?: string) => {
+        passes: string[];
+        scopes: string[];
+        error: string | null;
+    };
+    runtimePassesForScopes?: (scopes: string[]) => {
+        passes: string[];
+        scopes: string[];
+        error: string | null;
+    };
 };
 
 const PLATFORM_PACKAGES: Record<string, string> = {
@@ -319,6 +329,26 @@ export function loadPanduckNode(): PanduckBindings {
                           spanText: diagnostic.spanText,
                           path: diagnostic.path,
                       })),
+                  };
+              }
+            : undefined,
+        runtimePassesForAction: binding.runtimePassesForAction
+            ? (action, target) => {
+                  const response = binding.runtimePassesForAction!(action, target);
+                  return {
+                      passes: response.passes,
+                      scopes: response.scopes,
+                      error: response.error ?? null,
+                  };
+              }
+            : undefined,
+        runtimePassesForScopes: binding.runtimePassesForScopes
+            ? (scopes) => {
+                  const response = binding.runtimePassesForScopes!(scopes);
+                  return {
+                      passes: response.passes,
+                      scopes: response.scopes,
+                      error: response.error ?? null,
                   };
               }
             : undefined,

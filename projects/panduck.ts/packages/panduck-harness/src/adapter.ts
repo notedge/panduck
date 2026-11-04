@@ -11,6 +11,7 @@ import type {
     ChartObservation,
     DiagramObservation,
     IrObservation,
+    RuntimeObservation,
     LegObservation,
     LexObservation,
 } from "./types.js";
@@ -200,6 +201,77 @@ export function renderDiagramSource(language: string, source: string): DiagramOb
             success: false,
             svg: null,
             diagnostics: [],
+            error: error instanceof Error ? error.message : String(error),
+        };
+    }
+}
+
+const PASS_ORDER = [
+    "RecompileData",
+    "RecomputeViewport",
+    "Remeasure",
+    "Relayout",
+    "Restyle",
+    "RetargetMotion",
+    "RepaintOverlay",
+] as const;
+
+/** Derives the union of incremental passes for a set of runtime actions. */
+export function runtimePassesForActions(actions: readonly string[]): RuntimeObservation {
+    const derive = bindings().runtimePassesForAction;
+    if (typeof derive !== "function") {
+        return {
+            passes: [],
+            scopes: [],
+            error: "missing-entry: `PanduckBindings.runtimePassesForAction` is not exposed by this build",
+        };
+    }
+    const passes = new Set<string>();
+    const scopes = new Set<string>();
+    try {
+        for (const action of actions) {
+            const response = derive(action);
+            if (response.error !== null && response.error !== undefined) {
+                return { passes: [], scopes: [], error: response.error };
+            }
+            for (const pass of response.passes) {
+                passes.add(pass);
+            }
+            for (const scope of response.scopes) {
+                scopes.add(scope);
+            }
+        }
+    } catch (error) {
+        return {
+            passes: [],
+            scopes: [],
+            error: error instanceof Error ? error.message : String(error),
+        };
+    }
+    const ordered = PASS_ORDER.filter((pass) => passes.has(pass));
+    return { passes: ordered, scopes: [...scopes] };
+}
+
+/** Derives incremental passes for one or more invalidation scopes. */
+export function runtimePassesForScopes(scopes: readonly string[]): RuntimeObservation {
+    const derive = bindings().runtimePassesForScopes;
+    if (typeof derive !== "function") {
+        return {
+            passes: [],
+            scopes: [],
+            error: "missing-entry: `PanduckBindings.runtimePassesForScopes` is not exposed by this build",
+        };
+    }
+    try {
+        const response = derive([...scopes]);
+        if (response.error !== null && response.error !== undefined) {
+            return { passes: [], scopes: [], error: response.error };
+        }
+        return { passes: [...response.passes], scopes: [...response.scopes] };
+    } catch (error) {
+        return {
+            passes: [],
+            scopes: [],
             error: error instanceof Error ? error.message : String(error),
         };
     }

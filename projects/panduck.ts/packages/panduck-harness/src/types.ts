@@ -197,6 +197,13 @@ export type DiagramObservation = {
     readonly error?: string;
 };
 
+/** Observation of one public runtime pass derivation. */
+export type RuntimeObservation = {
+    readonly passes: readonly string[];
+    readonly scopes: readonly string[];
+    readonly error?: string;
+};
+
 /** Observation of one public `renderChart` call. */
 export type ChartObservation = {
     readonly success: boolean;
