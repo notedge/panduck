@@ -15,4 +15,5 @@
 | `markdown-to-html.mjs` | 语料里的 DOT / Mermaid / PlantUML 围栏渲染成 SVG | `pnpm --filter @notedge/panduck-examples markdown-to-html` |
 | `roundtrip-docx.mjs` | markdown 经 docx 往返 | `pnpm --filter @notedge/panduck-examples roundtrip-docx` |
 | `pdf-route.mjs` | markdown 经 pdf 往返 | `pnpm --filter @notedge/panduck-examples pdf-route` |
-| `html-refusal.mjs` | 行内属性的拒绝路径与诊断码 | `pnpm --filter @notedge/panduck-examples html-refusal` |
+| `html-refusal.mjs` | 行内属性的拒绝路径与诊断码 |
+| `crosscheck-python/` | Node 产出 docx / pdf / markdown，Python 侧用 `python-docx`、`PyMuPDF`、`mistune` 判定产物结构 | `pnpm --filter @notedge/panduck-examples crosscheck:python` |
