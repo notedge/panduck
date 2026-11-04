@@ -5,7 +5,7 @@
         { "kind": "exit-code", "leg": 0, "expected": 0 },
         { "kind": "exit-code", "leg": 1, "expected": 0 },
         { "kind": "report-status", "leg": 1, "expected": "success_with_loss" },
-        { "kind": "loss-codes", "leg": 1, "expected": ["import.pdf.partial_coverage"] },
+        { "kind": "loss-codes", "leg": 1, "expected": ["import.pdf.partial_coverage", "import.pdf.text_spacing"] },
         { "kind": "contains", "leg": 1, "target": "text", "value": "Roundtrip" },
         { "kind": "contains", "leg": 1, "target": "text", "value": "Hello roundtrip paragraph." },
         { "kind": "not-contains", "leg": 1, "target": "text", "value": "```dot" }
@@ -16,6 +16,12 @@
             "reason": "The pdf path is expected to keep text while losing the diagram and to report the declared partial coverage loss",
             "semantic": "markdown to pdf to markdown keeps prose and declares the diagram loss",
             "updatedAt": "2026-11-04T00:00:00.000Z"
+        },
+        {
+            "author": "document-harness",
+            "reason": "Kerned Latin runs now paint their pair adjustments as `TJ` numbers, so the PDF importer reports that those numeric spacing adjustments are ignored while the adjacent strings survive",
+            "semantic": "markdown to pdf to markdown keeps prose and declares both the diagram loss and the ignored `TJ` spacing adjustments",
+            "updatedAt": "2026-11-05T00:00:00.000Z"
         }
     ]
 }
