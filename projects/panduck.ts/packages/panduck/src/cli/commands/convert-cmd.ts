@@ -23,7 +23,13 @@ import {
     type SharedCliOptions,
 } from "../options.js";
 import { createReport, type PanduckReport } from "../report.js";
-import { isStdinPath, isStdoutPath } from "../paths.js";
+import {
+    inputReadFailureReason,
+    isRemoteUri,
+    isStdinPath,
+    isStdoutPath,
+    REMOTE_INPUT_DIAGNOSTIC,
+} from "../paths.js";
 import { configureConsoleBackend } from "../console-backend.js";
 import {
     hasPipeline,
@@ -237,6 +243,7 @@ async function convertSingleFile(input: {
         try {
             await assertReadableInput(inputPath);
         } catch {
+            const reason = inputReadFailureReason(inputPath);
             return {
                 exitCode: ExitCode.InputUnsupported,
                 report: buildBlockedReport(
@@ -244,9 +251,19 @@ async function convertSingleFile(input: {
                     "convert",
                     inputPath,
                     resolved,
-                    "input is not readable",
+                    reason,
                     ExitCode.InputUnsupported,
                     shared,
+                    isRemoteUri(inputPath)
+                        ? [
+                              createDiagnostic({
+                                  code: REMOTE_INPUT_DIAGNOSTIC,
+                                  component: "input",
+                                  severity: "error",
+                                  fallback: reason,
+                              }),
+                          ]
+                        : undefined,
                 ),
             };
         }

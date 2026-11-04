@@ -14,7 +14,12 @@ import { ExitCode } from "../exit-codes.js";
 import { CliOptionError, parseInspectStage, readSharedOptions, readString } from "../options.js";
 import { configureConsoleBackend } from "../console-backend.js";
 import { createReport } from "../report.js";
-import { isStdinPath } from "../paths.js";
+import {
+    inputReadFailureReason,
+    isRemoteUri,
+    isStdinPath,
+    REMOTE_INPUT_DIAGNOSTIC,
+} from "../paths.js";
 
 export function registerInspectCommand(cli: Cli): void {
     cli.command("inspect", "cli.cmd.inspect")
@@ -56,14 +61,25 @@ async function runInspect(options: ParsedOptions): Promise<number> {
         try {
             await assertReadableInput(inputPath);
         } catch {
+            const reason = inputReadFailureReason(inputPath);
             const report = buildBlockedReport(
                 ctx,
                 "inspect",
                 inputPath,
                 resolved,
-                "input is not readable",
+                reason,
                 ExitCode.InputUnsupported,
                 shared,
+                isRemoteUri(inputPath)
+                    ? [
+                          createDiagnostic({
+                              code: REMOTE_INPUT_DIAGNOSTIC,
+                              component: "input",
+                              severity: "error",
+                              fallback: reason,
+                          }),
+                      ]
+                    : undefined,
             );
             emitReport(report, shared.diagnostics, shared.json);
             return ExitCode.InputUnsupported;

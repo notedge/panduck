@@ -62,8 +62,9 @@ panduck check ./draft.docx --format markdown
 panduck inspect ./draft.docx --stage index --json
 ```
 
-Handy options: `--strict` fails when anything was lost; `--overwrite` replaces an existing output; `--batch` with
-`--output-dir` for many files at once. Panduck will not write to the same path as the input.
+Handy options: `--strict` fails when anything was lost; `--overwrite` replaces an existing output. Pass several
+inputs together with `--output-dir` to convert many files at once. Panduck will not write to the same path as the
+input.
 
 ## What converts reliably today
 
@@ -98,6 +99,20 @@ Worth reading before you publish the converted files:
 - What files were actually written? (`outputs`)
 
 Exit code `0` can still mean content was lost. Open the report.
+
+## Limits
+
+Panduck applies built-in guards; none of them is configurable.
+
+- **No network access.** Panduck v0 never downloads anything. An input that looks like a URI (`http://`,
+  `https://`, `file://`) is rejected with exit code `3` and the diagnostic
+  `panduck.input.remote-fetch-disabled`; nothing is written. Download the document first.
+- **Structural nesting.** HTML element depth, Markdown blockquote runs, and Markdown bracket nesting are capped
+  at `96`. Exceeding it exits with code `7` (diagnostic `notedown.format.budget-exhausted`) and writes no output.
+  JSON payloads use their parser's own 128-level recursion limit, and `pandoc-json` is not an input format in v0.
+- **No global deadline.** There is no wall-clock timeout, so a pathological input can run for a long time. Wrap
+  the CLI in your own process timeout. Container limits (`decompressed_bytes`, `container_entries`) are available
+  through `--budget`; other formats still rely on their own decode limits.
 
 ## Use from Node
 

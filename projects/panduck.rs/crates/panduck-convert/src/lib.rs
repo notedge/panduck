@@ -10,6 +10,7 @@ mod format_error;
 mod inspect;
 mod publish;
 mod readers;
+mod structure;
 pub mod transform;
 mod span;
 mod writers;
@@ -40,6 +41,7 @@ pub use inspect::{
     inspect_docx_index_bytes,
 };
 pub use publish::{PublishedMarkdownProject, publish_bytes, publish_markdown_project, publish_text};
+pub use structure::MAX_STRUCTURE_DEPTH;
 pub use readers::{
     read_doc, read_doc_bytes, read_html, read_html_bytes, read_markdown, read_markdown_bytes, read_notedown,
     read_notedown_bytes, read_pdf, read_pdf_bytes,
@@ -386,6 +388,7 @@ pub fn convert_file_with_budgets(
 }
 
 fn read_source(from: &str, label: &str, bytes: Vec<u8>) -> Result<DocumentGraph> {
+    structure::enforce(from, label, &bytes)?;
     match from {
         "docx" => import_docx_bytes(label, &bytes).map_err(crate::format_error::map_format_error),
         "doc" => import_doc_bytes(label, &bytes).map_err(crate::format_error::map_format_error),

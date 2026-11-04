@@ -16,9 +16,32 @@ const EXTENSION_HINTS: Record<string, string[]> = {
     ".doc": ["doc"],
 };
 
+/** Matches an absolute URI with a scheme separator, including `file://`. */
+const URI_PREFIX = /^[a-z][a-z0-9+.-]*:\/\//i;
+
 export function isStdinPath(path: string | undefined): boolean {
     return path === "-";
 }
+
+/**
+ * Whether the input names a remote (or otherwise non-filesystem) URI.
+ *
+ * Panduck v0 never performs network requests, so a URI reaching the CLI must
+ * be rejected explicitly instead of surfacing a generic unreadable-path error.
+ */
+export function isRemoteUri(path: string): boolean {
+    return URI_PREFIX.test(path.trim());
+}
+
+/** Human-readable reason for an input that cannot be read. */
+export function inputReadFailureReason(path: string): string {
+    return isRemoteUri(path)
+        ? "remote URI inputs are not fetched: panduck v0 performs no network requests, download the document first"
+        : "input is not readable";
+}
+
+/** Stable diagnostic code for a rejected remote URI input. */
+export const REMOTE_INPUT_DIAGNOSTIC = "panduck.input.remote-fetch-disabled";
 
 export function isStdoutPath(path: string | undefined): boolean {
     return path === "-";

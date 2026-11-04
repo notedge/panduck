@@ -7,6 +7,11 @@ import {
     resolveFormats,
 } from "../context.js";
 import { createDiagnostic } from "../../diagnostic.js";
+import {
+    inputReadFailureReason,
+    isRemoteUri,
+    REMOTE_INPUT_DIAGNOSTIC,
+} from "../paths.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { findFormat } from "../format-registry.js";
@@ -65,14 +70,25 @@ async function runCheck(options: ParsedOptions): Promise<number> {
         try {
             await assertReadableInput(inputPath);
         } catch {
+            const reason = inputReadFailureReason(inputPath);
             const report = buildBlockedReport(
                 ctx,
                 "check",
                 inputPath,
                 resolved,
-                "input is not readable",
+                reason,
                 ExitCode.InputUnsupported,
                 shared,
+                isRemoteUri(inputPath)
+                    ? [
+                          createDiagnostic({
+                              code: REMOTE_INPUT_DIAGNOSTIC,
+                              component: "input",
+                              severity: "error",
+                              fallback: reason,
+                          }),
+                      ]
+                    : undefined,
             );
             emitReport(report, shared.diagnostics, shared.json);
             return ExitCode.InputUnsupported;
