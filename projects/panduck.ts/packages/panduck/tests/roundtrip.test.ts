@@ -87,6 +87,113 @@ test("mermaid diagrams survive the markdown to html to markdown roundtrip as dia
     assert.match(roundtripped, /Closing paragraph\./);
 });
 
+test("footnote definitions survive the markdown to html to markdown roundtrip byte for byte", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-footnote-roundtrip-"));
+    const input = join(workdir, "footnote.md");
+    const htmlPath = join(workdir, "footnote.html");
+    const backPath = join(workdir, "roundtrip.md");
+    const markdown = ["# Footnotes", "", "See[^1] and also[^long].", "", "[^1]: First body.", "", "[^long]: Second body with `code`.", ""].join("\n");
+    await writeFile(input, markdown, "utf8");
+
+    try {
+        const toHtml = runPanduck(["convert", input, "--from", "markdown", "--to", "html", "-o", htmlPath, "--diagnostics", "silent"]);
+        assert.equal(toHtml.code, 0, toHtml.stderr || toHtml.stdout);
+
+        const html = await readFile(htmlPath, "utf8");
+        assert.match(html, /<section class="footnotes" role="doc-endnotes">/, "definitions must render as one endnotes section");
+        assert.match(html, /data-footnote-label="1"/, "each reference must carry its label");
+        assert.ok(!html.includes("[^1]:"), "the raw definition must not leak into the page prose");
+
+        const toMarkdown = runPanduck(["convert", htmlPath, "--from", "html", "--to", "markdown", "-o", backPath, "--diagnostics", "silent"]);
+        assert.equal(toMarkdown.code, 0, toMarkdown.stderr || toMarkdown.stdout);
+
+        const roundtripped = await readFile(backPath, "utf8");
+        assert.equal(roundtripped.trimEnd(), markdown.trimEnd(), "footnote references and definitions must be byte-identical");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("tables keep their cell semantics across html and report alignment as the only loss", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-table-roundtrip-"));
+    const plainInput = join(workdir, "plain.md");
+    const plainHtml = join(workdir, "plain.html");
+    const plainBack = join(workdir, "plain-back.md");
+    const plain = ["# Table", "", "| head | value |", "| --- | --- |", "| alpha | **bold** and `code` |", ""].join("\n");
+    await writeFile(plainInput, plain, "utf8");
+
+    const alignedInput = join(workdir, "aligned.md");
+    const alignedReportPath = join(workdir, "aligned-report.json");
+    const aligned = ["# Aligned", "", "| left | center | right |", "| :--- | :---: | ---: |", "| a | b | c |", ""].join("\n");
+    await writeFile(alignedInput, aligned, "utf8");
+
+    try {
+        const toHtml = runPanduck(["convert", plainInput, "--from", "markdown", "--to", "html", "-o", plainHtml, "--diagnostics", "silent"]);
+        assert.equal(toHtml.code, 0, toHtml.stderr || toHtml.stdout);
+        const html = await readFile(plainHtml, "utf8");
+        assert.match(html, /<table>/, "the table must stay a real table element");
+
+        const toMarkdown = runPanduck(["convert", plainHtml, "--from", "html", "--to", "markdown", "-o", plainBack, "--diagnostics", "silent"]);
+        assert.equal(toMarkdown.code, 0, toMarkdown.stderr || toMarkdown.stdout);
+        const back = await readFile(plainBack, "utf8");
+        assert.equal(back.trimEnd(), plain.trimEnd(), "an unaligned table must roundtrip byte for byte");
+
+        const alignedRun = runPanduck([
+            "convert",
+            alignedInput,
+            "--from",
+            "markdown",
+            "--to",
+            "markdown",
+            "-o",
+            join(workdir, "aligned-out.md"),
+            "--diagnostics",
+            "json",
+            "--report",
+            alignedReportPath,
+        ]);
+        assert.equal(alignedRun.code, 0, alignedRun.stderr);
+        const report = JSON.parse(await readFile(alignedReportPath, "utf8")) as {
+            status: string;
+            losses: Array<{ code: string; status: string }>;
+            diagnostics: Array<{ code: string; severity: string }>;
+        };
+        assert.equal(report.status, "success_with_loss");
+        assert.deepEqual(report.losses.map((loss) => loss.code), ["import.markdown.table_alignment"]);
+        assert.equal(report.losses[0].status, "Partial");
+        assert.equal(report.diagnostics[0].severity, "warning", "a content loss must stay a warning, not an error");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("html table cells authored as block layout report a flattened-cell loss", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-table-cells-"));
+    const input = join(workdir, "cells.html");
+    const output = join(workdir, "cells.md");
+    const reportPath = join(workdir, "cells-report.json");
+    await writeFile(
+        input,
+        sampleHtml("<table><tr><th>Head</th></tr><tr><td><p>one</p><p>two</p></td></tr></table>"),
+        "utf8",
+    );
+
+    try {
+        const run = runPanduck(["convert", input, "--from", "html", "--to", "markdown", "-o", output, "--diagnostics", "json", "--report", reportPath]);
+        assert.equal(run.code, 0, run.stderr);
+        const report = JSON.parse(await readFile(reportPath, "utf8")) as {
+            losses: Array<{ code: string; status: string }>;
+        };
+        assert.ok(
+            report.losses.some((loss) => loss.code === "import.html.table_cell_blocks" && loss.status === "Partial"),
+            `flattened cell blocks must be reported: ${JSON.stringify(report.losses)}`,
+        );
+        assert.match(await readFile(output, "utf8"), /onetwo/, "the authored text must survive as one inline run");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
 test("Converter walks the whole ConverterStatus enum on real inputs", async () => {
     const converter = new Converter();
     // Footnote bodies resolve through footnotes.xml; the docx import still
