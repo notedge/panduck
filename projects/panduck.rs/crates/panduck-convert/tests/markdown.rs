@@ -29,13 +29,13 @@ fn markdown_to_markdown_route() {
 }
 
 #[test]
-fn markdown_to_html_route() {
-    let source = b"# <Route>\n\nHello **world**.\n".to_vec();
+fn markdown_to_html_route_keeps_authored_inline_html() {
+    let source = b"# <Route>\n\nHello **world**.\n\nInline <b>markup</b> stays verbatim.\n".to_vec();
     let output = convert_bytes("markdown", "html", "route.md", source, None).expect("convert");
     let html = output.html.expect("html output");
-    assert!(html.contains("<h1>"));
-    assert!(html.contains("&lt;Route&gt;"));
-    assert!(html.contains("<strong>world</strong>"));
+    assert!(html.contains("<h1><Route></h1>"), "{html}");
+    assert!(html.contains("<strong>world</strong>"), "{html}");
+    assert!(html.contains("<b>markup</b>"), "{html}");
     assert!(output.report_json.contains("\"format\":\"html\""));
 }
 

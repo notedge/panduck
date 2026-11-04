@@ -289,6 +289,116 @@ test("garbage bytes declared as docx fail with an error diagnostic instead of em
     );
 });
 
+test("list numbering, task markers, and quoted nesting survive the markdown roundtrip", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-list-semantics-"));
+    const input = join(workdir, "lists.md");
+    const output = join(workdir, "lists-back.md");
+    const source = ["3. third", "4. fourth", "", "- [x] done", "- [ ] todo", "", "> - alpha", "> - beta", ""].join("\n");
+    await writeFile(input, source, "utf8");
+
+    try {
+        const run = runPanduck(["convert", input, "--from", "markdown", "--to", "markdown", "-o", output, "--diagnostics", "json"]);
+        assert.equal(run.code, 0, run.stderr);
+        const markdown = await readFile(output, "utf8");
+        assert.match(markdown, /3\. third/, "the authored list number must be written back, not restarted at one");
+        assert.match(markdown, /4\. fourth/, "the following item keeps its authored number");
+        assert.match(markdown, /- \[x\] done/, "the checked task marker must be written back");
+        assert.match(markdown, /- \[ \] todo/, "the unchecked task marker must be written back");
+        assert.match(markdown, /^> - alpha$/m, "a quoted list must stay nested instead of being escaped");
+        assert.match(markdown, /^> - beta$/m, "every quoted item keeps its nested list form");
+        assert.doesNotMatch(markdown, /\\-/, "a nested list item must not be backslash escaped");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("merged table cells survive the html to markdown to html roundtrip", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-merged-cells-"));
+    const input = join(workdir, "spans.html");
+    const markdownPath = join(workdir, "spans.md");
+    const backPath = join(workdir, "spans-back.html");
+    await writeFile(
+        input,
+        sampleHtml('<table><tr><th colspan="2">Head</th></tr><tr><td rowspan="2">a</td><td>b</td></tr><tr><td>c</td></tr></table>'),
+        "utf8",
+    );
+
+    try {
+        const toMarkdown = runPanduck(["convert", input, "--from", "html", "--to", "markdown", "-o", markdownPath, "--diagnostics", "json"]);
+        assert.equal(toMarkdown.code, 0, toMarkdown.stderr);
+        const markdown = await readFile(markdownPath, "utf8");
+        assert.match(markdown, /<table>/, "a spanning table must be written as an HTML table rather than flattened");
+        assert.match(markdown, /colspan="2"/, "the column span must be written back");
+        assert.match(markdown, /rowspan="2"/, "the row span must be written back");
+
+        const back = runPanduck(["convert", markdownPath, "--from", "markdown", "--to", "html", "-o", backPath, "--diagnostics", "json"]);
+        assert.equal(back.code, 0, back.stderr);
+        const html = await readFile(backPath, "utf8");
+        assert.match(html, /<th colspan="2">Head<\/th>/, "the reopened table keeps the column span: " + html);
+        assert.match(html, /<td rowspan="2">a<\/td>/, "the reopened table keeps the row span: " + html);
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("a definition list downgrade is reported and its text survives", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-definition-list-"));
+    const input = join(workdir, "terms.md");
+    const output = join(workdir, "terms-back.md");
+    const reportPath = join(workdir, "terms-report.json");
+    await writeFile(input, "Term\n: Definition\n", "utf8");
+
+    try {
+        const run = runPanduck([
+            "convert",
+            input,
+            "--from",
+            "markdown",
+            "--to",
+            "markdown",
+            "-o",
+            output,
+            "--diagnostics",
+            "json",
+            "--report",
+            reportPath,
+        ]);
+        assert.equal(run.code, 0, run.stderr);
+        const report = JSON.parse(await readFile(reportPath, "utf8")) as {
+            losses: Array<{ code: string; status: string }>;
+        };
+        assert.ok(
+            report.losses.some((loss) => loss.code === "import.markdown.definition_list" && loss.status === "Partial"),
+            `the paragraph downgrade must be reported: ${JSON.stringify(report.losses)}`,
+        );
+        const markdown = await readFile(output, "utf8");
+        assert.match(markdown, /Term/, "the term text must survive the downgrade");
+        assert.match(markdown, /Definition/, "the definition text must survive the downgrade");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("raw html blocks and inline html stay verbatim on the markdown roundtrip", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-raw-html-"));
+    const input = join(workdir, "raw.md");
+    const output = join(workdir, "raw-back.md");
+    const source = ["<div>", "raw <span>kept</span>", "</div>", "", "Inline <b>markup</b> stays.", ""].join("\n");
+    await writeFile(input, source, "utf8");
+
+    try {
+        const run = runPanduck(["convert", input, "--from", "markdown", "--to", "markdown", "-o", output, "--diagnostics", "json"]);
+        assert.equal(run.code, 0, run.stderr);
+        const markdown = await readFile(output, "utf8");
+        assert.match(markdown, /<div>/, "the authored html block must stay a raw block");
+        assert.match(markdown, /raw <span>kept<\/span>/, "every line of the html block must survive");
+        assert.match(markdown, /<\/div>/, "the block must not be truncated after its first line");
+        assert.match(markdown, /Inline <b>markup<\/b> stays\./, "inline html must stay verbatim instead of being escaped");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
 test("mixed diagram languages stay typed fences in one document", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-mixed-diagrams-"));
     const input = join(workdir, "mixed.md");

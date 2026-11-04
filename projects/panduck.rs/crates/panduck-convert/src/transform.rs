@@ -485,9 +485,9 @@ fn resolve_block(
             let (content, changed) = resolve_inlines(content, targets, repaired_references, diagnostics, pass_name);
             changed.then_some(Block::Paragraph { content })
         }
-        Block::Quote { content } => {
+        Block::Quote { content, children } => {
             let (content, changed) = resolve_inlines(content, targets, repaired_references, diagnostics, pass_name);
-            changed.then_some(Block::Quote { content })
+            changed.then(|| Block::Quote { content, children: children.clone() })
         }
         Block::List { ordered, items } => {
             let mut changed = false;
@@ -635,7 +635,7 @@ fn readable_block_text(block: &Block) -> String {
     match block {
         Block::Section { title, .. } => plain_text_of(title),
         Block::Paragraph { content } => plain_text_of(content),
-        Block::Quote { content } => plain_text_of(content),
+        Block::Quote { content, .. } => plain_text_of(content),
         Block::List { items, .. } => joined_text(items.iter().map(|item| plain_text_of(&item.content))),
         Block::Table { caption, rows } => match caption.as_deref().map(str::trim).filter(|caption| !caption.is_empty()) {
             Some(caption) => caption.to_string(),
@@ -778,9 +778,9 @@ fn rewrite_block(block: &Block, search: &str, replacement: &str) -> Option<(Bloc
             let (content, occurrences) = rewrite_inlines(content, search, replacement);
             (occurrences > 0).then(|| (Block::Paragraph { content }, occurrences))
         }
-        Block::Quote { content } => {
+        Block::Quote { content, children } => {
             let (content, occurrences) = rewrite_inlines(content, search, replacement);
-            (occurrences > 0).then(|| (Block::Quote { content }, occurrences))
+            (occurrences > 0).then(|| (Block::Quote { content, children: children.clone() }, occurrences))
         }
         Block::List { ordered, items } => {
             let mut occurrences = 0;

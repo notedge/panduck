@@ -29,15 +29,15 @@ panduck-convert = { path = "projects/panduck.rs/crates/panduck-convert" }
 panduck-napi = { path = "projects/panduck.rs/exports/panduck-napi" }
 panduck-wasm = { path = "projects/panduck.rs/exports/panduck-wasm" }
 # Overlaid by local path `.cargo/config.toml` (git ignored).
-notedown-ir = { git = "https://github.com/notedge/notedown.git", rev = "f46c6bd480afbc4243ea104d2cd34ff4f6cf03bb" }
-notedown-formats = { git = "https://github.com/notedge/notedown.git", rev = "f46c6bd480afbc4243ea104d2cd34ff4f6cf03bb", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }
-notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "f46c6bd480afbc4243ea104d2cd34ff4f6cf03bb" }
+notedown-ir = { git = "https://github.com/notedge/notedown.git", rev = "6facdde5e7bfc745f23eab249050469126788761" }
+notedown-formats = { git = "https://github.com/notedge/notedown.git", rev = "6facdde5e7bfc745f23eab249050469126788761", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }
+notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "6facdde5e7bfc745f23eab249050469126788761" }
 # DaVinci diagram chain (same repository, same rev as notedown-*).
-davinci-diagram = { git = "https://github.com/notedge/notedown.git", rev = "f46c6bd480afbc4243ea104d2cd34ff4f6cf03bb" }
-davinci-chart = { git = "https://github.com/notedge/notedown.git", rev = "f46c6bd480afbc4243ea104d2cd34ff4f6cf03bb", features = ["vega-lite"] }
+davinci-diagram = { git = "https://github.com/notedge/notedown.git", rev = "6facdde5e7bfc745f23eab249050469126788761" }
+davinci-chart = { git = "https://github.com/notedge/notedown.git", rev = "6facdde5e7bfc745f23eab249050469126788761", features = ["vega-lite"] }
 # OCF container metadata for EPUB budget enforcement (same rev as notedown).
 acorn-epub = { git = "https://github.com/yggdrasil-language/acorn.rs.git", rev = "fbed2df1626ec3800cb2e54b7b9c730bf8a2f996" }
-davinci-types = { git = "https://github.com/notedge/notedown.git", rev = "f46c6bd480afbc4243ea104d2cd34ff4f6cf03bb" }
+davinci-types = { git = "https://github.com/notedge/notedown.git", rev = "6facdde5e7bfc745f23eab249050469126788761" }
 
 # External dependencies
 serde = { version = "1.0.229", features = ["derive"] }
