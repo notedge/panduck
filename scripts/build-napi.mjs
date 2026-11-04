@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const napiDir = join(root, "projects/panduck.rs/exports/panduck-napi");
+const napiDir = join(root, "projects/panduck.rs/panduck-napi");
 
 /** @type {Record<string, { packageDir: string, fileName: string }>} */
 const ARTIFACTS = {

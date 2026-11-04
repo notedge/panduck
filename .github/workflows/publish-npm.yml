@@ -139,7 +139,7 @@ jobs:
           set -euo pipefail
           out="dist/${{ matrix.short }}"
           mkdir -p "$out"
-          src="projects/panduck.rs/exports/panduck-napi"
+          src="projects/panduck.rs/panduck-napi"
           node="$(find "$src" -maxdepth 1 -name '*.node' | head -n 1)"
           if [[ -z "$node" ]]; then
             echo "missing native binary under $src" >&2

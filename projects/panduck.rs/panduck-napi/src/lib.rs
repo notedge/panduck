@@ -4,15 +4,15 @@
 
 use std::collections::BTreeSet;
 
-use napi::bindgen_prelude::*;
-use napi_derive::napi;
-use panduck_convert::{
+use document_convert::{
     ConversionBudgets, READERS, WRITERS, convert_bytes_with_budgets, convert_file_with_budgets,
     convert_markdown_project_file_with_budgets,
     convert_to_markdown_project_with_budgets as convert_markdown_project_bytes_impl, empty_diagnostic_envelope,
     inspect_docx_decode, inspect_docx_index, supported_routes, supports_markdown_project_source, supports_route,
 };
-use panduck_types::AdapterError;
+use document_types::AdapterError;
+use napi::bindgen_prelude::*;
+use napi_derive::napi;
 
 /// N-API Markdown project conversion response.
 #[napi(object)]
@@ -157,7 +157,7 @@ pub fn inspect_index(input_path: String) -> InspectIndexResponse {
         }
     };
     let report_json = serde_json::json!({
-        "schema_version": panduck_convert::SCHEMA_REPORT,
+        "schema_version": document_convert::SCHEMA_REPORT,
         "operation": "inspect",
         "status": "success",
         "inputs": [{ "path": input_path, "format": index.format }],
@@ -211,7 +211,7 @@ pub fn inspect_decode(input_path: String, part_path: Option<String>) -> InspectD
         })
         .collect::<Vec<_>>();
     let report_json = serde_json::json!({
-        "schema_version": panduck_convert::SCHEMA_REPORT,
+        "schema_version": document_convert::SCHEMA_REPORT,
         "operation": "inspect",
         "status": "success",
         "inputs": [{ "path": input_path, "format": decode.format }],
@@ -264,7 +264,8 @@ pub fn convert_markdown_project(
     budgets_json: Option<String>,
 ) -> ConvertProjectResponse {
     let budgets = ConversionBudgets::from_json(budgets_json.as_deref());
-    match convert_markdown_project_file_with_budgets(&from, &input_path, &output_dir, handlers_json.as_deref(), Some(&budgets)) {
+    match convert_markdown_project_file_with_budgets(&from, &input_path, &output_dir, handlers_json.as_deref(), Some(&budgets))
+    {
         Ok((output, published)) => ConvertProjectResponse {
             exit_code: 0,
             index_markdown: output.index_markdown,
@@ -294,7 +295,14 @@ pub fn convert_markdown_project_bytes(
     budgets_json: Option<String>,
 ) -> ConvertProjectResponse {
     let budgets = ConversionBudgets::from_json(budgets_json.as_deref());
-    match convert_markdown_project_bytes_impl(&from, &label, bytes.to_vec(), &output_dir, handlers_json.as_deref(), Some(&budgets)) {
+    match convert_markdown_project_bytes_impl(
+        &from,
+        &label,
+        bytes.to_vec(),
+        &output_dir,
+        handlers_json.as_deref(),
+        Some(&budgets),
+    ) {
         Ok((output, published)) => ConvertProjectResponse {
             exit_code: 0,
             index_markdown: output.index_markdown,
@@ -380,12 +388,12 @@ pub fn convert_bytes_memory(
 fn build_convert_error_report(from: &str, to: &str, label: &str, error: &AdapterError) -> ConvertResponse {
     use boost_diagnostic::{DiagnosticEnvelope, DiagnosticSet};
 
-    let diagnostic = panduck_convert::from_adapter_error(error);
+    let diagnostic = document_convert::from_adapter_error(error);
     let mut set = DiagnosticSet::new();
     set.push(diagnostic);
     let envelope = DiagnosticEnvelope::from_set(&set);
     let report_json = serde_json::json!({
-        "schema_version": panduck_convert::SCHEMA_REPORT,
+        "schema_version": document_convert::SCHEMA_REPORT,
         "operation": "convert",
         "status": "failed",
         "inputs": [{ "path": label, "format": from }],
@@ -401,12 +409,12 @@ fn build_convert_error_report(from: &str, to: &str, label: &str, error: &Adapter
 fn build_project_error_report(from: &str, input_path: &str, output_dir: &str, error: &AdapterError) -> ConvertProjectResponse {
     use boost_diagnostic::{DiagnosticEnvelope, DiagnosticSet};
 
-    let diagnostic = panduck_convert::from_adapter_error(error);
+    let diagnostic = document_convert::from_adapter_error(error);
     let mut set = DiagnosticSet::new();
     set.push(diagnostic);
     let envelope = DiagnosticEnvelope::from_set(&set);
     let report_json = serde_json::json!({
-        "schema_version": panduck_convert::SCHEMA_REPORT,
+        "schema_version": document_convert::SCHEMA_REPORT,
         "operation": "convert",
         "status": "failed",
         "inputs": [{ "path": input_path, "format": from }],
@@ -435,12 +443,12 @@ fn build_project_error_report(from: &str, input_path: &str, output_dir: &str, er
 fn build_inspect_error_report(operation: &str, label: &str, error: &AdapterError) -> String {
     use boost_diagnostic::{DiagnosticEnvelope, DiagnosticSet};
 
-    let diagnostic = panduck_convert::from_adapter_error(error);
+    let diagnostic = document_convert::from_adapter_error(error);
     let mut set = DiagnosticSet::new();
     set.push(diagnostic);
     let envelope = DiagnosticEnvelope::from_set(&set);
     serde_json::json!({
-        "schema_version": panduck_convert::SCHEMA_REPORT,
+        "schema_version": document_convert::SCHEMA_REPORT,
         "operation": "inspect",
         "status": "failed",
         "inputs": [{ "path": label }],

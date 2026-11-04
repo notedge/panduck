@@ -108,14 +108,11 @@ Every real conversion can produce `panduck.report/v0` JSON (`--report`, stdout, 
 
 Read the report even when the command exits 0. Use `--strict` if you want losses to count as failure.
 
-## 🦀 Rust facade
+## 🦀 Rust adapter
 
-The `panduck` crate is a feature-gated facade over `panduck-types`, `panduck-diagnostic`, and `panduck-convert`. See [`projects/panduck.rs/crates/panduck/readme.md`](projects/panduck.rs/crates/panduck/readme.md).
+The only Rust code left in this repo is the Node-API adapter at [`projects/panduck.rs/panduck-napi/src/lib.rs`](projects/panduck.rs/panduck-napi/src/lib.rs). Conversion itself lives in the [`document.rs`](https://github.com/notedge/document.rs) family and is consumed through `document-convert`, pinned by `git rev` in the root `Cargo.toml`.
 
-```toml
-[dependencies]
-panduck = { version = "0.0.5", default-features = false, features = ["convert", "logger"] }
-```
+The adapter keeps no format logic of its own: it validates arguments, calls `document-convert`, and maps failures into `panduck.report/v0` envelopes.
 
 ## 🧪 Node API
 

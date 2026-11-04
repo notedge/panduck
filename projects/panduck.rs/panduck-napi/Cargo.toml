@@ -1,64 +1,32 @@
 [package]
-
 name = "panduck-napi"
-
 version.workspace = true
-
 description = "Node-API bindings for Panduck document conversion"
-
 readme = "readme.md"
-
 homepage = "https://github.com/notedge/panduck"
-
 repository = "https://github.com/notedge/panduck"
-
 authors.workspace = true
-
 license.workspace = true
-
 edition.workspace = true
 
-
-
 [lib]
-
 crate-type = ["cdylib", "rlib"]
 
-
-
 [dependencies]
-
 napi = { workspace = true }
-
 napi-derive = { workspace = true }
-
-panduck-convert = { workspace = true, features = ["logger"] }
-
-panduck-types = { workspace = true }
-
+document-convert = { workspace = true, features = ["logger"] }
+document-types = { workspace = true }
 boost-diagnostic = { workspace = true }
-
 boost-log = { workspace = true }
-
 serde_json = { workspace = true }
 
-
-
 [dev-dependencies]
-
 boost-log = { workspace = true }
-
 serial_test = "3.2.0"
 
-
-
 [build-dependencies]
-
 napi-build = "2"
 
-
-
 [package.metadata.napi]
-
 name = "panduck"
-

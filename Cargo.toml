@@ -1,14 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-    "projects/panduck.rs/crates/*",
-    "projects/panduck.rs/exports/*",
+    "projects/panduck.rs/panduck-napi",
+    "projects/panduck.rs/panduck-wasm",
 ]
 default-members = [
-    "projects/panduck.rs/crates/panduck",
-    "projects/panduck.rs/crates/panduck-types",
-    "projects/panduck.rs/crates/panduck-convert",
-    "projects/panduck.rs/exports/panduck-napi",
+    "projects/panduck.rs/panduck-napi",
 ]
 
 [workspace.package]
@@ -21,31 +18,13 @@ edition = "2024"
 # Overlaid by local path `.cargo/config.toml` (git ignored).
 boost-diagnostic = { git = "https://github.com/oovm/rust-boost", rev = "9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86", default-features = false, features = ["std", "serde"] }
 boost-log = { git = "https://github.com/oovm/rust-boost", rev = "9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86" }
-# Overlaid by local path `.cargo/config.toml` (git ignored).
-panduck = { path = "projects/panduck.rs/crates/panduck" }
-panduck-types = { path = "projects/panduck.rs/crates/panduck-types" }
-panduck-diagnostic = { path = "projects/panduck.rs/crates/panduck-diagnostic" }
-panduck-convert = { path = "projects/panduck.rs/crates/panduck-convert" }
-panduck-napi = { path = "projects/panduck.rs/exports/panduck-napi" }
-panduck-wasm = { path = "projects/panduck.rs/exports/panduck-wasm" }
-# Overlaid by local path `.cargo/config.toml` (git ignored).
-notedown-ir = { git = "https://github.com/notedge/notedown.git", rev = "6facdde5e7bfc745f23eab249050469126788761" }
-notedown-formats = { git = "https://github.com/notedge/notedown.git", rev = "6facdde5e7bfc745f23eab249050469126788761", default-features = false, features = ["markdown", "notedown", "docx", "doc", "pdf", "epub", "html"] }
-notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "6facdde5e7bfc745f23eab249050469126788761" }
-# DaVinci diagram chain (same repository, same rev as notedown-*).
-davinci-diagram = { git = "https://github.com/notedge/notedown.git", rev = "6facdde5e7bfc745f23eab249050469126788761" }
-davinci-chart = { git = "https://github.com/notedge/notedown.git", rev = "6facdde5e7bfc745f23eab249050469126788761", features = ["vega-lite"] }
-# OCF container metadata for EPUB budget enforcement (same rev as notedown).
-acorn-epub = { git = "https://github.com/yggdrasil-language/acorn.rs.git", rev = "fbed2df1626ec3800cb2e54b7b9c730bf8a2f996" }
-davinci-types = { git = "https://github.com/notedge/notedown.git", rev = "6facdde5e7bfc745f23eab249050469126788761" }
+# Document family implementation. Pinned to `document.rs` so the local tree keeps only the Node-API adapter.
+document-convert = { git = "https://github.com/notedge/document.rs", rev = "34e0c25de2807ba8beaf24a9415f55c21b311894" }
+document-diagnostic = { git = "https://github.com/notedge/document.rs", rev = "34e0c25de2807ba8beaf24a9415f55c21b311894", default-features = false }
+document-types = { git = "https://github.com/notedge/document.rs", rev = "34e0c25de2807ba8beaf24a9415f55c21b311894" }
 
 # External dependencies
-serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.154"
-url = { version = "2.5.7", features = ["serde"] }
-source-map = "0.15.0"
-byteorder = "1.5.0"
-blake3 = "1.8.7"
 wasm-bindgen = "0.2.129"
 napi = { version = "3.14.2", default-features = false, features = ["napi4"] }
 napi-derive = "3.6.12"
@@ -57,4 +36,3 @@ opt-level = "s"
 [workspace.metadata.release]
 push = false
 tag = false
-
