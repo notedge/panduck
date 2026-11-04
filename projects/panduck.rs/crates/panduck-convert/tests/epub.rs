@@ -155,3 +155,59 @@ fn epub_to_docx_route_reopens_semantic_content() {
     assert!(status.contains("success") && status.contains("loss"), "expected a success+loss status, got {status}");
     assert!(report["losses"].as_array().expect("losses").iter().any(|loss| loss["code"] == "import.epub.partial_coverage"));
 }
+
+fn assert_budget_error(error: panduck_types::AdapterError) {
+    match error {
+        panduck_types::AdapterError::Diagnostic { diagnostic } => {
+            assert_eq!(format!("{}", diagnostic.code()), "notedown.format.budget-exhausted");
+        }
+        other => panic!("expected a structured budget diagnostic, got {other:?}"),
+    }
+}
+
+#[test]
+fn epub_container_entries_budget_is_enforced_before_import() {
+    let budgets = panduck_convert::ConversionBudgets { decompressed_bytes: None, container_entries: Some(2) };
+    let error = panduck_convert::convert_bytes_with_budgets(
+        "epub",
+        "markdown",
+        "book.epub",
+        minimal_epub_zip(),
+        None,
+        Some(&budgets),
+    )
+    .expect_err("an EPUB with four members must not pass a two-entry budget");
+    assert_budget_error(error);
+}
+
+#[test]
+fn epub_decompressed_bytes_budget_is_enforced_before_import() {
+    let budgets = panduck_convert::ConversionBudgets { decompressed_bytes: Some(256), container_entries: None };
+    let error = panduck_convert::convert_bytes_with_budgets(
+        "epub",
+        "markdown",
+        "book.epub",
+        minimal_epub_zip(),
+        None,
+        Some(&budgets),
+    )
+    .expect_err("the declared member sizes must not pass a 256 byte budget");
+    assert_budget_error(error);
+}
+
+#[test]
+fn epub_container_offers_its_member_sizes_as_declared_uncompressed_bytes() {
+    // Member count is indexed, so the same document passes a permissive budget
+    // and only the totals are reported to the caller.
+    let budgets = panduck_convert::ConversionBudgets { decompressed_bytes: Some(65536), container_entries: Some(64) };
+    let output = panduck_convert::convert_bytes_with_budgets(
+        "epub",
+        "markdown",
+        "book.epub",
+        minimal_epub_zip(),
+        None,
+        Some(&budgets),
+    )
+    .expect("a permissive container budget must not block the conversion");
+    assert!(output.markdown.contains("Hello EPUB"));
+}

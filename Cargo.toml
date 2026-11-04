@@ -35,6 +35,8 @@ notedown-fixtures = { git = "https://github.com/notedge/notedown.git", rev = "e8
 # DaVinci diagram chain (same repository, same rev as notedown-*).
 davinci-diagram = { git = "https://github.com/notedge/notedown.git", rev = "e847345eb502684ce20bf3dc76e03154bf1d5e8b" }
 davinci-chart = { git = "https://github.com/notedge/notedown.git", rev = "e847345eb502684ce20bf3dc76e03154bf1d5e8b", features = ["vega-lite"] }
+# OCF container metadata for EPUB budget enforcement (same rev as notedown).
+acorn-epub = { git = "https://github.com/yggdrasil-language/acorn.rs.git", rev = "fbed2df1626ec3800cb2e54b7b9c730bf8a2f996" }
 davinci-types = { git = "https://github.com/notedge/notedown.git", rev = "e847345eb502684ce20bf3dc76e03154bf1d5e8b" }
 
 # External dependencies
