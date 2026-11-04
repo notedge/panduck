@@ -13,8 +13,8 @@ const result = panduck.convertBytesMemory(
 const report = JSON.parse(result.reportJson)
 
 console.log(`exit ${result.exitCode} · status ${report.status}`)
-for (const diagnostic of report.diagnostics ?? []) {
-    console.log(`  ${diagnostic.code}: ${diagnostic.message}`)
+for (const diagnostic of report.diagnostics?.diagnostics ?? []) {
+    console.log(`  ${diagnostic.code}: ${diagnostic.message?.fallback ?? ""}`)
 }
 if (result.exitCode === 0) {
     throw new Error("expected the html route to refuse this sample")

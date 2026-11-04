@@ -8,11 +8,11 @@
 
 当前示例：
 
-| 目录 | 演示什么 | 命令 |
+| 目录 / 脚本 | 演示什么 | 命令 |
 | --- | --- | --- |
-| `convert-markdown/` | 用公开的 `loadPanduckNode` 跑一次 markdown 转 html | `pnpm --filter @notedge/panduck-examples convert-markdown` |
-| `conformance/` | 调用 harness 的 `verify`，检查语料可被下游读取 | `pnpm --filter @notedge/panduck-examples conformance` |
-| `markdown-to-html.mjs` | 读 `convert/diagrams.md`，DOT / Mermaid / PlantUML 三个 fence 各渲染成 SVG | `pnpm --filter @notedge/panduck-examples markdown-to-html` |
-| `roundtrip-docx.mjs` | 读 `convert/roundtrip.md`，markdown 转 docx 再转回 markdown | `pnpm --filter @notedge/panduck-examples roundtrip-docx` |
-| `pdf-route.mjs` | 同一条输入走 markdown 转 pdf 再转回 markdown，打印 loss 码 | `pnpm --filter @notedge/panduck-examples pdf-route` |
-| `html-refusal.mjs` | 读 `notedown/basic.html`，演示声明式拒绝的诊断码 | `pnpm --filter @notedge/panduck-examples html-refusal` |
+| `convert-markdown/` | 自带输入的 markdown 转 html | `pnpm --filter @notedge/panduck-examples convert-markdown` |
+| `conformance/` | 调 harness 的 `verify`，检查语料可被下游读取 | `pnpm --filter @notedge/panduck-examples conformance` |
+| `markdown-to-html.mjs` | 语料里的 DOT / Mermaid / PlantUML 围栏渲染成 SVG | `pnpm --filter @notedge/panduck-examples markdown-to-html` |
+| `roundtrip-docx.mjs` | markdown 经 docx 往返 | `pnpm --filter @notedge/panduck-examples roundtrip-docx` |
+| `pdf-route.mjs` | markdown 经 pdf 往返 | `pnpm --filter @notedge/panduck-examples pdf-route` |
+| `html-refusal.mjs` | 行内属性的拒绝路径与诊断码 | `pnpm --filter @notedge/panduck-examples html-refusal` |
