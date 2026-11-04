@@ -41,7 +41,9 @@ export type IrCase = {
 /** One accepted diagram source that must lower and render. */
 export type DiagramSpecCase = {
     readonly id: string;
-    readonly language: "dot" | "mermaid" | "plantuml";
+    readonly language: "dot" | "mermaid" | "plantuml" | "tikz";
+    /** Id of an equivalent row kept from the other contract file, if any. */
+    readonly alias?: string;
     readonly classification: "accept";
     readonly source: string;
     readonly expect: Readonly<Record<string, unknown>>;
@@ -50,7 +52,7 @@ export type DiagramSpecCase = {
 /** One rejected diagram source with its documented code and authored span. */
 export type DiagramRejectionCase = {
     readonly id: string;
-    readonly language: "dot" | "mermaid" | "plantuml";
+    readonly language: "dot" | "mermaid" | "plantuml" | "tikz";
     readonly source: string;
     readonly code: string;
     readonly severity: "error" | "warning";
@@ -231,7 +233,7 @@ export function loadDiagramCases(): {
     if (raw.schema !== "panduck.fixtures.plotter.diagram") {
         throw new Error(`unexpected manifest schema in ${file}: ${String(raw.schema)}`);
     }
-    const languages = new Set(["dot", "mermaid", "plantuml"]);
+    const languages = new Set(["dot", "mermaid", "plantuml", "tikz"]);
     const specsRaw = Array.isArray(raw.specs) ? raw.specs : [];
     const rejectionsRaw = Array.isArray(raw.rejections) ? raw.rejections : [];
     if (specsRaw.length === 0 || rejectionsRaw.length === 0) {
@@ -249,6 +251,7 @@ export function loadDiagramCases(): {
             return {
                 id,
                 language: language as DiagramSpecCase["language"],
+                alias: typeof row.alias === "string" ? row.alias : undefined,
                 classification: "accept" as const,
                 source: stringField(row, "source", label),
                 expect: expectObject(row, label),

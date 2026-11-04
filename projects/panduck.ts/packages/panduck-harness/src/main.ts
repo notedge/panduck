@@ -7,11 +7,14 @@ import {
     loadFormatManifest,
     loadIrCases,
     loadRuntimePasses,
+    type DiagramRejectionCase,
+    type DiagramSpecCase,
 } from "@notedge/panduck-fixtures";
 import {
     bindingLocation,
     capabilities,
     lexSource,
+    renderDiagramSource,
     runCase,
 } from "./adapter.js";
 import { aggregateCategory, evaluateExpectation, evaluateSnapshot } from "./assertions.js";
@@ -30,6 +33,7 @@ import type {
     CaseDefinition,
     CaseObservation,
     CaseResult,
+    DiagramObservation,
     GapRecord,
     RunReport,
     SnapshotCaseDefinition,
@@ -39,10 +43,10 @@ import { writeBaseline, writeRun } from "./archive.js";
 import { measureCoverage, printCoverage, writeCoverage } from "./coverage.js";
 
 type Command = "run" | "list" | "verify" | "baseline" | "accept" | "oracle" | "coverage" | "help";
-type Suite = "all" | "convert" | "notedown";
+type Suite = "all" | "convert" | "notedown" | "diagram";
 
 const USAGE = [
-    "panduck-harness <command> [--suite all|convert|notedown] [--name <baseline>]",
+    "panduck-harness <command> [--suite all|convert|notedown|diagram] [--name <baseline>]",
     "",
     "  run        Execute the runnable suites and archive observations under results/",
     "  verify     Validate the checked-in corpus without loading the binding",
@@ -72,7 +76,7 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
         const argument = argv[index];
         if (argument === "--suite") {
             const value = argv[index + 1];
-            if (value !== "all" && value !== "convert" && value !== "notedown") {
+            if (value !== "all" && value !== "convert" && value !== "notedown" && value !== "diagram") {
                 throw new Error(`unsupported suite: ${String(value)}`);
             }
             suite = value;
@@ -148,12 +152,12 @@ const CORPUS_GAPS: readonly GapRecord[] = [
         affectedCases: ["chart-*"],
     },
     {
-        id: "gap-diagram-render",
+        id: "gap-diagram-tikz",
         repo: "panduck",
-        capability: "plotter.diagram DOT, Mermaid and PlantUML render",
-        neededEntry: "a binding entry that lowers a diagram language to SVG",
+        capability: "plotter.diagram TikZ frontend",
+        neededEntry: "a TikZ lowering entry in the plotter family, plus its binding here",
         evidence: "expectations/plotter/diagram/cases.json",
-        affectedCases: ["diagram-*"],
+        affectedCases: ["diagram-tikz-*"],
     },
     {
         id: "gap-runtime-passes",
@@ -297,6 +301,141 @@ function classifications(cases: readonly CaseResult[]): RunReport["classificatio
     };
 }
 
+const TIKZ_GAP = "TikZ has no plotter frontend in Panduck, so this case stays a gap";
+
+function diagramRun(
+    id: string,
+    title: string,
+    assertions: readonly AssertionResult[],
+    details: Readonly<Record<string, unknown>>,
+    gap?: string,
+): CaseRun {
+    const category = aggregateCategory(assertions);
+    return {
+        observation: {
+            caseId: id,
+            kind: "convert",
+            legs: [],
+            durationMs: 0,
+            capabilities: { version: "unavailable", formats: [], conversions: [] },
+            details,
+        },
+        result: {
+            id,
+            title,
+            kind: "convert",
+            status: category === undefined ? "pass" : "fail",
+            category,
+            assertions,
+            durationMs: 0,
+            gap,
+        },
+    };
+}
+
+function diagramGapRun(id: string, title: string): CaseRun {
+    return diagramRun(
+        id,
+        title,
+        [corpusIntegrity("diagram-frontend", false, TIKZ_GAP)],
+        { gap: TIKZ_GAP },
+        "gap-diagram-tikz",
+    );
+}
+
+function describeDiagramSpec(definition: DiagramSpecCase): CaseRun {
+    if (definition.language === "tikz") {
+        return diagramGapRun(definition.id, `${definition.language} source lowers to a scene`);
+    }
+    const first = renderDiagramSource(definition.language, definition.source);
+    if (first.error !== undefined) {
+        return diagramRun(
+            definition.id,
+            `${definition.language} source renders`,
+            [corpusIntegrity("diagram-entry", false, first.error)],
+            { language: definition.language, error: first.error },
+        );
+    }
+    const second = renderDiagramSource(definition.language, definition.source);
+    const failures: AssertionResult[] = [];
+    const assertion = (check: string, ok: boolean, detail: string): void => {
+        failures.push(
+            ok
+                ? { assertion: { kind: "corpus-integrity", check }, status: "pass", detail }
+                : { assertion: { kind: "corpus-integrity", check }, status: "fail", detail, category: "implementation-defect" },
+        );
+    };
+    assertion("diagram-lower", first.success, `success is ${first.success}`);
+    assertion(
+        "diagram-render",
+        first.svg !== null && first.svg.includes("<svg"),
+        first.svg === null ? "svg is missing" : `svg carries ${first.svg.length} bytes`,
+    );
+    const deterministic = first.svg !== null && first.svg === second.svg;
+    assertion(
+        "diagram-deterministic",
+        deterministic,
+        deterministic ? "two renders are byte identical" : "two renders differ",
+    );
+    return diagramRun(
+        definition.id,
+        `${definition.language} source renders`,
+        failures,
+        {
+            language: definition.language,
+            svgBytes: first.svg?.length ?? 0,
+            diagnostics: first.diagnostics.length,
+        },
+    );
+}
+
+function describeDiagramRejection(definition: DiagramRejectionCase): CaseRun {
+    if (definition.language === "tikz") {
+        return diagramGapRun(definition.id, `${definition.language} rejection is reported`);
+    }
+    const observation = renderDiagramSource(definition.language, definition.source);
+    if (observation.error !== undefined) {
+        return diagramRun(
+            definition.id,
+            `${definition.language} rejection is reported`,
+            [corpusIntegrity("diagram-entry", false, observation.error)],
+            { language: definition.language, error: observation.error },
+        );
+    }
+    const diagnostic = observation.diagnostics[0];
+    const assertion = (check: string, ok: boolean, detail: string): AssertionResult =>
+        ok
+            ? { assertion: { kind: "corpus-integrity", check }, status: "pass", detail }
+            : { assertion: { kind: "corpus-integrity", check }, status: "fail", detail, category: "implementation-defect" };
+    const assertions = [
+        assertion("diagram-rejected", !observation.success, `success is ${observation.success}`),
+        assertion(
+            "diagram-code",
+            diagnostic?.code === definition.code,
+            `code is ${diagnostic?.code ?? "absent"}, expected ${definition.code}`,
+        ),
+        assertion(
+            "diagram-span",
+            diagnostic?.spanText === definition.spanText,
+            `spanText is ${JSON.stringify(diagnostic?.spanText ?? "")}, expected ${JSON.stringify(definition.spanText)}`,
+        ),
+    ];
+    return diagramRun(
+        definition.id,
+        `${definition.language} rejection is reported`,
+        assertions,
+        { language: definition.language, code: diagnostic?.code ?? null, spanText: diagnostic?.spanText ?? null },
+    );
+}
+
+function diagramRuns(): readonly CaseRun[] {
+    const corpus = loadDiagramCases();
+    return [
+        ...corpus.specs.map(describeDiagramSpec),
+        ...corpus.rejections.map(describeDiagramRejection),
+    ];
+}
+
 function report(suite: Suite, cases: readonly CaseResult[], bindingsAvailable: boolean): RunReport {
     const startedAt = new Date();
     return {
@@ -345,6 +484,12 @@ async function commandRun(suite: Suite): Promise<number> {
     if (suite === "all" || suite === "notedown") {
         for (const definition of loadSnapshotCases()) {
             const run = describeSnapshot(definition);
+            cases.push(run.result);
+            observations.push(run.observation);
+        }
+    }
+    if (suite === "all" || suite === "diagram") {
+        for (const run of diagramRuns()) {
             cases.push(run.result);
             observations.push(run.observation);
         }

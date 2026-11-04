@@ -105,6 +105,19 @@ type NativeBinding = {
         }>;
         diagnostics: string[];
     };
+    renderDiagram?: (
+        language: string,
+        source: string,
+    ) => {
+        success: boolean;
+        svg: string | null;
+        diagnostics: Array<{
+            code: string;
+            severity: string;
+            message: string;
+            spanText: string;
+        }>;
+    };
 };
 
 const PLATFORM_PACKAGES: Record<string, string> = {
@@ -241,6 +254,21 @@ export function loadPanduckNode(): PanduckBindings {
                           ignored: token.ignored,
                       })),
                       diagnostics: response.diagnostics,
+                  };
+              }
+            : undefined,
+        renderDiagram: binding.renderDiagram
+            ? (language, source) => {
+                  const response = binding.renderDiagram!(language, source);
+                  return {
+                      success: response.success,
+                      svg: response.svg,
+                      diagnostics: response.diagnostics.map((diagnostic) => ({
+                          code: diagnostic.code,
+                          severity: diagnostic.severity,
+                          message: diagnostic.message,
+                          spanText: diagnostic.spanText,
+                      })),
                   };
               }
             : undefined,

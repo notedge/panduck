@@ -28,6 +28,11 @@ oak-xml = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "926
 
 # Document family implementation. Pinned to `document.rs` so the local tree keeps only the Node-API adapter.
 document-convert = { git = "https://github.com/notedge/document.rs", rev = "34e0c25de2807ba8beaf24a9415f55c21b311894" }
+plotter-diagram = { git = "https://github.com/notedge/document.rs", rev = "34e0c25de2807ba8beaf24a9415f55c21b311894" }
+plotter-input-dot = { git = "https://github.com/notedge/document.rs", rev = "34e0c25de2807ba8beaf24a9415f55c21b311894" }
+plotter-input-mermaid = { git = "https://github.com/notedge/document.rs", rev = "34e0c25de2807ba8beaf24a9415f55c21b311894" }
+plotter-input-plantuml = { git = "https://github.com/notedge/document.rs", rev = "34e0c25de2807ba8beaf24a9415f55c21b311894" }
+plotter-types = { git = "https://github.com/notedge/document.rs", rev = "34e0c25de2807ba8beaf24a9415f55c21b311894" }
 document-diagnostic = { git = "https://github.com/notedge/document.rs", rev = "34e0c25de2807ba8beaf24a9415f55c21b311894", default-features = false }
 document-types = { git = "https://github.com/notedge/document.rs", rev = "34e0c25de2807ba8beaf24a9415f55c21b311894" }
 

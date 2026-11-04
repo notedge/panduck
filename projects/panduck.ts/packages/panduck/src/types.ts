@@ -65,6 +65,27 @@ export type LexResponse = {
     diagnostics: string[];
 };
 
+/** One diagram diagnostic, fatal or non-fatal. */
+export type DiagramDiagnostic = {
+    /** Stable diagnostic code such as `davinci.diagram.unsupported`. */
+    code: string;
+    /** `error`, `warning` or `info`. */
+    severity: string;
+    /** Human readable message. */
+    message: string;
+    /** Source slice the diagnostic points at, empty when it has no span. */
+    spanText: string;
+};
+
+export type DiagramRenderResponse = {
+    /** False when the source was rejected or rendering failed. */
+    success: boolean;
+    /** SVG document for accepted sources. */
+    svg: string | null;
+    /** Diagnostics in source order. */
+    diagnostics: DiagramDiagnostic[];
+};
+
 /** Shared Panduck binding surface for Node-API and WebAssembly backends. */
 export type PanduckBindings = {
     panduckVersion: () => string;
@@ -109,6 +130,8 @@ export type PanduckBindings = {
     inspectDecode?: (inputPath: string, partPath?: string) => InspectDecodeResponse;
     /** Lexically analyse source text with the grammar Panduck reads it as. */
     lexDocument?: (language: string, source: string) => LexResponse;
+    /** Render a diagram source through the matching plotter frontend. */
+    renderDiagram?: (language: string, source: string) => DiagramRenderResponse;
     installLoggerLogFile?: (path: string) => void;
     installConsoleLogFile?: (path: string) => void;
 };

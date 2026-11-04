@@ -177,6 +177,19 @@ export type SnapshotCaseDefinition = {
     readonly comparison: string;
 };
 
+/** Observation of one public `renderDiagram` call. */
+export type DiagramObservation = {
+    readonly success: boolean;
+    readonly svg: string | null;
+    readonly diagnostics: readonly {
+        readonly code: string;
+        readonly severity: string;
+        readonly message: string;
+        readonly spanText: string;
+    }[];
+    readonly error?: string;
+};
+
 /** Observation of one public `lexDocument` call. */
 export type LexObservation = {
     readonly success: boolean;

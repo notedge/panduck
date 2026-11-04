@@ -8,6 +8,7 @@ import type {
     CaseObservation,
     CaseDefinition,
     CapabilitySnapshot,
+    DiagramObservation,
     LegObservation,
     LexObservation,
 } from "./types.js";
@@ -172,6 +173,34 @@ export function runCase(definition: CaseDefinition): CaseObservation {
 /** Runs one format pair in memory so the coverage matrix can measure a feature. */
 export function probeConversion(from: string, to: string, text: string): LegObservation {
     return convertLeg(from, to, `coverage.${from}`, Buffer.from(text, "utf8")).observation;
+}
+
+/** Renders a diagram source through the public `renderDiagram` entry. */
+export function renderDiagramSource(language: string, source: string): DiagramObservation {
+    const render = bindings().renderDiagram;
+    if (typeof render !== "function") {
+        return {
+            success: false,
+            svg: null,
+            diagnostics: [],
+            error: "missing-entry: `PanduckBindings.renderDiagram` is not exposed by this build",
+        };
+    }
+    try {
+        const response = render(language, source);
+        return {
+            success: response.success,
+            svg: response.svg ?? null,
+            diagnostics: response.diagnostics,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            svg: null,
+            diagnostics: [],
+            error: error instanceof Error ? error.message : String(error),
+        };
+    }
 }
 
 /** Lexes source text through the public `lexDocument` entry. */

@@ -2,10 +2,16 @@
     "schema": "panduck.fixtures.plotter.diagram",
     "provenance": {
         "repo": "document.rs",
-        "crates": ["plotter.diagram", "plotter.input.dot", "plotter.input.mermaid", "plotter.input.plantuml"],
+        "crates": [
+            "plotter.diagram",
+            "plotter.input.dot",
+            "plotter.input.mermaid",
+            "plotter.input.plantuml"
+        ],
         "tests": "projects/plotter/plotter.diagram/tests",
         "catalog": "projects/plotter/plotter.types/catalog/rejections.json",
-        "note": "DOT, Mermaid and PlantUML are active inputs. Accepted sources must lower and render, rejected sources must name a code."
+        "note": "DOT, Mermaid and PlantUML are active inputs. Accepted sources must lower and render, rejected sources must name a code.",
+        "merged": "projects/plotter/input-contracts.json merged by id, `diagram-mermaid-class-method` kept as an alias of `diagram-mermaid-class`"
     },
     "specs": [
         {
@@ -13,56 +19,142 @@
             "language": "mermaid",
             "classification": "accept",
             "source": "flowchart TD\n  A[Start] --> B{Ready?}\n  B -->|yes| C[Stop]\n  B -->|no| D[Retry]\n",
-            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            }
         },
         {
             "id": "diagram-mermaid-class",
             "language": "mermaid",
             "classification": "accept",
             "source": "classDiagram\n  class A {\n    +run()\n  }\n  A <|-- B\n",
-            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            },
+            "alias": "diagram-mermaid-class-method"
         },
         {
             "id": "diagram-mermaid-subgraph",
             "language": "mermaid",
             "classification": "accept",
             "source": "flowchart LR\n  subgraph group[Group]\n    A --> B\n  end\n",
-            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            }
         },
         {
             "id": "diagram-mermaid-sequence",
             "language": "mermaid",
             "classification": "accept",
             "source": "sequenceDiagram\n  participant A\n  participant B\n  A->>B: hello\n  B-->>A: world\n",
-            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            }
         },
         {
             "id": "diagram-dot-ranked",
             "language": "dot",
             "classification": "accept",
             "source": "digraph rank {\n  rankdir=LR;\n  node [shape=box];\n  A [shape=circle];\n  B [label=\"Work\"];\n  A -> B [label=\"go\"];\n}\n",
-            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            }
         },
         {
             "id": "diagram-dot-cluster",
             "language": "dot",
             "classification": "accept",
             "source": "digraph groups {\n  subgraph cluster_core {\n    label=\"Core\";\n    A -> B;\n  }\n  B -> C;\n}\n",
-            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            }
         },
         {
             "id": "diagram-dot-undirected",
             "language": "dot",
             "classification": "accept",
             "source": "graph plain {\n  A -- B;\n}\n",
-            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            }
         },
         {
             "id": "diagram-plantuml-sequence",
             "language": "plantuml",
             "classification": "accept",
             "source": "@startuml\nAlice -> Bob: hello\n@enduml\n",
-            "expect": {"lower": "spec", "render": "svg", "deterministic": true}
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            }
+        },
+        {
+            "id": "diagram-dot-named-graph",
+            "language": "dot",
+            "classification": "accept",
+            "source": "digraph named {\n  A -> B;\n}\n",
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            }
+        },
+        {
+            "id": "diagram-dot-rounded",
+            "language": "dot",
+            "classification": "accept",
+            "source": "digraph {\n  A [style=rounded]\n}\n",
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            }
+        },
+        {
+            "id": "diagram-plantuml-class",
+            "language": "plantuml",
+            "classification": "accept",
+            "source": "@startuml\nclass Order {\n  +id : String\n}\n@enduml\n",
+            "expect": {
+                "lower": "spec",
+                "render": "svg",
+                "deterministic": true
+            }
+        },
+        {
+            "id": "diagram-tikz-polyline",
+            "language": "tikz",
+            "classification": "accept",
+            "source": "\\begin{tikzpicture}\n\\draw (0,0) -- (2,1);\n\\end{tikzpicture}\n",
+            "expect": {
+                "lower": "scene",
+                "deterministic": true
+            }
+        },
+        {
+            "id": "diagram-tikz-rectangle",
+            "language": "tikz",
+            "classification": "accept",
+            "source": "\\draw[red] (0,0) rectangle (1,1);\n",
+            "expect": {
+                "lower": "scene",
+                "deterministic": true
+            }
         }
     ],
     "rejections": [
@@ -121,6 +213,38 @@
             "code": "davinci.diagram.unsupported",
             "severity": "error",
             "spanText": "A -> B"
+        },
+        {
+            "id": "diagram-mermaid-note-with-arrow-text",
+            "language": "mermaid",
+            "source": "sequenceDiagram\n  participant Alice\n  participant Bob\n  Note over Alice,Bob: click -> here\n  Alice->>Bob: Hello\n",
+            "code": "davinci.diagram.unsupported",
+            "severity": "error",
+            "spanText": "Note over Alice,Bob: click -> here"
+        },
+        {
+            "id": "diagram-mermaid-state-family",
+            "language": "mermaid",
+            "source": "stateDiagram-v2\n  [*] --> Still\n",
+            "code": "davinci.diagram.unsupported",
+            "severity": "error",
+            "spanText": "stateDiagram-v2"
+        },
+        {
+            "id": "diagram-mermaid-parallelogram",
+            "language": "mermaid",
+            "source": "flowchart TD\n  A[/Slant/]\n",
+            "code": "davinci.diagram.unsupported",
+            "severity": "error",
+            "spanText": "A[/Slant/]"
+        },
+        {
+            "id": "diagram-tikz-clip",
+            "language": "tikz",
+            "source": "\\begin{tikzpicture}\n\\clip (0,0) rectangle (1,1);\n\\end{tikzpicture}\n",
+            "code": "davinci.diagram.unsupported",
+            "severity": "error",
+            "spanText": "\\clip (0,0) rectangle (1,1);"
         }
     ]
 }

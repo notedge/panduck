@@ -22,6 +22,11 @@ oak-notedown = { workspace = true }
 oak-markdown = { workspace = true }
 oak-html = { workspace = true }
 oak-xml = { workspace = true }
+plotter-diagram = { workspace = true }
+plotter-input-dot = { workspace = true }
+plotter-input-mermaid = { workspace = true }
+plotter-input-plantuml = { workspace = true }
+plotter-types = { workspace = true }
 boost-diagnostic = { workspace = true }
 boost-log = { workspace = true }
 serde_json = { workspace = true }

@@ -235,6 +235,111 @@ where
     }
 }
 
+/// One diagram diagnostic, fatal or non-fatal.
+#[napi(object)]
+pub struct DiagramDiagnostic {
+    /// Stable diagnostic code such as `davinci.diagram.unsupported`.
+    pub code: String,
+    /// `error`, `warning` or `info`.
+    pub severity: String,
+    /// Human readable message.
+    pub message: String,
+    /// Source slice the diagnostic points at, empty when it has no span.
+    pub span_text: String,
+}
+
+/// N-API diagram render response.
+#[napi(object)]
+pub struct DiagramRenderResponse {
+    /// False when the source was rejected or rendering failed.
+    pub success: bool,
+    /// SVG document for accepted sources.
+    pub svg: Option<String>,
+    /// Diagnostics in source order.
+    pub diagnostics: Vec<DiagramDiagnostic>,
+}
+
+/// Renders a diagram source through the matching plotter frontend.
+///
+/// Supported `language` values are `dot`, `mermaid` and `plantuml`. The result
+/// is deterministic SVG with caller scoped ids, which lets consumers embed the
+/// same diagram several times in one page. TikZ has no frontend in Panduck yet,
+/// so it is reported as unsupported instead of being silently accepted.
+#[napi]
+pub fn render_diagram(language: String, source: String) -> DiagramRenderResponse {
+    match language.to_ascii_lowercase().as_str() {
+        "dot" => lower_diagram(plotter_input_dot::dot_to_scene(&source), &source),
+        "mermaid" => lower_diagram(plotter_input_mermaid::mermaid_to_scene(&source), &source),
+        "plantuml" => lower_diagram(plotter_input_plantuml::plantuml_to_scene(&source), &source),
+        other => DiagramRenderResponse {
+            success: false,
+            svg: None,
+            diagnostics: vec![DiagramDiagnostic {
+                code: "panduck.render.unsupported_language".to_string(),
+                severity: "error".to_string(),
+                message: format!("`{other}` has no diagram frontend in Panduck"),
+                span_text: String::new(),
+            }],
+        },
+    }
+}
+
+fn lower_diagram(
+    lowered: std::result::Result<plotter_diagram::LoweredDiagram, plotter_diagram::DiagramError>,
+    source: &str,
+) -> DiagramRenderResponse {
+    let lowered = match lowered {
+        Ok(lowered) => lowered,
+        Err(error) => {
+            let span_text = error
+                .span()
+                .and_then(|span| source.get(span))
+                .unwrap_or_default()
+                .to_string();
+            return DiagramRenderResponse {
+                success: false,
+                svg: None,
+                diagnostics: vec![DiagramDiagnostic {
+                    code: error.code().to_string(),
+                    severity: "error".to_string(),
+                    message: error.message().to_string(),
+                    span_text,
+                }],
+            };
+        }
+    };
+    let mut diagnostics: Vec<DiagramDiagnostic> =
+        lowered.diagnostics.iter().map(diagram_diagnostic).collect();
+    match lowered
+        .scene
+        .to_svg_with_hooks("panduck-diagram", "panduck-diagram", &plotter_types::DIAGRAM_THEME)
+    {
+        Ok(svg) => DiagramRenderResponse { success: true, svg: Some(svg), diagnostics },
+        Err(error) => {
+            diagnostics.push(DiagramDiagnostic {
+                code: "plotter.scene.svg".to_string(),
+                severity: "error".to_string(),
+                message: error.to_string(),
+                span_text: String::new(),
+            });
+            DiagramRenderResponse { success: false, svg: None, diagnostics }
+        }
+    }
+}
+
+fn diagram_diagnostic(diagnostic: &boost_diagnostic::Diagnostic) -> DiagramDiagnostic {
+    DiagramDiagnostic {
+        code: diagnostic.code().as_str().to_string(),
+        severity: diagnostic.severity().to_string(),
+        message: diagnostic
+            .message()
+            .fallback()
+            .unwrap_or_else(|| diagnostic.message().key())
+            .to_string(),
+        span_text: String::new(),
+    }
+}
+
 /// Install a JSON lines file sink on the global logger facade.
 #[napi]
 pub fn install_logger_log_file(path: String) -> Result<()> {
