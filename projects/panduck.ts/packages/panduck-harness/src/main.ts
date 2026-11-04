@@ -50,8 +50,9 @@ import type {
 import { runIdFromDate, sha256 } from "./util.js";
 import { writeBaseline, writeRun } from "./archive.js";
 import { measureCoverage, printCoverage, writeCoverage } from "./coverage.js";
+import { checkArtifactFreshness, formatFreshnessReport } from "./freshness.js";
 
-type Command = "run" | "list" | "verify" | "baseline" | "accept" | "oracle" | "coverage" | "help";
+type Command = "run" | "list" | "verify" | "baseline" | "accept" | "oracle" | "coverage" | "freshness" | "help";
 type Suite = "all" | "convert" | "notedown" | "diagram" | "ir" | "chart" | "runtime";
 
 const USAGE = [
@@ -59,6 +60,7 @@ const USAGE = [
     "",
     "  run        Execute the runnable suites and archive observations under results/",
     "  verify     Validate the checked-in corpus without loading the binding",
+    "  freshness  Reject a `.node` artifact older than the pinned `oak-*` / `document-*` revisions",
     "  coverage   Measure every spec feature and report the status distribution",
     "             --format markdown|html|tex|typst",
     "  list       Print the corpus inventory",
@@ -715,6 +717,11 @@ function printReport(run: RunReport, archive: string): void {
 }
 
 async function commandRun(suite: Suite): Promise<number> {
+    const freshness = checkArtifactFreshness();
+    if (freshness.issues.length > 0) {
+        console.error(formatFreshnessReport(freshness));
+        return 1;
+    }
     const cases: CaseResult[] = [];
     const observations: CaseObservation[] = [];
     let bindingsAvailable = true;
@@ -849,6 +856,11 @@ export async function main(argv: readonly string[]): Promise<number> {
         }
         case "list":
             return commandList();
+        case "freshness": {
+            const freshness = checkArtifactFreshness();
+            console.log(formatFreshnessReport(freshness));
+            return freshness.issues.length === 0 ? 0 : 1;
+        }
         case "accept":
             return commandAccept(parsed.options, false);
         case "oracle":
