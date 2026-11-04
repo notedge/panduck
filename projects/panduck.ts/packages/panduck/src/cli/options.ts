@@ -76,6 +76,26 @@ const UNSUPPORTED_FLAGS = [
 ] as const;
 
 /**
+ * Each declared-but-inert flag belongs to a family with one replacement
+ * story, so the rejection explains what the pipeline actually does instead of
+ * only listing flag names.
+ */
+const UNSUPPORTED_FLAG_FAMILIES = [
+    {
+        keys: ["profile", "config"] as const,
+        detail: "profile selection is not available in v0: conversions always use the built-in default profile",
+    },
+    {
+        keys: ["assets-dir", "asset-policy", "link-policy"] as const,
+        detail: "asset and link policy flags are not available in v0: assets stay inline and links stay verbatim",
+    },
+    {
+        keys: ["allow-partial"] as const,
+        detail: "partial-output allowance is not available in v0: every loss is reported as a warning or blocked by --strict",
+    },
+];
+
+/**
  * Flags that are declared for discoverability but have no semantics in v0.
  * Accepting them silently would promise behavior the pipeline never applies,
  * so the commands reject them instead.
@@ -90,6 +110,25 @@ export function unsupportedFlags(options: ParsedOptions): string[] {
         flags.push(`--${key}`);
     }
     return flags;
+}
+
+/**
+ * Renders the rejection for inert flags. The first line keeps the flat flag
+ * list, and each affected family adds one line explaining the v0 behavior.
+ */
+export function describeUnsupportedFlags(options: ParsedOptions): string[] {
+    const flags = unsupportedFlags(options);
+    if (flags.length === 0) {
+        return [];
+    }
+    const lines = [`these flags are not supported in v0: ${flags.join(", ")}`];
+    for (const family of UNSUPPORTED_FLAG_FAMILIES) {
+        const given = family.keys.filter((key) => flags.includes(`--${key}`));
+        if (given.length > 0) {
+            lines.push(family.detail);
+        }
+    }
+    return lines;
 }
 
 /** Budget keys the native container preflight can enforce today. */

@@ -17,9 +17,9 @@ import { ExitCode } from "../exit-codes.js";
 import { findFormat, isOperationReady } from "../format-registry.js";
 import {
     CliOptionError,
+    describeUnsupportedFlags,
     readSharedOptions,
     readString,
-    unsupportedFlags,
     type SharedCliOptions,
 } from "../options.js";
 import { createReport, type PanduckReport } from "../report.js";
@@ -91,9 +91,11 @@ async function emitConvertReport(
 async function runConvert(options: ParsedOptions): Promise<number> {
     try {
         const shared = readSharedOptions(options);
-        const unsupported = unsupportedFlags(options);
+        const unsupported = describeUnsupportedFlags(options);
         if (unsupported.length > 0) {
-            console.error(`these flags are not supported in v0: ${unsupported.join(", ")}`);
+            for (const line of unsupported) {
+                console.error(line);
+            }
             return ExitCode.InvalidArgs;
         }
         const inputs: string[] = Array.isArray(options._) ? options._ : [];
@@ -111,10 +113,6 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             console.error("use either -o or --output-dir, not both");
             return ExitCode.InvalidArgs;
         }
-        if (outputDirOption && markdownProjectTarget && inputs.length > 1) {
-            console.error("markdown-project export accepts one input; batch conversion needs another target format");
-            return ExitCode.InvalidArgs;
-        }
         if (inputs.length > 1) {
             if (!outputDirOption) {
                 console.error("multiple inputs require --output-dir");
@@ -123,6 +121,17 @@ async function runConvert(options: ParsedOptions): Promise<number> {
             if (inputs.some((path) => isStdinPath(path))) {
                 console.error("batch conversion cannot read standard input; pass real file paths");
                 return ExitCode.InvalidArgs;
+            }
+            if (markdownProjectTarget) {
+                const colliding = inputs
+                    .map((path) => basename(path, extname(path)))
+                    .filter((stem, index, stems) => stems.indexOf(stem) !== index);
+                if (colliding.length > 0) {
+                    console.error(
+                        `two batch inputs share one markdown-project output directory: ${colliding.join(", ")}`,
+                    );
+                    return ExitCode.InvalidArgs;
+                }
             }
         } else if (outputDirOption && !markdownProjectTarget) {
             console.error("--output-dir requires --to markdown-project; use -o for a single output file");
@@ -268,7 +277,7 @@ async function convertSingleFile(input: {
             };
         }
 
-        if (outputPath && outputPath !== "-" && !shared.overwrite) {
+        if (outputPath && outputPath !== "-" && !shared.overwrite && !markdownProjectTarget) {
             try {
                 await access(outputPath, constants.F_OK);
                 return {
@@ -475,8 +484,10 @@ async function runBatchConvert(input: {
 }): Promise<FileResult> {
     const { ctx, inputs, outputDir, shared, dryRun } = input;
     const to = shared.to;
-    if (!to || shared.to === "markdown-project") {
-        console.error("batch conversion requires a single-file target format such as --to html or --to docx");
+    const markdownProjectTarget = to === "markdown-project";
+    if (!to) {
+        const reason = "batch conversion requires a target format via --to";
+        console.error(reason);
         return {
             exitCode: ExitCode.InvalidArgs,
             report: createReport({
@@ -484,13 +495,13 @@ async function runBatchConvert(input: {
                 toolVersion: ctx.toolVersion,
                 status: "blocked",
                 inputs: inputs.map((path) => ({ path })),
-                pipeline: { blocked_reason: "batch conversion requires a single-file target format" },
+                pipeline: { blocked_reason: reason },
                 diagnostics: [
                     createDiagnostic({
                         code: "panduck.cli.blocked",
                         component: "cli",
                         severity: "error",
-                        fallback: "batch conversion requires a single-file target format",
+                        fallback: reason,
                     }),
                 ],
                 budgets: shared.budgets,
@@ -500,11 +511,16 @@ async function runBatchConvert(input: {
         };
     }
 
+    // Single-file targets derive one file per input. A markdown project owns a
+    // directory, so every input gets its own subdirectory under `--output-dir`.
     const extension = TARGET_EXTENSIONS[to] ?? to;
-    const plans = inputs.map((inputPath) => ({
-        inputPath,
-        outputPath: join(outputDir, `${basename(inputPath, extname(inputPath))}.${extension}`),
-    }));
+    const plans = inputs.map((inputPath) => {
+        const stem = basename(inputPath, extname(inputPath));
+        return {
+            inputPath,
+            outputPath: markdownProjectTarget ? join(outputDir, stem) : join(outputDir, `${stem}.${extension}`),
+        };
+    });
 
     const seen = new Set<string>();
     for (const plan of plans) {

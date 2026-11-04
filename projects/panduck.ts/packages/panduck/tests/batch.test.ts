@@ -174,3 +174,91 @@ test("batch dry-run reports every output as unpublished and writes nothing", asy
         await rm(workdir, { recursive: true, force: true });
     }
 });
+
+test("batch publishes one markdown-project directory per input", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-batch-project-"));
+    const outputDir = join(workdir, "site");
+    const inputs = [join(workdir, "guide.md"), join(workdir, "notes.md")];
+    await writeFile(inputs[0], "# Guide\n\nStep one.\n", "utf8");
+    await writeFile(inputs[1], "# Notes\n\nRemember this.\n", "utf8");
+
+    try {
+        const run = runPanduck([
+            "convert",
+            ...inputs,
+            "--from",
+            "markdown",
+            "--to",
+            "markdown-project",
+            "--output-dir",
+            outputDir,
+            "--diagnostics",
+            "json",
+        ]);
+        assert.equal(run.code, 0, run.stderr || run.stdout);
+        const report = JSON.parse(run.stdout) as BatchReport;
+        assert.equal(report.operation, "convert-batch");
+        assert.deepEqual(
+            report.outputs?.map((output) => output.path).filter((path) => path.endsWith(".md")).sort(),
+            [join(outputDir, "guide", "index.md"), join(outputDir, "notes", "index.md")].sort(),
+            "each input owns its own project directory",
+        );
+        assert.equal(await readFile(join(outputDir, "guide", "index.md"), "utf8").then((text) => /Step one\./.test(text)), true);
+        assert.equal(await readFile(join(outputDir, "notes", "index.md"), "utf8").then((text) => /Remember this\./.test(text)), true);
+        assert.equal(await exists(join(outputDir, "guide", "panduck.report.json")), true, "each project keeps its own report");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("batch rejects two markdown-project inputs that share one directory name", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-batch-project-dupe-"));
+    const outputDir = join(workdir, "site");
+    const left = join(workdir, "left");
+    const right = join(workdir, "right");
+    await mkdir(left, { recursive: true });
+    await mkdir(right, { recursive: true });
+    await writeFile(join(left, "same.md"), "# Left\n", "utf8");
+    await writeFile(join(right, "same.md"), "# Right\n", "utf8");
+
+    try {
+        const run = runPanduck([
+            "convert",
+            join(left, "same.md"),
+            join(right, "same.md"),
+            "--from",
+            "markdown",
+            "--to",
+            "markdown-project",
+            "--output-dir",
+            outputDir,
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(run.code, 2, run.stderr);
+        assert.match(run.stderr, /two batch inputs share one markdown-project output directory: same/);
+        assert.equal(await exists(join(outputDir, "same")), false, "a rejected batch must publish nothing");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("profile flags reject with the v0 behavior instead of a bare flag list", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-profile-copy-"));
+    const input = join(workdir, "doc.md");
+    await writeFile(input, "# Doc\n", "utf8");
+
+    try {
+        const convert = runPanduck(["convert", input, "--from", "markdown", "--to", "html", "--profile", "print", "-o", join(workdir, "doc.html")]);
+        assert.equal(convert.code, 2, convert.stderr);
+        assert.match(convert.stderr, /these flags are not supported in v0: --profile/);
+        assert.match(convert.stderr, /profile selection is not available in v0: conversions always use the built-in default profile/);
+
+        const plan = runPanduck(["plan", input, "--from", "markdown", "--to", "html", "--config", "panduck.config.json"]);
+        assert.equal(plan.code, 2, plan.stderr);
+        assert.match(plan.stderr, /these flags are not supported in v0: --config/);
+        assert.match(plan.stderr, /profile selection is not available in v0/);
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
