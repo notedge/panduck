@@ -60,7 +60,7 @@ function assertDiagnosticMatchesLoss(report: CliReport, label: string): void {
     assert.ok(loss, `${label}: expected one loss`);
     const diagnostic = report.diagnostics.find((entry) => entry.code === loss.code);
     assert.ok(diagnostic, `${label}: diagnostics must repeat ${loss.code}, got ${JSON.stringify(report.diagnostics)}`);
-    assert.equal(diagnostic.severity, "warning", `${label}: a refusal is a warning`);
+    assert.equal(diagnostic.severity, "error", `${label}: a refusal is an error`);
     assert.equal(diagnosticArg(diagnostic, "span.start"), loss.span?.start, `${label}: span.start must match losses[0].span`);
     assert.equal(diagnosticArg(diagnostic, "span.end"), loss.span?.end, `${label}: span.end must match losses[0].span`);
     const block = diagnosticArg(diagnostic, "block");
@@ -90,12 +90,12 @@ test("bar chart fences render real rect geometry on the declared canvas", async 
     assert.match(html, /<svg[^>]*width="480"[^>]*height="320"[^>]*viewBox="0 0 480 320"/);
     assert.match(
         html,
-        /<rect id="chart-2-chart-bar-0" data-role="mark" class="chart-mark" data-source="East" x="67.870968" y="56" width="106.83871" height="208" style="fill: #4a7fbf;stroke: none"\/>/,
+        /<rect id="chart-2-chart-bar-0" data-role="mark" class="chart-mark" data-source="East" x="67.870968" y="84.8" width="106.83871" height="179.2" style="fill: #4a7fbf;stroke: none"\/>/,
         "the first bar must carry compiled geometry",
     );
     assert.match(
         html,
-        /<rect id="chart-2-chart-bar-1" data-role="mark" class="chart-mark" data-source="West" x="186.580645" y="108" width="106.83871" height="156" style="fill: #4a7fbf;stroke: none"\/>/,
+        /<rect id="chart-2-chart-bar-1" data-role="mark" class="chart-mark" data-source="West" x="186.580645" y="129.6" width="106.83871" height="134.4" style="fill: #4a7fbf;stroke: none"\/>/,
         "the second bar must carry compiled geometry",
     );
     assert.doesNotMatch(html, /<pre class="chart"/, "a rendered chart must not keep the source fallback");
@@ -111,7 +111,7 @@ test("line chart fences render one trained polyline", async () => {
     assert.match(html, /<svg[^>]*width="480"[^>]*height="320"[^>]*viewBox="0 0 480 320"/);
     assert.match(
         html,
-        /<path id="chart-2-chart-line-0" data-role="mark" class="chart-mark" data-source="all" d="M56 222\.4 L240 56 L424 264" style="fill: none;stroke: #4a7fbf" stroke-width="2"\/>/,
+        /<path id="chart-2-chart-line-0" data-role="mark" class="chart-mark" data-source="all" d="M56 228\.16 L240 84\.8 L424 264" style="fill: none;stroke: #4a7fbf" stroke-width="2"\/>/,
     );
     assert.equal((html.match(/data-role="mark"/g) ?? []).length, 1, "a line chart has one mark, not one per row");
     assert.deepEqual(report.losses, []);
@@ -123,8 +123,8 @@ test("point chart fences render one circle per row", async () => {
 
     assert.match(html, /<figure class="chart" data-chart-language="vega"/);
     for (const expected of [
-        /<circle id="chart-2-chart-point-0" data-role="mark" class="chart-mark" data-source="1" cx="56" cy="222\.4" r="5" style="fill: #4a7fbf;stroke: none"\/>/,
-        /<circle id="chart-2-chart-point-1" data-role="mark" class="chart-mark" data-source="2" cx="240" cy="56" r="5" style="fill: #4a7fbf;stroke: none"\/>/,
+        /<circle id="chart-2-chart-point-0" data-role="mark" class="chart-mark" data-source="1" cx="56" cy="228\.16" r="5" style="fill: #4a7fbf;stroke: none"\/>/,
+        /<circle id="chart-2-chart-point-1" data-role="mark" class="chart-mark" data-source="2" cx="240" cy="84\.8" r="5" style="fill: #4a7fbf;stroke: none"\/>/,
         /<circle id="chart-2-chart-point-2" data-role="mark" class="chart-mark" data-source="3" cx="424" cy="264" r="5" style="fill: #4a7fbf;stroke: none"\/>/,
     ]) {
         assert.match(html, expected);

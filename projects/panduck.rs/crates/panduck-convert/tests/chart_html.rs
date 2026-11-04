@@ -30,15 +30,15 @@ fn bar_chart_renders_real_rect_geometry() {
     assert!(html.contains(r#"<figure class="chart" data-chart-language="vega-lite""#), "{html}");
     assert!(html.contains(r#"<svg xmlns="http://www.w3.org/2000/svg" class="chart" width="480" height="320" viewBox="0 0 480 320">"#), "{html}");
     assert!(
-        html.contains(r##"<rect id="chart-2-chart-bar-0" data-role="mark" class="chart-mark" data-source="East" x="67.870968" y="56" width="106.83871" height="208" style="fill: #4a7fbf;stroke: none"/>"##),
+        html.contains(r##"<rect id="chart-2-chart-bar-0" data-role="mark" class="chart-mark" data-source="East" x="67.870968" y="84.8" width="106.83871" height="179.2" style="fill: #4a7fbf;stroke: none"/>"##),
         "the first bar must carry compiled geometry: {html}"
     );
     assert!(
-        html.contains(r##"<rect id="chart-2-chart-bar-1" data-role="mark" class="chart-mark" data-source="West" x="186.580645" y="108" width="106.83871" height="156" style="fill: #4a7fbf;stroke: none"/>"##),
+        html.contains(r##"<rect id="chart-2-chart-bar-1" data-role="mark" class="chart-mark" data-source="West" x="186.580645" y="129.6" width="106.83871" height="134.4" style="fill: #4a7fbf;stroke: none"/>"##),
         "the second bar must carry compiled geometry: {html}"
     );
     assert!(
-        html.contains(r##"<rect id="chart-2-chart-bar-2" data-role="mark" class="chart-mark" data-source="North" x="305.290323" y="160" width="106.83871" height="104" style="fill: #4a7fbf;stroke: none"/>"##),
+        html.contains(r##"<rect id="chart-2-chart-bar-2" data-role="mark" class="chart-mark" data-source="North" x="305.290323" y="174.4" width="106.83871" height="89.6" style="fill: #4a7fbf;stroke: none"/>"##),
         "the smallest bar must stay visible instead of collapsing to `height=\"0\"`: {html}"
     );
     assert!(html.contains(r#"<line id="chart-2-chart-axis-x" data-role="axis" class="chart-axis" x1="56" y1="264" x2="424" y2="264""#), "{html}");
@@ -87,7 +87,7 @@ fn line_chart_renders_one_real_path() {
     assert!(html.contains(r#"<figure class="chart" data-chart-language="chart""#), "{html}");
     assert!(html.contains(r#"width="480" height="320" viewBox="0 0 480 320""#), "{html}");
     assert!(
-        html.contains(r##"<path id="chart-2-chart-line-0" data-role="mark" class="chart-mark" data-source="all" d="M56 222.4 L240 56 L424 264" style="fill: none;stroke: #4a7fbf" stroke-width="2"/>"##),
+        html.contains(r##"<path id="chart-2-chart-line-0" data-role="mark" class="chart-mark" data-source="all" d="M56 228.16 L240 84.8 L424 264" style="fill: none;stroke: #4a7fbf" stroke-width="2"/>"##),
         "the line mark must carry the trained polyline: {html}"
     );
     assert_eq!(html.matches(r#"data-role="mark""#).count(), 1, "a line chart has one mark, not one per row: {html}");
@@ -101,8 +101,8 @@ fn point_chart_renders_one_circle_per_row() {
 
     assert!(html.contains(r#"<figure class="chart" data-chart-language="vega""#), "{html}");
     for expected in [
-        r##"<circle id="chart-2-chart-point-0" data-role="mark" class="chart-mark" data-source="1" cx="56" cy="222.4" r="5" style="fill: #4a7fbf;stroke: none"/>"##,
-        r##"<circle id="chart-2-chart-point-1" data-role="mark" class="chart-mark" data-source="2" cx="240" cy="56" r="5" style="fill: #4a7fbf;stroke: none"/>"##,
+        r##"<circle id="chart-2-chart-point-0" data-role="mark" class="chart-mark" data-source="1" cx="56" cy="228.16" r="5" style="fill: #4a7fbf;stroke: none"/>"##,
+        r##"<circle id="chart-2-chart-point-1" data-role="mark" class="chart-mark" data-source="2" cx="240" cy="84.8" r="5" style="fill: #4a7fbf;stroke: none"/>"##,
         r##"<circle id="chart-2-chart-point-2" data-role="mark" class="chart-mark" data-source="3" cx="424" cy="264" r="5" style="fill: #4a7fbf;stroke: none"/>"##,
     ] {
         assert!(html.contains(expected), "missing point geometry {expected}: {html}");
@@ -244,7 +244,7 @@ fn chart_fences_survive_the_html_roundtrip_and_render_again() {
     let again = convert_bytes("markdown", "html", "chart.md", back.markdown.into_bytes(), None).expect("re-render");
     let rerendered = again.html.expect("html output");
     assert!(
-        rerendered.contains(r##"<rect id="chart-2-chart-bar-0" data-role="mark" class="chart-mark" data-source="East" x="67.870968" y="56" width="106.83871" height="208" style="fill: #4a7fbf;stroke: none"/>"##),
+        rerendered.contains(r##"<rect id="chart-2-chart-bar-0" data-role="mark" class="chart-mark" data-source="East" x="67.870968" y="84.8" width="106.83871" height="179.2" style="fill: #4a7fbf;stroke: none"/>"##),
         "the reopened fence must render the same geometry: {rerendered}"
     );
     assert_eq!(again.loss_count, 0, "{}", again.report_json);
