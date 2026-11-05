@@ -19,6 +19,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
       - name: Build workspace
-        run: cargo build --release
+        run: cargo build --release --locked
       - name: Test workspace
-        run: cargo test --release
+        run: cargo test --release --locked
