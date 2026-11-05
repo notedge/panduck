@@ -259,6 +259,72 @@ test("markdown-project publish deduplicates identical asset bytes and rewrites r
     }
 });
 
+test("markdown-project materializes embedded PNG and JPEG assets", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-mixed-images-"));
+    const outputDir = join(workdir, "site");
+    const mixedDocumentXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+  <w:body>
+    <w:p>
+      <w:r>
+        <w:drawing><wp:inline><wp:docPr descr="Png"/><a:graphic><a:graphicData><a:blip r:embed="rId1"/></a:graphicData></a:graphic></wp:inline></w:drawing>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:drawing><wp:inline><wp:docPr descr="Jpeg"/><a:graphic><a:graphicData><a:blip r:embed="rId2"/></a:graphicData></a:graphic></wp:inline></w:drawing>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>`, "utf8");
+    const mixedRelsXml = Buffer.from(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/photo.png"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/photo.jpeg"/>
+</Relationships>`, "utf8");
+    const pngBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x01, 0x02]);
+    const jpegBytes = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x03, 0x04]);
+    const makeDocx = () =>
+        storedZip([
+            { path: "word/document.xml", payload: mixedDocumentXml },
+            { path: "word/_rels/document.xml.rels", payload: mixedRelsXml },
+            { path: "word/media/photo.png", payload: pngBytes },
+            { path: "word/media/photo.jpeg", payload: jpegBytes },
+        ]);
+    try {
+        const converter = new Converter();
+        const plan = defineConversion({
+            id: "publish-mixed-images-check",
+            input: { format: "docx", label: "mixed.docx" },
+            output: { format: "markdown" },
+            publish: { kind: "markdown-project", directory: outputDir },
+        });
+
+        const result = await converter.toMarkdown(makeDocx(), plan);
+        assert.notEqual(result.status, "failed");
+
+        const index = await readFile(join(outputDir, "index.md"), "utf8");
+        const assetPaths = [...index.matchAll(/\]\(assets\/([0-9a-f]{16}\.\w+)\)/g)].map((match) => match[1]);
+        assert.equal(assetPaths.length, 2, "both embedded images must be rewritten to assets/");
+        assert.ok(assetPaths.some((path) => path.endsWith(".png")), "the PNG keeps its extension");
+        assert.ok(assetPaths.some((path) => path.endsWith(".jpeg")), "the JPEG keeps its extension");
+
+        for (const path of assetPaths) {
+            const expected = path.endsWith(".png") ? pngBytes : jpegBytes;
+            assert.deepEqual(await readFile(join(outputDir, "assets", path)), expected);
+        }
+
+        const report = JSON.parse(result.reportJson);
+        const assetOutput = report.outputs.find((output: { path?: string }) => output.path === "assets/");
+        assert.equal(assetOutput?.published_asset_count, 2);
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
 test("markdown-project republish owns the output directory and removes stale files", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-republish-"));
     const outputDir = join(workdir, "nested", "site");
