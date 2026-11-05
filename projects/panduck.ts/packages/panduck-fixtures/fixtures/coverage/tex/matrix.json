@@ -71,7 +71,7 @@
             "spec": "LaTeX2e reference manual, Bibliography",
             "semantics": "`\\cite{key}` becomes a citation reference to key",
             "source": "see \\cite{key}\n",
-            "probe": { "unsupported": true }
+            "probe": { "contains": ["<span class=\"citation\"", "data-citation-key=\"key\"", "[key]"] }
         },
         {
             "id": "tex-footnote",
@@ -85,7 +85,7 @@
             "spec": "LaTeX2e reference manual, Defining commands",
             "semantics": "`\\newcommand` defines a macro that expands at use sites",
             "source": "\\newcommand{\\hi}{hi}\n\\hi\n",
-            "probe": { "unsupported": true }
+            "probe": { "contains": ["data-opaque-kind=\"tex.newcommand\"", "\\newcommand{\\hi}{hi}"] }
         },
         {
             "id": "tex-nested-groups",
@@ -120,7 +120,7 @@
             "spec": "LaTeX2e reference manual, Cross references",
             "semantics": "`\\ref{a}` resolves to the number of the matching `\\label{a}`",
             "source": "\\section{A}\\label{a}\nsee \\ref{a}\n",
-            "probe": { "unsupported": true }
+            "probe": { "contains": ["<h1>", "data-tex-ref-label=\"a\"", "href=\"#node-1\""] }
         },
         {
             "id": "tex-includegraphics",

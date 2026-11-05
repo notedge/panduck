@@ -36,7 +36,7 @@
             "spec": "Typst syntax reference, Code mode and bindings",
             "semantics": "`#let` binds a value without rendering it",
             "source": "#let x = 1\n",
-            "probe": { "unsupported": true }
+            "probe": { "excludes": ["#let", "x = 1"], "count": { "<p>": 0 } }
         },
         {
             "id": "typst-inline-math",
@@ -57,14 +57,14 @@
             "spec": "Typst syntax reference, Set rules",
             "semantics": "`#set text(size: 10pt)` changes styling for following content",
             "source": "#set text(size: 10pt)\ntext\n",
-            "probe": { "unsupported": true }
+            "probe": { "contains": ["<p>text</p>"], "excludes": ["#set"] }
         },
         {
             "id": "typst-show-rule",
             "spec": "Typst syntax reference, Show rules",
             "semantics": "`#show heading: it => it` rewrites heading output",
             "source": "#show heading: it => it\n= Title\n",
-            "probe": { "unsupported": true }
+            "probe": { "contains": ["<h1>Title</h1>"], "excludes": ["#show"] }
         },
         {
             "id": "typst-function-call",

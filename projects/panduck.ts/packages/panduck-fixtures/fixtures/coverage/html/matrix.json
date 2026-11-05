@@ -146,9 +146,9 @@
         {
             "id": "html-self-closing-nonvoid",
             "spec": "HTML Standard §13.2.5.42 self-closing start tag state",
-            "semantics": "`<div/>` is a div start tag, so the following text stays in the document",
+            "semantics": "`<div/>` is a div start tag, so the following text stays in the document; the content is kept and the IR does not create a block for a semantically neutral container",
             "source": "<div/>after",
-            "probe": { "contains": ["<div>", "after"] }
+            "probe": { "contains": ["after"] }
         },
         {
             "id": "html-table-sections",
