@@ -1,3 +1,50 @@
+/** Reads a ZIP archive whose members use the stored (uncompressed) method. */
+export function readStoredZip(archive: Uint8Array | Buffer): Map<string, Buffer> {
+    const bytes = Buffer.from(archive);
+    const eocd = findSignature(bytes, 0x06054b50);
+    if (eocd < 0) {
+        throw new Error("ZIP archive has no end-of-central-directory record");
+    }
+    const entryCount = bytes.readUInt16LE(eocd + 10);
+    let offset = bytes.readUInt32LE(eocd + 16);
+    const members = new Map<string, Buffer>();
+
+    for (let index = 0; index < entryCount; index += 1) {
+        if (bytes.readUInt32LE(offset) !== 0x02014b50) {
+            throw new Error(`central directory entry ${index} is malformed`);
+        }
+        const method = bytes.readUInt16LE(offset + 10);
+        const compressedSize = bytes.readUInt32LE(offset + 20);
+        const nameLength = bytes.readUInt16LE(offset + 28);
+        const extraLength = bytes.readUInt16LE(offset + 30);
+        const commentLength = bytes.readUInt16LE(offset + 32);
+        const localOffset = bytes.readUInt32LE(offset + 42);
+        const name = bytes.subarray(offset + 46, offset + 46 + nameLength).toString("utf8");
+
+        if (bytes.readUInt32LE(localOffset) !== 0x04034b50) {
+            throw new Error(`local header for ${name} is malformed`);
+        }
+        if (method !== 0) {
+            throw new Error(`member ${name} uses compression method ${method}, expected stored`);
+        }
+        const localNameLength = bytes.readUInt16LE(localOffset + 26);
+        const localExtraLength = bytes.readUInt16LE(localOffset + 28);
+        const dataStart = localOffset + 30 + localNameLength + localExtraLength;
+        members.set(name, bytes.subarray(dataStart, dataStart + compressedSize));
+        offset += 46 + nameLength + extraLength + commentLength;
+    }
+    return members;
+}
+
+function findSignature(bytes: Buffer, signature: number): number {
+    for (let offset = bytes.length - 4; offset >= 0; offset -= 1) {
+        if (bytes.readUInt32LE(offset) === signature) {
+            return offset;
+        }
+    }
+    return -1;
+}
+
 export function crc32(data: Uint8Array | Buffer): number {
     let crc = 0xffffffff;
     for (const byte of data) {
