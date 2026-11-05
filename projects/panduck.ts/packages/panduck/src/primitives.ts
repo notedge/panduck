@@ -12,6 +12,7 @@ import {
     type DiagnosticRecord,
     type LossRecord,
 } from "./diagnostic.js";
+import { buildConvertReportJson } from "./native-report.js";
 import type { PanduckBindings } from "./types.js";
 
 export type ConversionStageInput = {
@@ -112,6 +113,48 @@ export function convertInMemory(bindings: PanduckBindings, input: ConversionStag
         text: exported.text ?? undefined,
         html: exported.html ?? undefined,
         binary: exported.binary ?? undefined,
+    };
+}
+
+/** Aggregated in-memory conversion: joins the primitives into a CLI-shaped report. */
+export type InMemoryConversion = {
+    /** Joined `panduck.report/v0` payload. */
+    reportJson: string;
+    /** Text output when the target is textual. */
+    text?: string;
+    /** HTML output when the target is `html`. */
+    html?: string;
+    /** Binary output when the target is a container. */
+    binary?: Uint8Array;
+};
+
+/**
+ * Runs import, transform and export in memory and joins the stages into one
+ * report. This is the synchronous counterpart of `Converter` for consumers that
+ * already hold bytes and only need the conversion outcome, such as the harness.
+ * Exit codes stay with the consumer and are derived from the report status.
+ */
+export function convertInMemoryReport(
+    bindings: PanduckBindings,
+    input: ConversionStageInput,
+): InMemoryConversion {
+    const outcome = convertInMemory(bindings, input);
+    const status = outcome.ok ? (outcome.losses.length > 0 ? "success_with_loss" : "success") : "failed";
+    const reportJson = buildConvertReportJson({
+        from: input.from,
+        to: input.to,
+        label: input.label,
+        status,
+        passes: outcome.passes,
+        coverage: outcome.coverage,
+        losses: outcome.losses,
+        diagnostics: outcome.diagnostics,
+    });
+    return {
+        reportJson,
+        text: outcome.text,
+        html: outcome.html,
+        binary: outcome.binary,
     };
 }
 

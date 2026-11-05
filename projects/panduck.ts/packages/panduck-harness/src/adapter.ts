@@ -1,7 +1,7 @@
 import { realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 
-import { loadPanduckNode, type PanduckBindings } from "@notedge/panduck";
+import { convertInMemoryReport, loadPanduckNode, type PanduckBindings } from "@notedge/panduck";
 import { readFixtureBytes } from "@notedge/panduck-fixtures";
 
 import type {
@@ -74,28 +74,33 @@ function missingEntryObservation(from: string, to: string, label: string, detail
 }
 
 function convertLeg(from: string, to: string, label: string, bytes: Uint8Array): LegRun {
-    const convert = bindings().convertBytesMemory;
-    if (typeof convert !== "function") {
+    const binding = bindings();
+    if (
+        typeof binding.importDocument !== "function" ||
+        typeof binding.transformDocument !== "function" ||
+        typeof binding.exportDocument !== "function"
+    ) {
         return {
             observation: missingEntryObservation(
                 from,
                 to,
                 label,
-                "`PanduckBindings.convertBytesMemory` is not exposed by this build",
+                "`PanduckBindings.importDocument` / `transformDocument` / `exportDocument` are not exposed by this build",
             ),
         };
     }
     try {
-        const response = convert(from, to, label, bytes);
+        const response = convertInMemoryReport(binding, { from, to, label, bytes });
         const report = parseReportJson(response.reportJson);
+        const status = reportStatus(report);
         const binary = response.binary ? new Uint8Array(response.binary) : undefined;
         return {
             observation: {
                 from,
                 to,
                 label,
-                exitCode: response.exitCode,
-                status: reportStatus(report),
+                exitCode: status === "success" || status === "success_with_loss" ? 0 : 1,
+                status,
                 lossCodes: lossCodes(report),
                 diagnosticCodes: diagnosticCodes(report),
                 text: response.text,
@@ -146,7 +151,7 @@ async function withPdfGeometry(
         };
     }
     const response = probe(labelFor(definition), caseInputBytes(definition));
-    if (response.exitCode !== 0 || response.pdf === undefined) {
+    if (!response.success || response.pdf === undefined) {
         return {
             observation: {
                 ...leg.observation,

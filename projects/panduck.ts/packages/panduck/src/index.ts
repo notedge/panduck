@@ -25,6 +25,10 @@ export type {
 // PassDescriptor — pass 的 I/O / capability 声明。
 export type { Capability, PassDescriptor } from "./pass-descriptor.js";
 
+// In-memory primitive composition for callers that already hold bytes.
+export { convertInMemoryReport } from "./primitives.js";
+export type { InMemoryConversion } from "./primitives.js";
+
 // ConversionPlan — Panduck 产品级转换编排器（新合同，面向 notedown-ir）。
 export { defineConversion } from "./conversion-plan.js";
 export type {
