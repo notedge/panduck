@@ -31,36 +31,50 @@ const shared: SharedCliOptions = {
     overwrite: true,
 };
 
-const failedReportJson = JSON.stringify({
-    schema_version: "panduck.report/v0",
-    operation: "convert",
-    status: "failed",
-    pipeline: { reader: "docx", writer: "markdown", stages: ["read", "ir", "write"] },
-    diagnostics: {
-        schemaVersion: 1,
-        diagnostics: [
-            {
-                code: "panduck.adapter.not-found",
-                severity: "error",
-                origin: { namespace: "panduck", component: "adapter", stage: "read" },
-                message: {
-                    key: "panduck.adapter.not-found",
-                    args: [["format", { text: "docx" }]],
-                    fallback: "input document is not a readable docx package",
-                },
-                primary: null,
-                secondary: [],
-                notes: [],
-                helps: [],
-                cause: null,
-                actions: [],
+const failedDiagnosticsJson = JSON.stringify({
+    schemaVersion: 1,
+    diagnostics: [
+        {
+            code: "panduck.adapter.not-found",
+            severity: "error",
+            origin: { namespace: "panduck", component: "adapter", stage: "read" },
+            message: {
+                key: "panduck.adapter.not-found",
+                args: [["format", { text: "docx" }]],
+                fallback: "input document is not a readable docx package",
             },
-        ],
-        truncated: false,
-        dropped: 0,
-    },
-    losses: [],
-    outputs: [],
+            primary: null,
+            secondary: [],
+            notes: [],
+            helps: [],
+            cause: null,
+            actions: [],
+        },
+    ],
+    truncated: false,
+    dropped: 0,
+});
+
+const failedImport = () => ({
+    success: false,
+    graphJson: null,
+    coverageJson: "null",
+    lossesJson: "[]",
+    diagnosticsJson: failedDiagnosticsJson,
+});
+
+const noopTransform = (graphJson: string) => ({
+    success: true,
+    graphJson,
+    passesJson: "[]",
+    diagnosticsJson: JSON.stringify({ schemaVersion: 1, diagnostics: [], truncated: false, dropped: 0 }),
+});
+
+const noopExport = () => ({
+    success: true,
+    coverageJson: "null",
+    lossesJson: "[]",
+    diagnosticsJson: JSON.stringify({ schemaVersion: 1, diagnostics: [], truncated: false, dropped: 0 }),
 });
 
 function stubBindings(overrides: Partial<PanduckBindings>): { ctx: CliContext; bindings: PanduckBindings } {
@@ -112,19 +126,19 @@ test("writer unsupported diagnostics map to the target failure exit code", () =>
 test("native convert failure blocks the output file instead of writing empty text", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-pipeline-fail-"));
     const outputPath = join(workdir, "out.md");
+    const inputPath = join(workdir, "broken.docx");
+    await writeFile(inputPath, "not a zip container", "utf8");
     const { ctx, bindings } = stubBindings({
-        convertDocument: () => ({
-            exitCode: 1,
-            text: "",
-            reportJson: failedReportJson,
-        }),
+        importDocument: failedImport,
+        transformDocument: noopTransform,
+        exportDocument: noopExport,
     });
 
     try {
         const result = await runConversionPipeline({
             ctx,
             bindings,
-            inputPath: "broken.docx",
+            inputPath,
             outputPath,
             resolved: { from: "docx", to: "markdown", ambiguous: false, hints: [".docx"] },
             shared,
@@ -182,24 +196,20 @@ test("native convert failure writes nothing to stdout", async () => {
 test("native markdown project failure blocks without claiming published outputs", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-project-fail-"));
     const outputDir = join(workdir, "site");
+    const inputPath = join(workdir, "broken.docx");
+    await writeFile(inputPath, "not a zip container", "utf8");
     const { ctx, bindings } = stubBindings({
         supportsMarkdownProject: () => true,
-        convertMarkdownProject: () => ({
-            exitCode: 1,
-            indexMarkdown: "",
-            publishedAssets: [],
-            publishedChapters: [],
-            unresolvedAssets: [],
-            outputDir: "",
-            reportJson: failedReportJson,
-        }),
+        importDocument: failedImport,
+        transformDocument: noopTransform,
+        exportMarkdownProject: noopExport,
     });
 
     try {
         const result = await runMarkdownProjectPipeline({
             ctx,
             bindings,
-            inputPath: "broken.docx",
+            inputPath,
             outputDir,
             resolved: { from: "docx", to: "markdown-project", ambiguous: false, hints: [".docx"] },
             shared,
@@ -210,9 +220,7 @@ test("native markdown project failure blocks without claiming published outputs"
         assert.equal(result.report.status, "blocked");
         assert.equal(result.report.outputs?.length, 0, "failed publish must not report outputs");
         assert.equal(await exists(outputDir), false);
-        if (await exists(workdir)) {
-            assert.deepEqual(await readdir(workdir), []);
-        }
+        assert.deepEqual(await readdir(workdir), ["broken.docx"], "failed publish must leave only the input file");
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }

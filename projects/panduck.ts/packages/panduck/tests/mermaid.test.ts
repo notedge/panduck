@@ -117,19 +117,23 @@ test("cli mermaid html output is byte stable across runs", async () => {
     assert.equal(await readFile(first, "utf8"), await readFile(second, "utf8"));
 });
 
-test("node binding renders mermaid inline through the in-memory entry", () => {
+test("node binding renders mermaid inline through the in-memory primitives", () => {
     const bindings = loadPanduckNode();
-    const convert = bindings.convertBytesMemory;
-    assert.ok(convert, "convertBytesMemory must be available on the node binding");
+    const { importDocument, transformDocument, exportDocument } = bindings;
+    assert.ok(importDocument && transformDocument && exportDocument, "conversion primitives must be available");
 
-    const response = convert("markdown", "html", "diagram.md", new TextEncoder().encode(FLOWCHART_DOC));
-    assert.equal(response.exitCode, 0, response.reportJson);
-    assert.ok(response.html, "the html target must return the html payload on the binding");
-    assert.match(response.html!, /<figure class="diagram"/);
-    assert.match(response.html!, /<svg/);
+    const imported = importDocument("markdown", "diagram.md", new TextEncoder().encode(FLOWCHART_DOC));
+    assert.equal(imported.success, true, imported.diagnosticsJson);
+    assert.ok(imported.graphJson, "the import stage must return serialized IR");
 
-    const report = JSON.parse(response.reportJson) as CliReport;
-    assert.equal(report.status, "success");
+    const transformed = transformDocument(imported.graphJson!);
+    assert.equal(transformed.success, true, transformed.diagnosticsJson);
+
+    const exported = exportDocument("html", transformed.graphJson);
+    assert.equal(exported.success, true, exported.diagnosticsJson);
+    assert.ok(exported.html, "the html target must return the html payload on the binding");
+    assert.match(exported.html!, /<figure class="diagram"/);
+    assert.match(exported.html!, /<svg/);
 });
 
 test("converter async entry preserves the authored mermaid fence on the markdown route", async () => {

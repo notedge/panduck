@@ -1,46 +1,128 @@
-export type ConvertResponse = {
-    exitCode: number;
-    text?: string;
-    html?: string;
-    binary?: Uint8Array;
-    reportJson: string;
-};
-
-export type ConvertProjectResponse = {
-    exitCode: number;
-    indexMarkdown: string;
-    publishedAssets: string[];
-    publishedChapters: string[];
-    unresolvedAssets: string[];
-    outputDir: string;
-    reportJson: string;
-};
-
-export type InspectIndexResponse = {
-    exitCode: number;
+/** Probe response for a container index pass. */
+export type ProbeIndexResponse = {
+    /** True when the container was indexed. */
+    success: boolean;
+    /** Detected container format. */
     format: string;
+    /** Outer container label from Acorn detection. */
     outer: string;
+    /** Inner payload label from Acorn detection. */
     inner: string;
+    /** OPC member paths discovered in the package. */
     parts: string[];
-    reportJson: string;
+    /** Serialized diagnostic envelope. */
+    diagnosticsJson: string;
 };
 
-export type InspectDecodedPart = {
+export type ProbeDecodedPart = {
+    /** OPC member path inside the package. */
     path: string;
+    /** ZIP compression method identifier. */
     compressionMethod: number;
+    /** Compressed byte length stored in the archive. */
     compressedSize: number;
+    /** Uncompressed byte length declared in the archive. */
     uncompressedSize: number;
+    /** Decoded payload byte length after inflation. */
     decodedSize: number;
 };
 
-export type InspectDecodeResponse = {
-    exitCode: number;
+/** Probe response for a container decode pass. */
+export type ProbeDecodeResponse = {
+    /** True when the container was decoded. */
+    success: boolean;
+    /** Detected container format. */
     format: string;
+    /** Outer container label from Acorn detection. */
     outer: string;
+    /** Inner payload label from Acorn detection. */
     inner: string;
-    parts: InspectDecodedPart[];
-    reportJson: string;
+    /** Per-member decode summaries for the package. */
+    parts: ProbeDecodedPart[];
+    /** Serialized diagnostic envelope. */
+    diagnosticsJson: string;
 };
+
+/** Result of reading bytes into a serialized `document.ir` graph. */
+export type ImportResponse = {
+    /** True when the bytes were read into IR. */
+    success: boolean;
+    /** Serialized graph, absent on failure. */
+    graphJson: string | null;
+    /** Serialized coverage records for the imported graph. */
+    coverageJson: string;
+    /** Serialized loss records with source spans. */
+    lossesJson: string;
+    /** Serialized diagnostic envelope for the import stage. */
+    diagnosticsJson: string;
+};
+
+/** Result of running transform passes over serialized IR. */
+export type TransformResponse = {
+    /** True when the graph was parsed and transformed. */
+    success: boolean;
+    /** Serialized graph after the passes ran. */
+    graphJson: string;
+    /** Serialized transform pass reports for the plan descriptor. */
+    passesJson: string;
+    /** Serialized diagnostic envelope for the transform stage. */
+    diagnosticsJson: string;
+};
+
+/** Result of writing a graph to one target format. */
+export type ExportResponse = {
+    /** True when the graph was written. */
+    success: boolean;
+    /** Text output for text targets such as `markdown`. */
+    text?: string | null;
+    /** HTML output for the HTML target. */
+    html?: string | null;
+    /** Binary output for container targets such as `docx`. */
+    binary?: Uint8Array | null;
+    /** Serialized coverage records after the export stage. */
+    coverageJson: string;
+    /** Serialized loss records after the export stage. */
+    lossesJson: string;
+    /** Serialized diagnostic envelope for the export stage. */
+    diagnosticsJson: string;
+};
+
+/** One Markdown project chapter. */
+export type ProjectChapter = {
+    /** Project-relative chapter path. */
+    path: string;
+    /** Markdown body for this chapter. */
+    markdown: string;
+};
+
+/** One materialized Markdown project asset. */
+export type ProjectAsset = {
+    /** Project-relative asset path. */
+    path: string;
+    /** Raw asset bytes. */
+    bytes: Uint8Array;
+};
+
+/** Result of exporting a graph as a Markdown project payload. */
+export type ProjectResponse = {
+    /** True when the graph was exported as a Markdown project. */
+    success: boolean;
+    /** Primary Markdown body for `index.md`. */
+    indexMarkdown: string;
+    /** Additional chapter files. */
+    chapters: ProjectChapter[];
+    /** Materialized asset files. */
+    assets: ProjectAsset[];
+    /** Image sources that could not be materialized. */
+    unresolvedAssets: string[];
+    /** Serialized coverage records after the export stage. */
+    coverageJson: string;
+    /** Serialized loss records after the export stage. */
+    lossesJson: string;
+    /** Serialized diagnostic envelope for the export stage. */
+    diagnosticsJson: string;
+};
+
 
 /** One lexical token produced by a Panduck source grammar. */
 export type LexToken = {
@@ -169,8 +251,8 @@ export type PdfLayoutPage = {
 
 /** Layout runs paired with the PDF bytes painted from the same graph. */
 export type PdfLayoutProbeResponse = {
-    /** Zero when the probe produced a PDF. */
-    exitCode: number;
+    /** True when the probe produced a PDF. */
+    success: boolean;
     /** PDF bytes rendered by the production writer. */
     pdf?: Uint8Array;
     /** Text runs in paint order. */
@@ -189,41 +271,19 @@ export type PanduckBindings = {
     isSupportedFormat: (name: string) => boolean;
     supportsConversion?: (from: string, to: string) => boolean;
     supportedConversions?: () => string[];
-    convertDocument?: (
-        from: string,
-        to: string,
-        inputPath: string,
-        handlersJson?: string,
-        budgetsJson?: string,
-    ) => ConvertResponse;
-    /** Convert in-memory bytes — the path Pandark Engine takes when the page is already fetched. */
-    convertBytesMemory?: (
-        from: string,
-        to: string,
-        label: string,
-        bytes: Uint8Array,
-        handlersJson?: string,
-        budgetsJson?: string,
-    ) => ConvertResponse;
+    /** Index a DOCX package from in-memory bytes. */
+    probeContainerIndex?: (label: string, bytes: Uint8Array) => ProbeIndexResponse;
+    /** Decode DOCX package members from in-memory bytes. */
+    probeContainerDecode?: (label: string, bytes: Uint8Array, partPath?: string) => ProbeDecodeResponse;
+    /** Read bytes into serialized IR. */
+    importDocument?: (from: string, label: string, bytes: Uint8Array, budgetsJson?: string) => ImportResponse;
+    /** Run transform passes over serialized IR. */
+    transformDocument?: (graphJson: string, transformsJson?: string) => TransformResponse;
+    /** Write serialized IR to one target format. */
+    exportDocument?: (to: string, graphJson: string) => ExportResponse;
     supportsMarkdownProject?: (from: string) => boolean;
-    convertMarkdownProject?: (
-        from: string,
-        inputPath: string,
-        outputDir: string,
-        handlersJson?: string,
-        budgetsJson?: string,
-    ) => ConvertProjectResponse;
-    /** Byte-input counterpart of `convertMarkdownProject` — executes `ConversionPlan.publish`. */
-    convertMarkdownProjectBytes?: (
-        from: string,
-        label: string,
-        bytes: Uint8Array,
-        outputDir: string,
-        handlersJson?: string,
-        budgetsJson?: string,
-    ) => ConvertProjectResponse;
-    inspectIndex?: (inputPath: string) => InspectIndexResponse;
-    inspectDecode?: (inputPath: string, partPath?: string) => InspectDecodeResponse;
+    /** Export serialized IR as an in-memory Markdown project payload. */
+    exportMarkdownProject?: (graphJson: string) => ProjectResponse;
     /** Lexically analyse source text with the grammar Panduck reads it as. */
     lexDocument?: (language: string, source: string) => LexResponse;
     /** Render a diagram source through the matching plotter frontend. */

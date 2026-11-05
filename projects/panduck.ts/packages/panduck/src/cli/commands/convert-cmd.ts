@@ -317,7 +317,7 @@ async function convertSingleFile(input: {
         const routeReady = markdownProjectTarget
             ? Boolean(
                   ctx.bindings?.supportsMarkdownProject?.(resolved.from ?? "") &&
-                      ctx.bindings?.convertMarkdownProject,
+                      ctx.bindings?.exportMarkdownProject,
               )
             : hasPipeline(ctx.bindings, resolved.from, resolved.to);
 

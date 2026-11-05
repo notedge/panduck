@@ -1,4 +1,4 @@
-import { stat } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 
 import type { Cli, ParsedOptions } from "@vmz/commander";
 
@@ -8,7 +8,7 @@ import {
     createContext,
     resolveFormats,
 } from "../context.js";
-import { createDiagnostic, parseReportEnvelope, textArg } from "../../diagnostic.js";
+import { createDiagnostic, parseDiagnosticEnvelope, textArg } from "../../diagnostic.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { CliOptionError, parseInspectStage, readSharedOptions, readString } from "../options.js";
@@ -87,13 +87,15 @@ async function runInspect(options: ParsedOptions): Promise<number> {
 
         const size = isStdinPath(inputPath) ? null : (await stat(inputPath)).size;
 
-        if (stage === "decode" && resolved.from === "docx" && ctx.bindings?.inspectDecode) {
+        if (stage === "decode" && resolved.from === "docx" && ctx.bindings?.probeContainerDecode) {
             try {
-                const decode = ctx.bindings.inspectDecode(inputPath, layoutPath);
-                const parsedReport = parseReportEnvelope(decode.reportJson, { component: "inspect" });
-                if (decode.exitCode !== 0) {
-                    const reason = parsedReport.diagnostics.find((entry) => entry.severity === "error")
-                        ?.message.fallback ?? `inspect decode failed with exit code ${decode.exitCode}`;
+                const bytes = isStdinPath(inputPath) ? await readStdinBytes() : await readFile(inputPath);
+                const label = isStdinPath(inputPath) ? "stdin" : inputPath;
+                const decode = ctx.bindings.probeContainerDecode(label, bytes, layoutPath);
+                const parsedDiagnostics = parseDiagnosticEnvelope(decode.diagnosticsJson, { component: "inspect" });
+                if (!decode.success) {
+                    const reason = parsedDiagnostics.diagnostics.find((entry) => entry.severity === "error")
+                        ?.message.fallback ?? "inspect decode failed";
                     const report = buildBlockedReport(
                         ctx,
                         "inspect",
@@ -102,7 +104,7 @@ async function runInspect(options: ParsedOptions): Promise<number> {
                         reason,
                         ExitCode.IrOrWriterFailure,
                         shared,
-                        parsedReport.diagnostics,
+                        parsedDiagnostics.diagnostics,
                     );
                     emitReport(report, shared.diagnostics, shared.json);
                     return ExitCode.IrOrWriterFailure;
@@ -156,13 +158,15 @@ async function runInspect(options: ParsedOptions): Promise<number> {
             }
         }
 
-        if (stage === "index" && resolved.from === "docx" && ctx.bindings?.inspectIndex) {
+        if (stage === "index" && resolved.from === "docx" && ctx.bindings?.probeContainerIndex) {
             try {
-                const index = ctx.bindings.inspectIndex(inputPath);
-                const parsedReport = parseReportEnvelope(index.reportJson, { component: "inspect" });
-                if (index.exitCode !== 0) {
-                    const reason = parsedReport.diagnostics.find((entry) => entry.severity === "error")
-                        ?.message.fallback ?? `inspect index failed with exit code ${index.exitCode}`;
+                const bytes = isStdinPath(inputPath) ? await readStdinBytes() : await readFile(inputPath);
+                const label = isStdinPath(inputPath) ? "stdin" : inputPath;
+                const index = ctx.bindings.probeContainerIndex(label, bytes);
+                const parsedDiagnostics = parseDiagnosticEnvelope(index.diagnosticsJson, { component: "inspect" });
+                if (!index.success) {
+                    const reason = parsedDiagnostics.diagnostics.find((entry) => entry.severity === "error")
+                        ?.message.fallback ?? "inspect index failed";
                     const report = buildBlockedReport(
                         ctx,
                         "inspect",
@@ -171,7 +175,7 @@ async function runInspect(options: ParsedOptions): Promise<number> {
                         reason,
                         ExitCode.IrOrWriterFailure,
                         shared,
-                        parsedReport.diagnostics,
+                        parsedDiagnostics.diagnostics,
                     );
                     emitReport(report, shared.diagnostics, shared.json);
                     return ExitCode.IrOrWriterFailure;
@@ -283,3 +287,12 @@ async function runInspect(options: ParsedOptions): Promise<number> {
         return ExitCode.InvalidArgs;
     }
 }
+
+async function readStdinBytes(): Promise<Uint8Array> {
+    const chunks: Buffer[] = [];
+    for await (const chunk of process.stdin) {
+        chunks.push(chunk as Buffer);
+    }
+    return Buffer.concat(chunks);
+}
+

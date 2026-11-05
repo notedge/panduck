@@ -23,12 +23,14 @@ import type { ConversionPlan } from "./conversion-plan.js";
 import { serializeConversionPlan } from "./conversion-plan.js";
 import {
     createDiagnostic,
-    parseReportEnvelope,
     textArg,
     u64Arg,
     withUrl,
 } from "./diagnostic.js";
 import type { DiagnosticRecord, LossRecord } from "./diagnostic.js";
+import { convertInMemory, exportProjectInMemory } from "./primitives.js";
+import { publishMarkdownProject as materializeMarkdownProject } from "./publish-project.js";
+import { buildConvertReportJson, buildProjectReportJson, type ReportStatusValue } from "./native-report.js";
 
 export type { DiagnosticRecord, DiagnosticSeverity, LossRecord } from "./diagnostic.js";
 
@@ -226,13 +228,14 @@ export class Converter {
     // -----------------------------------------------------------------------
 
     /**
-     * Materialize a Markdown project through `convertMarkdownProjectBytes`.
+     * Materialize a Markdown project through the in-memory project primitive.
      *
-     * The Rust pipeline applies `plan.transforms` before the project writer, so
-     * index/chapter markdown and materialized assets reflect the transform
-     * result. `publishPath` is the resolved output directory reported by Rust.
+     * The primitive applies `plan.transforms` before the project writer, so
+     * index/chapter markdown and materialized assets reflect the transform result.
+     * Directory staging and placement happen in TS, and `publishPath` is the
+     * resolved output directory.
      */
-    private publishMarkdownProject(ctx: {
+    private async publishMarkdownProject(ctx: {
         from: string;
         bytes: Uint8Array;
         label: string;
@@ -243,66 +246,88 @@ export class Converter {
         directory: string;
     }): Promise<ConverterResult> {
         const { from, bytes, label, urlHint, diagnostics, handlersJson, requireNoLoss, directory } = ctx;
-        const fn = this.binding.convertMarkdownProjectBytes;
-        if (!fn) {
-            diagnostics.push(createDiagnostic({
-                code: "panduck.convert.binding-missing",
-                fallback: "Panduck binding does not expose convertMarkdownProjectBytes — rebuild @notedge/panduck-native",
-                messageKey: "panduck.diagnostic.bindingMissing",
-                component: "convert",
-                severity: "error",
-                stage: "convert",
-                args: withUrl([], urlHint),
-            }));
-            return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
-        }
-
         const outputDir = resolve(directory);
-        let response: ReturnType<typeof fn> | undefined = undefined;
-        let nativePanic: unknown = undefined;
+
+        let outcome: ReturnType<typeof exportProjectInMemory> | undefined;
+        let nativePanic: unknown;
         try {
-            response = fn(from, label, bytes, outputDir, handlersJson);
-        } catch (err) {
-            nativePanic = err;
+            outcome = exportProjectInMemory(this.binding, {
+                from,
+                label,
+                bytes,
+                transformsJson: handlersJson,
+            });
+        } catch (error) {
+            nativePanic = error;
         }
 
-        if (nativePanic !== undefined || !response) {
-            const msg = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
+        if (nativePanic !== undefined || !outcome) {
+            const message = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
             diagnostics.push(createDiagnostic({
                 code: "panduck.convert.native-panic",
-                fallback: `Panduck native binary panicked while publishing ${label}: ${msg}`,
+                fallback: `Panduck native binary panicked while publishing ${label}: ${message}`,
                 component: "convert",
                 severity: "error",
                 stage: "output",
-                args: withUrl([["message", textArg(msg)]], urlHint),
+                args: withUrl([["message", textArg(message)]], urlHint),
             }));
-            return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
+            return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
-        const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert", url: urlHint });
-        diagnostics.push(...parsedReport.diagnostics);
-        reportRustLoss(diagnostics, parsedReport.losses, label, urlHint);
+        diagnostics.push(...outcome.diagnostics);
+        if (!outcome.ok) {
+            const reportJson = buildBlockedProjectReport(from, label, outcome, outcome.passes);
+            return {
+                status: "failed",
+                text: outcome.indexMarkdown,
+                diagnostics,
+                reportJson,
+                publishPath: outputDir,
+            };
+        }
 
+        reportRustLoss(diagnostics, outcome.losses, label, urlHint);
         const status = deriveStatus(diagnostics, {
-            lossCount: parsedReport.losses.length,
-            exitCode: response.exitCode,
+            lossCount: outcome.losses.length,
+            ok: true,
             requireNoLoss,
         });
-
-        return Promise.resolve({
-            status,
-            text: response.indexMarkdown,
-            diagnostics,
-            reportJson: response.reportJson,
-            publishPath: response.outputDir || outputDir,
-        });
+        const reportJson = buildProjectReport(from, label, outcome, status);
+        try {
+            const published = await materializeMarkdownProject(outputDir, outcome, reportJson);
+            return {
+                status,
+                text: outcome.indexMarkdown,
+                diagnostics,
+                reportJson,
+                publishPath: published.outputDir,
+            };
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            diagnostics.push(createDiagnostic({
+                code: "panduck.convert.publish-failed",
+                fallback: `Failed to publish Markdown project to ${outputDir}: ${message}`,
+                component: "convert",
+                severity: "error",
+                stage: "output",
+                args: withUrl([["message", textArg(message)]], urlHint),
+            }));
+            const failedReport = buildBlockedProjectReport(from, label, outcome, outcome.passes);
+            return {
+                status: "failed",
+                text: outcome.indexMarkdown,
+                diagnostics,
+                reportJson: failedReport,
+                publishPath: outputDir,
+            };
+        }
     }
 
     // -----------------------------------------------------------------------
     // Shared — Rust conversion
     // -----------------------------------------------------------------------
 
-    private runRustConversion(ctx: {
+    private async runRustConversion(ctx: {
         from: string;
         to: string;
         bytes: Uint8Array;
@@ -313,56 +338,58 @@ export class Converter {
         requireNoLoss: boolean;
     }): Promise<ConverterResult> {
         const { from, to, bytes, label, urlHint, diagnostics, handlersJson, requireNoLoss } = ctx;
-        const fn = this.binding.convertBytesMemory;
-        if (!fn) {
-            diagnostics.push(createDiagnostic({
-                code: "panduck.convert.binding-missing",
-                fallback: "Panduck binding does not expose convertBytesMemory — rebuild @notedge/panduck-native",
-                messageKey: "panduck.diagnostic.bindingMissing",
-                component: "convert",
-                severity: "error",
-                stage: "convert",
-                args: withUrl([], urlHint),
-            }));
-            return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
-        }
 
-        let response: { exitCode: number; text?: string; html?: string; binary?: Uint8Array; reportJson: string } | undefined = undefined;
-        let nativePanic: unknown = undefined;
+        let outcome: ReturnType<typeof convertInMemory> | undefined;
+        let nativePanic: unknown;
         try {
-            response = fn(from, to, label, bytes, handlersJson);
-        } catch (err) {
-            nativePanic = err;
+            outcome = convertInMemory(this.binding, {
+                from,
+                to,
+                label,
+                bytes,
+                transformsJson: handlersJson,
+            });
+        } catch (error) {
+            nativePanic = error;
         }
 
-        if (nativePanic !== undefined || !response) {
-            const msg = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
+        if (nativePanic !== undefined || !outcome) {
+            const message = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
             diagnostics.push(createDiagnostic({
                 code: "panduck.convert.native-panic",
-                fallback: `Panduck native binary panicked for ${label}: ${msg}`,
+                fallback: `Panduck native binary panicked for ${label}: ${message}`,
                 component: "convert",
                 severity: "error",
                 stage: "convert",
-                args: withUrl([["message", textArg(msg)]], urlHint),
+                args: withUrl([["message", textArg(message)]], urlHint),
             }));
-            return Promise.resolve(makeResult("failed", "", diagnostics, label, urlHint));
+            return makeResult("failed", "", diagnostics, label, urlHint);
         }
 
-        const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert", url: urlHint });
-        diagnostics.push(...parsedReport.diagnostics);
-        reportRustLoss(diagnostics, parsedReport.losses, label, urlHint);
+        diagnostics.push(...outcome.diagnostics);
+        if (!outcome.ok) {
+            return {
+                status: "failed",
+                text: "",
+                diagnostics,
+                reportJson: buildBlockedConvertReport(from, to, label, outcome.passes),
+            };
+        }
 
-        const text = response.text ?? "";
-        const binary = response.binary;
+        reportRustLoss(diagnostics, outcome.losses, label, urlHint);
         const status = deriveStatus(diagnostics, {
-            lossCount: parsedReport.losses.length,
-            exitCode: response.exitCode,
+            lossCount: outcome.losses.length,
+            ok: true,
             requireNoLoss,
         });
-
-        const result: ConverterResult = { status, text, diagnostics, reportJson: response.reportJson };
-        if (binary) result.binary = binary;
-        return Promise.resolve(result);
+        const result: ConverterResult = {
+            status,
+            text: outcome.text ?? "",
+            diagnostics,
+            reportJson: buildConvertReport(from, to, label, outcome, status),
+        };
+        if (outcome.binary) result.binary = outcome.binary;
+        return result;
     }
 }
 
@@ -484,7 +511,7 @@ function makeResult(
 
 /**
  * Derive ConverterStatus from real run data only:
- *   1. exitCode from Rust → non-zero means hard failure.
+ *   1. Primitive success → false means hard failure.
  *   2. Error-severity diagnostics → failed.
  *   3. `requireNoLoss` (ConversionPlan deny) → any IR loss is failed.
  *   4. Real IR loss markers → success_with_loss.
@@ -494,13 +521,89 @@ function makeResult(
  */
 function deriveStatus(
     diags: DiagnosticRecord[],
-    ctx: { lossCount: number; exitCode: number; requireNoLoss: boolean },
+    ctx: { lossCount: number; ok: boolean; requireNoLoss: boolean },
 ): ConverterStatus {
-    if (ctx.exitCode !== 0) return "failed";
+    if (!ctx.ok) return "failed";
     if (diags.some((d) => d.severity === "error")) return "failed";
     if (ctx.lossCount > 0) {
         if (ctx.requireNoLoss) return "failed";
         return "success_with_loss";
     }
     return "success";
+}
+
+function reportStatus(status: ConverterStatus): ReportStatusValue {
+    return status === "failed" ? "blocked" : status;
+}
+
+function buildConvertReport(
+    from: string,
+    to: string,
+    label: string,
+    outcome: ReturnType<typeof convertInMemory>,
+    status: ConverterStatus,
+): string {
+    return buildConvertReportJson({
+        from,
+        to,
+        label,
+        status: reportStatus(status),
+        passes: outcome.passes,
+        coverage: outcome.coverage,
+        losses: outcome.losses,
+        diagnostics: outcome.diagnostics,
+    });
+}
+
+function buildBlockedConvertReport(from: string, to: string, label: string, passes: unknown[]): string {
+    return buildConvertReportJson({
+        from,
+        to,
+        label,
+        status: "blocked",
+        passes,
+        coverage: null,
+        losses: [],
+        diagnostics: [],
+    });
+}
+
+function buildProjectReport(
+    from: string,
+    label: string,
+    outcome: ReturnType<typeof exportProjectInMemory>,
+    status: ConverterStatus,
+): string {
+    return buildProjectReportJson({
+        from,
+        label,
+        status: reportStatus(status),
+        passes: outcome.passes,
+        coverage: outcome.coverage,
+        losses: outcome.losses,
+        diagnostics: outcome.diagnostics,
+        chapters: outcome.chapters.map((chapter) => chapter.path),
+        assetCount: outcome.assets.length,
+        unresolvedAssets: outcome.unresolvedAssets,
+    });
+}
+
+function buildBlockedProjectReport(
+    from: string,
+    label: string,
+    outcome: ReturnType<typeof exportProjectInMemory> | undefined,
+    passes: unknown[],
+): string {
+    return buildProjectReportJson({
+        from,
+        label,
+        status: "blocked",
+        passes,
+        coverage: null,
+        losses: [],
+        diagnostics: outcome?.diagnostics ?? [],
+        chapters: [],
+        assetCount: 0,
+        unresolvedAssets: [],
+    });
 }

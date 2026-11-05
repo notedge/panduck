@@ -8,77 +8,23 @@ type NativeBinding = {
     isSupportedFormat: (name: string) => boolean;
     supportsConversion?: (from: string, to: string) => boolean;
     supportedConversions?: () => string[];
-    convertDocument?: (
-        from: string,
-        to: string,
-        inputPath: string,
-        handlersJson?: string,
-        budgetsJson?: string,
-    ) => {
-        exitCode: number;
-        text?: string;
-        html?: string;
-        binary?: Uint8Array;
-        reportJson: string;
-    };
-    convertBytesMemory?: (
-        from: string,
-        to: string,
+    probeContainerIndex?: (
         label: string,
         bytes: Uint8Array,
-        handlersJson?: string,
-        budgetsJson?: string,
     ) => {
-        exitCode: number;
-        text?: string;
-        html?: string;
-        binary?: Uint8Array;
-        reportJson: string;
-    };
-    supportsMarkdownProject?: (from: string) => boolean;
-    convertMarkdownProject?: (
-        from: string,
-        inputPath: string,
-        outputDir: string,
-        handlersJson?: string,
-        budgetsJson?: string,
-    ) => {
-        exitCode: number;
-        indexMarkdown: string;
-        publishedAssets: string[];
-        publishedChapters: string[];
-        unresolvedAssets: string[];
-        outputDir: string;
-        reportJson: string;
-    };
-    convertMarkdownProjectBytes?: (
-        from: string,
-        label: string,
-        bytes: Uint8Array,
-        outputDir: string,
-        handlersJson?: string,
-        budgetsJson?: string,
-    ) => {
-        exitCode: number;
-        indexMarkdown: string;
-        publishedAssets: string[];
-        publishedChapters: string[];
-        unresolvedAssets: string[];
-        outputDir: string;
-        reportJson: string;
-    };
-    inspectIndex?: (inputPath: string) => {
-        exitCode: number;
+        success: boolean;
         format: string;
         outer: string;
         inner: string;
         parts: string[];
-        reportJson: string;
+        diagnosticsJson: string;
     };
-    installConsoleLogFile?: (path: string) => void;
-    installLoggerLogFile?: (path: string) => void;
-    inspectDecode?: (inputPath: string, partPath?: string) => {
-        exitCode: number;
+    probeContainerDecode?: (
+        label: string,
+        bytes: Uint8Array,
+        partPath?: string,
+    ) => {
+        success: boolean;
         format: string;
         outer: string;
         inner: string;
@@ -89,8 +35,54 @@ type NativeBinding = {
             uncompressedSize: number;
             decodedSize: number;
         }>;
-        reportJson: string;
+        diagnosticsJson: string;
     };
+    importDocument?: (
+        from: string,
+        label: string,
+        bytes: Uint8Array,
+        budgetsJson?: string,
+    ) => {
+        success: boolean;
+        graphJson: string | null;
+        coverageJson: string;
+        lossesJson: string;
+        diagnosticsJson: string;
+    };
+    transformDocument?: (
+        graphJson: string,
+        transformsJson?: string,
+    ) => {
+        success: boolean;
+        graphJson: string;
+        passesJson: string;
+        diagnosticsJson: string;
+    };
+    exportDocument?: (
+        to: string,
+        graphJson: string,
+    ) => {
+        success: boolean;
+        text?: string | null;
+        html?: string | null;
+        binary?: Uint8Array | null;
+        coverageJson: string;
+        lossesJson: string;
+        diagnosticsJson: string;
+    };
+    supportsMarkdownProject?: (from: string) => boolean;
+    exportMarkdownProject?: (graphJson: string) => {
+        success: boolean;
+        indexMarkdown: string;
+        chapters: Array<{ path: string; markdown: string }>;
+        assets: Array<{ path: string; bytes: Uint8Array }>;
+        unresolvedAssets: string[];
+        coverageJson: string;
+        lossesJson: string;
+        diagnosticsJson: string;
+    };
+    installConsoleLogFile?: (path: string) => void;
+    installLoggerLogFile?: (path: string) => void;
     lexDocument?: (
         language: string,
         source: string,
@@ -152,7 +144,7 @@ type NativeBinding = {
         label: string,
         bytes: Uint8Array,
     ) => {
-        exitCode: number;
+        success: boolean;
         pdf?: Uint8Array;
         runs: Array<{
             page: number;
@@ -200,88 +192,96 @@ export function loadPanduckNode(): PanduckBindings {
         supportedConversions: binding.supportedConversions
             ? () => binding.supportedConversions!()
             : undefined,
-        convertDocument: binding.convertDocument
-            ? (from, to, inputPath, handlersJson?, budgetsJson?) => {
-                  const response = binding.convertDocument!(from, to, inputPath, handlersJson, budgetsJson);
+        probeContainerIndex: binding.probeContainerIndex
+            ? (label, bytes) => {
+                  const response = binding.probeContainerIndex!(label, bytes);
                   return {
-                      exitCode: response.exitCode,
-                      text: response.text,
-                      html: response.html,
-                      binary: response.binary
-                          ? new Uint8Array(response.binary)
-                          : undefined,
-                      reportJson: response.reportJson,
+                      success: response.success,
+                      format: response.format,
+                      outer: response.outer,
+                      inner: response.inner,
+                      parts: response.parts,
+                      diagnosticsJson: response.diagnosticsJson,
                   };
               }
             : undefined,
-        convertBytesMemory: binding.convertBytesMemory
-            ? (from, to, label, bytes, handlersJson?, budgetsJson?) => {
-                  const response = binding.convertBytesMemory!(from, to, label, bytes, handlersJson, budgetsJson);
+        probeContainerDecode: binding.probeContainerDecode
+            ? (label, bytes, partPath) => {
+                  const response = binding.probeContainerDecode!(label, bytes, partPath);
                   return {
-                      exitCode: response.exitCode,
-                      text: response.text,
-                      html: response.html,
-                      binary: response.binary
-                          ? new Uint8Array(response.binary)
-                          : undefined,
-                      reportJson: response.reportJson,
+                      success: response.success,
+                      format: response.format,
+                      outer: response.outer,
+                      inner: response.inner,
+                      parts: response.parts.map((part) => ({
+                          path: part.path,
+                          compressionMethod: part.compressionMethod,
+                          compressedSize: part.compressedSize,
+                          uncompressedSize: part.uncompressedSize,
+                          decodedSize: part.decodedSize,
+                      })),
+                      diagnosticsJson: response.diagnosticsJson,
+                  };
+              }
+            : undefined,
+        importDocument: binding.importDocument
+            ? (from, label, bytes, budgetsJson) => {
+                  const response = binding.importDocument!(from, label, bytes, budgetsJson);
+                  return {
+                      success: response.success,
+                      graphJson: response.graphJson ?? null,
+                      coverageJson: response.coverageJson,
+                      lossesJson: response.lossesJson,
+                      diagnosticsJson: response.diagnosticsJson,
+                  };
+              }
+            : undefined,
+        transformDocument: binding.transformDocument
+            ? (graphJson, transformsJson) => {
+                  const response = binding.transformDocument!(graphJson, transformsJson);
+                  return {
+                      success: response.success,
+                      graphJson: response.graphJson,
+                      passesJson: response.passesJson,
+                      diagnosticsJson: response.diagnosticsJson,
+                  };
+              }
+            : undefined,
+        exportDocument: binding.exportDocument
+            ? (to, graphJson) => {
+                  const response = binding.exportDocument!(to, graphJson);
+                  return {
+                      success: response.success,
+                      text: response.text ?? null,
+                      html: response.html ?? null,
+                      binary: response.binary ? new Uint8Array(response.binary) : null,
+                      coverageJson: response.coverageJson,
+                      lossesJson: response.lossesJson,
+                      diagnosticsJson: response.diagnosticsJson,
                   };
               }
             : undefined,
         supportsMarkdownProject: binding.supportsMarkdownProject
             ? (from) => binding.supportsMarkdownProject!(from)
             : undefined,
-        convertMarkdownProject: binding.convertMarkdownProject
-            ? (from, inputPath, outputDir, handlersJson?, budgetsJson?) => {
-                  const response = binding.convertMarkdownProject!(from, inputPath, outputDir, handlersJson, budgetsJson);
+        exportMarkdownProject: binding.exportMarkdownProject
+            ? (graphJson) => {
+                  const response = binding.exportMarkdownProject!(graphJson);
                   return {
-                      exitCode: response.exitCode,
+                      success: response.success,
                       indexMarkdown: response.indexMarkdown,
-                      publishedAssets: response.publishedAssets,
-                      publishedChapters: response.publishedChapters,
+                      chapters: response.chapters.map((chapter) => ({
+                          path: chapter.path,
+                          markdown: chapter.markdown,
+                      })),
+                      assets: response.assets.map((asset) => ({
+                          path: asset.path,
+                          bytes: new Uint8Array(asset.bytes),
+                      })),
                       unresolvedAssets: response.unresolvedAssets,
-                      outputDir: response.outputDir,
-                      reportJson: response.reportJson,
-                  };
-              }
-            : undefined,
-        convertMarkdownProjectBytes: binding.convertMarkdownProjectBytes
-            ? (from, label, bytes, outputDir, handlersJson?, budgetsJson?) => {
-                  const response = binding.convertMarkdownProjectBytes!(from, label, bytes, outputDir, handlersJson, budgetsJson);
-                  return {
-                      exitCode: response.exitCode,
-                      indexMarkdown: response.indexMarkdown,
-                      publishedAssets: response.publishedAssets,
-                      publishedChapters: response.publishedChapters,
-                      unresolvedAssets: response.unresolvedAssets,
-                      outputDir: response.outputDir,
-                      reportJson: response.reportJson,
-                  };
-              }
-            : undefined,
-        inspectIndex: binding.inspectIndex
-            ? (inputPath) => {
-                  const response = binding.inspectIndex!(inputPath);
-                  return {
-                      exitCode: response.exitCode,
-                      format: response.format,
-                      outer: response.outer,
-                      inner: response.inner,
-                      parts: response.parts,
-                      reportJson: response.reportJson,
-                  };
-              }
-            : undefined,
-        inspectDecode: binding.inspectDecode
-            ? (inputPath, partPath) => {
-                  const response = binding.inspectDecode!(inputPath, partPath);
-                  return {
-                      exitCode: response.exitCode,
-                      format: response.format,
-                      outer: response.outer,
-                      inner: response.inner,
-                      parts: response.parts,
-                      reportJson: response.reportJson,
+                      coverageJson: response.coverageJson,
+                      lossesJson: response.lossesJson,
+                      diagnosticsJson: response.diagnosticsJson,
                   };
               }
             : undefined,
@@ -379,7 +379,7 @@ export function loadPanduckNode(): PanduckBindings {
             ? (label, bytes) => {
                   const response = binding.pdfLayoutProbe!(label, bytes);
                   return {
-                      exitCode: response.exitCode,
+                      success: response.success,
                       pdf: response.pdf ? new Uint8Array(response.pdf) : undefined,
                       runs: response.runs.map((run) => ({
                           page: run.page,

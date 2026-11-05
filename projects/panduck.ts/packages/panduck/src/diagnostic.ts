@@ -157,6 +157,69 @@ export type ReportParseContext = {
     url?: string;
 };
 
+/** Parsed boost diagnostic envelope. */
+export type ParsedDiagnostics = {
+    diagnostics: DiagnosticRecord[];
+    truncated: boolean;
+    dropped: number;
+};
+
+export type ParsedLosses = {
+    losses: LossRecord[];
+    diagnostics: DiagnosticRecord[];
+};
+
+/**
+ * Parse a bare boost diagnostic envelope emitted by a conversion primitive.
+ *
+ * Primitives return `diagnosticsJson` as `{ schemaVersion, diagnostics, truncated, dropped }`
+ * so report assembly stays on the TS side.
+ */
+export function parseDiagnosticEnvelope(envelopeJson: string, context: ReportParseContext): ParsedDiagnostics {
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(envelopeJson);
+    } catch (error) {
+        return {
+            diagnostics: [
+                reportError(context, "panduck.convert.report-corrupt", "Failed to parse Rust diagnostic envelope", {
+                    error: error instanceof Error ? error.message : String(error),
+                }),
+            ],
+            truncated: false,
+            dropped: 0,
+        };
+    }
+    if (!isRecord(parsed) || !Array.isArray(parsed.diagnostics)) {
+        return {
+            diagnostics: [
+                reportError(context, "panduck.convert.report-missing", "Rust diagnostic envelope is missing"),
+            ],
+            truncated: false,
+            dropped: 0,
+        };
+    }
+    return parseEnvelopeRecord(parsed, context);
+}
+
+/** Parse a bare loss array emitted by a conversion primitive. */
+export function parseLossArrayJson(lossesJson: string, context: ReportParseContext): ParsedLosses {
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(lossesJson);
+    } catch (error) {
+        return {
+            losses: [],
+            diagnostics: [
+                reportError(context, "panduck.convert.report-corrupt", "Failed to parse Rust loss JSON", {
+                    error: error instanceof Error ? error.message : String(error),
+                }),
+            ],
+        };
+    }
+    return parseLossArray(parsed, context);
+}
+
 /**
  * Parse the Rust report JSON and read only the boost diagnostic envelope.
  *
@@ -166,34 +229,36 @@ export type ReportParseContext = {
  * being silently accepted.
  */
 export function parseReportEnvelope(reportJson: string, context: ReportParseContext): ParsedReport {
-    const empty: ParsedReport = { diagnostics: [], losses: [], truncated: false, dropped: 0 };
     let parsed: unknown;
     try {
         parsed = JSON.parse(reportJson);
     } catch (error) {
         return {
-            ...empty,
             diagnostics: [
                 reportError(context, "panduck.convert.report-corrupt", "Failed to parse Rust report JSON", {
                     error: error instanceof Error ? error.message : String(error),
                 }),
             ],
+            losses: [],
+            truncated: false,
+            dropped: 0,
         };
     }
 
     if (!isRecord(parsed)) {
         return {
-            ...empty,
             diagnostics: [
                 reportError(context, "panduck.convert.report-corrupt", "Rust report JSON must be an object"),
             ],
+            losses: [],
+            truncated: false,
+            dropped: 0,
         };
     }
 
     const envelope = parsed.diagnostics;
     if (!isRecord(envelope) || !Array.isArray(envelope.diagnostics)) {
         return {
-            ...empty,
             diagnostics: [
                 reportError(
                     context,
@@ -201,11 +266,25 @@ export function parseReportEnvelope(reportJson: string, context: ReportParseCont
                     "Rust report is missing the boost diagnostic envelope",
                 ),
             ],
+            losses: [],
+            truncated: false,
+            dropped: 0,
         };
     }
 
+    const parsedEnvelope = parseEnvelopeRecord(envelope, context);
+    const parsedLosses = parseLossArray(parsed.losses, context);
+    return {
+        diagnostics: [...parsedEnvelope.diagnostics, ...parsedLosses.diagnostics],
+        losses: parsedLosses.losses,
+        truncated: parsedEnvelope.truncated,
+        dropped: parsedEnvelope.dropped,
+    };
+}
+
+function parseEnvelopeRecord(envelope: Record<string, unknown>, context: ReportParseContext): ParsedDiagnostics {
     const diagnostics: DiagnosticRecord[] = [];
-    for (const [index, raw] of envelope.diagnostics.entries()) {
+    for (const [index, raw] of (envelope.diagnostics as unknown[]).entries()) {
         const diagnostic = parseDiagnostic(raw);
         if (diagnostic) {
             diagnostics.push(diagnostic);
@@ -220,31 +299,34 @@ export function parseReportEnvelope(reportJson: string, context: ReportParseCont
             );
         }
     }
-
-    const losses: LossRecord[] = [];
-    if (Array.isArray(parsed.losses)) {
-        for (const raw of parsed.losses) {
-            const loss = parseLoss(raw);
-            if (!loss) {
-                diagnostics.push(
-                    reportError(
-                        context,
-                        "panduck.convert.report-corrupt",
-                        "Rust loss entry does not match the notedown loss marker shape",
-                    ),
-                );
-                break;
-            }
-            losses.push(loss);
-        }
-    }
-
     return {
         diagnostics,
-        losses,
         truncated: envelope.truncated === true,
         dropped: typeof envelope.dropped === "number" ? envelope.dropped : 0,
     };
+}
+
+function parseLossArray(raw: unknown, context: ReportParseContext): ParsedLosses {
+    const losses: LossRecord[] = [];
+    const diagnostics: DiagnosticRecord[] = [];
+    if (!Array.isArray(raw)) {
+        return { losses, diagnostics };
+    }
+    for (const entry of raw) {
+        const loss = parseLoss(entry);
+        if (!loss) {
+            diagnostics.push(
+                reportError(
+                    context,
+                    "panduck.convert.report-corrupt",
+                    "Rust loss entry does not match the notedown loss marker shape",
+                ),
+            );
+            break;
+        }
+        losses.push(loss);
+    }
+    return { losses, diagnostics };
 }
 
 function parseDiagnostic(raw: unknown): DiagnosticRecord | null {

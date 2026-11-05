@@ -1,11 +1,14 @@
-import { mkdir, mkdtemp, rename, stat, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rename, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
 import { randomBytes } from "node:crypto";
 
-import type { ConvertResponse, PanduckBindings } from "../types.js";
-import { createDiagnostic, parseReportEnvelope, textArg, u64Arg } from "../diagnostic.js";
+import type { PanduckBindings } from "../types.js";
+import { createDiagnostic, textArg, u64Arg } from "../diagnostic.js";
 import type { DiagnosticRecord } from "../diagnostic.js";
+import { convertInMemory, exportProjectInMemory, type StageOutcome, type ProjectOutcome } from "../primitives.js";
+import { publishMarkdownProject as materializeMarkdownProject } from "../publish-project.js";
+import { buildProjectReportJson } from "../native-report.js";
 import { ExitCode } from "./exit-codes.js";
 import { containerBudgetsJson } from "./options.js";
 import type { SharedCliOptions } from "./options.js";
@@ -29,11 +32,11 @@ export const CONVERSION_DEADLINE_MS = 300_000;
 /**
  * Maps native diagnostics to the stable CLI exit-code matrix.
  *
- * The native layer reports every failure as `exit_code: 1` and carries the
- * structured identity in diagnostics, so the CLI must classify by code rather
- * than propagate the transport value. A writer-side `unsupported` diagnostic
- * names the target format and maps to `IrOrWriterFailure`, while reader-side
- * and route-level unsupported cases keep `InputUnsupported`.
+ * The native layer reports structured diagnostics for every failure, so the CLI
+ * classifies by diagnostic code rather than by a transport value. A writer-side
+ * `unsupported` diagnostic names the target format and maps to
+ * `IrOrWriterFailure`, while reader-side and route-level unsupported cases keep
+ * `InputUnsupported`.
  */
 export function exitCodeForDiagnostics(
     diagnostics: readonly DiagnosticRecord[],
@@ -162,11 +165,11 @@ async function inputByteLength(inputPath: string, bytes?: Uint8Array): Promise<n
     }
 }
 
-function outputByteLength(response: ConvertResponse): number {
-    if (response.binary && response.binary.length > 0) {
-        return response.binary.byteLength;
+function outputByteLength(outcome: StageOutcome): number {
+    if (outcome.binary && outcome.binary.length > 0) {
+        return outcome.binary.byteLength;
     }
-    const text = response.text ?? response.html ?? "";
+    const text = outcome.text ?? outcome.html ?? "";
     return Buffer.byteLength(text, "utf8");
 }
 
@@ -184,7 +187,13 @@ export function hasPipeline(
     from: string | undefined,
     to: string,
 ): boolean {
-    if (!bindings?.supportsConversion || !from) {
+    if (
+        !bindings?.supportsConversion
+        || !bindings.importDocument
+        || !bindings.transformDocument
+        || !bindings.exportDocument
+        || !from
+    ) {
         return false;
     }
     return bindings.supportsConversion(from, to);
@@ -278,15 +287,28 @@ export async function runConversionPipeline(input: {
         throw new Error("conversion requires resolved from/to formats");
     }
 
-    let inputBytes: Uint8Array | undefined;
-    let response: ConvertResponse;
+    let inputBytes: Uint8Array;
+    if (!bindings.importDocument || !bindings.transformDocument || !bindings.exportDocument) {
+        return blocked(ctx, operation, inputPath, resolved, shared, "native conversion primitives are missing");
+    }
     if (isStdinPath(inputPath)) {
-        if (!bindings.convertBytesMemory) {
-            return blocked(ctx, operation, inputPath, resolved, shared, "native convertBytesMemory binding is missing");
-        }
         inputBytes = await readStdinBytes();
-    } else if (!bindings.convertDocument) {
-        return blocked(ctx, operation, inputPath, resolved, shared, "native convertDocument binding is missing");
+    } else {
+        try {
+            inputBytes = await readFile(inputPath);
+        } catch (error) {
+            const notReadable = inputReadError(inputPath, error);
+            return blocked(
+                ctx,
+                operation,
+                inputPath,
+                resolved,
+                shared,
+                "input is not readable",
+                [notReadable.diagnostic],
+                notReadable.exitCode,
+            );
+        }
     }
 
     const inputObserved = await inputByteLength(inputPath, inputBytes);
@@ -304,24 +326,41 @@ export async function runConversionPipeline(input: {
         );
     }
 
+    const label = isStdinPath(inputPath) ? "stdin" : inputPath;
     const budgetsJson = containerBudgetsJson(shared.budgets);
     const startedAt = Date.now();
-    response = inputBytes
-        ? bindings.convertBytesMemory!(from, to, "stdin", inputBytes, undefined, budgetsJson)
-        : bindings.convertDocument!(from, to, inputPath, undefined, budgetsJson);
+    let outcome: StageOutcome | undefined;
+    let nativePanic: unknown;
+    try {
+        outcome = convertInMemory(bindings, { from, to, label, bytes: inputBytes, budgetsJson });
+    } catch (error) {
+        nativePanic = error;
+    }
     const elapsedMs = Date.now() - startedAt;
-    const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert" });
 
-    if (response.exitCode !== 0) {
+    if (nativePanic !== undefined || !outcome) {
+        const message = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
+        return blocked(ctx, operation, inputPath, resolved, shared, "native conversion failed with exit code 1", [
+            createDiagnostic({
+                code: "panduck.convert.native-panic",
+                component: "convert",
+                severity: "error",
+                fallback: `Panduck native binary panicked while converting ${label}: ${message}`,
+                args: [["message", textArg(message)]],
+            }),
+        ]);
+    }
+
+    if (!outcome.ok) {
         return blocked(
             ctx,
             operation,
             inputPath,
             resolved,
             shared,
-            `native conversion failed with exit code ${response.exitCode}`,
-            parsedReport.diagnostics,
-            exitCodeForDiagnostics(parsedReport.diagnostics, to),
+            "native conversion failed with exit code 1",
+            outcome.diagnostics,
+            exitCodeForDiagnostics(outcome.diagnostics, to),
         );
     }
 
@@ -339,7 +378,7 @@ export async function runConversionPipeline(input: {
         );
     }
 
-    const outputObserved = outputByteLength(response);
+    const outputObserved = outputByteLength(outcome);
     const overOutput = exceededBudget(shared, "output_bytes", outputObserved);
     if (overOutput) {
         return blocked(
@@ -368,8 +407,8 @@ export async function runConversionPipeline(input: {
         );
     }
 
-    const text = response.text ?? response.html ?? "";
-    const binary = response.binary;
+    const text = outcome.text ?? outcome.html ?? "";
+    const binary = outcome.binary;
 
     if (publishOutput && outputPath && !isStdoutPath(outputPath)) {
         if (binary && binary.length > 0) {
@@ -385,7 +424,7 @@ export async function runConversionPipeline(input: {
         }
     }
 
-    const lossCount = parsedReport.losses.length;
+    const lossCount = outcome.losses.length;
     const status = lossCount > 0 ? "success_with_loss" : "success";
     let exitCode: number = ExitCode.Success;
     if (shared.strict || shared.loss === "deny") {
@@ -410,8 +449,8 @@ export async function runConversionPipeline(input: {
             writer: to,
             stages: operation === "check" ? ["read", "ir", "write", "validate"] : ["read", "ir", "write", "publish"],
         },
-        losses: parsedReport.losses,
-        diagnostics: parsedReport.diagnostics,
+        losses: outcome.losses,
+        diagnostics: outcome.diagnostics,
         outputs: outputPath
             ? [{ path: outputPath, published: publishOutput && !isStdoutPath(outputPath) }]
             : [{ path: "-", published: !suppressStdout }],
@@ -421,6 +460,27 @@ export async function runConversionPipeline(input: {
     });
 
     return { exitCode, report };
+}
+
+function inputReadError(
+    inputPath: string,
+    error: unknown,
+): { diagnostic: DiagnosticRecord; exitCode: number } {
+    const errno = (error as NodeJS.ErrnoException).code;
+    const notReadable = errno === "ENOENT" || errno === "EACCES" || errno === "EPERM" || errno === "EISDIR";
+    return {
+        diagnostic: createDiagnostic({
+            code: notReadable ? "panduck.read.not-readable" : "panduck.read.io-failed",
+            component: "read",
+            severity: "error",
+            fallback: notReadable ? "input is not readable" : "input could not be read",
+            args: [
+                ["path", textArg(inputPath)],
+                ["message", textArg(error instanceof Error ? error.message : String(error))],
+            ],
+        }),
+        exitCode: notReadable ? ExitCode.InputUnsupported : ExitCode.IrOrWriterFailure,
+    };
 }
 
 async function publishBinary(path: string, content: Uint8Array): Promise<void> {
@@ -486,14 +546,19 @@ export async function runMarkdownProjectPipeline(input: {
         throw new Error("markdown project conversion requires resolved source format");
     }
 
-    if (!bindings.convertMarkdownProject || !bindings.supportsMarkdownProject) {
+    if (
+        !bindings.importDocument
+        || !bindings.transformDocument
+        || !bindings.exportMarkdownProject
+        || !bindings.supportsMarkdownProject
+    ) {
         return blocked(
             ctx,
             "convert",
             inputPath,
             resolved,
             shared,
-            "native convertMarkdownProject binding is missing",
+            "native markdown project primitives are missing",
         );
     }
 
@@ -508,19 +573,25 @@ export async function runMarkdownProjectPipeline(input: {
         );
     }
 
-    let inputBytes: Uint8Array | undefined;
+    let inputBytes: Uint8Array;
     if (isStdinPath(inputPath)) {
-        if (!bindings.convertMarkdownProjectBytes) {
+        inputBytes = await readStdinBytes();
+    } else {
+        try {
+            inputBytes = await readFile(inputPath);
+        } catch (error) {
+            const notReadable = inputReadError(inputPath, error);
             return blocked(
                 ctx,
                 "convert",
                 inputPath,
                 resolved,
                 shared,
-                "native convertMarkdownProjectBytes binding is missing",
+                "input is not readable",
+                [notReadable.diagnostic],
+                notReadable.exitCode,
             );
         }
-        inputBytes = await readStdinBytes();
     }
 
     const inputObserved = await inputByteLength(inputPath, inputBytes);
@@ -538,34 +609,88 @@ export async function runMarkdownProjectPipeline(input: {
         );
     }
 
+    const label = isStdinPath(inputPath) ? "stdin" : inputPath;
     const budgetsJson = containerBudgetsJson(shared.budgets);
-    const response = inputBytes
-        ? bindings.convertMarkdownProjectBytes!(from, "stdin", inputBytes, outputDir, undefined, budgetsJson)
-        : bindings.convertMarkdownProject!(from, inputPath, outputDir, undefined, budgetsJson);
-    const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert" });
+    let outcome: ProjectOutcome | undefined;
+    let nativePanic: unknown;
+    try {
+        outcome = exportProjectInMemory(bindings, { from, label, bytes: inputBytes, budgetsJson });
+    } catch (error) {
+        nativePanic = error;
+    }
 
-    if (response.exitCode !== 0) {
+    if (nativePanic !== undefined || !outcome) {
+        const message = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
+        return blocked(ctx, "convert", inputPath, resolved, shared, "native markdown project conversion failed with exit code 1", [
+            createDiagnostic({
+                code: "panduck.convert.native-panic",
+                component: "convert",
+                severity: "error",
+                fallback: `Panduck native binary panicked while publishing ${label}: ${message}`,
+                args: [["message", textArg(message)]],
+            }),
+        ]);
+    }
+
+    const lossCount = outcome.losses.length;
+    const unresolvedCount = outcome.unresolvedAssets.length;
+    const status =
+        lossCount > 0 || unresolvedCount > 0 ? "success_with_loss" : "success";
+
+    if (!outcome.ok) {
         return blocked(
             ctx,
             "convert",
             inputPath,
             resolved,
             shared,
-            `native markdown project conversion failed with exit code ${response.exitCode}`,
-            parsedReport.diagnostics,
-            exitCodeForDiagnostics(parsedReport.diagnostics),
+            "native markdown project conversion failed with exit code 1",
+            outcome.diagnostics,
+            exitCodeForDiagnostics(outcome.diagnostics),
         );
     }
-
-    const lossCount = parsedReport.losses.length;
-    const unresolvedCount = response.unresolvedAssets.length;
-    const status =
-        lossCount > 0 || unresolvedCount > 0 ? "success_with_loss" : "success";
     let exitCode: number = ExitCode.Success;
     if (shared.strict || shared.loss === "deny") {
         if (lossCount > 0 || unresolvedCount > 0 || status === "success_with_loss") {
             exitCode = ExitCode.LossPolicyViolation;
         }
+    }
+
+    const nativeReportJson = buildProjectReportJson({
+        from,
+        label,
+        status,
+        passes: outcome.passes,
+        coverage: outcome.coverage,
+        losses: outcome.losses,
+        diagnostics: outcome.diagnostics,
+        chapters: outcome.chapters.map((chapter) => chapter.path),
+        assetCount: outcome.assets.length,
+        unresolvedAssets: outcome.unresolvedAssets,
+    });
+
+    try {
+        await materializeMarkdownProject(outputDir, outcome, nativeReportJson);
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return blocked(
+            ctx,
+            "convert",
+            inputPath,
+            resolved,
+            shared,
+            `failed to publish markdown project to ${outputDir}: ${message}`,
+            [
+                createDiagnostic({
+                    code: "panduck.convert.publish-failed",
+                    component: "convert",
+                    severity: "error",
+                    fallback: `failed to publish markdown project to ${outputDir}: ${message}`,
+                    args: [["message", textArg(message)]],
+                }),
+            ],
+            ExitCode.IrOrWriterFailure,
+        );
     }
 
     const report = createReport({
@@ -579,16 +704,16 @@ export async function runMarkdownProjectPipeline(input: {
             writer: "markdown-project",
             stages: ["read", "ir", "write", "materialize", "publish"],
         },
-        losses: parsedReport.losses,
-        diagnostics: parsedReport.diagnostics,
+        losses: outcome.losses,
+        diagnostics: outcome.diagnostics,
         outputs: [
             { path: join(outputDir, "index.md"), published: true },
-            ...response.publishedChapters.map((chapter) => ({
-                path: join(outputDir, chapter),
+            ...outcome.chapters.map((chapter) => ({
+                path: join(outputDir, chapter.path),
                 published: true,
             })),
-            ...response.publishedAssets.map((asset) => ({
-                path: join(outputDir, asset),
+            ...outcome.assets.map((asset) => ({
+                path: join(outputDir, asset.path),
                 published: true,
             })),
             { path: join(outputDir, "panduck.report.json"), published: true },
