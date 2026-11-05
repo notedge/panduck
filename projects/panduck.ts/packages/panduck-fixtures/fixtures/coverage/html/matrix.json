@@ -43,7 +43,7 @@
             "spec": "HTML Standard §13.2.5.5 script data state",
             "semantics": "script content is raw text and the element carries no document body content",
             "source": "<script>if (a < b) { x() }</script><p>after</p>",
-            "probe": { "unsupported": true }
+            "probe": { "unsupported": true, "contains": ["<p>after</p>"] }
         },
         {
             "id": "html-textarea-rcdata",

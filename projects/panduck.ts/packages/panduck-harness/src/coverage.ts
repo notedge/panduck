@@ -65,14 +65,17 @@ function unmetExpectations(feature: CoverageFeature, output: string): readonly s
     if (probe === null) {
         return [];
     }
-    if (probe.unsupported === true) {
-        return [];
-    }
     const unmet: string[] = [];
     for (const marker of probe.contains ?? []) {
         if (!output.includes(marker)) {
             unmet.push(`missing ${JSON.stringify(marker)}`);
         }
+    }
+    // A rejected construct still has to keep the content around it. Only the
+    // `contains` markers describe that, so the shape markers stop here: the
+    // product never claims the rejected output shape.
+    if (probe.unsupported === true) {
+        return unmet;
     }
     for (const marker of probe.excludes ?? []) {
         if (output.includes(marker)) {
@@ -126,12 +129,25 @@ function measureFeature(
     };
     const reportedUnsupported = specificAccounting(observation);
     if (feature.probe?.unsupported === true) {
+        const unmet = unmetExpectations(feature, observation.html ?? observation.text ?? "");
+        if (!reportedUnsupported) {
+            return {
+                ...base,
+                status: "silent-loss",
+                detail: `product dropped the construct without reporting a loss`,
+            };
+        }
+        if (unmet.length > 0) {
+            return {
+                ...base,
+                status: "failed",
+                detail: `declared unsupported but lost surrounding content: ${unmet.join(" · ")}`,
+            };
+        }
         return {
             ...base,
-            status: reportedUnsupported ? "rejected" : "silent-loss",
-            detail: reportedUnsupported
-                ? `product declares the construct unsupported: ${observation.lossCodes.join(", ")}`
-                : `product dropped the construct without reporting a loss`,
+            status: "rejected",
+            detail: `product declares the construct unsupported: ${observation.lossCodes.join(", ")}`,
         };
     }
     if (observation.error !== undefined) {
