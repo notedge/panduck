@@ -20,20 +20,34 @@ export type PipelineResult = {
     report: PanduckReport;
 };
 
+/** Hard ceiling for one exported payload (128 MiB), independent of `--budget`. */
+export const EXPORT_BYTES_CEILING = 128 * 1024 * 1024;
+
+/** Wall-clock deadline for one native conversion (300 s), checked after return. */
+export const CONVERSION_DEADLINE_MS = 300_000;
+
 /**
  * Maps native diagnostics to the stable CLI exit-code matrix.
  *
  * The native layer reports every failure as `exit_code: 1` and carries the
  * structured identity in diagnostics, so the CLI must classify by code rather
- * than propagate the transport value.
+ * than propagate the transport value. A writer-side `unsupported` diagnostic
+ * names the target format and maps to `IrOrWriterFailure`, while reader-side
+ * and route-level unsupported cases keep `InputUnsupported`.
  */
-export function exitCodeForDiagnostics(diagnostics: readonly DiagnosticRecord[]): number {
+export function exitCodeForDiagnostics(
+    diagnostics: readonly DiagnosticRecord[],
+    targetFormat?: string,
+): number {
     const codes = diagnostics.map((item) => item.code);
     if (codes.some((code) => code.endsWith("budget-exhausted"))) {
         return ExitCode.BudgetExceeded;
     }
     if (codes.some((code) => code.endsWith("parse-failed") || code.endsWith("invalid-input"))) {
         return ExitCode.ParseFailure;
+    }
+    if (codes.some((code) => code.endsWith("unsupported")) && isWriterUnsupported(diagnostics, targetFormat)) {
+        return ExitCode.IrOrWriterFailure;
     }
     if (
         codes.some(
@@ -48,6 +62,61 @@ export function exitCodeForDiagnostics(diagnostics: readonly DiagnosticRecord[])
         return ExitCode.InputUnsupported;
     }
     return ExitCode.IrOrWriterFailure;
+}
+
+/** True when an `unsupported` diagnostic names the requested target format. */
+function isWriterUnsupported(diagnostics: readonly DiagnosticRecord[], targetFormat?: string): boolean {
+    if (!targetFormat) {
+        return false;
+    }
+    return diagnostics.some(
+        (diagnostic) =>
+            diagnostic.code.endsWith("unsupported")
+            && diagnostic.message.args.some(
+                ([name, value]) =>
+                    name === "format"
+                    && typeof value === "object"
+                    && value !== null
+                    && typeof (value as { text?: unknown }).text === "string"
+                    && (value as { text: string }).text === targetFormat,
+            ),
+    );
+}
+
+function exportCeilingDiagnostic(observed: number): DiagnosticRecord {
+    return createDiagnostic({
+        code: "panduck.export.size-exceeded",
+        component: "export",
+        severity: "error",
+        fallback: `exported payload exceeds the hard ceiling: observed ${observed} bytes, ceiling ${EXPORT_BYTES_CEILING}`,
+        args: [
+            ["limit", u64Arg(EXPORT_BYTES_CEILING)],
+            ["observed", u64Arg(observed)],
+        ],
+    });
+}
+
+/** Returns the hard-ceiling diagnostic when the payload is too large. */
+export function exportCeilingStop(observed: number): DiagnosticRecord | null {
+    return observed > EXPORT_BYTES_CEILING ? exportCeilingDiagnostic(observed) : null;
+}
+
+function deadlineDiagnostic(observedMs: number): DiagnosticRecord {
+    return createDiagnostic({
+        code: "panduck.convert.deadline-exceeded",
+        component: "convert",
+        severity: "error",
+        fallback: `conversion exceeded the hard deadline: observed ${observedMs} ms, limit ${CONVERSION_DEADLINE_MS} ms`,
+        args: [
+            ["limit", u64Arg(CONVERSION_DEADLINE_MS)],
+            ["observed", u64Arg(observedMs)],
+        ],
+    });
+}
+
+/** Returns the deadline diagnostic when one native call ran too long. */
+export function deadlineStop(observedMs: number): DiagnosticRecord | null {
+    return observedMs > CONVERSION_DEADLINE_MS ? deadlineDiagnostic(observedMs) : null;
 }
 
 function budgetDiagnostic(key: string, limit: number, observed: number): DiagnosticRecord {
@@ -236,9 +305,11 @@ export async function runConversionPipeline(input: {
     }
 
     const budgetsJson = containerBudgetsJson(shared.budgets);
+    const startedAt = Date.now();
     response = inputBytes
         ? bindings.convertBytesMemory!(from, to, "stdin", inputBytes, undefined, budgetsJson)
         : bindings.convertDocument!(from, to, inputPath, undefined, budgetsJson);
+    const elapsedMs = Date.now() - startedAt;
     const parsedReport = parseReportEnvelope(response.reportJson, { component: "convert" });
 
     if (response.exitCode !== 0) {
@@ -250,7 +321,21 @@ export async function runConversionPipeline(input: {
             shared,
             `native conversion failed with exit code ${response.exitCode}`,
             parsedReport.diagnostics,
-            exitCodeForDiagnostics(parsedReport.diagnostics),
+            exitCodeForDiagnostics(parsedReport.diagnostics, to),
+        );
+    }
+
+    const overdue = deadlineStop(elapsedMs);
+    if (overdue) {
+        return blocked(
+            ctx,
+            operation,
+            inputPath,
+            resolved,
+            shared,
+            `conversion deadline exceeded: observed ${elapsedMs} ms, limit ${CONVERSION_DEADLINE_MS} ms`,
+            [overdue],
+            ExitCode.BudgetExceeded,
         );
     }
 
@@ -265,6 +350,20 @@ export async function runConversionPipeline(input: {
             shared,
             `output_bytes budget exceeded: observed ${outputObserved}, limit ${overOutput.limit}`,
             [overOutput.diagnostic],
+            ExitCode.BudgetExceeded,
+        );
+    }
+
+    const overCeiling = exportCeilingStop(outputObserved);
+    if (overCeiling) {
+        return blocked(
+            ctx,
+            operation,
+            inputPath,
+            resolved,
+            shared,
+            `exported payload exceeds the hard ceiling: observed ${outputObserved} bytes, ceiling ${EXPORT_BYTES_CEILING}`,
+            [overCeiling],
             ExitCode.BudgetExceeded,
         );
     }

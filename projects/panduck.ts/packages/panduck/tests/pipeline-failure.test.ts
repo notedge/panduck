@@ -6,10 +6,16 @@ import { join } from "node:path";
 import test from "node:test";
 
 import {
+    CONVERSION_DEADLINE_MS,
+    EXPORT_BYTES_CEILING,
+    deadlineStop,
+    exitCodeForDiagnostics,
+    exportCeilingStop,
     runConversionPipeline,
     runMarkdownProjectPipeline,
 } from "../src/cli/pipeline.js";
 import { ExitCode } from "../src/cli/exit-codes.js";
+import { createDiagnostic, textArg } from "../src/diagnostic.js";
 import type { SharedCliOptions } from "../src/cli/options.js";
 import type { CliContext } from "../src/cli/context.js";
 import type { PanduckBindings } from "../src/types.js";
@@ -79,6 +85,29 @@ async function exists(path: string): Promise<boolean> {
         return false;
     }
 }
+
+test("hard export ceiling and conversion deadline stop at their exact limits", () => {
+    assert.equal(EXPORT_BYTES_CEILING, 134_217_728);
+    assert.equal(CONVERSION_DEADLINE_MS, 300_000);
+    assert.equal(exportCeilingStop(EXPORT_BYTES_CEILING), null);
+    const ceiling = exportCeilingStop(EXPORT_BYTES_CEILING + 1);
+    assert.equal(ceiling?.code, "panduck.export.size-exceeded");
+    assert.equal(deadlineStop(CONVERSION_DEADLINE_MS), null);
+    const deadline = deadlineStop(CONVERSION_DEADLINE_MS + 1);
+    assert.equal(deadline?.code, "panduck.convert.deadline-exceeded");
+});
+
+test("writer unsupported diagnostics map to the target failure exit code", () => {
+    const unsupported = createDiagnostic({
+        code: "notedown.format.unsupported",
+        severity: "error",
+        component: "formats",
+        args: [["format", textArg("docx")]],
+    });
+    assert.equal(exitCodeForDiagnostics([unsupported], "docx"), ExitCode.IrOrWriterFailure);
+    assert.equal(exitCodeForDiagnostics([unsupported], "markdown"), ExitCode.InputUnsupported);
+    assert.equal(exitCodeForDiagnostics([unsupported]), ExitCode.InputUnsupported);
+});
 
 test("native convert failure blocks the output file instead of writing empty text", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-pipeline-fail-"));

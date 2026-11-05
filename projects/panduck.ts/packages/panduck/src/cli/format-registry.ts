@@ -102,8 +102,8 @@ export function baseFormatRegistry(): FormatRecord[] {
             "partial",
             "partial",
             ["oak-xml"],
-            ["paragraph", "heading", "list", "table", "style", "hyperlink", "image", "bold", "italic", "footnote_reference", "footnote_body"],
-            ["tracked_changes", "comment"],
+            ["paragraph", "heading", "list", "table", "style", "hyperlink", "image", "bold", "italic", "strike", "code_block", "footnote_reference", "footnote_body", "diagram_source", "chart_source"],
+            ["tracked_changes", "comment", "math", "inline_math", "raw_html", "opaque"],
         ),
         containerFormat(
             "epub",
@@ -120,8 +120,8 @@ export function baseFormatRegistry(): FormatRecord[] {
             "partial",
             "partial",
             [],
-            ["page", "text_run", "image"],
-            ["annotation", "form", "encryption"],
+            ["page", "text_run", "heading", "list", "table", "code_block", "math", "footnote_reference"],
+            ["diagram_render", "chart_render", "image", "footnote_body", "strike", "hyperlink_annotation", "annotation", "form", "encryption"],
         ),
         containerFormat(
             "doc",
