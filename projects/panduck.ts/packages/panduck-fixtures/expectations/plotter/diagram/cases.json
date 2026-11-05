@@ -184,6 +184,7 @@
             "id": "diagram-tikz-node-label",
             "language": "tikz",
             "classification": "accept",
+            "paintless": true,
             "source": "\\node[above, text=red] at (0,0) {label};\n",
             "expect": {
                 "lower": "scene",
