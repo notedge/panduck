@@ -49,6 +49,14 @@ export type DiagramSpecCase = {
     readonly classification: "accept";
     readonly source: string;
     readonly expect: Readonly<Record<string, unknown>>;
+    /**
+     * Declared paintless: the authored diagram is text or bare points only.
+     *
+     * The harness requires visible paint on every other accepted diagram, so a
+     * case that genuinely has no geometry must say so instead of relying on
+     * silently blank output.
+     */
+    readonly paintless?: boolean;
 };
 
 /** One rejected diagram source with its documented code and authored span. */
@@ -263,6 +271,9 @@ export function loadDiagramCases(): {
             if (!languages.has(language)) {
                 throw new Error(`${label} has unsupported language: ${language}`);
             }
+            if (row.paintless !== undefined && typeof row.paintless !== "boolean") {
+                throw new Error(`${label}: \`paintless\` must be a boolean`);
+            }
             return {
                 id,
                 language: language as DiagramSpecCase["language"],
@@ -270,6 +281,7 @@ export function loadDiagramCases(): {
                 classification: "accept" as const,
                 source: stringField(row, "source", label),
                 expect: expectObject(row, label),
+                ...(row.paintless === undefined ? {} : { paintless: row.paintless }),
             } satisfies DiagramSpecCase;
         }),
         "diagram specs",

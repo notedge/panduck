@@ -28,6 +28,7 @@ import {
 } from "./adapter.js";
 import { aggregateCategory, evaluateExpectation, evaluateSnapshot } from "./assertions.js";
 import { addAssertion } from "./accept.js";
+import { analyzeSvgPaint } from "./paint.js";
 import {
     expectationFile,
     loadConversionCases,
@@ -357,6 +358,17 @@ function describeDiagramSpec(definition: DiagramSpecCase): CaseRun {
         deterministic,
         deterministic ? "two renders are byte identical" : "two renders differ",
     );
+    const paint = first.svg === null ? null : analyzeSvgPaint(first.svg);
+    const paintless = definition.paintless === true;
+    assertion(
+        "invisible-geometry",
+        paintless || (paint?.painted ?? 0) > 0,
+        paintless
+            ? "the case declares itself paintless"
+            : paint === null
+              ? "no svg to measure"
+              : `${paint.painted}/${paint.elements} geometry elements carry paint (${paint.attributePainted} attribute, ${paint.classPainted} class)`,
+    );
     return diagramRun(
         definition.id,
         `${definition.language} source renders`,
@@ -365,6 +377,7 @@ function describeDiagramSpec(definition: DiagramSpecCase): CaseRun {
             language: definition.language,
             svgBytes: first.svg?.length ?? 0,
             diagnostics: first.diagnostics.length,
+            paint,
         },
     );
 }
