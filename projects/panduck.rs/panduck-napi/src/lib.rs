@@ -15,6 +15,12 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use oak_core::{Lexer, TokenType, lexer::NoLexerCache, source::SourceText};
 
+/// Panduck-owned render code for a language with no diagram frontend.
+///
+/// It stays outside the DaVinci vocabulary, which lives in
+/// `plotter_diagram::codes` and is never re-spelled in this crate.
+const UNSUPPORTED_LANGUAGE: &str = "panduck.render.unsupported_language";
+
 /// N-API Markdown project conversion response.
 #[napi(object)]
 pub struct ConvertProjectResponse {
@@ -280,7 +286,7 @@ pub fn render_diagram(language: String, source: String) -> DiagramRenderResponse
             success: false,
             svg: None,
             diagnostics: vec![DiagramDiagnostic {
-                code: "panduck.render.unsupported_language".to_string(),
+                code: UNSUPPORTED_LANGUAGE.to_string(),
                 severity: "error".to_string(),
                 message: format!("`{other}` has no diagram frontend in Panduck"),
                 span_text: String::new(),
@@ -327,7 +333,7 @@ fn render_scene(
         Ok(svg) => DiagramRenderResponse { success: true, svg: Some(svg), diagnostics },
         Err(error) => {
             diagnostics.push(DiagramDiagnostic {
-                code: "plotter.scene.svg".to_string(),
+                code: plotter_diagram::codes::SERIALIZATION_FAILED.to_string(),
                 severity: "error".to_string(),
                 message: error.to_string(),
                 span_text: String::new(),
@@ -351,7 +357,7 @@ fn render_authored_scene(
         Ok(svg) => DiagramRenderResponse { success: true, svg: Some(svg), diagnostics },
         Err(error) => {
             diagnostics.push(DiagramDiagnostic {
-                code: "plotter.scene.svg".to_string(),
+                code: plotter_diagram::codes::SERIALIZATION_FAILED.to_string(),
                 severity: "error".to_string(),
                 message: error.to_string(),
                 span_text: String::new(),
