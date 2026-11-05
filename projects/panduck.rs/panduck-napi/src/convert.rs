@@ -291,7 +291,7 @@ pub fn export_document(to: String, graph_json: String) -> ExportResponse {
             return export_error(error);
         }
     };
-    document_fonts::install_default_math_font();
+    crate::assets::install_math_fonts();
     match write_target(&to, &mut graph) {
         Ok((text, html, binary)) => {
             log_losses(&graph);

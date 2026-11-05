@@ -7,6 +7,7 @@
 //! not own CLI concerns: exit codes, usage text, argument parsing and report
 //! assembly stay in the TypeScript CLI.
 
+mod assets;
 mod convert;
 mod structure_guard;
 
@@ -745,7 +746,7 @@ pub struct PdfLayoutProbeResponse {
 /// production conversion pipeline.
 #[napi]
 pub fn pdf_layout_probe(label: String, bytes: Buffer) -> PdfLayoutProbeResponse {
-    document_fonts::install_default_math_font();
+    crate::assets::install_math_fonts();
     let text = match std::str::from_utf8(&bytes) {
         Ok(text) => text.to_string(),
         Err(error) => return pdf_probe_error(format!("input `{label}` is not UTF-8 Markdown: {error}")),
