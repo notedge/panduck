@@ -808,6 +808,428 @@ fn pdf_probe_error(message: String) -> PdfLayoutProbeResponse {
     }
 }
 
+/// One issue reported by an office reader or its canvas projection.
+#[napi(object)]
+pub struct OfficeIssue {
+    /// Stable diagnostic code such as `import.xlsx.chart`.
+    pub code: String,
+    /// `partial` or `unsupported`.
+    pub status: String,
+    /// Human readable explanation.
+    pub message: String,
+    /// Sheet name when the issue is workbook scoped.
+    pub sheet: Option<String>,
+    /// A1 reference when the issue is cell scoped.
+    pub cell: Option<String>,
+    /// One based slide number when the issue is slide scoped.
+    pub slide: Option<u32>,
+    /// Shape id when the issue is shape scoped.
+    pub shape: Option<u32>,
+}
+
+impl OfficeIssue {
+    fn xlsx(issue: &document_formats::import::xlsx::XlsxIssue) -> Self {
+        Self {
+            code: issue.code.clone(),
+            status: format!("{:?}", issue.status).to_lowercase(),
+            message: issue.message.clone(),
+            sheet: issue.sheet.clone(),
+            cell: issue.cell.clone(),
+            slide: None,
+            shape: None,
+        }
+    }
+
+    fn pptx(issue: &document_formats::import::pptx::PptxIssue) -> Self {
+        Self {
+            code: issue.code.clone(),
+            status: format!("{:?}", issue.status).to_lowercase(),
+            message: issue.message.clone(),
+            sheet: None,
+            cell: None,
+            slide: issue.slide,
+            shape: issue.shape,
+        }
+    }
+}
+
+/// One paginated page of a sheet grid view.
+#[napi(object)]
+pub struct SheetPageInfo {
+    /// Sheet name.
+    pub sheet: String,
+    /// One based page number inside the sheet.
+    pub number: u32,
+    /// Page count of the sheet.
+    pub total: u32,
+    /// First painted row.
+    pub first_row: u32,
+    /// Last painted row.
+    pub last_row: u32,
+    /// First painted column.
+    pub first_column: u32,
+    /// Last painted column.
+    pub last_column: u32,
+    /// Cells drawn on this page.
+    pub cell_count: u32,
+    /// DOM id used by screenshot tooling.
+    pub id: String,
+}
+
+/// Workbook grid view plus the counts an acceptance report quotes.
+#[napi(object)]
+pub struct SpreadsheetRenderResponse {
+    /// Self contained paginated HTML document.
+    pub html: String,
+    /// Sheet count in the workbook.
+    pub sheet_count: u32,
+    /// Visible sheet count.
+    pub visible_sheet_count: u32,
+    /// Cells carrying a value.
+    pub cell_count: u32,
+    /// Non whitespace characters across display text.
+    pub non_whitespace_chars: u32,
+    /// Pages emitted across every visible sheet.
+    pub page_count: u32,
+    /// Page metadata in document order.
+    pub pages: Vec<SheetPageInfo>,
+    /// Import and view issues.
+    pub issues: Vec<OfficeIssue>,
+}
+
+/// Renders an XLSX package into a paginated sheet grid view.
+///
+/// The bytes are read into the format native workbook model first, so the
+/// projection keeps number formats, frozen panes and clamps instead of
+/// lowering through the semantic IR.
+#[napi]
+pub fn render_spreadsheet(label: String, bytes: Buffer) -> Result<SpreadsheetRenderResponse> {
+    let workbook = document_formats::import::xlsx::import_xlsx_bytes(&label, &bytes)
+        .map_err(|error| Error::from_reason(error.to_string()))?;
+    let render = document_formats::import::xlsx::render_workbook_html(
+        &workbook,
+        &document_formats::import::xlsx::RenderOptions::default(),
+    );
+    // The view render starts from the workbook issues, so reading them again here
+    // would report every import code twice.
+    let issues: Vec<OfficeIssue> = render.issues.iter().map(OfficeIssue::xlsx).collect();
+    Ok(SpreadsheetRenderResponse {
+        html: render.html,
+        sheet_count: workbook.stats.sheet_count as u32,
+        visible_sheet_count: workbook.stats.visible_sheet_count as u32,
+        cell_count: workbook.stats.cell_count as u32,
+        non_whitespace_chars: workbook.stats.non_whitespace_chars as u32,
+        page_count: render.pages.len() as u32,
+        pages: render
+            .pages
+            .iter()
+            .map(|page| SheetPageInfo {
+                sheet: page.sheet.clone(),
+                number: page.number as u32,
+                total: page.total as u32,
+                first_row: page.first_row,
+                last_row: page.last_row,
+                first_column: page.first_column,
+                last_column: page.last_column,
+                cell_count: page.cell_count as u32,
+                id: page.id.clone(),
+            })
+            .collect(),
+        issues,
+    })
+}
+
+/// One painted slide canvas.
+#[napi(object)]
+pub struct SlideCanvas {
+    /// One based slide number.
+    pub index: u32,
+    /// Canvas width in CSS pixels.
+    pub width_px: f64,
+    /// Canvas height in CSS pixels.
+    pub height_px: f64,
+    /// Slide SVG.
+    pub svg: String,
+    /// Object level deviations recorded for this slide.
+    pub deviation_count: u32,
+}
+
+/// A presentation chart lowered into a plotter scene and painted as SVG.
+#[napi(object)]
+pub struct ChartSceneInfo {
+    /// One based slide number.
+    pub slide: u32,
+    /// Shape id carrying the chart frame.
+    pub shape: u32,
+    /// Chart kind declared by the package, such as `barChart`.
+    pub kind: Option<String>,
+    /// Semantic scene node count.
+    pub node_count: u32,
+    /// Scene width in CSS pixels.
+    pub width_px: f64,
+    /// Scene height in CSS pixels.
+    pub height_px: f64,
+    /// Chart SVG placed at the chart frame.
+    pub svg: String,
+    /// Set when the chart family has no scene lowering.
+    pub error: Option<String>,
+}
+
+/// Slide canvases, chart scenes and the counts an acceptance report quotes.
+#[napi(object)]
+pub struct PresentationRenderResponse {
+    /// Self contained HTML document with one section per slide.
+    pub html: String,
+    /// Slides in the presentation.
+    pub slide_count: u32,
+    /// Shapes across every slide.
+    pub shape_count: u32,
+    /// Pictures embedded in slides.
+    pub image_count: u32,
+    /// Tables on slides.
+    pub table_count: u32,
+    /// Charts on slides.
+    pub chart_count: u32,
+    /// Notes pages.
+    pub notes_count: u32,
+    /// Non whitespace characters across slide text.
+    pub non_whitespace_chars: u32,
+    /// Painted slide canvases.
+    pub slides: Vec<SlideCanvas>,
+    /// Chart scenes that replaced a placeholder frame.
+    pub charts: Vec<ChartSceneInfo>,
+    /// Import and view issues.
+    pub issues: Vec<OfficeIssue>,
+}
+
+/// Body advances used for the measured slide wrapping.
+struct HostMetrics;
+
+impl document_formats::import::pptx::TextMeasurer for HostMetrics {
+    fn advance(&self, character: char, font_px: f64) -> f64 {
+        let key = document_fonts::BodyFaceKey {
+            family: document_fonts::BodyFamily::Serif,
+            style: document_fonts::BodyFaceStyle::Regular,
+        };
+        match crate::assets::body_metrics().advance_em(key, character) {
+            Some(em) => em * font_px,
+            None if character.is_ascii() => font_px * 0.55,
+            None => font_px,
+        }
+    }
+}
+
+/// Vega-Lite mark that paints the declared PowerPoint chart family.
+fn chart_mark(kind: Option<&str>) -> Option<&'static str> {
+    match kind.unwrap_or_default() {
+        "barChart" | "bar3DChart" => Some("bar"),
+        "lineChart" | "line3DChart" => Some("line"),
+        "areaChart" | "area3DChart" => Some("area"),
+        _ => None,
+    }
+}
+
+/// Builds the Vega-Lite payload one slide chart carries from its cached data.
+fn chart_spec(
+    chart: &document_formats::import::pptx::ChartRef,
+    width_px: f64,
+    height_px: f64,
+) -> Option<String> {
+    let mark = chart_mark(chart.kind.as_deref())?;
+    let series = chart.series.first()?;
+    if chart.categories.len() != series.values.len() {
+        return None;
+    }
+    let values: Vec<serde_json::Value> = chart
+        .categories
+        .iter()
+        .zip(&series.values)
+        .map(|(category, value)| serde_json::json!({ "category": category, "value": value }))
+        .collect();
+    Some(
+        serde_json::json!({
+            "title": series.name.clone(),
+            "width": width_px,
+            "height": height_px,
+            "mark": mark,
+            "data": { "values": values },
+            "encoding": {
+                "x": { "field": "category", "type": "nominal" },
+                "y": { "field": "value", "type": "quantitative" }
+            }
+        })
+        .to_string(),
+    )
+}
+
+/// Lowers every chart frame into a scene and returns the SVG placed on it.
+fn chart_scenes(
+    presentation: &document_formats::import::pptx::PptxPresentation,
+) -> (Vec<(u32, u32, String)>, Vec<ChartSceneInfo>) {
+    let mut fragments = Vec::new();
+    let mut scenes = Vec::new();
+    for slide in &presentation.slides {
+        if slide.hidden {
+            continue;
+        }
+        for shape in &slide.shapes {
+            let Some(chart) = &shape.chart else { continue };
+            let Some(transform) = shape.transform else { continue };
+            let width_px = document_formats::import::pptx::emu_to_px(transform.cx);
+            let height_px = document_formats::import::pptx::emu_to_px(transform.cy);
+            let spec = chart_spec(chart, width_px, height_px);
+            let Some(spec) = spec else {
+                scenes.push(ChartSceneInfo {
+                    slide: slide.index,
+                    shape: shape.id,
+                    kind: chart.kind.clone(),
+                    node_count: 0,
+                    width_px,
+                    height_px,
+                    svg: String::new(),
+                    error: Some(format!("chart family `{}` has no scene lowering", chart.kind.clone().unwrap_or_default())),
+                });
+                continue;
+            };
+            match plotter_chart::vega_lite::lower(&spec) {
+                Ok(lowered) => match lowered.to_svg_with_hooks(
+                    &format!("panduck-slide{}-chart{}", slide.index, shape.id),
+                    "panduck-chart",
+                ) {
+                    Ok(svg) => {
+                        let x = document_formats::import::pptx::emu_to_px(transform.x);
+                        let y = document_formats::import::pptx::emu_to_px(transform.y);
+                        let fragment = format!("<g transform=\"translate({x:.1},{y:.1})\">{svg}</g>");
+                        scenes.push(ChartSceneInfo {
+                            slide: slide.index,
+                            shape: shape.id,
+                            kind: chart.kind.clone(),
+                            node_count: lowered.scene.nodes.len() as u32,
+                            width_px: lowered.scene.size.width,
+                            height_px: lowered.scene.size.height,
+                            svg: fragment.clone(),
+                            error: None,
+                        });
+                        fragments.push((slide.index, shape.id, fragment));
+                    }
+                    Err(error) => scenes.push(ChartSceneInfo {
+                        slide: slide.index,
+                        shape: shape.id,
+                        kind: chart.kind.clone(),
+                        node_count: 0,
+                        width_px,
+                        height_px,
+                        svg: String::new(),
+                        error: Some(error.to_string()),
+                    }),
+                },
+                Err(error) => scenes.push(ChartSceneInfo {
+                    slide: slide.index,
+                    shape: shape.id,
+                    kind: chart.kind.clone(),
+                    node_count: 0,
+                    width_px,
+                    height_px,
+                    svg: String::new(),
+                    error: Some(error.message().to_string()),
+                }),
+            }
+        }
+    }
+    (fragments, scenes)
+}
+
+/// Renders a PPTX package into fixed canvas slide views.
+///
+/// Charts are lowered from their cached categories and values into plotter
+/// scenes, so the placeholder frame is replaced by the painted chart. Text is
+/// wrapped with the host body advances rather than the em estimate.
+#[napi]
+pub fn render_slides(label: String, bytes: Buffer) -> Result<PresentationRenderResponse> {
+    let presentation = document_formats::import::pptx::import_pptx_bytes(&label, &bytes)
+        .map_err(|error| Error::from_reason(error.to_string()))?;
+    let (fragments, charts) = chart_scenes(&presentation);
+    let render = document_formats::import::pptx::render_presentation_with(
+        &presentation,
+        &document_formats::import::pptx::RenderOptions::default(),
+        &HostMetrics,
+        &fragments,
+    );
+    let stats = presentation.stats;
+    let mut issues: Vec<OfficeIssue> = presentation.issues.iter().map(OfficeIssue::pptx).collect();
+    issues.extend(render.issues.iter().map(OfficeIssue::pptx));
+    Ok(PresentationRenderResponse {
+        html: render.html,
+        slide_count: stats.slide_count,
+        shape_count: stats.shape_count,
+        image_count: stats.image_count,
+        table_count: stats.table_count,
+        chart_count: stats.chart_count,
+        notes_count: stats.notes_count,
+        non_whitespace_chars: stats.non_whitespace_chars,
+        slides: render
+            .views
+            .iter()
+            .map(|view| SlideCanvas {
+                index: view.index,
+                width_px: view.width_px,
+                height_px: view.height_px,
+                svg: view.svg.clone(),
+                deviation_count: view.deviations.len() as u32,
+            })
+            .collect(),
+        charts,
+        issues: render.issues.iter().map(OfficeIssue::pptx).collect(),
+    })
+}
+
+/// Line breaking of one slide paragraph under both measurers.
+#[napi(object)]
+pub struct WrapProbe {
+    /// One based slide number.
+    pub slide: u32,
+    /// Shape id the paragraph belongs to.
+    pub shape_id: u32,
+    /// Shape name.
+    pub shape_name: String,
+    /// Zero based paragraph index inside the shape.
+    pub paragraph: u32,
+    /// Declared or inherited font size in points.
+    pub font_size_pt: f64,
+    /// Available text width in CSS pixels.
+    pub width_px: f64,
+    /// Lines produced by the em estimate.
+    pub estimated_lines: Vec<String>,
+    /// Lines produced by the host advances.
+    pub measured_lines: Vec<String>,
+}
+
+/// Compares estimated and measured slide text wrapping per paragraph.
+#[napi]
+pub fn probe_slide_text_wrap(label: String, bytes: Buffer) -> Result<Vec<WrapProbe>> {
+    let presentation = document_formats::import::pptx::import_pptx_bytes(&label, &bytes)
+        .map_err(|error| Error::from_reason(error.to_string()))?;
+    let estimated = document_formats::import::pptx::text_wrap_probe(
+        &presentation,
+        &document_formats::import::pptx::EstimatedMetrics,
+    );
+    let measured = document_formats::import::pptx::text_wrap_probe(&presentation, &HostMetrics);
+    Ok(estimated
+        .iter()
+        .zip(&measured)
+        .map(|(estimate, measure)| WrapProbe {
+            slide: estimate.slide,
+            shape_id: estimate.shape_id,
+            shape_name: estimate.shape_name.clone(),
+            paragraph: estimate.paragraph,
+            font_size_pt: estimate.font_size_pt,
+            width_px: estimate.width_px,
+            estimated_lines: estimate.lines.clone(),
+            measured_lines: measure.lines.clone(),
+        })
+        .collect())
+}
+
 #[cfg(test)]
 mod diagnostic_catalog {
     use std::collections::BTreeSet;
