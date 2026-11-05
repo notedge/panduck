@@ -16,6 +16,8 @@ crate-type = ["cdylib", "rlib"]
 napi = { workspace = true }
 napi-derive = { workspace = true }
 document-convert = { workspace = true, features = ["logger"] }
+document-diagnostic = { workspace = true }
+document-formats = { workspace = true }
 document-fonts = { workspace = true }
 document-ir = { workspace = true }
 document-layout = { workspace = true }
@@ -36,6 +38,7 @@ plotter-scene = { workspace = true }
 plotter-types = { workspace = true }
 boost-diagnostic = { workspace = true }
 boost-log = { workspace = true }
+blake3 = { workspace = true }
 serde_json = { workspace = true }
 
 [dev-dependencies]
