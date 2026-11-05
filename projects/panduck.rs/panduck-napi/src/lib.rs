@@ -370,7 +370,7 @@ fn render_authored_scene(
 /// One diagnostic produced while lowering or rendering a chart.
 #[napi(object)]
 pub struct ChartDiagnostic {
-    /// Stable diagnostic code such as `plotter.chart.unsupported_mark`.
+    /// Stable diagnostic code such as `davinci.chart.unsupported-mark`.
     pub code: String,
     /// Severity label such as `error` or `warning`.
     pub severity: String,
@@ -440,7 +440,7 @@ pub fn render_chart(vega_lite_json: String) -> ChartRenderResponse {
         Ok(svg) => ChartRenderResponse { success: true, svg: Some(svg), diagnostics },
         Err(error) => {
             diagnostics.push(ChartDiagnostic {
-                code: "plotter.chart.svg".to_string(),
+                code: error.code().to_string(),
                 severity: "error".to_string(),
                 message: error.to_string(),
                 span_text: String::new(),
@@ -1195,4 +1195,63 @@ fn build_inspect_error_report(operation: &str, label: &str, error: &AdapterError
         "losses": [],
     })
     .to_string()
+}
+
+#[cfg(test)]
+mod diagnostic_catalog {
+    use std::collections::BTreeSet;
+
+    /// Codes the shared catalog publishes, which is the only legal source for a
+    /// diagnostic this binding emits.
+    fn catalog_codes() -> BTreeSet<String> {
+        plotter_types::code_docs()
+            .into_iter()
+            .map(|doc| doc.code)
+            .chain(plotter_types::cases().into_iter().map(|case| case.code))
+            .chain(plotter_types::matrix().into_iter().filter_map(|row| row.code))
+            .collect()
+    }
+
+    /// Every chart diagnostic has to resolve in the shared catalog, so a
+    /// consumer matching on codes never sees a spelling this binding invented.
+    #[test]
+    fn chart_diagnostics_name_catalog_codes() {
+        let catalog = catalog_codes();
+        let specs = [
+            // Supported spec: renders without diagnostics.
+            r#"{"mark":"point","data":{"values":[{"x":1,"y":2}]},"encoding":{"x":{"field":"x","type":"quantitative"},"y":{"field":"y","type":"quantitative"}}}"#,
+            // Unsupported mark, refused during lowering.
+            r#"{"mark":"rule","data":{"values":[{"x":1,"y":2}]},"encoding":{"x":{"field":"x","type":"quantitative"},"y":{"field":"y","type":"quantitative"}}}"#,
+            // Unknown field, refused during lowering.
+            r#"{"mark":"point","data":{"values":[{"x":1,"y":2}]},"encoding":{"x":{"field":"nope","type":"quantitative"}}}"#,
+            // Out-of-range opacity, refused while the scene serializes.
+            r#"{"mark":{"type":"point","opacity":2},"data":{"values":[{"x":1,"y":2}]},"encoding":{"x":{"field":"x","type":"quantitative"},"y":{"field":"y","type":"quantitative"}}}"#,
+            // Body that is not JSON.
+            "{",
+        ];
+        let mut offenders = Vec::new();
+        for spec in specs {
+            for diagnostic in super::render_chart(spec.to_string()).diagnostics {
+                if !catalog.contains(diagnostic.code.as_str()) {
+                    offenders.push(format!("{}: {}", diagnostic.severity, diagnostic.code));
+                }
+            }
+        }
+        assert!(offenders.is_empty(), "chart diagnostics outside the shared catalog: {offenders:?}");
+    }
+
+    /// The scene codes the SVG serializer reports on the chart path are
+    /// catalog rows, so that error branch cannot emit a wild code either.
+    #[test]
+    fn chart_scene_serialization_codes_are_catalog_backed() {
+        let catalog = catalog_codes();
+        for code in [
+            plotter_types::codes::INVALID_GEOMETRY,
+            plotter_types::codes::INVALID_STYLE,
+            plotter_types::codes::INVALID_TRANSFORM,
+            plotter_types::codes::SERIALIZATION_FAILED,
+        ] {
+            assert!(catalog.contains(code), "scene code `{code}` is missing from the shared catalog");
+        }
+    }
 }

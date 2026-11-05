@@ -107,7 +107,7 @@ export type IrValidationResponse = {
 
 /** One diagnostic produced while lowering or rendering a chart. */
 export type ChartDiagnostic = {
-    /** Stable diagnostic code such as `plotter.chart.unsupported_mark`. */
+    /** Stable diagnostic code such as `davinci.chart.unsupported-mark`. */
     code: string;
     /** Severity label such as `error` or `warning`. */
     severity: string;
