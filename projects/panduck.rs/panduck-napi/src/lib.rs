@@ -261,10 +261,11 @@ pub struct DiagramRenderResponse {
 
 /// Renders a diagram source through the matching plotter frontend.
 ///
-/// Supported `language` values are `dot`, `mermaid` and `plantuml`. The result
-/// is deterministic SVG with caller scoped ids, which lets consumers embed the
-/// same diagram several times in one page. TikZ has no frontend in Panduck yet,
-/// so it is reported as unsupported instead of being silently accepted.
+/// Supported `language` values are `dot`, `mermaid`, `plantuml` and `tikz`. The
+/// result is deterministic SVG with caller scoped ids, which lets consumers
+/// embed the same diagram several times in one page. TikZ lowers to an authored
+/// scene, so its paint is serialized verbatim instead of being recolored by the
+/// diagram theme.
 #[napi]
 pub fn render_diagram(language: String, source: String) -> DiagramRenderResponse {
     match language.to_ascii_lowercase().as_str() {
@@ -272,7 +273,7 @@ pub fn render_diagram(language: String, source: String) -> DiagramRenderResponse
         "mermaid" => lower_diagram(plotter_input_mermaid::mermaid_to_scene(&source), &source),
         "plantuml" => lower_diagram(plotter_input_plantuml::plantuml_to_scene(&source), &source),
         "tikz" => match plotter_input_tikz::tikz_to_scene(&source) {
-            Ok(scene) => render_scene(scene, Vec::new()),
+            Ok(scene) => render_authored_scene(scene, Vec::new()),
             Err(error) => diagram_error_response(error, &source),
         },
         other => DiagramRenderResponse {
@@ -323,6 +324,30 @@ fn render_scene(
     mut diagnostics: Vec<DiagramDiagnostic>,
 ) -> DiagramRenderResponse {
     match scene.to_svg_with_hooks("panduck-diagram", "panduck-diagram", &plotter_types::DIAGRAM_THEME) {
+        Ok(svg) => DiagramRenderResponse { success: true, svg: Some(svg), diagnostics },
+        Err(error) => {
+            diagnostics.push(DiagramDiagnostic {
+                code: "plotter.scene.svg".to_string(),
+                severity: "error".to_string(),
+                message: error.to_string(),
+                span_text: String::new(),
+            });
+            DiagramRenderResponse { success: false, svg: None, diagnostics }
+        }
+    }
+}
+
+/// Serializes an authored scene with its own paint.
+///
+/// TikZ shapes carry the colour, fill and opacity written in the source, not a
+/// semantic role, so the diagram palette cannot paint them. Serializing without
+/// page hooks keeps those attributes instead of dropping them to an unpainted
+/// path that renders nothing.
+fn render_authored_scene(
+    scene: plotter_scene::DisplayScene,
+    mut diagnostics: Vec<DiagramDiagnostic>,
+) -> DiagramRenderResponse {
+    match scene.to_svg() {
         Ok(svg) => DiagramRenderResponse { success: true, svg: Some(svg), diagnostics },
         Err(error) => {
             diagnostics.push(DiagramDiagnostic {
