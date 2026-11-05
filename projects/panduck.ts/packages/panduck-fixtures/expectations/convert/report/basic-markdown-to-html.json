@@ -16,8 +16,6 @@
                 "import.markdown.definition_list",
                 "import.markdown.definition_list",
                 "import.markdown.definition_list",
-                "import.markdown.footnote_body_unplaced",
-                "import.markdown.footnote_reference_marker",
                 "import.markdown.unresolved_reference_link",
                 "import.markdown.table_alignment"
             ]
@@ -64,9 +62,7 @@
             "losses": [
                 "import.markdown.definition_list",
                 "import.markdown.table_alignment",
-                "import.markdown.unresolved_reference_link",
-                "import.markdown.footnote_body_unplaced",
-                "import.markdown.footnote_reference_marker"
+                "import.markdown.unresolved_reference_link"
             ]
         },
         {
@@ -163,6 +159,13 @@
             "updatedAt": "2026-11-05T02:36:47.127Z",
             "assertionDiff": "~ {\"kind\":\"loss-codes\",\"expected\":[…\"import.markdown.footnote_body_unplaced\",\"import.markdown.footnote_reference_marker\"…]}",
             "observedStatus": "pass"
+        },
+        {
+            "author": "aster <aster@vers.site>",
+            "reason": "脚注落位在 HTML 路线已落地，脚注 body 与引用标记不再产生损失码，期望由七条收回五条",
+            "semantic": "loss-codes 与 honest-success 移除 `import.markdown.footnote_body_unplaced` 与 `import.markdown.footnote_reference_marker`，其余三条定义列表与两处保真损失不变",
+            "updatedAt": "2026-11-05T00:00:00.000Z",
+            "assertionDiff": "~ {\"kind\":\"loss-codes\",\"expected\":[\"import.markdown.definition_list\",\"import.markdown.definition_list\",\"import.markdown.definition_list\",\"import.markdown.unresolved_reference_link\",\"import.markdown.table_alignment\"]}"
         }
     ]
 }
