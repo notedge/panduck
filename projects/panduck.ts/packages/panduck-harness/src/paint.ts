@@ -3,8 +3,10 @@
  *
  * A non-empty `<svg>` says nothing about visibility: the DaVinci theme paints
  * shape roles through CSS class rules, an authored scene paints through
- * attributes, and a scene with no role palette at all paints through neither.
- * The harness resolves both sources and counts geometry that actually carries a
+ * attributes, and a scene with no palette or role at all paints through
+ * neither. The harness resolves both sources — including paint inherited from
+ * an ancestor `<g>` and descendant selectors such as
+ * `.panduck-diagram-edge polygon` — and counts geometry that actually carries a
  * visible fill or stroke, so an "accepted but blank" diagram fails a named
  * assertion instead of passing on string length.
  */
@@ -25,7 +27,7 @@ export type SvgPaintEvidence = {
     readonly painted: number;
     /** Painted through an attribute on the element itself. */
     readonly attributePainted: number;
-    /** Painted through a matching class rule in a `<style>` block. */
+    /** Painted through a matching class rule, directly or inherited. */
     readonly classPainted: number;
     /** Distinct visible fill values. */
     readonly fills: readonly string[];
@@ -35,18 +37,35 @@ export type SvgPaintEvidence = {
     readonly erased: number;
 };
 
-const TAG = /<([a-zA-Z][a-zA-Z0-9-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
-const ROOT_TAG = /<([a-zA-Z][a-zA-Z0-9-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/;
+const TAG = /<\/?([a-zA-Z][a-zA-Z0-9-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
 const ATTRIBUTE = /([a-zA-Z_:][a-zA-Z0-9_:.-]*)="([^"]*)"/g;
 const STYLE_BLOCK = /<style[^>]*>([\s\S]*?)<\/style>/g;
 
-/** One resolved paint declaration, with the source of each property. */
-type ResolvedPaint = {
-    readonly fill?: string;
-    readonly stroke?: string;
-    readonly fillFromClass: boolean;
-    readonly strokeFromClass: boolean;
+type PaintValues = {
+    fill: string | undefined;
+    stroke: string | undefined;
+    opacity: number | undefined;
+    fillOpacity: number | undefined;
+    strokeOpacity: number | undefined;
+};
+
+type PaintSource = "attribute" | "class" | "inherited" | "none";
+
+type ResolvedPaint = PaintValues & {
     readonly visible: boolean;
+    readonly fillSource: PaintSource;
+    readonly strokeSource: PaintSource;
+};
+
+/** A `<style>` rule reduced to the compounds a chain of elements must match. */
+type Compound = {
+    readonly tag: string | undefined;
+    readonly classes: readonly string[];
+};
+
+type ClassRule = {
+    readonly compounds: readonly Compound[];
+    readonly paint: Partial<Record<"fill" | "stroke" | "opacity" | "fillOpacity" | "strokeOpacity", string>>;
 };
 
 /** Split a declaration block into property/value pairs. */
@@ -62,17 +81,20 @@ function declarations(block: string): Map<string, string> {
     return entries;
 }
 
-/** Collect the class tokens of one compound selector such as `.a.b`. */
-function compoundClasses(compound: string): readonly string[] {
-    return [...compound.matchAll(/\.([a-zA-Z0-9_-]+)/g)].map((match) => match[1]);
+/** Reduce one compound selector such as `.a.b` or `polygon` to its matcher. */
+function compound(text: string): Compound | undefined {
+    const classes = [...text.matchAll(/\.([a-zA-Z0-9_-]+)/g)].map((match) => match[1]);
+    const tag = text
+        .replace(/#[a-zA-Z0-9_-]+/g, "")
+        .replace(/\[[^\]]*\]/g, "")
+        .replace(/:[a-zA-Z-]+(\([^)]*\))?/g, "")
+        .match(/^([a-zA-Z][a-zA-Z0-9-]*)/)?.[1]
+        ?.toLowerCase();
+    if (classes.length === 0 && tag === undefined) {
+        return undefined;
+    }
+    return { tag, classes };
 }
-
-/** A `<style>` rule reduced to the classes an element must carry. */
-type ClassRule = {
-    readonly own: readonly string[];
-    readonly ancestors: readonly string[];
-    readonly paint: Partial<Record<"fill" | "stroke" | "opacity" | "fillOpacity" | "strokeOpacity", string>>;
-};
 
 /** Parse every class rule out of the SVG's `<style>` blocks. */
 function classRules(svg: string): readonly ClassRule[] {
@@ -87,67 +109,152 @@ function classRules(svg: string): readonly ClassRule[] {
             // An at-rule prefix such as `@media (prefers-color-scheme: dark) {`
             // wraps the selector, so the selector starts after the last `{`.
             const selector = rule.slice(rule.lastIndexOf("{", open - 1) + 1, open).trim();
-            if (!selector.startsWith(".")) {
-                continue;
+            for (const branch of selector.split(",")) {
+                const compounds = branch
+                    .trim()
+                    .split(/\s+|\s*>\s*|\s*\+\s*/)
+                    .map(compound)
+                    .filter((part): part is Compound => part !== undefined);
+                if (compounds.length === 0) {
+                    continue;
+                }
+                const entries = declarations(rule.slice(open + 1));
+                rules.push({
+                    compounds,
+                    paint: {
+                        fill: entries.get("fill"),
+                        stroke: entries.get("stroke"),
+                        opacity: entries.get("opacity"),
+                        fillOpacity: entries.get("fill-opacity"),
+                        strokeOpacity: entries.get("stroke-opacity"),
+                    },
+                });
             }
-            const compounds = selector.split(/\s+/).filter((part) => part.startsWith("."));
-            if (compounds.length === 0) {
-                continue;
-            }
-            const entries = declarations(rule.slice(open + 1));
-            const paint: ClassRule["paint"] = {
-                fill: entries.get("fill"),
-                stroke: entries.get("stroke"),
-                opacity: entries.get("opacity"),
-                fillOpacity: entries.get("fill-opacity"),
-                strokeOpacity: entries.get("stroke-opacity"),
-            };
-            rules.push({
-                own: compoundClasses(compounds[compounds.length - 1]),
-                ancestors: compounds.slice(0, -1).flatMap(compoundClasses),
-                paint,
-            });
         }
     }
-    return rules.filter((rule) => rule.own.length > 0);
+    return rules;
 }
 
 function optionalNumber(value: string | undefined): number | undefined {
-    if (value === undefined) {
-        return undefined;
-    }
-    const parsed = Number(value);
+    const parsed = value === undefined ? Number.NaN : Number(value);
     return Number.isFinite(parsed) ? parsed : undefined;
 }
 
-/** Resolve the paint of one element: attributes win, class rules fill the gaps. */
+/** One element as the parser sees it. */
+type Element = {
+    readonly name: string;
+    readonly attributes: Map<string, string>;
+    readonly classes: readonly string[];
+    readonly selfClosing: boolean;
+    readonly closing: boolean;
+};
+
+/** Walk the SVG once, yielding elements in document order. */
+function* elements(svg: string): Generator<Element> {
+    const body = svg.replace(STYLE_BLOCK, "");
+    for (const tag of body.matchAll(TAG)) {
+        const attributes = new Map<string, string>();
+        for (const attribute of tag[2].matchAll(ATTRIBUTE)) {
+            attributes.set(attribute[1], attribute[2]);
+        }
+        yield {
+            name: tag[1].toLowerCase(),
+            attributes,
+            classes: attributes.get("class")?.split(/\s+/).filter(Boolean) ?? [],
+            selfClosing: tag[2].trimEnd().endsWith("/"),
+            closing: tag[0].startsWith("</"),
+        };
+    }
+}
+
+/** True when `element` is the subject of the rule's last compound. */
+function matchesSubject(rule: ClassRule, element: Element): boolean {
+    const subject = rule.compounds[rule.compounds.length - 1];
+    if (subject.classes.some((name) => !element.classes.includes(name))) {
+        return false;
+    }
+    return subject.tag === undefined || subject.tag === element.name;
+}
+
+/** True when every earlier compound is carried by one ancestor. */
+function matchesAncestors(rule: ClassRule, ancestors: readonly Element[]): boolean {
+    let cursor = 0;
+    for (let index = 0; index < rule.compounds.length - 1; index += 1) {
+        const wanted = rule.compounds[index];
+        while (cursor < ancestors.length) {
+            const candidate = ancestors[cursor];
+            cursor += 1;
+            if (
+                wanted.classes.every((name) => candidate.classes.includes(name)) &&
+                (wanted.tag === undefined || wanted.tag === candidate.name)
+            ) {
+                break;
+            }
+            if (cursor >= ancestors.length) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+/** Paint an element inherits from its ancestors, before its own declarations. */
+function inherited(ancestors: readonly Element[], chain: readonly ResolvedPaint[]): ResolvedPaint {
+    for (let index = chain.length - 1; index >= 0; index -= 1) {
+        const paint = chain[index];
+        if (paint.fill !== undefined || paint.stroke !== undefined) {
+            return { ...paint, fillSource: "inherited", strokeSource: "inherited" };
+        }
+    }
+    return {
+        fill: undefined,
+        stroke: undefined,
+        opacity: undefined,
+        fillOpacity: undefined,
+        strokeOpacity: undefined,
+        visible: false,
+        fillSource: "none",
+        strokeSource: "none",
+    };
+}
+
+/** Resolve one element against its ancestors and the theme rules. */
 function resolve(
-    elementClasses: readonly string[],
-    rootClasses: readonly string[],
-    attributes: Map<string, string>,
+    element: Element,
+    ancestors: readonly Element[],
+    chain: readonly ResolvedPaint[],
     rules: readonly ClassRule[],
 ): ResolvedPaint {
-    let fill = attributes.get("fill");
-    let stroke = attributes.get("stroke");
-    let opacity = optionalNumber(attributes.get("opacity"));
-    let fillOpacity = optionalNumber(attributes.get("fill-opacity"));
-    let strokeOpacity = optionalNumber(attributes.get("stroke-opacity"));
-    let fillFromClass = false;
-    let strokeFromClass = false;
+    const base = inherited(ancestors, chain);
+    let fill = base.fill;
+    let stroke = base.stroke;
+    let fillSource = base.fillSource;
+    let strokeSource = base.strokeSource;
+    let opacity = base.opacity ?? optionalNumber(element.attributes.get("opacity"));
+    let fillOpacity = base.fillOpacity ?? optionalNumber(element.attributes.get("fill-opacity"));
+    let strokeOpacity = base.strokeOpacity ?? optionalNumber(element.attributes.get("stroke-opacity"));
+    const attributeFill = element.attributes.get("fill");
+    const attributeStroke = element.attributes.get("stroke");
+    if (attributeFill !== undefined) {
+        fill = attributeFill;
+        fillSource = "attribute";
+    }
+    if (attributeStroke !== undefined) {
+        stroke = attributeStroke;
+        strokeSource = "attribute";
+    }
 
     for (const rule of rules) {
-        const own = rule.own.every((name) => elementClasses.includes(name));
-        const scoped = rule.ancestors.every((name) => elementClasses.includes(name) || rootClasses.includes(name));
-        if (!own || !scoped) {
+        if (!matchesSubject(rule, element) || !matchesAncestors(rule, ancestors)) {
             continue;
         }
-        if (fill === undefined && rule.paint.fill !== undefined) {
+        if (rule.paint.fill !== undefined) {
             fill = rule.paint.fill;
-            fillFromClass = true;
+            fillSource = "class";
         }
-        if (stroke === undefined && rule.paint.stroke !== undefined) {
+        if (rule.paint.stroke !== undefined) {
             stroke = rule.paint.stroke;
-            strokeFromClass = true;
+            strokeSource = "class";
         }
         opacity ??= optionalNumber(rule.paint.opacity);
         fillOpacity ??= optionalNumber(rule.paint.fillOpacity);
@@ -156,52 +263,46 @@ function resolve(
 
     const visibleFill = fill !== undefined && !EMPTY_PAINT.has(fill) && (opacity ?? 1) * (fillOpacity ?? 1) > 0;
     const visibleStroke = stroke !== undefined && !EMPTY_PAINT.has(stroke) && (opacity ?? 1) * (strokeOpacity ?? 1) > 0;
-    return { fill, stroke, fillFromClass, strokeFromClass, visible: visibleFill || visibleStroke };
-}
-
-/** Attributes of the root element, used to resolve a leading compound selector. */
-function rootAttributes(svg: string): Map<string, string> {
-    const attributes = new Map<string, string>();
-    const root = ROOT_TAG.exec(svg);
-    if (root === null) {
-        return attributes;
-    }
-    for (const attribute of root[2].matchAll(ATTRIBUTE)) {
-        attributes.set(attribute[1], attribute[2]);
-    }
-    return attributes;
+    return { fill, stroke, opacity, fillOpacity, strokeOpacity, visible: visibleFill || visibleStroke, fillSource, strokeSource };
 }
 
 /** Measure exactly what paint the SVG carries. */
 export function analyzeSvgPaint(svg: string): SvgPaintEvidence {
     const rules = classRules(svg);
-    const rootClasses = rootAttributes(svg).get("class")?.split(/\s+/).filter(Boolean) ?? [];
     const fills = new Set<string>();
     const strokes = new Set<string>();
-    let elements = 0;
+    const opened: Element[] = [];
+    const chain: ResolvedPaint[] = [];
+    let geometry = 0;
     let texts = 0;
     let painted = 0;
     let attributePainted = 0;
     let classPainted = 0;
     let erased = 0;
 
-    for (const tag of svg.matchAll(TAG)) {
-        const name = tag[1].toLowerCase();
-        if (!GEOMETRY_TAGS.has(name) && name !== "text") {
+    for (const element of elements(svg)) {
+        if (element.closing) {
+            const index = opened.map((entry) => entry.name).lastIndexOf(element.name);
+            if (index >= 0) {
+                opened.splice(index);
+                chain.splice(index);
+            }
             continue;
         }
-        const attributes = new Map<string, string>();
-        for (const attribute of tag[2].matchAll(ATTRIBUTE)) {
-            attributes.set(attribute[1], attribute[2]);
+        const paint = resolve(element, opened, chain, rules);
+        if (!element.selfClosing) {
+            opened.push(element);
+            chain.push(paint);
         }
-        if (name === "text") {
+        if (element.name === "text") {
             texts += 1;
             continue;
         }
-        elements += 1;
-        const classes = attributes.get("class")?.split(/\s+/).filter(Boolean) ?? [];
-        const paint = resolve(classes, rootClasses, attributes, rules);
-        if (paint.fill !== undefined && !EMPTY_PAINT.has(paint.fill) && (paint.visible || paint.stroke === undefined)) {
+        if (!GEOMETRY_TAGS.has(element.name)) {
+            continue;
+        }
+        geometry += 1;
+        if (paint.fill !== undefined && !EMPTY_PAINT.has(paint.fill)) {
             fills.add(paint.fill);
         }
         if (paint.stroke !== undefined && !EMPTY_PAINT.has(paint.stroke)) {
@@ -209,9 +310,7 @@ export function analyzeSvgPaint(svg: string): SvgPaintEvidence {
         }
         if (paint.visible) {
             painted += 1;
-            const attributeSource =
-                (paint.fill !== undefined && !paint.fillFromClass) || (paint.stroke !== undefined && !paint.strokeFromClass);
-            if (attributeSource) {
+            if (paint.fillSource === "attribute" || paint.strokeSource === "attribute") {
                 attributePainted += 1;
             } else {
                 classPainted += 1;
@@ -222,7 +321,7 @@ export function analyzeSvgPaint(svg: string): SvgPaintEvidence {
     }
 
     return {
-        elements,
+        elements: geometry,
         texts,
         painted,
         attributePainted,
