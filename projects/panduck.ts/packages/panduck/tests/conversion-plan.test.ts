@@ -297,6 +297,40 @@ test("markdown-project republish owns the output directory and removes stale fil
     }
 });
 
+test("markdown-project republish reproduces the same directory tree for identical input", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-deterministic-"));
+    const outputDir = join(workdir, "site");
+    const makeDocx = () =>
+        storedZip([
+            { path: "word/document.xml", payload: imageDocumentXml },
+            { path: "word/_rels/document.xml.rels", payload: imageRelsXml },
+            { path: "word/media/logo.png", payload: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a]) },
+        ]);
+    try {
+        const plan = defineConversion({
+            id: "publish-deterministic-check",
+            input: { format: "docx", label: "image.docx" },
+            output: { format: "markdown" },
+            publish: { kind: "markdown-project", directory: outputDir },
+        });
+        const converter = new Converter();
+
+        const first = await converter.toMarkdown(makeDocx(), plan);
+        assert.notEqual(first.status, "failed");
+        const firstTree = await collectTree(outputDir);
+
+        const second = await converter.toMarkdown(makeDocx(), plan);
+        assert.notEqual(second.status, "failed");
+        assert.deepEqual(
+            await collectTree(outputDir),
+            firstTree,
+            "identical input must reproduce the same files, asset names and report",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
 test("publish kind none writes nothing and returns no publishPath", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-none-"));
     try {
@@ -477,3 +511,20 @@ test("empty extracted scope payload fails with a diagnostic instead of empty Mar
     assert.equal(report.status, "blocked");
     assert.deepEqual(report.outputs, []);
 });
+
+/** Relative path and byte digest for every file under a directory. */
+async function collectTree(directory: string): Promise<Array<[string, string]>> {
+    const entries = await readdir(directory, { withFileTypes: true });
+    const tree: Array<[string, string]> = [];
+    for (const entry of entries) {
+        const full = join(directory, entry.name);
+        if (entry.isDirectory()) {
+            for (const [relative, digest] of await collectTree(full)) {
+                tree.push([join(entry.name, relative), digest]);
+            }
+        } else {
+            tree.push([entry.name, (await readFile(full)).toString("base64")]);
+        }
+    }
+    return tree.sort(([left], [right]) => left.localeCompare(right));
+}
