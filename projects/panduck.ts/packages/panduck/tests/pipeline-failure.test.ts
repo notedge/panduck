@@ -72,6 +72,10 @@ const noopTransform = (graphJson: string) => ({
 
 const noopExport = () => ({
     success: true,
+    indexMarkdown: "",
+    chapters: [],
+    assets: [],
+    unresolvedAssets: [],
     coverageJson: "null",
     lossesJson: "[]",
     diagnosticsJson: JSON.stringify({ schemaVersion: 1, diagnostics: [], truncated: false, dropped: 0 }),
