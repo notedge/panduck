@@ -28,21 +28,21 @@ oak-html = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "98
 oak-xml = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "98517a517212906085df6c989a6372a8c0353a0b", default-features = false, features = ["serde"] }
 
 # Document family implementation. Pinned to `document.rs` so the local tree keeps only the Node-API adapter.
-document-convert = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
-plotter-diagram = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
-plotter-chart = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc", features = ["vega-lite"] }
-plotter-input-dot = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
-plotter-input-tikz = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
-plotter-input-mermaid = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
-plotter-input-plantuml = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
-plotter-runtime = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
-plotter-scene = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
-plotter-types = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
-document-diagnostic = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc", default-features = false }
-document-fonts = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
-document-ir = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
-document-layout = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
-document-types = { git = "https://github.com/notedge/document.rs", rev = "2b1e8ad5b8a7e6e518869d6c37350c2c2de41edc" }
+document-convert = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
+plotter-diagram = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
+plotter-chart = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e", features = ["vega-lite"] }
+plotter-input-dot = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
+plotter-input-tikz = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
+plotter-input-mermaid = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
+plotter-input-plantuml = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
+plotter-runtime = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
+plotter-scene = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
+plotter-types = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
+document-diagnostic = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e", default-features = false }
+document-fonts = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
+document-ir = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
+document-layout = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
+document-types = { git = "https://github.com/notedge/document.rs", rev = "b956e091adb2b6dbfe14cae43175a8dddf3a249e" }
 
 # External dependencies
 serde_json = "1.0.154"
