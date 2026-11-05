@@ -7,6 +7,8 @@ import test from "node:test";
 import { Converter } from "../src/converter.js";
 import { defineConversion, serializeConversionPlan } from "../src/conversion-plan.js";
 import type { ConversionPlan } from "../src/conversion-plan.js";
+import { publishMarkdownProject } from "../src/publish-project.js";
+import type { PublishableProject } from "../src/publish-project.js";
 import { imageDocumentXml, imageRelsXml } from "./fixtures/docx-xml.js";
 import { storedZip } from "./helpers/stored-zip.js";
 
@@ -346,6 +348,63 @@ test("unsupported publish kind is rejected instead of silently treated as none",
         await assert.rejects(readdir(outputDir));
     } finally {
         await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("markdown-project publish rejects project paths that escape the output directory", async () => {
+    const cases: Array<{ name: string; project: PublishableProject }> = [
+        {
+            name: "chapter-traversal",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [{ path: "../escape.md", markdown: "# Escaped" }],
+                assets: [],
+            },
+        },
+        {
+            name: "chapter-absolute",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [{ path: "/absolute/escape.md", markdown: "# Escaped" }],
+                assets: [],
+            },
+        },
+        {
+            name: "chapter-drive-letter",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [{ path: "C:\\escape.md", markdown: "# Escaped" }],
+                assets: [],
+            },
+        },
+        {
+            name: "asset-traversal",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [],
+                assets: [{ path: "assets/../../escape.bin", bytes: new Uint8Array([1]) }],
+            },
+        },
+    ];
+
+    for (const item of cases) {
+        const workdir = await mkdtemp(join(tmpdir(), `panduck-publish-${item.name}-`));
+        const outputDir = join(workdir, "site");
+        try {
+            await assert.rejects(
+                publishMarkdownProject(outputDir, item.project, "{}"),
+                /project path escapes the output directory/,
+                item.name,
+            );
+            await assert.rejects(readdir(outputDir), { code: "ENOENT" }, `${item.name} must not publish a directory`);
+            assert.deepEqual(
+                await readdir(workdir),
+                [],
+                `${item.name} must leave no staging directory or escaped file`,
+            );
+        } finally {
+            await rm(workdir, { recursive: true, force: true });
+        }
     }
 });
 

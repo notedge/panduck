@@ -8,7 +8,7 @@
  */
 
 import { mkdir, rename, rm, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 
 export type PublishableProject = {
     indexMarkdown: string;
@@ -37,7 +37,7 @@ export async function publishMarkdownProject(
     try {
         await writeFile(join(stagingDir, "index.md"), project.indexMarkdown, "utf8");
         for (const chapter of project.chapters) {
-            const chapterPath = join(stagingDir, chapter.path);
+            const chapterPath = containedPath(stagingDir, chapter.path);
             await mkdir(dirname(chapterPath), { recursive: true });
             await writeFile(chapterPath, chapter.markdown, "utf8");
         }
@@ -45,7 +45,7 @@ export async function publishMarkdownProject(
             if (!asset.path.startsWith("assets/")) {
                 throw new Error(`asset path must start with assets/: ${asset.path}`);
             }
-            const assetPath = join(stagingDir, asset.path);
+            const assetPath = containedPath(stagingDir, asset.path);
             await mkdir(dirname(assetPath), { recursive: true });
             await writeFile(assetPath, asset.bytes);
         }
@@ -62,6 +62,23 @@ export async function publishMarkdownProject(
         assetPaths: project.assets.map((asset) => asset.path),
         reportPath: join(outputDir, "panduck.report.json"),
     };
+}
+
+/**
+ * Resolves one reported project path against the staging directory and rejects
+ * anything that would land outside it: absolute paths, drive-letter paths and
+ * `.`/`..` segments. Project paths come from the native exporter, so this is the
+ * containment check that keeps a faulty export from writing outside the target.
+ */
+function containedPath(stagingDir: string, projectPath: string): string {
+    if (projectPath.length === 0 || isAbsolute(projectPath) || /^[A-Za-z]:/.test(projectPath)) {
+        throw new Error(`project path escapes the output directory: ${projectPath}`);
+    }
+    const segments = projectPath.split(/[\\/]+/);
+    if (segments.some((segment) => segment === "." || segment === ".." || segment.length === 0)) {
+        throw new Error(`project path escapes the output directory: ${projectPath}`);
+    }
+    return resolve(stagingDir, projectPath);
 }
 
 function stagingDirPath(outputDir: string): string {
