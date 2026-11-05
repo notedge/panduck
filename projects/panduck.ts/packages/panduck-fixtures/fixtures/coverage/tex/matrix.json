@@ -8,126 +8,126 @@
             "spec": "LaTeX2e reference manual, Sectioning",
             "semantics": "`\\section{Intro}` becomes a first level heading with text Intro",
             "source": "\\section{Intro}\n",
-            "probe": null
+            "probe": { "contains": ["<h1", "Intro"] }
         },
         {
             "id": "tex-subsection",
             "spec": "LaTeX2e reference manual, Sectioning",
             "semantics": "`\\subsection{Sub}` becomes a second level heading",
             "source": "\\subsection{Sub}\n",
-            "probe": null
+            "probe": { "contains": ["<h2", "Sub"] }
         },
         {
             "id": "tex-itemize",
             "spec": "LaTeX2e reference manual, List environments",
             "semantics": "`\\item` entries inside `itemize` become an unordered list",
             "source": "\\begin{itemize}\n\\item a\n\\item b\n\\end{itemize}\n",
-            "probe": null
+            "probe": { "contains": ["<ul>", "<li>a</li>", "<li>b</li>"] }
         },
         {
             "id": "tex-enumerate",
             "spec": "LaTeX2e reference manual, List environments",
             "semantics": "`\\item` entries inside `enumerate` become an ordered list",
             "source": "\\begin{enumerate}\n\\item a\n\\end{enumerate}\n",
-            "probe": null
+            "probe": { "contains": ["<ol>", "<li>a</li>"] }
         },
         {
             "id": "tex-tabular",
             "spec": "LaTeX2e reference manual, Tabular",
             "semantics": "`tabular` rows and `&` cell separators become a table",
             "source": "\\begin{tabular}{ll}\na & b \\\\\n\\end{tabular}\n",
-            "probe": null
+            "probe": { "contains": ["<table>", "<td>a</td>", "<td>b</td>"] }
         },
         {
             "id": "tex-inline-math",
             "spec": "LaTeX2e reference manual, Math formulas",
             "semantics": "`$x^2$` becomes inline math, not plain text",
             "source": "inline $x^2$ math\n",
-            "probe": null
+            "probe": { "contains": ["class=\"math\"", "x^2"], "excludes": ["<p>inline x^2 math</p>"] }
         },
         {
             "id": "tex-display-math",
             "spec": "LaTeX2e reference manual, Math formulas",
             "semantics": "`\\[ x \\]` becomes a display math block",
             "source": "\\[ x + y \\]\n",
-            "probe": null
+            "probe": { "contains": ["<div class=\"math\"", "x + y"] }
         },
         {
             "id": "tex-equation-environment",
             "spec": "amsmath user guide, Equation environments",
             "semantics": "an `equation` environment becomes numbered display math",
             "source": "\\begin{equation}\nx = 1\n\\end{equation}\n",
-            "probe": null
+            "probe": { "contains": ["<div class=\"math\""], "excludes": ["\\begin{equation}"] }
         },
         {
             "id": "tex-figure",
             "spec": "LaTeX2e reference manual, Floating bodies",
             "semantics": "a `figure` float keeps its body and caption together",
             "source": "\\begin{figure}\n\\caption{C}\n\\end{figure}\n",
-            "probe": null
+            "probe": { "contains": ["tex-caption", "C"] }
         },
         {
             "id": "tex-cite",
             "spec": "LaTeX2e reference manual, Bibliography",
             "semantics": "`\\cite{key}` becomes a citation reference to key",
             "source": "see \\cite{key}\n",
-            "probe": null
+            "probe": { "unsupported": true }
         },
         {
             "id": "tex-footnote",
             "spec": "LaTeX2e reference manual, Footnotes",
             "semantics": "`\\footnote{n}` becomes a footnote reference with body n",
             "source": "a\\footnote{n}\n",
-            "probe": null
+            "probe": { "contains": ["footnote-reference", "<section class=\"footnotes\""] }
         },
         {
             "id": "tex-newcommand",
             "spec": "LaTeX2e reference manual, Defining commands",
             "semantics": "`\\newcommand` defines a macro that expands at use sites",
             "source": "\\newcommand{\\hi}{hi}\n\\hi\n",
-            "probe": null
+            "probe": { "unsupported": true }
         },
         {
             "id": "tex-nested-groups",
             "spec": "LaTeX2e reference manual, Grouping",
             "semantics": "nested braces scope declarations without leaking them",
             "source": "{\\bf a {\\it b}}\n",
-            "probe": null
+            "probe": { "contains": ["<p>a b</p>"] }
         },
         {
             "id": "tex-comment",
             "spec": "LaTeX2e reference manual, Comments",
             "semantics": "text after `%` up to the line end contributes nothing",
             "source": "a % hidden\nb\n",
-            "probe": null
+            "probe": { "contains": ["<p>a b</p>"], "excludes": ["hidden"] }
         },
         {
             "id": "tex-escaped-percent",
             "spec": "LaTeX2e reference manual, Special characters",
             "semantics": "`\\%` is a literal percent sign",
             "source": "50\\%\n",
-            "probe": null
+            "probe": { "contains": ["50%"] }
         },
         {
             "id": "tex-verbatim-inline",
             "spec": "LaTeX2e reference manual, Verbatim",
             "semantics": "`\\verb|a|` keeps a as monospace text without macro expansion",
             "source": "\\verb|a|\n",
-            "probe": null
+            "probe": { "contains": ["<code>a</code>"], "excludes": ["<pre>"] }
         },
         {
             "id": "tex-label-ref",
             "spec": "LaTeX2e reference manual, Cross references",
             "semantics": "`\\ref{a}` resolves to the number of the matching `\\label{a}`",
             "source": "\\section{A}\\label{a}\nsee \\ref{a}\n",
-            "probe": null
+            "probe": { "unsupported": true }
         },
         {
             "id": "tex-includegraphics",
             "spec": "graphicx package documentation, Commands",
             "semantics": "`\\includegraphics` embeds the named image",
             "source": "\\includegraphics{a.png}\n",
-            "probe": null
+            "probe": { "contains": ["<img", "src=\"a.png\""] }
         }
     ]
 }

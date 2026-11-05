@@ -18,16 +18,16 @@
         {
             "format": "tex",
             "spec": "LaTeX2e reference manual plus amsmath user guide",
-            "route": null,
+            "route": { "from": "tex", "to": "html", "field": "html" },
             "matrix": "tex/matrix.json",
-            "gap": "`supportedConversions` carries no `tex:*` route, so no public entry can drive TeX samples"
+            "gap": null
         },
         {
             "format": "typst",
             "spec": "Typst syntax reference",
-            "route": null,
+            "route": { "from": "typst", "to": "html", "field": "html" },
             "matrix": "typst/matrix.json",
-            "gap": "`supportedConversions` carries no `typst:*` route, so no public entry can drive Typst samples"
+            "gap": null
         }
     ]
 }
