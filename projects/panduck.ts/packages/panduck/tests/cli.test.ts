@@ -89,3 +89,23 @@ test("convert detection does not claim a zip container for markdown", () => {
     assert.equal(report.detection.inner, undefined);
     rmSync(workdir, { recursive: true, force: true });
 });
+
+test("convert infers typst from the .typ extension without --from", () => {
+    const workdir = mkdtempSync(join(tmpdir(), "panduck-typst-detection-"));
+    const input = join(workdir, "source.typ");
+    writeFileSync(input, "#let x = 1\nHello\n", "utf8");
+    const run = runPanduck([
+        "convert",
+        input,
+        "--to",
+        "html",
+        "-o",
+        join(workdir, "source.html"),
+        "--diagnostics",
+        "json",
+    ]);
+    assert.equal(run.code, 0, run.stderr);
+    const report = JSON.parse(run.stdout) as { detection: { format?: string } };
+    assert.equal(report.detection.format, "typst");
+    rmSync(workdir, { recursive: true, force: true });
+});

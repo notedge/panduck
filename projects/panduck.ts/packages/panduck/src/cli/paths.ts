@@ -8,6 +8,8 @@ const EXTENSION_HINTS: Record<string, string[]> = {
     ".org": ["org"],
     ".rst": ["rst"],
     ".tex": ["tex"],
+    ".typ": ["typst"],
+    ".typst": ["typst"],
     ".html": ["html"],
     ".htm": ["html"],
     ".docx": ["docx"],
