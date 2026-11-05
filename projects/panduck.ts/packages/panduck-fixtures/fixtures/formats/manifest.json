@@ -147,7 +147,7 @@
             "classification": "import",
             "expect": {
                 "kind": "presentation",
-                "slides": 2,
+                "slides": 3,
                 "contains": ["Office line review", "Data and charts"]
             }
         },
