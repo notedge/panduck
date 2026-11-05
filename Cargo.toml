@@ -21,28 +21,28 @@ boost-log = { git = "https://github.com/oovm/rust-boost", rev = "9aa52745d6eae2d
 # Document grammar lexers. Pinned to the same `oak.rs` revision that the `document-*`
 # pins below resolve, so the token stream matches what the readers actually accept.
 # Bump this block together with the `document-*` revs whenever either side moves.
-oak-core = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "abb2c3ba7abde7bbcf4fbf8b2dd901733399450b" }
-oak-notedown = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "abb2c3ba7abde7bbcf4fbf8b2dd901733399450b", default-features = false, features = ["serde"] }
-oak-markdown = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "abb2c3ba7abde7bbcf4fbf8b2dd901733399450b", default-features = false, features = ["serde"] }
-oak-html = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "abb2c3ba7abde7bbcf4fbf8b2dd901733399450b", default-features = false, features = ["serde"] }
-oak-xml = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "abb2c3ba7abde7bbcf4fbf8b2dd901733399450b", default-features = false, features = ["serde"] }
+oak-core = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "3afc9f259ecef8670e116808ec7ad10010b039a5" }
+oak-notedown = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "3afc9f259ecef8670e116808ec7ad10010b039a5", default-features = false, features = ["serde"] }
+oak-markdown = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "3afc9f259ecef8670e116808ec7ad10010b039a5", default-features = false, features = ["serde"] }
+oak-html = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "3afc9f259ecef8670e116808ec7ad10010b039a5", default-features = false, features = ["serde"] }
+oak-xml = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "3afc9f259ecef8670e116808ec7ad10010b039a5", default-features = false, features = ["serde"] }
 
 # Document family implementation. Pinned to `document.rs` so the local tree keeps only the Node-API adapter.
-document-convert = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
-plotter-diagram = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
-plotter-chart = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388", features = ["vega-lite"] }
-plotter-input-dot = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
-plotter-input-tikz = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
-plotter-input-mermaid = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
-plotter-input-plantuml = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
-plotter-runtime = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
-plotter-scene = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
-plotter-types = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
-document-diagnostic = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388", default-features = false }
-document-fonts = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
-document-ir = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
-document-layout = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
-document-types = { git = "https://github.com/notedge/document.rs", rev = "e17f6f1628957657279cdec606b72ba2b5de6388" }
+document-convert = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
+plotter-diagram = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
+plotter-chart = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506", features = ["vega-lite"] }
+plotter-input-dot = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
+plotter-input-tikz = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
+plotter-input-mermaid = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
+plotter-input-plantuml = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
+plotter-runtime = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
+plotter-scene = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
+plotter-types = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
+document-diagnostic = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506", default-features = false }
+document-fonts = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
+document-ir = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
+document-layout = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
+document-types = { git = "https://github.com/notedge/document.rs", rev = "85e24751b0a3bc4da72dc7f20c420f8cbd9fc506" }
 
 # External dependencies
 serde_json = "1.0.154"
