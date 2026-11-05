@@ -70,14 +70,14 @@ const REJECTIONS: Array<{ label: string; construct: string; message: RegExp; sou
     {
         label: "alt fragment",
         construct: "alt ok",
-        message: /PlantUML `alt` statements are not part of the accepted class and sequence subset/,
+        message: /PlantUML `alt` statements are not part of the accepted activity subset/,
         source: ["@startuml", "participant A", "alt ok", "A -> B: go", "end", "@enduml"],
     },
     {
-        label: "state diagrams",
-        construct: "state Idle",
-        message: /PlantUML `state` diagrams are refused, only class and sequence diagrams are lowered/,
-        source: ["@startuml", "state Idle", "state Done", "Idle --> Done", "@enduml"],
+        label: "state notes",
+        construct: "note right of Idle: waiting",
+        message: /PlantUML `note` statements are not part of the accepted state subset/,
+        source: ["@startuml", "state Idle", "state Done", "note right of Idle: waiting", "Idle --> Done", "@enduml"],
     },
 ];
 
