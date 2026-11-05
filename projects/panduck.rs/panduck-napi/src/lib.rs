@@ -759,8 +759,9 @@ pub fn pdf_layout_probe(label: String, bytes: Buffer) -> PdfLayoutProbeResponse 
         &graph,
         &document_layout::LayoutHint::a4(),
         &document_layout::Diagrams::default(),
+        crate::assets::body_metrics(),
     );
-    let pdf = match document_convert::write_document_pdf(&graph) {
+    let pdf = match document_convert::write_document_pdf(&graph, &crate::assets::body_set()) {
         Ok(pdf) => pdf,
         Err(error) => return pdf_probe_error(error.to_string()),
     };

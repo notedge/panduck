@@ -392,7 +392,7 @@ fn write_target(to: &str, graph: &mut DocumentGraph) -> AdapterResult<(String, O
     match to {
         "markdown" => Ok((write_document_markdown(graph)?, None, None)),
         "docx" => Ok((String::new(), None, Some(write_document_docx(graph)?))),
-        "pdf" => Ok((String::new(), None, Some(write_document_pdf(graph)?))),
+        "pdf" => Ok((String::new(), None, Some(write_document_pdf(graph, &crate::assets::body_set())?))),
         "html" => {
             let diagrams = document_convert::diagram::render_diagrams(graph);
             for (loss, span) in diagrams.losses.into_iter().zip(diagrams.loss_spans) {
