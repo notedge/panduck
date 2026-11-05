@@ -4,7 +4,7 @@
         "repo": "document.rs",
         "crate": "document.formats",
         "tests": "projects/document/document.formats/tests",
-        "note": "Imported only the authored inputs and the expectations those tests assert. No Rust test source moved downstream."
+        "note": "Imported only the authored inputs and the expectations those tests assert. Whole EPUB and OPC packages are included. No Rust test source moved downstream."
     },
     "cases": [
         {
@@ -64,6 +64,104 @@
                 "firstLabel": "Part One",
                 "firstHref": "part.xhtml",
                 "firstChildLabel": "Chapter 1"
+            }
+        },
+        {
+            "id": "epub-ordered-list",
+            "path": "epub/ordered-list.epub",
+            "format": "epub",
+            "container": "package",
+            "classification": "import",
+            "expect": {
+                "export": "markdown",
+                "contains": ["one", "three"],
+                "listNumbers": [1, 2]
+            }
+        },
+        {
+            "id": "epub-css-link",
+            "path": "epub/css-link.epub",
+            "format": "epub",
+            "container": "package",
+            "classification": "import",
+            "expect": {
+                "export": "markdown",
+                "contains": ["Styled paragraph."],
+                "lossCodes": ["import.epub.css_link_unsupported"]
+            }
+        },
+        {
+            "id": "epub-inline-style",
+            "path": "epub/inline-style.epub",
+            "format": "epub",
+            "container": "package",
+            "classification": "import",
+            "expect": {
+                "export": "markdown",
+                "contains": ["Styled paragraph."],
+                "lossCodes": ["import.epub.css_inline_block_unsupported"]
+            }
+        },
+        {
+            "id": "epub-list-value-reversed",
+            "path": "epub/list-value-reversed.epub",
+            "format": "epub",
+            "container": "package",
+            "classification": "import",
+            "expect": {
+                "export": "markdown",
+                "contains": ["two", "five", "six", "a", "b"],
+                "lossCodes": ["import.epub.list_item_value_unsupported", "import.epub.list_reversed_unsupported"]
+            }
+        },
+        {
+            "id": "epub-footnotes",
+            "path": "epub/footnotes.epub",
+            "format": "epub",
+            "container": "package",
+            "classification": "import",
+            "expect": {
+                "export": "markdown",
+                "contains": ["[^1]: Single paragraph note.", "[^2]: First paragraph."],
+                "noteLabels": ["1", "2", "3"],
+                "lossCodes": ["import.epub.footnote_inline_markup_flattened"]
+            }
+        },
+        {
+            "id": "epub-footnotes-edge",
+            "path": "epub/footnotes-edge.epub",
+            "format": "epub",
+            "container": "package",
+            "classification": "import",
+            "expect": {
+                "export": "markdown",
+                "contains": ["[^9]", "[^3]: First copy.", "[^3]: Second copy."],
+                "noteLabels": ["9", "3"]
+            }
+        },
+        {
+            "id": "pptx-layouts-and-chart",
+            "path": "pptx/layouts-and-chart.pptx",
+            "format": "pptx",
+            "container": "package",
+            "classification": "import",
+            "expect": {
+                "kind": "presentation",
+                "slides": 2,
+                "contains": ["Office line review", "Data and charts"]
+            }
+        },
+        {
+            "id": "xlsx-multi-sheet",
+            "path": "xlsx/multi-sheet.xlsx",
+            "format": "xlsx",
+            "container": "package",
+            "classification": "import",
+            "expect": {
+                "kind": "workbook",
+                "sheets": ["Data", "Hidden", "Summary"],
+                "contains": ["Quarterly Revenue", "$3,970.75", "2026-01-15"],
+                "lossCodes": ["import.xlsx.hidden-sheet", "import.xlsx.chart"]
             }
         },
         {

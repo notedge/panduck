@@ -7,7 +7,7 @@ export type FormatCase = {
     readonly id: string;
     readonly path: string;
     readonly format: string;
-    readonly container: "plain" | "package-part" | "xhtml";
+    readonly container: "plain" | "package" | "package-part" | "xhtml";
     readonly classification: "import" | "export" | "inspect" | "roundtrip";
     readonly expect: Readonly<Record<string, unknown>>;
 };

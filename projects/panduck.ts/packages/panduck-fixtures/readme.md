@@ -8,7 +8,7 @@ Panduck 文档家族的语料家底。语料物理上只存在这里一份，`pa
 
 ```text
 fixtures/
-  formats/<format>/          # document.formats：docx / epub / markdown / tex / typst 样例
+  formats/<format>/          # document.formats：docx / epub / xlsx / pptx / markdown / tex / typst 样例（含整包二进制）
   convert/                   # document.convert：转换、往返、拒绝路径的运行输入
   chart/specs/               # plotter.chart：Vega-Lite 正例
   chart/rejections/          # plotter.chart：拒绝样例，逐条带 code 与 spanText
