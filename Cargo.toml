@@ -47,7 +47,9 @@ document-types = { git = "https://github.com/notedge/document.rs", rev = "85e247
 # External dependencies
 serde_json = "1.0.154"
 wasm-bindgen = "0.2.129"
-napi = { version = "3.14.2", default-features = false, features = ["napi4"] }
+# `dyn-symbols` keeps `cargo test` linkable on Linux and macOS, where the
+# delay-load trick that resolves `napi_*` symbols on Windows does not exist.
+napi = { version = "3.14.2", default-features = false, features = ["napi4", "dyn-symbols"] }
 napi-derive = "3.6.12"
 
 [profile.release]
