@@ -7,7 +7,7 @@
         "build:wasm": "node scripts/build-wasm.mjs",
         "test": "cargo test --release && pnpm --filter @notedge/panduck test:e2e",
         "test:e2e": "pnpm --filter @notedge/panduck test:e2e",
-        "typecheck": "pnpm --filter @notedge/panduck typecheck && pnpm --filter @notedge/panduck-fixtures build && pnpm --filter @notedge/panduck-harness typecheck",
+        "typecheck": "pnpm --filter @notedge/panduck typecheck && pnpm --filter @notedge/panduck build && pnpm --filter @notedge/panduck-fixtures build && pnpm --filter @notedge/panduck-harness typecheck",
         "harness": "pnpm --filter @notedge/panduck-fixtures build && pnpm --filter @notedge/panduck-harness build && node projects/panduck.ts/packages/panduck-harness/bin/cli.mjs run",
         "harness:baseline": "node projects/panduck.ts/packages/panduck-harness/bin/cli.mjs baseline --name first",
         "examples": "pnpm --filter @notedge/panduck-fixtures build && pnpm --filter @notedge/panduck-examples start",
