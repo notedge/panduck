@@ -26,8 +26,8 @@ scripts/.placeholder-npm-cache.json
 projects/panduck.ts/platforms/panduck-unknown-wasm32/lib/
 projects/panduck.ts/homepage/dist/
 projects/panduck.ts/homepage/public/
-projects/panduck.rs/exports/panduck-napi/index.d.ts
-projects/panduck.rs/exports/panduck-napi/index.js
+projects/panduck.rs/panduck-napi/index.d.ts
+projects/panduck.rs/panduck-napi/index.js
 *.wasm
 *.node
 
