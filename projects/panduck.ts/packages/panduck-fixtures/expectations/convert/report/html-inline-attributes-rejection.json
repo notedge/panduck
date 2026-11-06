@@ -2,11 +2,18 @@
     "schema": "panduck.harness.expectation",
     "caseId": "html-inline-attributes-rejection",
     "assertions": [
-        { "kind": "exit-code", "expected": 0 },
-        { "kind": "report-status", "expected": "success_with_loss" },
+        {
+            "kind": "exit-code",
+            "expected": 0
+        },
+        {
+            "kind": "report-status",
+            "expected": "success_with_loss"
+        },
         {
             "kind": "loss-codes",
             "expected": [
+                "import.html.asset_unresolved",
                 "import.html.image_dimensions",
                 "import.html.partial_coverage",
                 "import.html.raw_form",
@@ -32,7 +39,11 @@
                 "import.html.raw_style"
             ]
         },
-        { "kind": "contains", "target": "text", "value": "This is a **paragraph** with *emphasis*" }
+        {
+            "kind": "contains",
+            "target": "text",
+            "value": "This is a **paragraph** with *emphasis*"
+        }
     ],
     "provenance": [
         {
@@ -52,6 +63,14 @@
             "reason": "The latest pinned document.rs reports raw passthrough for form, script and style instead of the former unsupported_* codes, so the expectation follows the renamed loss codes",
             "semantic": "html input converts to markdown with raw_form, raw_form_control, raw_script and raw_style losses",
             "updatedAt": "2026-11-06T09:21:00.000Z"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 81e1aa2a38735d216cd92824753f7ad3c0c3c903",
+            "reason": "The new pin materializes HTML image bytes only when the caller supplies them, so the plain no-bytes conversion now declares asset_unresolved alongside the raw element losses",
+            "semantic": "html input converts to markdown with declared losses for unresolved image assets and raw style, form and script elements",
+            "updatedAt": "2026-11-06T14:31:45.833Z",
+            "assertionDiff": "~ {\"kind\":\"loss-codes\",\"expected\":[\"import.html.asset_unresolved\",\"import.html.image_dimensions\",\"import.html.partial_coverage\",\"import.html.raw_form\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_script\",\"import.html.raw_style\"]}",
+            "observedStatus": "pass"
         }
     ]
 }
