@@ -220,6 +220,46 @@ export type RuntimePassResponse = {
     error: string | null;
 };
 
+/** One entry from an EPUB navigation table of contents. */
+export type ProbeNavigationEntry = {
+    /** Visible navigation label. */
+    label: string;
+    /** Manifest-relative href target. */
+    href: string;
+    /** Nested navigation entries. */
+    children: ProbeNavigationEntry[];
+};
+
+/** Probe response for an EPUB navigation document. */
+export type ProbeNavigationResponse = {
+    /** True when the document yielded at least one entry. */
+    success: boolean;
+    /** Entries in document order. */
+    entries: ProbeNavigationEntry[];
+    /** Serialized diagnostic envelope. */
+    diagnosticsJson: string;
+};
+
+/** Result of reading an Office package through its native model into IR. */
+export type OfficeImportResponse = {
+    /** True when the package was read and projected into IR. */
+    success: boolean;
+    /** Native model kind, `workbook` or `presentation`. */
+    kind: string;
+    /** Sheet names in workbook order, empty for presentations. */
+    sheets: string[];
+    /** Slide count, zero for workbooks. */
+    slides: number;
+    /** Serialized graph, absent on failure. */
+    graphJson: string | null;
+    /** Serialized coverage records for the imported graph. */
+    coverageJson: string;
+    /** Serialized loss records with source spans. */
+    lossesJson: string;
+    /** Serialized diagnostic envelope for the import stage. */
+    diagnosticsJson: string;
+};
+
 /** Shared Panduck binding surface for Node-API and WebAssembly backends. */
 /** One text run whose horizontal width `document-layout` reserved before painting. */
 export type PdfLayoutRun = {
@@ -275,8 +315,12 @@ export type PanduckBindings = {
     probeContainerIndex?: (label: string, bytes: Uint8Array) => ProbeIndexResponse;
     /** Decode DOCX package members from in-memory bytes. */
     probeContainerDecode?: (label: string, bytes: Uint8Array, partPath?: string) => ProbeDecodeResponse;
+    /** Parse an EPUB navigation document into its table of contents. */
+    probeNavigationToc?: (label: string, bytes: Uint8Array) => ProbeNavigationResponse;
     /** Read bytes into serialized IR. */
     importDocument?: (from: string, label: string, bytes: Uint8Array, budgetsJson?: string) => ImportResponse;
+    /** Read a PPTX or XLSX package through its native model into serialized IR. */
+    importOfficeDocument?: (from: string, label: string, bytes: Uint8Array) => OfficeImportResponse;
     /** Run transform passes over serialized IR. */
     transformDocument?: (graphJson: string, transformsJson?: string) => TransformResponse;
     /** Write serialized IR to one target format. */

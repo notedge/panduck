@@ -71,11 +71,54 @@ pub struct ProbeDecodeResponse {
     pub diagnostics_json: String,
 }
 
+/// One EPUB navigation entry from a package navigation document.
+#[napi(object)]
+pub struct ProbeNavigationEntry {
+    /// Visible navigation label.
+    pub label: String,
+    /// Manifest-relative href target.
+    pub href: String,
+    /// Nested navigation entries.
+    pub children: Vec<ProbeNavigationEntry>,
+}
+
+/// N-API navigation table-of-contents probe response.
+#[napi(object)]
+pub struct ProbeNavigationResponse {
+    /// True when the navigation document yielded at least one entry.
+    pub success: bool,
+    /// Entries in document order.
+    pub entries: Vec<ProbeNavigationEntry>,
+    /// Serialized diagnostic envelope.
+    pub diagnostics_json: String,
+}
+
 /// N-API import response.
 #[napi(object)]
 pub struct ImportResponse {
     /// True when the bytes were read into IR.
     pub success: bool,
+    /// Serialized `document.ir` graph, absent on failure.
+    pub graph_json: Option<String>,
+    /// Serialized coverage records for the imported graph.
+    pub coverage_json: String,
+    /// Serialized loss records with source spans.
+    pub losses_json: String,
+    /// Serialized diagnostic envelope for the import stage.
+    pub diagnostics_json: String,
+}
+
+/// N-API office import response.
+#[napi(object)]
+pub struct OfficeImportResponse {
+    /// True when the package was read and projected into IR.
+    pub success: bool,
+    /// Native model kind, `workbook` or `presentation`.
+    pub kind: String,
+    /// Sheet names in workbook order, empty for presentations.
+    pub sheets: Vec<String>,
+    /// Slide count, zero for workbooks.
+    pub slides: u32,
     /// Serialized `document.ir` graph, absent on failure.
     pub graph_json: Option<String>,
     /// Serialized coverage records for the imported graph.
@@ -211,6 +254,103 @@ pub fn probe_container_decode(label: String, bytes: Buffer, part_path: Option<St
             parts: Vec::new(),
             diagnostics_json: error_envelope(&error),
         },
+    }
+}
+
+/// Parses an EPUB navigation document into its table-of-contents entries.
+///
+/// The probe reads one XHTML part, not a whole package, so a caller can check
+/// the navigation semantics without an OCF container or a spine. `label` only
+/// names the input in diagnostics.
+#[napi]
+pub fn probe_navigation_toc(label: String, bytes: Buffer) -> ProbeNavigationResponse {
+    let _ = label;
+    match document_formats::import::epub::navigation::parse_nav_toc(bytes.as_ref()) {
+        Ok(entries) => ProbeNavigationResponse {
+            success: true,
+            entries: entries.iter().map(nav_entry).collect(),
+            diagnostics_json: empty_envelope(),
+        },
+        Err(error) => ProbeNavigationResponse {
+            success: false,
+            entries: Vec::new(),
+            diagnostics_json: error_envelope(&map_format_error(error)),
+        },
+    }
+}
+
+fn nav_entry(entry: &document_formats::import::epub::navigation::NavEntry) -> ProbeNavigationEntry {
+    ProbeNavigationEntry {
+        label: entry.label.clone(),
+        href: entry.href.clone(),
+        children: entry.children.iter().map(nav_entry).collect(),
+    }
+}
+
+/// Reads an Office package into its native model and projects it into IR.
+///
+/// PPTX and XLSX keep format native models and are absent from
+/// `importDocument`'s read routes, so this entry performs the documented Office
+/// read shape — native model first, then the independent IR projection. It
+/// reports the model facts the projection is supposed to preserve: workbook
+/// sheet names and presentation slide count.
+#[napi]
+pub fn import_office_document(from: String, label: String, bytes: Buffer) -> OfficeImportResponse {
+    match from.to_ascii_lowercase().as_str() {
+        "xlsx" => match document_formats::import::xlsx::import_xlsx_bytes(&label, bytes.as_ref()) {
+            Ok(workbook) => {
+                let graph = document_formats::import::xlsx::workbook_to_graph(
+                    &workbook,
+                    &document_formats::import::xlsx::GraphOptions::default(),
+                );
+                let sheets = workbook.sheets.iter().map(|sheet| sheet.name.clone()).collect();
+                office_success("workbook", sheets, 0, &graph)
+            }
+            Err(error) => office_error(map_format_error(error)),
+        },
+        "pptx" => match document_formats::import::pptx::import_pptx_bytes(&label, bytes.as_ref()) {
+            Ok(presentation) => {
+                let graph = document_formats::import::pptx::presentation_to_graph(
+                    &presentation,
+                    &document_formats::import::pptx::GraphOptions::default(),
+                );
+                office_success(
+                    "presentation",
+                    Vec::new(),
+                    u32::try_from(presentation.slides.len()).unwrap_or(u32::MAX),
+                    &graph,
+                )
+            }
+            Err(error) => office_error(map_format_error(error)),
+        },
+        other => office_error(AdapterError::unsupported_format(other, "read")),
+    }
+}
+
+fn office_success(kind: &str, sheets: Vec<String>, slides: u32, graph: &DocumentGraph) -> OfficeImportResponse {
+    OfficeImportResponse {
+        success: true,
+        kind: kind.to_string(),
+        sheets,
+        slides,
+        graph_json: serde_json::to_string(graph).ok(),
+        coverage_json: serde_json::to_string(&graph.coverage).unwrap_or_else(|_| "null".to_string()),
+        losses_json: losses_json(graph),
+        diagnostics_json: graph_envelope(graph),
+    }
+}
+
+fn office_error(error: AdapterError) -> OfficeImportResponse {
+    document_diagnostic::log_adapter_error(&error);
+    OfficeImportResponse {
+        success: false,
+        kind: String::new(),
+        sheets: Vec::new(),
+        slides: 0,
+        graph_json: None,
+        coverage_json: "null".to_string(),
+        losses_json: "[]".to_string(),
+        diagnostics_json: error_envelope(&error),
     }
 }
 

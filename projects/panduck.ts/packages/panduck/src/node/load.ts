@@ -2,6 +2,12 @@ import { createRequire } from "node:module";
 
 import type { PanduckBindings } from "../types.js";
 
+type NativeNavEntry = {
+    label: string;
+    href: string;
+    children: NativeNavEntry[];
+};
+
 type NativeBinding = {
     panduckVersion: () => string;
     supportedFormats: () => string[];
@@ -37,6 +43,14 @@ type NativeBinding = {
         }>;
         diagnosticsJson: string;
     };
+    probeNavigationToc?: (
+        label: string,
+        bytes: Uint8Array,
+    ) => {
+        success: boolean;
+        entries: NativeNavEntry[];
+        diagnosticsJson: string;
+    };
     importDocument?: (
         from: string,
         label: string,
@@ -44,6 +58,20 @@ type NativeBinding = {
         budgetsJson?: string,
     ) => {
         success: boolean;
+        graphJson: string | null;
+        coverageJson: string;
+        lossesJson: string;
+        diagnosticsJson: string;
+    };
+    importOfficeDocument?: (
+        from: string,
+        label: string,
+        bytes: Uint8Array,
+    ) => {
+        success: boolean;
+        kind: string;
+        sheets: string[];
+        slides: number;
         graphJson: string | null;
         coverageJson: string;
         lossesJson: string;
@@ -165,6 +193,10 @@ type NativeBinding = {
     };
 };
 
+function copyNavEntry(entry: NativeNavEntry): NativeNavEntry {
+    return { label: entry.label, href: entry.href, children: entry.children.map(copyNavEntry) };
+}
+
 const PLATFORM_PACKAGES: Record<string, string> = {
     "win32-x64": "@notedge/panduck-win32-x64",
     "linux-x64": "@notedge/panduck-linux-x64",
@@ -224,11 +256,36 @@ export function loadPanduckNode(): PanduckBindings {
                   };
               }
             : undefined,
+        probeNavigationToc: binding.probeNavigationToc
+            ? (label, bytes) => {
+                  const response = binding.probeNavigationToc!(label, bytes);
+                  return {
+                      success: response.success,
+                      entries: response.entries.map(copyNavEntry),
+                      diagnosticsJson: response.diagnosticsJson,
+                  };
+              }
+            : undefined,
         importDocument: binding.importDocument
             ? (from, label, bytes, budgetsJson) => {
                   const response = binding.importDocument!(from, label, bytes, budgetsJson);
                   return {
                       success: response.success,
+                      graphJson: response.graphJson ?? null,
+                      coverageJson: response.coverageJson,
+                      lossesJson: response.lossesJson,
+                      diagnosticsJson: response.diagnosticsJson,
+                  };
+              }
+            : undefined,
+        importOfficeDocument: binding.importOfficeDocument
+            ? (from, label, bytes) => {
+                  const response = binding.importOfficeDocument!(from, label, bytes);
+                  return {
+                      success: response.success,
+                      kind: response.kind,
+                      sheets: response.sheets,
+                      slides: response.slides,
                       graphJson: response.graphJson ?? null,
                       coverageJson: response.coverageJson,
                       lossesJson: response.lossesJson,

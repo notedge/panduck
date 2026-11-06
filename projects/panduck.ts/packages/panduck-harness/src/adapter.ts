@@ -237,6 +237,148 @@ export function probeConversion(from: string, to: string, text: string): LegObse
     return convertLeg(from, to, `coverage.${from}`, Buffer.from(text, "utf8")).observation;
 }
 
+/** Normalized result of reading one format sample into IR. */
+export type FormatImportObservation = {
+    readonly success: boolean;
+    readonly graphJson: string | null;
+    readonly lossesJson: string;
+    readonly diagnosticsJson: string;
+    readonly kind: string;
+    readonly sheets: readonly string[];
+    readonly slides: number;
+    readonly error?: string;
+};
+
+/** One entry from an EPUB navigation table of contents. */
+export type NavigationEntry = {
+    readonly label: string;
+    readonly href: string;
+    readonly children: readonly NavigationEntry[];
+};
+
+/** Parses one EPUB navigation document through the public probe entry. */
+export function probeNavigationSample(
+    label: string,
+    bytes: Uint8Array,
+): { readonly success: boolean; readonly entries: readonly NavigationEntry[]; readonly error?: string } {
+    const probe = bindings().probeNavigationToc;
+    if (typeof probe !== "function") {
+        return {
+            success: false,
+            entries: [],
+            error: "missing-entry: `PanduckBindings.probeNavigationToc` is not exposed by this build",
+        };
+    }
+    try {
+        const response = probe(label, bytes);
+        return { success: response.success, entries: response.entries };
+    } catch (error) {
+        return {
+            success: false,
+            entries: [],
+            error: error instanceof Error ? error.message : String(error),
+        };
+    }
+}
+
+/** Reads one format sample into IR, using the Office model route for PPTX and XLSX. */
+export function importFormatSample(from: string, label: string, bytes: Uint8Array): FormatImportObservation {
+    const binding = bindings();
+    if (from === "pptx" || from === "xlsx") {
+        const office = binding.importOfficeDocument;
+        if (typeof office !== "function") {
+            return {
+                success: false,
+                graphJson: null,
+                lossesJson: "[]",
+                diagnosticsJson: "{}",
+                kind: "",
+                sheets: [],
+                slides: 0,
+                error: "missing-entry: `PanduckBindings.importOfficeDocument` is not exposed by this build",
+            };
+        }
+        try {
+            const response = office(from, label, bytes);
+            return {
+                success: response.success && response.graphJson !== null,
+                graphJson: response.graphJson,
+                lossesJson: response.lossesJson,
+                diagnosticsJson: response.diagnosticsJson,
+                kind: response.kind,
+                sheets: response.sheets,
+                slides: response.slides,
+            };
+        } catch (error) {
+            return formatImportError(error);
+        }
+    }
+    const read = binding.importDocument;
+    if (typeof read !== "function") {
+        return {
+            success: false,
+            graphJson: null,
+            lossesJson: "[]",
+            diagnosticsJson: "{}",
+            kind: "",
+            sheets: [],
+            slides: 0,
+            error: "missing-entry: `PanduckBindings.importDocument` is not exposed by this build",
+        };
+    }
+    try {
+        const response = read(from, label, bytes);
+        return {
+            success: response.success && response.graphJson !== null,
+            graphJson: response.graphJson,
+            lossesJson: response.lossesJson,
+            diagnosticsJson: response.diagnosticsJson,
+            kind: "",
+            sheets: [],
+            slides: 0,
+        };
+    } catch (error) {
+        return formatImportError(error);
+    }
+}
+
+function formatImportError(error: unknown): FormatImportObservation {
+    return {
+        success: false,
+        graphJson: null,
+        lossesJson: "[]",
+        diagnosticsJson: "{}",
+        kind: "",
+        sheets: [],
+        slides: 0,
+        error: error instanceof Error ? error.message : String(error),
+    };
+}
+
+/** Writes one serialized graph to a text or HTML target. */
+export function exportFormatSample(
+    to: string,
+    graphJson: string,
+): { readonly success: boolean; readonly text?: string; readonly html?: string; readonly error?: string } {
+    const write = bindings().exportDocument;
+    if (typeof write !== "function") {
+        return {
+            success: false,
+            error: "missing-entry: `PanduckBindings.exportDocument` is not exposed by this build",
+        };
+    }
+    try {
+        const response = write(to, graphJson);
+        return {
+            success: response.success,
+            text: response.text ?? undefined,
+            html: response.html ?? undefined,
+        };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+}
+
 /** Renders a diagram source through the public `renderDiagram` entry. */
 export function renderDiagramSource(language: string, source: string): DiagramObservation {
     const render = bindings().renderDiagram;

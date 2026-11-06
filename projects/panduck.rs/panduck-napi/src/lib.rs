@@ -12,9 +12,10 @@ mod convert;
 mod structure_guard;
 
 pub use convert::{
-    ExportResponse, ImportResponse, ProbeDecodeResponse, ProbeDecodedPart, ProbeIndexResponse, ProjectAsset,
-    ProjectChapter, ProjectResponse, TransformResponse, export_document, export_markdown_project, import_document,
-    probe_container_decode, probe_container_index, transform_document,
+    ExportResponse, ImportResponse, OfficeImportResponse, ProbeDecodeResponse, ProbeDecodedPart, ProbeIndexResponse,
+    ProbeNavigationEntry, ProbeNavigationResponse, ProjectAsset, ProjectChapter, ProjectResponse, TransformResponse,
+    export_document, export_markdown_project, import_document, import_office_document, probe_container_decode,
+    probe_container_index, probe_navigation_toc, transform_document,
 };
 
 use std::collections::BTreeSet;

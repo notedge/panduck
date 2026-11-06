@@ -216,7 +216,7 @@
             "container": "plain",
             "classification": "import",
             "expect": {
-                "styles": ["strong:bold", "emphasis:soft"]
+                "styles": ["bold:bold", "italic:soft"]
             }
         },
         {

@@ -28,6 +28,7 @@ import {
 } from "./adapter.js";
 import { aggregateCategory, evaluateExpectation, evaluateSnapshot } from "./assertions.js";
 import { addAssertion } from "./accept.js";
+import { formatRuns } from "./formats.js";
 import { analyzeSvgPaint } from "./paint.js";
 import {
     expectationFile,
@@ -54,10 +55,10 @@ import { measureCoverage, printCoverage, writeCoverage } from "./coverage.js";
 import { checkArtifactFreshness, formatFreshnessReport } from "./freshness.js";
 
 type Command = "run" | "list" | "verify" | "baseline" | "accept" | "oracle" | "coverage" | "freshness" | "help";
-type Suite = "all" | "convert" | "notedown" | "diagram" | "ir" | "chart" | "runtime";
+type Suite = "all" | "convert" | "notedown" | "diagram" | "ir" | "chart" | "runtime" | "formats";
 
 const USAGE = [
-    "panduck-harness <command> [--suite all|convert|notedown|diagram|ir|chart|runtime] [--name <baseline>]",
+    "panduck-harness <command> [--suite all|convert|notedown|diagram|ir|chart|runtime|formats] [--name <baseline>]",
     "",
     "  run        Execute the runnable suites and archive observations under results/",
     "  verify     Validate the checked-in corpus without loading the binding",
@@ -95,7 +96,8 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
                 value !== "diagram" &&
                 value !== "ir" &&
                 value !== "chart" &&
-                value !== "runtime"
+                value !== "runtime" &&
+                value !== "formats"
             ) {
                 throw new Error(`unsupported suite: ${String(value)}`);
             }
@@ -155,14 +157,6 @@ function corpusResults(): readonly CaseResult[] {
 }
 
 const CORPUS_GAPS: readonly GapRecord[] = [
-    {
-        id: "gap-formats-inspect",
-        repo: "panduck",
-        capability: "document.formats package inspection and import",
-        neededEntry: "an entry that inspects a package part or imports a single format sample",
-        evidence: "fixtures/formats/manifest.json",
-        affectedCases: ["formats-*"],
-    },
     {
         id: "gap-markdown-footnotes",
         repo: "document.rs",
@@ -778,6 +772,12 @@ async function commandRun(suite: Suite): Promise<number> {
     }
     if (suite === "all" || suite === "runtime") {
         for (const run of runtimeRuns()) {
+            cases.push(run.result);
+            observations.push(run.observation);
+        }
+    }
+    if (suite === "all" || suite === "formats") {
+        for (const run of formatRuns()) {
             cases.push(run.result);
             observations.push(run.observation);
         }
