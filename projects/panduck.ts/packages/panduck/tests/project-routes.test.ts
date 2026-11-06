@@ -139,7 +139,15 @@ test("epub project keeps spine order, materializes package assets and reports mi
         const report = JSON.parse(result.reportJson);
         assert.equal(report.status, "success_with_loss");
         const lossCodes = (report.losses as Array<{ code: string }>).map((loss) => loss.code).sort();
-        assert.deepEqual(lossCodes, ["import.epub.asset_unresolved", "import.epub.partial_coverage"]);
+        assert.deepEqual(lossCodes, [
+            "export.markdown_project.navigation_omitted",
+            "import.epub.asset_unresolved",
+            "import.epub.partial_coverage",
+        ]);
+        const navigationLoss = (report.losses as Array<{ code: string; message: string }>).find(
+            (loss) => loss.code === "export.markdown_project.navigation_omitted",
+        );
+        assert.ok(navigationLoss?.message.includes("OEBPS/nav.xhtml"), "the nav loss must name the skipped member");
         assert.deepEqual(report.unresolved_assets, ["OEBPS/images/missing.png"]);
         assert.equal(
             lossCodes.filter((code) => code === "import.epub.asset_unresolved").length,

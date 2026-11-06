@@ -490,7 +490,7 @@ pub fn export_markdown_project(graph_json: String) -> ProjectResponse {
             .collect(),
         unresolved_assets: project.unresolved_asset_sources,
         coverage_json: serde_json::to_string(&graph.coverage).unwrap_or_else(|_| "null".to_string()),
-        losses_json: losses_json(&graph),
+        losses_json: project_losses_json(&graph, &project.losses),
         diagnostics_json: graph_envelope(&graph),
     }
 }
@@ -601,7 +601,11 @@ fn map_format_error(error: FormatError) -> AdapterError {
 }
 
 fn losses_json(graph: &DocumentGraph) -> String {
-    let losses: Vec<serde_json::Value> = graph
+    serde_json::Value::Array(graph_loss_entries(graph)).to_string()
+}
+
+fn graph_loss_entries(graph: &DocumentGraph) -> Vec<serde_json::Value> {
+    graph
         .coverage
         .loss
         .iter()
@@ -619,8 +623,23 @@ fn losses_json(graph: &DocumentGraph) -> String {
                 },
             })
         })
-        .collect();
-    serde_json::Value::Array(losses).to_string()
+        .collect()
+}
+
+/// Project assembly losses have no authored span, so they join the graph
+/// losses as span-less entries.
+fn project_losses_json(graph: &DocumentGraph, losses: &[document_ir::LossMarker]) -> String {
+    let mut entries = graph_loss_entries(graph);
+    entries.extend(losses.iter().map(|loss| {
+        serde_json::json!({
+            "code": loss.code,
+            "message": loss.message,
+            "status": loss.status,
+            "severity": document_diagnostic::loss_severity(loss.status).to_string(),
+            "span": serde_json::Value::Null,
+        })
+    }));
+    serde_json::Value::Array(entries).to_string()
 }
 
 fn graph_envelope(graph: &DocumentGraph) -> String {
