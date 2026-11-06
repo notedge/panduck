@@ -90,9 +90,12 @@
         {
             "id": "html-nested-table",
             "spec": "HTML Standard §13.2.6.4.9 in table insertion mode",
-            "semantics": "a nested table stays a separate table element with its own cell",
+            "semantics": "a nested table is flattened into its parent cell inline run and reported as `import.html.table_nested`",
             "source": "<table><tr><td><table><tr><td>i</td></tr></table></td></tr></table>",
-            "probe": { "count": { "<table>": 2 } }
+            "probe": {
+                "unsupported": true,
+                "count": { "<table>": 1 }
+            }
         },
         {
             "id": "html-foster-parenting",
