@@ -370,3 +370,36 @@ test("batch aggregates declared loss and still publishes every entry under the d
         await rm(workdir, { recursive: true, force: true });
     }
 });
+
+test("a batch that fails every entry leaves no output directory", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-batch-all-failed-"));
+    const outputDir = join(workdir, "never-created");
+    const broken = join(workdir, "broken.docx");
+    await writeFile(broken, "this is not a zip container", "utf8");
+
+    try {
+        const run = runPanduck([
+            "convert",
+            broken,
+            "--from",
+            "docx",
+            "--to",
+            "markdown-project",
+            "--output-dir",
+            outputDir,
+            "--diagnostics",
+            "json",
+        ]);
+        assert.equal(run.code, 4, run.stderr);
+        const report = JSON.parse(run.stdout) as BatchReport;
+        assert.equal(report.status, "blocked");
+        assert.deepEqual(report.outputs, [], "a failed entry publishes nothing");
+        assert.equal(
+            await exists(outputDir),
+            false,
+            "the site root is created by the first successful publish, not before the batch",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});

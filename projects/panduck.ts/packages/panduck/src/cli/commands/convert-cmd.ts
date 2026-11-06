@@ -1,4 +1,4 @@
-import { access, mkdir } from "node:fs/promises";
+import { access } from "node:fs/promises";
 import { constants } from "node:fs";
 import { basename, extname, join } from "node:path";
 
@@ -541,11 +541,9 @@ async function runBatchConvert(input: {
         seen.add(plan.outputPath);
     }
 
-    // Dry runs only plan: they report unpublished outputs and must not create the site root.
-    if (!dryRun) {
-        await mkdir(outputDir, { recursive: true });
-    }
-
+    // Dry runs only plan: they report unpublished outputs and must not create the
+    // site root. Real publishes create it lazily, so a batch that fails every
+    // entry leaves no empty directory behind either.
     let exitCode: number = ExitCode.Success;
     let blocked = false;
     let withLoss = false;
