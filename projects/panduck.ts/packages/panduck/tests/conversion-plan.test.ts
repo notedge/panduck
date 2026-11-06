@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -7,7 +8,7 @@ import test from "node:test";
 import { Converter } from "../src/converter.js";
 import { defineConversion, serializeConversionPlan } from "../src/conversion-plan.js";
 import type { ConversionPlan } from "../src/conversion-plan.js";
-import { publishMarkdownProject } from "../src/publish-project.js";
+import { publishMarkdownProject, PublishConflictError } from "../src/publish-project.js";
 import type { PublishableProject } from "../src/publish-project.js";
 import { imageDocumentXml, imageRelsXml } from "./fixtures/docx-xml.js";
 import { storedZip } from "./helpers/stored-zip.js";
@@ -452,7 +453,7 @@ test("unsupported publish kind is rejected instead of silently treated as none",
 });
 
 test("markdown-project publish rejects project paths that escape the output directory", async () => {
-    const cases: Array<{ name: string; project: PublishableProject }> = [
+    const cases: Array<{ name: string; project: PublishableProject; error?: RegExp }> = [
         {
             name: "chapter-traversal",
             project: {
@@ -478,12 +479,107 @@ test("markdown-project publish rejects project paths that escape the output dire
             },
         },
         {
+            name: "chapter-unc",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [{ path: "\\\\server\\share\\escape.md", markdown: "# Escaped" }],
+                assets: [],
+            },
+        },
+        {
+            name: "chapter-alternate-stream",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [{ path: "notes.md:hidden", markdown: "# Escaped" }],
+                assets: [],
+            },
+        },
+        {
+            name: "chapter-control-character",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [{ path: "bad\u0001.md", markdown: "# Escaped" }],
+                assets: [],
+            },
+        },
+        {
+            name: "chapter-trailing-dot",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [{ path: "dir./escape.md", markdown: "# Escaped" }],
+                assets: [],
+            },
+        },
+        {
             name: "asset-traversal",
             project: {
                 indexMarkdown: "# Index",
                 chapters: [],
                 assets: [{ path: "assets/../../escape.bin", bytes: new Uint8Array([1]) }],
             },
+        },
+        {
+            name: "chapter-reserved-index",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [{ path: "index.md", markdown: "# Escaped" }],
+                assets: [],
+            },
+            error: /project path collides with another project path/,
+        },
+        {
+            name: "chapter-duplicate",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [
+                    { path: "same.md", markdown: "# One" },
+                    { path: "same.md", markdown: "# Two" },
+                ],
+                assets: [],
+            },
+            error: /project path is declared twice/,
+        },
+        {
+            name: "chapter-file-over-directory",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [
+                    { path: "x/y.md", markdown: "# Nested" },
+                    { path: "x", markdown: "# File" },
+                ],
+                assets: [],
+            },
+            error: /project path is declared twice/,
+        },
+        {
+            name: "chapter-directory-over-file",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [
+                    { path: "x", markdown: "# File" },
+                    { path: "x/y.md", markdown: "# Nested" },
+                ],
+                assets: [],
+            },
+            error: /project path collides with another project path/,
+        },
+        {
+            name: "asset-and-chapter-share-a-path",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [{ path: "assets/x.png", markdown: "# Escaped" }],
+                assets: [{ path: "assets/x.png", bytes: new Uint8Array([1]) }],
+            },
+            error: /project path is declared twice/,
+        },
+        {
+            name: "asset-outside-the-assets-directory",
+            project: {
+                indexMarkdown: "# Index",
+                chapters: [],
+                assets: [{ path: "media/x.png", bytes: new Uint8Array([1]) }],
+            },
+            error: /asset path must start with assets\//,
         },
     ];
 
@@ -493,7 +589,7 @@ test("markdown-project publish rejects project paths that escape the output dire
         try {
             await assert.rejects(
                 publishMarkdownProject(outputDir, item.project, "{}"),
-                /project path escapes the output directory/,
+                item.error ?? /project path escapes the output directory/,
                 item.name,
             );
             await assert.rejects(readdir(outputDir), { code: "ENOENT" }, `${item.name} must not publish a directory`);
@@ -594,3 +690,157 @@ async function collectTree(directory: string): Promise<Array<[string, string]>> 
     }
     return tree.sort(([left], [right]) => left.localeCompare(right));
 }
+
+const stableProject: PublishableProject = {
+    indexMarkdown: "# First\n",
+    chapters: [{ path: "chapters/one.md", markdown: "# One\n" }],
+    assets: [{ path: "assets/a.bin", bytes: new Uint8Array([1, 2, 3]) }],
+};
+
+test("failed publish restores the previous project and leaves no staging or backup", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-rollback-"));
+    const outputDir = join(workdir, "site");
+    try {
+        await publishMarkdownProject(outputDir, stableProject, "{\"version\":1}");
+        const before = await collectTree(outputDir);
+        assert.deepEqual(await readdir(workdir), ["site"], "a successful publish must leave only the output directory");
+
+        await assert.rejects(
+            publishMarkdownProject(
+                outputDir,
+                {
+                    indexMarkdown: "# Second\n",
+                    chapters: [{ path: "chapters/two.md", markdown: "# Two\n" }],
+                    assets: [{ path: "assets/b.bin", bytes: null as unknown as Uint8Array }],
+                },
+                "{\"version\":2}",
+            ),
+        );
+        assert.deepEqual(
+            await collectTree(outputDir),
+            before,
+            "a failure during materialization must leave the previous project byte-identical",
+        );
+        assert.deepEqual(await readdir(workdir), ["site"], "a failed publish must leave no staging or backup");
+
+        const index = await readFile(join(outputDir, "index.md"), "utf8");
+        assert.equal(index, "# First\n", "the previous project must stay readable after rollback");
+
+        await assert.rejects(
+            publishMarkdownProject(
+                outputDir,
+                {
+                    indexMarkdown: "# Third\n",
+                    chapters: [{ path: "index.md", markdown: "# Clobber" }],
+                    assets: [],
+                },
+                "{}",
+            ),
+            /project path collides with another project path/,
+        );
+        assert.deepEqual(await collectTree(outputDir), before, "a rejected layout must not touch the published project");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("concurrent publishes to one directory serialize and the last project wins", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-concurrent-"));
+    const outputDir = join(workdir, "site");
+    const second: PublishableProject = {
+        indexMarkdown: "# Second\n",
+        chapters: [{ path: "chapters/two.md", markdown: "# Two\n" }],
+        assets: [{ path: "assets/b.bin", bytes: new Uint8Array([4, 5]) }],
+    };
+    try {
+        const [first, latest] = await Promise.all([
+            publishMarkdownProject(outputDir, stableProject, "{\"version\":1}"),
+            publishMarkdownProject(outputDir, second, "{\"version\":2}"),
+        ]);
+        assert.equal(first.outputDir, outputDir);
+        assert.equal(latest.outputDir, outputDir);
+
+        assert.equal(await readFile(join(outputDir, "index.md"), "utf8"), "# Second\n");
+        assert.equal(await readFile(join(outputDir, "chapters", "two.md"), "utf8"), "# Two\n");
+        await assert.rejects(readFile(join(outputDir, "chapters", "one.md"), "utf8"), { code: "ENOENT" });
+        assert.equal(await readFile(join(outputDir, "panduck.report.json"), "utf8"), "{\"version\":2}");
+        assert.deepEqual(await readdir(workdir), ["site"], "serialized publishes must leave no staging or backup");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("a live publish lock yields a conflict diagnostic and keeps the project readable", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-lock-"));
+    const outputDir = join(workdir, "site");
+    const lockPath = join(workdir, ".site.lock");
+    try {
+        await publishMarkdownProject(outputDir, stableProject, "{\"version\":1}");
+        const before = await collectTree(outputDir);
+        await writeFile(lockPath, JSON.stringify({ pid: process.pid, started_at: Date.now() }), "utf8");
+
+        await assert.rejects(
+            publishMarkdownProject(
+                outputDir,
+                { indexMarkdown: "# Second\n", chapters: [], assets: [] },
+                "{\"version\":2}",
+            ),
+            (error: unknown) =>
+                error instanceof PublishConflictError &&
+                /locked by another publisher/.test(error.message),
+        );
+        assert.deepEqual(await collectTree(outputDir), before, "the lock holder's project must stay untouched");
+        assert.deepEqual(
+            await readdir(workdir).then((entries) => entries.sort()),
+            [".site.lock", "site"],
+            "a conflict must not create staging or backup directories",
+        );
+
+        const docx = storedZip([
+            { path: "word/document.xml", payload: imageDocumentXml },
+            { path: "word/_rels/document.xml.rels", payload: imageRelsXml },
+            { path: "word/media/logo.png", payload: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a]) },
+        ]);
+        const converter = new Converter();
+        const result = await converter.toMarkdown(
+            docx,
+            defineConversion({
+                id: "publish-lock-check",
+                input: { format: "docx", label: "image.docx" },
+                output: { format: "markdown" },
+                publish: { kind: "markdown-project", directory: outputDir },
+            }),
+        );
+        assert.equal(result.status, "failed");
+        const conflict = result.diagnostics.find((diagnostic) => diagnostic.code === "panduck.publish.conflict");
+        assert.ok(conflict, "the CLI surface must report the publish conflict code");
+        assert.equal(conflict.severity, "error");
+        assert.deepEqual(await collectTree(outputDir), before, "the diagnostic path must not touch the published project");
+
+        await rm(lockPath, { force: true });
+        const republished = await publishMarkdownProject(outputDir, stableProject, "{\"version\":1}");
+        assert.equal(republished.outputDir, outputDir);
+        assert.deepEqual(await readdir(workdir), ["site"], "the lock must be released after the publish");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("a lock left by a dead publisher is reclaimed", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-publish-stale-lock-"));
+    const outputDir = join(workdir, "site");
+    const lockPath = join(workdir, ".site.lock");
+    try {
+        const dead = spawnSync(process.execPath, ["-e", ""], { stdio: "ignore" });
+        assert.equal(typeof dead.pid, "number", "the probe process must report its pid");
+        await writeFile(lockPath, JSON.stringify({ pid: dead.pid, started_at: Date.now() }), "utf8");
+
+        const published = await publishMarkdownProject(outputDir, stableProject, "{\"version\":1}");
+        assert.equal(published.outputDir, outputDir);
+        assert.equal(await readFile(join(outputDir, "index.md"), "utf8"), "# First\n");
+        assert.deepEqual(await readdir(workdir), ["site"], "the stale lock must be replaced and released");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+

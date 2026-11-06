@@ -8,7 +8,7 @@ import { PANDUCK_DIAGNOSTIC_CODES } from "../diagnostic-codes.js";
 import { createDiagnostic, textArg, u64Arg } from "../diagnostic.js";
 import type { DiagnosticRecord } from "../diagnostic.js";
 import { convertInMemory, exportProjectInMemory, type StageOutcome, type ProjectOutcome } from "../primitives.js";
-import { publishMarkdownProject as materializeMarkdownProject } from "../publish-project.js";
+import { publishMarkdownProject as materializeMarkdownProject, PublishConflictError } from "../publish-project.js";
 import { buildProjectReportJson } from "../native-report.js";
 import { ExitCode } from "./exit-codes.js";
 import { containerBudgetsJson } from "./options.js";
@@ -676,6 +676,7 @@ export async function runMarkdownProjectPipeline(input: {
         await materializeMarkdownProject(outputDir, outcome, nativeReportJson);
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
+        const conflict = error instanceof PublishConflictError;
         return blocked(
             ctx,
             "convert",
@@ -685,7 +686,9 @@ export async function runMarkdownProjectPipeline(input: {
             `failed to publish markdown project to ${outputDir}: ${message}`,
             [
                 createDiagnostic({
-                    code: PANDUCK_DIAGNOSTIC_CODES.publishFailed,
+                    code: conflict
+                        ? PANDUCK_DIAGNOSTIC_CODES.publishConflict
+                        : PANDUCK_DIAGNOSTIC_CODES.publishFailed,
                     component: "convert",
                     severity: "error",
                     fallback: `failed to publish markdown project to ${outputDir}: ${message}`,

@@ -30,7 +30,7 @@ import {
 } from "./diagnostic.js";
 import type { DiagnosticRecord, LossRecord } from "./diagnostic.js";
 import { convertInMemory, exportProjectInMemory } from "./primitives.js";
-import { publishMarkdownProject as materializeMarkdownProject } from "./publish-project.js";
+import { publishMarkdownProject as materializeMarkdownProject, PublishConflictError } from "./publish-project.js";
 import { buildConvertReportJson, buildProjectReportJson, type ReportStatusValue } from "./native-report.js";
 
 export type { DiagnosticRecord, DiagnosticSeverity, LossRecord } from "./diagnostic.js";
@@ -305,8 +305,11 @@ export class Converter {
             };
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
+            const conflict = error instanceof PublishConflictError;
             diagnostics.push(createDiagnostic({
-                code: PANDUCK_DIAGNOSTIC_CODES.publishFailed,
+                code: conflict
+                    ? PANDUCK_DIAGNOSTIC_CODES.publishConflict
+                    : PANDUCK_DIAGNOSTIC_CODES.publishFailed,
                 fallback: `Failed to publish Markdown project to ${outputDir}: ${message}`,
                 component: "convert",
                 severity: "error",

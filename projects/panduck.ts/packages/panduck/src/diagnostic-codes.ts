@@ -39,6 +39,7 @@ export const PANDUCK_DIAGNOSTIC_CODES = {
 
     // Output stage: publish and size guards.
     publishFailed: "panduck.convert.publish-failed",
+    publishConflict: "panduck.publish.conflict",
     unsupportedPublishKind: "panduck.convert.unsupported-publish-kind",
     exportSizeExceeded: "panduck.export.size-exceeded",
 
