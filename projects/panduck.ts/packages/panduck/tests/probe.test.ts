@@ -134,3 +134,46 @@ test("pandoc-json keeps typed metadata across import and export without silent l
         "text, bool, list and map metadata must export without a numeric loss",
     );
 });
+
+test("pandoc-json keeps quote paragraphs as child blocks across a roundtrip", () => {
+    const binding = loadPanduckNode();
+    const source = JSON.stringify({
+        "pandoc-api-version": [1, 23, 1],
+        meta: {},
+        blocks: [
+            {
+                t: "BlockQuote",
+                c: [{ t: "Para", c: [{ t: "Str", c: "quoted" }, { t: "Space" }, { t: "Str", c: "text" }] }],
+            },
+            { t: "Para", c: [{ t: "Str", c: "after" }] },
+        ],
+    });
+
+    const imported = binding.importDocument?.("pandoc-json", "quote.json", Buffer.from(source));
+    assert.ok(imported?.success, imported?.diagnosticsJson);
+    const graphJson = imported?.graphJson;
+    assert.ok(graphJson, "a wired reader must return the serialized graph");
+
+    const graph = JSON.parse(graphJson) as {
+        blocks: Array<{ id: number; block: Record<string, unknown> }>;
+    };
+    const quoteNode = graph.blocks.find((node) => "Quote" in node.block);
+    assert.ok(quoteNode, "the block quote must survive import");
+    const quote = quoteNode.block.Quote as { children: number[]; content?: unknown };
+    assert.equal(quote.content, undefined, "the quote must no longer carry inline content");
+    assert.equal(quote.children.length, 1, "the quote paragraph must become one child block");
+    const paragraph = graph.blocks.find((node) => node.id === quote.children[0]);
+    assert.ok(paragraph && "Paragraph" in paragraph.block, "the quote child must be a paragraph block");
+
+    const exported = binding.exportDocument?.("pandoc-json", graphJson);
+    assert.ok(exported?.success, exported?.diagnosticsJson);
+    const document = JSON.parse(exported?.text ?? "null") as {
+        blocks: Array<{ t: string; c: Array<{ t: string; c: Array<{ t: string; c: unknown }> }> }>;
+    };
+    assert.equal(document.blocks[0].t, "BlockQuote");
+    assert.equal(document.blocks[0].c.length, 1, "the exported quote must hold exactly its paragraph");
+    assert.equal(document.blocks[0].c[0].t, "Para");
+    const inlines = JSON.stringify(document.blocks[0].c[0].c);
+    assert.match(inlines, /quoted/);
+    assert.match(inlines, /text/);
+});
