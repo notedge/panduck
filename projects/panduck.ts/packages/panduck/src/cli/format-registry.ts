@@ -95,6 +95,7 @@ export function baseFormatRegistry(): FormatRecord[] {
         textFormat("org", "partial", "partial", ["headline", "paragraph"], ["drawer", "babel"]),
         textFormat("rst", "partial", "partial", ["paragraph", "directive"], ["table"]),
         textFormat("tex", "partial", "partial", ["paragraph", "command"], ["environment"]),
+        textFormat("typst", "partial", "planned", ["paragraph", "heading", "code_block"], ["math", "table", "environment"]),
         textFormat("html", "planned", "planned", ["paragraph", "heading"], ["script", "style"]),
         containerFormat(
             "docx",

@@ -13,6 +13,26 @@ test("formats emits markdown capability json", () => {
     assert.match(formats.stdout, /"conversions":/);
 });
 
+test("formats lists only conversions whose source and target can do their direction", () => {
+    const formats = runPanduck(["formats", "--json"]);
+    assert.equal(formats.code, 0, formats.stderr);
+    const payload = JSON.parse(formats.stdout) as {
+        formats: Array<{ format: string; writer: { state: string } }>;
+        conversions: string[];
+    };
+
+    assert.equal(payload.conversions.includes("xlsx:html"), false, "a render-only workbook must not advertise export");
+    assert.equal(payload.conversions.includes("pptx:markdown"), false, "a render-only deck must not advertise export");
+    assert.ok(payload.conversions.includes("doc:html"), "the legacy doc reader is a listed source");
+    assert.ok(payload.conversions.includes("typst:html"), "typst keeps its registered HTML target");
+
+    assert.equal(
+        payload.formats.some((record) => record.format === "xlsx"),
+        false,
+        "render-only office formats stay outside the conversion registry",
+    );
+});
+
 test("plan accepts the markdown to epub pipeline", () => {
     const plan = runPanduck(["plan", "package.json", "--from", "markdown", "--to", "epub", "--json"]);
     assert.equal(plan.code, 0, plan.stderr);
