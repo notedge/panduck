@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { Converter } from "../src/converter.js";
 import { defineConversion } from "../src/conversion-plan.js";
+import { imageDocumentXml, imageRelsXml } from "./fixtures/docx-xml.js";
 import { runPanduck } from "./helpers/cli.js";
 import { storedZip } from "./helpers/stored-zip.js";
 
@@ -362,6 +363,68 @@ test("pdf project route republishes extracted text with the same losses as the p
         assert.notEqual(reopened.status, "failed");
         assert.match(reopened.text, /# Report/);
         assert.match(reopened.text, /Hello PDF paragraph\./);
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("docx project route materializes the embedded image, matches the plain losses and reopens", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-project-docx-"));
+    const outputDir = join(workdir, "document");
+    const logoBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x00, 0x01, 0x02]);
+    const makeDocx = () =>
+        storedZip([
+            { path: "word/document.xml", payload: imageDocumentXml },
+            { path: "word/_rels/document.xml.rels", payload: imageRelsXml },
+            { path: "word/media/logo.png", payload: logoBytes },
+        ]);
+    try {
+        const converter = new Converter();
+        const projectPlan = defineConversion({
+            id: "docx-project-check",
+            input: { format: "docx", label: "image.docx" },
+            output: { format: "markdown" },
+            publish: { kind: "markdown-project", directory: outputDir },
+        });
+        const plainPlan = defineConversion({
+            id: "docx-project-plain",
+            input: { format: "docx", label: "image.docx" },
+            output: { format: "markdown" },
+        });
+
+        const project = await converter.toMarkdown(makeDocx(), projectPlan);
+        const plain = await converter.toMarkdown(makeDocx(), plainPlan);
+        assert.notEqual(project.status, "failed", JSON.stringify(project.diagnostics));
+        assert.equal(project.publishPath, outputDir);
+
+        const index = await readFile(join(outputDir, "index.md"), "utf8");
+        const assetRef = index.match(/!\[Logo\]\(assets\/([0-9a-f]{16}\.png)\)/);
+        assert.ok(assetRef, `the embedded image must become a content-addressed asset: ${index}`);
+        assert.deepEqual(await readFile(join(outputDir, "assets", assetRef[1])), logoBytes);
+        assert.doesNotMatch(index, /word\/media\/logo\.png/, "the package path must be rewritten");
+
+        const projectReport = JSON.parse(project.reportJson);
+        const plainReport = JSON.parse(plain.reportJson);
+        assert.equal(projectReport.pipeline.writer, "markdown-project");
+        assert.deepEqual(projectReport.unresolved_assets, [], "a materialized image is not an unresolved asset");
+        const projectLosses = (projectReport.losses as Array<{ code: string }>).map((loss) => loss.code).sort();
+        const plainLosses = (plainReport.losses as Array<{ code: string }>).map((loss) => loss.code).sort();
+        assert.deepEqual(projectLosses, plainLosses, "the project report must declare the same DOCX import losses");
+        assert.deepEqual(projectReport.coverage, plainReport.coverage);
+        const assetOutput = projectReport.outputs.find((output: { path?: string }) => output.path === "assets/");
+        assert.equal(assetOutput?.published_asset_count, 1);
+
+        const reopened = await converter.toMarkdown(
+            index,
+            defineConversion({
+                id: "docx-project-reopen",
+                input: { format: "markdown", label: "index.md" },
+                output: { format: "markdown" },
+            }),
+        );
+        assert.notEqual(reopened.status, "failed");
+        assert.match(reopened.text, /!\[Logo\]\(assets\/[0-9a-f]{16}\.png\)/, "the asset reference must survive reopen");
+        assert.doesNotMatch(reopened.text, /word\/media\/logo\.png/);
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }
