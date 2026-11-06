@@ -19,6 +19,7 @@
 import { resolve } from "node:path";
 
 import { loadPanduckNode } from "./node/load.js";
+import { PANDUCK_DIAGNOSTIC_CODES } from "./diagnostic-codes.js";
 import type { ConversionPlan } from "./conversion-plan.js";
 import { serializeConversionPlan } from "./conversion-plan.js";
 import {
@@ -149,7 +150,7 @@ export class Converter {
         if (!isExecutablePublishKind(plan.publish.kind)) {
             const publishKind = String(plan.publish.kind);
             diagnostics.push(createDiagnostic({
-                code: "panduck.convert.unsupported-publish-kind",
+                code: PANDUCK_DIAGNOSTIC_CODES.unsupportedPublishKind,
                 fallback: `ConversionPlan "${plan.id}" declares unsupported publish.kind ${JSON.stringify(publishKind)} — v0 executes only "none" and "markdown-project"`,
                 messageKey: "panduck.diagnostic.unsupportedPublishKind",
                 component: "convert",
@@ -165,7 +166,7 @@ export class Converter {
 
         if (bytes.length === 0) {
             diagnostics.push(createDiagnostic({
-                code: "panduck.convert.empty-input",
+                code: PANDUCK_DIAGNOSTIC_CODES.emptyInput,
                 fallback: `Empty input for ${label}`,
                 messageKey: "panduck.diagnostic.emptyInput",
                 component: "convert",
@@ -179,7 +180,7 @@ export class Converter {
         // (1) 序列化 ConversionPlan 的 transforms → Rust plan descriptor。
         const handlersJson = serializeConversionPlan(plan);
         diagnostics.push(createDiagnostic({
-            code: "panduck.convert.conversion-plan-active",
+            code: PANDUCK_DIAGNOSTIC_CODES.conversionPlanActive,
             fallback: `ConversionPlan "${plan.id}": ${from} → ${plan.output.format} (${plan.transforms.length} transform${plan.transforms.length === 1 ? "" : "s"}, publish: ${plan.publish.kind})`,
             component: "convert",
             severity: "info",
@@ -264,7 +265,7 @@ export class Converter {
         if (nativePanic !== undefined || !outcome) {
             const message = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
             diagnostics.push(createDiagnostic({
-                code: "panduck.convert.native-panic",
+                code: PANDUCK_DIAGNOSTIC_CODES.nativePanic,
                 fallback: `Panduck native binary panicked while publishing ${label}: ${message}`,
                 component: "convert",
                 severity: "error",
@@ -305,7 +306,7 @@ export class Converter {
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             diagnostics.push(createDiagnostic({
-                code: "panduck.convert.publish-failed",
+                code: PANDUCK_DIAGNOSTIC_CODES.publishFailed,
                 fallback: `Failed to publish Markdown project to ${outputDir}: ${message}`,
                 component: "convert",
                 severity: "error",
@@ -356,7 +357,7 @@ export class Converter {
         if (nativePanic !== undefined || !outcome) {
             const message = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
             diagnostics.push(createDiagnostic({
-                code: "panduck.convert.native-panic",
+                code: PANDUCK_DIAGNOSTIC_CODES.nativePanic,
                 fallback: `Panduck native binary panicked for ${label}: ${message}`,
                 component: "convert",
                 severity: "error",
@@ -417,7 +418,7 @@ function reportNonExecutableHandlers(
     for (const transform of plan.transforms) {
         if (transform.pass === undefined) continue;
         diagnostics.push(createDiagnostic({
-            code: "panduck.transform.non-executable-handler",
+            code: PANDUCK_DIAGNOSTIC_CODES.transformNonExecutableHandler,
             fallback: `Transform "${transform.name}" declares a \`pass\` handler that cannot cross the N-API boundary and was not executed`,
             messageKey: "panduck.diagnostic.nonExecutableHandler",
             component: "transform",
@@ -469,7 +470,7 @@ function reportRustLoss(
 ): void {
     if (losses.length === 0) return;
     diagnostics.push(createDiagnostic({
-        code: "panduck.convert.rust-loss",
+        code: PANDUCK_DIAGNOSTIC_CODES.rustLoss,
         fallback: `Rust reported ${losses.length} known structural loss(es) for ${label}`,
         component: "convert",
         severity: "warning",

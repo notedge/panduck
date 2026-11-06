@@ -1,5 +1,7 @@
 import { extname, resolve } from "node:path";
 
+import { PANDUCK_DIAGNOSTIC_CODES } from "../diagnostic-codes.js";
+
 const EXTENSION_HINTS: Record<string, string[]> = {
     ".md": ["markdown"],
     ".markdown": ["markdown"],
@@ -43,7 +45,7 @@ export function inputReadFailureReason(path: string): string {
 }
 
 /** Stable diagnostic code for a rejected remote URI input. */
-export const REMOTE_INPUT_DIAGNOSTIC = "panduck.input.remote-fetch-disabled";
+export const REMOTE_INPUT_DIAGNOSTIC = PANDUCK_DIAGNOSTIC_CODES.remoteFetchDisabled;
 
 export function isStdoutPath(path: string | undefined): boolean {
     return path === "-";

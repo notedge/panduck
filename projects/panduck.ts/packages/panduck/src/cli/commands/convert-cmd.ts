@@ -12,6 +12,7 @@ import {
     validateConversionPaths,
 } from "../context.js";
 import { createDiagnostic } from "../../diagnostic.js";
+import { PANDUCK_DIAGNOSTIC_CODES } from "../../diagnostic-codes.js";
 import { emitJson, emitReport, writeReportFile } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { findFormat, isOperationReady } from "../format-registry.js";
@@ -445,7 +446,7 @@ async function convertSingleFile(input: {
                 },
                 diagnostics: [
                     createDiagnostic({
-                        code: "panduck.convert.not_implemented",
+                        code: PANDUCK_DIAGNOSTIC_CODES.notImplemented,
                         component: "convert",
                         severity: "error",
                         fallback: "conversion pipeline is not wired yet",
@@ -498,7 +499,7 @@ async function runBatchConvert(input: {
                 pipeline: { blocked_reason: reason },
                 diagnostics: [
                     createDiagnostic({
-                        code: "panduck.cli.blocked",
+                        code: PANDUCK_DIAGNOSTIC_CODES.cliBlocked,
                         component: "cli",
                         severity: "error",
                         fallback: reason,
@@ -536,7 +537,7 @@ async function runBatchConvert(input: {
                     pipeline: { blocked_reason: `two batch inputs map to the same output: ${plan.outputPath}` },
                     diagnostics: [
                         createDiagnostic({
-                            code: "panduck.cli.blocked",
+                            code: PANDUCK_DIAGNOSTIC_CODES.cliBlocked,
                             component: "cli",
                             severity: "error",
                             fallback: `two batch inputs map to the same output: ${plan.outputPath}`,

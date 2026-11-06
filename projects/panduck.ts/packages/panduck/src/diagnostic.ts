@@ -7,6 +7,8 @@
  * `message_key` / top-level `args` / top-level `fallback` aliases exist.
  */
 
+import { PANDUCK_DIAGNOSTIC_CODES } from "./diagnostic-codes.js";
+
 export type DiagnosticSeverity = "bug" | "error" | "warning" | "info" | "hint";
 
 export type DiagnosticMessageArg = Record<string, unknown>;
@@ -182,7 +184,7 @@ export function parseDiagnosticEnvelope(envelopeJson: string, context: ReportPar
     } catch (error) {
         return {
             diagnostics: [
-                reportError(context, "panduck.convert.report-corrupt", "Failed to parse Rust diagnostic envelope", {
+                reportError(context, PANDUCK_DIAGNOSTIC_CODES.reportCorrupt, "Failed to parse Rust diagnostic envelope", {
                     error: error instanceof Error ? error.message : String(error),
                 }),
             ],
@@ -193,7 +195,7 @@ export function parseDiagnosticEnvelope(envelopeJson: string, context: ReportPar
     if (!isRecord(parsed) || !Array.isArray(parsed.diagnostics)) {
         return {
             diagnostics: [
-                reportError(context, "panduck.convert.report-missing", "Rust diagnostic envelope is missing"),
+                reportError(context, PANDUCK_DIAGNOSTIC_CODES.reportMissing, "Rust diagnostic envelope is missing"),
             ],
             truncated: false,
             dropped: 0,
@@ -211,7 +213,7 @@ export function parseLossArrayJson(lossesJson: string, context: ReportParseConte
         return {
             losses: [],
             diagnostics: [
-                reportError(context, "panduck.convert.report-corrupt", "Failed to parse Rust loss JSON", {
+                reportError(context, PANDUCK_DIAGNOSTIC_CODES.reportCorrupt, "Failed to parse Rust loss JSON", {
                     error: error instanceof Error ? error.message : String(error),
                 }),
             ],
@@ -235,7 +237,7 @@ export function parseReportEnvelope(reportJson: string, context: ReportParseCont
     } catch (error) {
         return {
             diagnostics: [
-                reportError(context, "panduck.convert.report-corrupt", "Failed to parse Rust report JSON", {
+                reportError(context, PANDUCK_DIAGNOSTIC_CODES.reportCorrupt, "Failed to parse Rust report JSON", {
                     error: error instanceof Error ? error.message : String(error),
                 }),
             ],
@@ -248,7 +250,7 @@ export function parseReportEnvelope(reportJson: string, context: ReportParseCont
     if (!isRecord(parsed)) {
         return {
             diagnostics: [
-                reportError(context, "panduck.convert.report-corrupt", "Rust report JSON must be an object"),
+                reportError(context, PANDUCK_DIAGNOSTIC_CODES.reportCorrupt, "Rust report JSON must be an object"),
             ],
             losses: [],
             truncated: false,
@@ -262,7 +264,7 @@ export function parseReportEnvelope(reportJson: string, context: ReportParseCont
             diagnostics: [
                 reportError(
                     context,
-                    "panduck.convert.report-missing",
+                    PANDUCK_DIAGNOSTIC_CODES.reportMissing,
                     "Rust report is missing the boost diagnostic envelope",
                 ),
             ],
@@ -292,7 +294,7 @@ function parseEnvelopeRecord(envelope: Record<string, unknown>, context: ReportP
             diagnostics.push(
                 reportError(
                     context,
-                    "panduck.convert.report-corrupt",
+                    PANDUCK_DIAGNOSTIC_CODES.reportCorrupt,
                     "Rust diagnostic entry does not match the boost diagnostic shape",
                     { index: index.toString() },
                 ),
@@ -318,7 +320,7 @@ function parseLossArray(raw: unknown, context: ReportParseContext): ParsedLosses
             diagnostics.push(
                 reportError(
                     context,
-                    "panduck.convert.report-corrupt",
+                    PANDUCK_DIAGNOSTIC_CODES.reportCorrupt,
                     "Rust loss entry does not match the notedown loss marker shape",
                 ),
             );

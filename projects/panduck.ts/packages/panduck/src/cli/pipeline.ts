@@ -4,6 +4,7 @@ import { basename, dirname, join } from "node:path";
 import { randomBytes } from "node:crypto";
 
 import type { PanduckBindings } from "../types.js";
+import { PANDUCK_DIAGNOSTIC_CODES } from "../diagnostic-codes.js";
 import { createDiagnostic, textArg, u64Arg } from "../diagnostic.js";
 import type { DiagnosticRecord } from "../diagnostic.js";
 import { convertInMemory, exportProjectInMemory, type StageOutcome, type ProjectOutcome } from "../primitives.js";
@@ -88,7 +89,7 @@ function isWriterUnsupported(diagnostics: readonly DiagnosticRecord[], targetFor
 
 function exportCeilingDiagnostic(observed: number): DiagnosticRecord {
     return createDiagnostic({
-        code: "panduck.export.size-exceeded",
+        code: PANDUCK_DIAGNOSTIC_CODES.exportSizeExceeded,
         component: "export",
         severity: "error",
         fallback: `exported payload exceeds the hard ceiling: observed ${observed} bytes, ceiling ${EXPORT_BYTES_CEILING}`,
@@ -106,7 +107,7 @@ export function exportCeilingStop(observed: number): DiagnosticRecord | null {
 
 function deadlineDiagnostic(observedMs: number): DiagnosticRecord {
     return createDiagnostic({
-        code: "panduck.convert.deadline-exceeded",
+        code: PANDUCK_DIAGNOSTIC_CODES.deadlineExceeded,
         component: "convert",
         severity: "error",
         fallback: `conversion exceeded the hard deadline: observed ${observedMs} ms, limit ${CONVERSION_DEADLINE_MS} ms`,
@@ -124,7 +125,7 @@ export function deadlineStop(observedMs: number): DiagnosticRecord | null {
 
 function budgetDiagnostic(key: string, limit: number, observed: number): DiagnosticRecord {
     return createDiagnostic({
-        code: "panduck.budget.exhausted",
+        code: PANDUCK_DIAGNOSTIC_CODES.budgetExhausted,
         component: "budgets",
         severity: "error",
         fallback: `${key} budget exceeded: observed ${observed} bytes, limit ${limit}`,
@@ -342,7 +343,7 @@ export async function runConversionPipeline(input: {
         const message = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
         return blocked(ctx, operation, inputPath, resolved, shared, "native conversion failed with exit code 1", [
             createDiagnostic({
-                code: "panduck.convert.native-panic",
+                code: PANDUCK_DIAGNOSTIC_CODES.nativePanic,
                 component: "convert",
                 severity: "error",
                 fallback: `Panduck native binary panicked while converting ${label}: ${message}`,
@@ -470,7 +471,7 @@ function inputReadError(
     const notReadable = errno === "ENOENT" || errno === "EACCES" || errno === "EPERM" || errno === "EISDIR";
     return {
         diagnostic: createDiagnostic({
-            code: notReadable ? "panduck.read.not-readable" : "panduck.read.io-failed",
+            code: notReadable ? PANDUCK_DIAGNOSTIC_CODES.readNotReadable : PANDUCK_DIAGNOSTIC_CODES.readIoFailed,
             component: "read",
             severity: "error",
             fallback: notReadable ? "input is not readable" : "input could not be read",
@@ -519,7 +520,7 @@ function blocked(
             diagnostics && diagnostics.length > 0
                 ? diagnostics
                 : [createDiagnostic({
-                    code: "panduck.cli.blocked",
+                    code: PANDUCK_DIAGNOSTIC_CODES.cliBlocked,
                     component: "cli",
                     severity: "error",
                     fallback: reason,
@@ -623,7 +624,7 @@ export async function runMarkdownProjectPipeline(input: {
         const message = nativePanic instanceof Error ? nativePanic.message : String(nativePanic);
         return blocked(ctx, "convert", inputPath, resolved, shared, "native markdown project conversion failed with exit code 1", [
             createDiagnostic({
-                code: "panduck.convert.native-panic",
+                code: PANDUCK_DIAGNOSTIC_CODES.nativePanic,
                 component: "convert",
                 severity: "error",
                 fallback: `Panduck native binary panicked while publishing ${label}: ${message}`,
@@ -682,7 +683,7 @@ export async function runMarkdownProjectPipeline(input: {
             `failed to publish markdown project to ${outputDir}: ${message}`,
             [
                 createDiagnostic({
-                    code: "panduck.convert.publish-failed",
+                    code: PANDUCK_DIAGNOSTIC_CODES.publishFailed,
                     component: "convert",
                     severity: "error",
                     fallback: `failed to publish markdown project to ${outputDir}: ${message}`,

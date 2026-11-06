@@ -2,6 +2,7 @@ import { access } from "node:fs/promises";
 import { constants } from "node:fs";
 
 import type { PanduckBindings } from "../types.js";
+import { PANDUCK_DIAGNOSTIC_CODES } from "../diagnostic-codes.js";
 import { createDiagnostic } from "../diagnostic.js";
 import type { DiagnosticRecord } from "../diagnostic.js";
 import { loadPanduckNode } from "../node/load.js";
@@ -90,7 +91,7 @@ export function buildBlockedReport(
         diagnostics: diagnostics && diagnostics.length > 0
             ? diagnostics
             : [createDiagnostic({
-                code: "panduck.cli.blocked",
+                code: PANDUCK_DIAGNOSTIC_CODES.cliBlocked,
                 component: "cli",
                 severity: "error",
                 fallback: reason,

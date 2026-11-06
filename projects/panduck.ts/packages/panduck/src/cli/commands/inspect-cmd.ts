@@ -9,6 +9,7 @@ import {
     resolveFormats,
 } from "../context.js";
 import { createDiagnostic, parseDiagnosticEnvelope, textArg } from "../../diagnostic.js";
+import { PANDUCK_DIAGNOSTIC_CODES } from "../../diagnostic-codes.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { CliOptionError, parseInspectStage, readSharedOptions, readString } from "../options.js";
@@ -245,7 +246,7 @@ async function runInspect(options: ParsedOptions): Promise<number> {
                     ? []
                     : [
                           createDiagnostic({
-                              code: "panduck.inspect.not_implemented",
+                              code: PANDUCK_DIAGNOSTIC_CODES.inspectNotImplemented,
                               component: "inspect",
                               severity: "warning",
                               fallback: `inspect stage ${stage} is not implemented yet`,

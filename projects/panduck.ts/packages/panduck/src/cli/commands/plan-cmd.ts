@@ -8,6 +8,7 @@ import {
     validateIoPaths,
 } from "../context.js";
 import { createDiagnostic, textArg } from "../../diagnostic.js";
+import { PANDUCK_DIAGNOSTIC_CODES } from "../../diagnostic-codes.js";
 import {
     inputReadFailureReason,
     isRemoteUri,
@@ -140,7 +141,7 @@ async function runPlan(options: ParsedOptions): Promise<number> {
                     coverage: target.coverage,
                     diagnostics: [
                         createDiagnostic({
-                            code: "panduck.reader.not_ready",
+                            code: PANDUCK_DIAGNOSTIC_CODES.readerNotReady,
                             component: "plan",
                             severity: "error",
                             fallback: `source format ${source.format} is not ready for read`,
@@ -170,7 +171,7 @@ async function runPlan(options: ParsedOptions): Promise<number> {
                     coverage: target.coverage,
                     diagnostics: [
                         createDiagnostic({
-                            code: "panduck.writer.not_ready",
+                            code: PANDUCK_DIAGNOSTIC_CODES.writerNotReady,
                             component: "plan",
                             severity: "error",
                             fallback: `target format ${target.format} is not ready for write`,

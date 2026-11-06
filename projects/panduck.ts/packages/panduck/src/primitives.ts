@@ -12,6 +12,7 @@ import {
     type DiagnosticRecord,
     type LossRecord,
 } from "./diagnostic.js";
+import { PANDUCK_DIAGNOSTIC_CODES } from "./diagnostic-codes.js";
 import { buildConvertReportJson } from "./native-report.js";
 import type { PanduckBindings } from "./types.js";
 
@@ -72,7 +73,7 @@ export type ProjectOutcome = {
     unresolvedAssets: string[];
 };
 
-const MISSING_BINDINGS_CODE = "panduck.convert.binding-missing";
+const MISSING_BINDINGS_CODE = PANDUCK_DIAGNOSTIC_CODES.bindingMissing;
 
 /** Run import, transform and export in memory. */
 export function convertInMemory(bindings: PanduckBindings, input: ConversionStageInput): StageOutcome {

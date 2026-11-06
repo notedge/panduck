@@ -7,6 +7,7 @@ import {
     resolveFormats,
 } from "../context.js";
 import { createDiagnostic } from "../../diagnostic.js";
+import { PANDUCK_DIAGNOSTIC_CODES } from "../../diagnostic-codes.js";
 import {
     inputReadFailureReason,
     isRemoteUri,
@@ -161,7 +162,7 @@ async function runCheck(options: ParsedOptions): Promise<number> {
             coverage: source?.coverage ?? target?.coverage,
             diagnostics: [
                 createDiagnostic({
-                    code: "panduck.check.partial",
+                    code: PANDUCK_DIAGNOSTIC_CODES.checkPartial,
                     component: "check",
                     severity: "warning",
                     fallback: routeReady
