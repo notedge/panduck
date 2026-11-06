@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { Converter } from "../src/converter.js";
 import { defineConversion } from "../src/conversion-plan.js";
+import { runPanduck } from "./helpers/cli.js";
 import { storedZip } from "./helpers/stored-zip.js";
 
 const containerXml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -188,6 +190,116 @@ test("html project keeps unresolved image sources and matches the plain conversi
         const projectLosses = (projectReport.losses as Array<{ code: string }>).map((loss) => loss.code).sort();
         const plainLosses = (plainReport.losses as Array<{ code: string }>).map((loss) => loss.code).sort();
         assert.deepEqual(projectLosses, plainLosses, "the project report must declare the same IR losses");
+        assert.deepEqual(projectReport.coverage, plainReport.coverage);
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+const legacyDocPath = join(
+    dirname(fileURLToPath(import.meta.url)),
+    "../../panduck-fixtures/fixtures/acorn/doc/legacy_plain.doc",
+);
+
+test("doc project route publishes the readable text and declares its partial loss", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-project-doc-"));
+    const outputDir = join(workdir, "legacy");
+    const reportPath = join(workdir, "legacy.report.json");
+    try {
+        const published = runPanduck([
+            "convert",
+            legacyDocPath,
+            "--from",
+            "doc",
+            "--to",
+            "markdown-project",
+            "--output-dir",
+            outputDir,
+            "--report",
+            reportPath,
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(published.code, 0, published.stderr);
+
+        const index = await readFile(join(outputDir, "index.md"), "utf8");
+        assert.match(index, /Hello legacy DOC/);
+        assert.match(index, /Second paragraph/);
+
+        const report = JSON.parse(await readFile(reportPath, "utf8"));
+        const lossCodes = (report.losses as Array<{ code: string }>).map((loss) => loss.code).sort();
+        assert.deepEqual(lossCodes, ["import.doc.partial_coverage"]);
+        assert.equal(report.status, "success_with_loss");
+        assert.ok(
+            (report.outputs as Array<{ path: string }>).every((output) => !output.path.includes("assets")),
+            "a DOC text project must not claim published assets",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("pdf project route republishes extracted text with the same losses as the plain route", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-project-pdf-"));
+    const outputDir = join(workdir, "report");
+    try {
+        const converter = new Converter();
+        const source = "# Report\n\nHello PDF paragraph.\n\n- one\n- two\n";
+        const sourcePath = join(workdir, "report.md");
+        const pdfPath = join(workdir, "report.pdf");
+        await writeFile(sourcePath, source, "utf8");
+        const published = runPanduck([
+            "convert",
+            sourcePath,
+            "--from",
+            "markdown",
+            "--to",
+            "pdf",
+            "-o",
+            pdfPath,
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(published.code, 0, published.stderr);
+        const pdfBytes = new Uint8Array(await readFile(pdfPath));
+
+        const project = await converter.toMarkdown(
+            pdfBytes,
+            defineConversion({
+                id: "pdf-project-check",
+                input: { format: "pdf", label: "report.pdf" },
+                output: { format: "markdown" },
+                publish: { kind: "markdown-project", directory: outputDir },
+            }),
+        );
+        const plain = await converter.toMarkdown(
+            pdfBytes,
+            defineConversion({
+                id: "pdf-project-plain",
+                input: { format: "pdf", label: "report.pdf" },
+                output: { format: "markdown" },
+            }),
+        );
+        assert.equal(project.status, "success_with_loss", JSON.stringify(project.diagnostics));
+
+        const index = await readFile(join(outputDir, "index.md"), "utf8");
+        assert.match(index, /# Report/);
+        assert.match(index, /Hello PDF paragraph\./);
+        assert.match(index, /- one\n- two/);
+
+        const projectReport = JSON.parse(project.reportJson);
+        const lossCodes = (projectReport.losses as Array<{ code: string }>).map((loss) => loss.code).sort();
+        assert.ok(
+            lossCodes.every((code) => code.startsWith("import.pdf.")),
+            `the PDF reimport must only declare PDF import losses: ${lossCodes.join(", ")}`,
+        );
+        assert.ok(lossCodes.includes("import.pdf.partial_coverage"));
+        const assetOutput = projectReport.outputs.find((output: { path?: string }) => output.path === "assets/");
+        assert.equal(assetOutput?.published_asset_count, 0);
+
+        const plainReport = JSON.parse(plain.reportJson);
+        const plainLosses = (plainReport.losses as Array<{ code: string }>).map((loss) => loss.code).sort();
+        assert.deepEqual(lossCodes, plainLosses, "the project report must declare the same PDF import losses");
         assert.deepEqual(projectReport.coverage, plainReport.coverage);
     } finally {
         await rm(workdir, { recursive: true, force: true });
