@@ -429,3 +429,72 @@ test("docx project route materializes the embedded image, matches the plain loss
         await rm(workdir, { recursive: true, force: true });
     }
 });
+
+/** A minimal PDF whose content stream paints text and one DCT JPEG XObject. */
+const imagePagePdf = Buffer.from(
+    "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /Resources << /XObject << /Im1 7 0 R >> >> /Contents 4 0 R >>\nendobj\n4 0 obj\n<< /Length 36 >>\nstream\nBT (Image page body.) Tj ET\n/Im1 Do\nendstream\nendobj\n7 0 obj\n<< /Subtype /Image /Filter /DCTDecode /Width 1 /Height 1 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Length 4 >>\nstream\n\xFF\xD8\xFF\xD9\nendstream\nendobj\n%%EOF",
+    "latin1",
+);
+
+const imagePageJpeg = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
+
+test("pdf project route materializes an image XObject and keeps text plus explicit partial loss", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-project-pdf-image-"));
+    const outputDir = join(workdir, "report");
+    try {
+        const converter = new Converter();
+        const project = await converter.toMarkdown(
+            imagePagePdf,
+            defineConversion({
+                id: "pdf-image-project-check",
+                input: { format: "pdf", label: "image-page.pdf" },
+                output: { format: "markdown" },
+                publish: { kind: "markdown-project", directory: outputDir },
+            }),
+        );
+        const plain = await converter.toMarkdown(
+            imagePagePdf,
+            defineConversion({
+                id: "pdf-image-project-plain",
+                input: { format: "pdf", label: "image-page.pdf" },
+                output: { format: "markdown" },
+            }),
+        );
+        assert.equal(project.status, "success_with_loss", JSON.stringify(project.diagnostics));
+
+        const index = await readFile(join(outputDir, "index.md"), "utf8");
+        assert.match(index, /Image page body\./);
+        const assetRef = index.match(/!\[\]\(assets\/([0-9a-f]{16}\.[a-z0-9]+)\)/);
+        assert.ok(assetRef, `the PDF image XObject must become a content-addressed asset: ${index}`);
+        assert.deepEqual(await readFile(join(outputDir, "assets", assetRef[1])), imagePageJpeg);
+
+        const projectReport = JSON.parse(project.reportJson);
+        const plainReport = JSON.parse(plain.reportJson);
+        const projectLosses = (projectReport.losses as Array<{ code: string }>).map((loss) => loss.code).sort();
+        const plainLosses = (plainReport.losses as Array<{ code: string }>).map((loss) => loss.code).sort();
+        assert.ok(
+            projectLosses.every((code) => code.startsWith("import.pdf.")),
+            `the PDF reimport must only declare PDF import losses: ${projectLosses.join(", ")}`,
+        );
+        assert.ok(projectLosses.includes("import.pdf.partial_coverage"));
+        assert.deepEqual(projectLosses, plainLosses, "the project report must declare the same PDF import losses");
+        assert.deepEqual(projectReport.coverage, plainReport.coverage);
+        assert.deepEqual(projectReport.unresolved_assets, []);
+        const assetOutput = projectReport.outputs.find((output: { path?: string }) => output.path === "assets/");
+        assert.equal(assetOutput?.published_asset_count, 1);
+
+        const reopened = await converter.toMarkdown(
+            index,
+            defineConversion({
+                id: "pdf-image-project-reopen",
+                input: { format: "markdown", label: "index.md" },
+                output: { format: "markdown" },
+            }),
+        );
+        assert.notEqual(reopened.status, "failed");
+        assert.match(reopened.text, /Image page body\./);
+        assert.match(reopened.text, /!\[\]\(assets\/[0-9a-f]{16}\.[a-z0-9]+\)/);
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
