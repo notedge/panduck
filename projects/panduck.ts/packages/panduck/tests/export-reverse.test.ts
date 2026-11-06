@@ -317,9 +317,13 @@ test("DOCX export round-trips structure and text with zero differences", async (
 test("writer-side unsupported constructs fail as writer failures", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-docx-unsupported-"));
     try {
-        const input = join(workdir, "named-footnote.md");
-        const output = join(workdir, "named-footnote.docx");
-        await writeFile(input, "# Notes\n\nBody[^note] only.\n\n[^note]: The note body.\n", "utf8");
+        const input = join(workdir, "deep-list.md");
+        const output = join(workdir, "deep-list.docx");
+        const lines = [];
+        for (let depth = 0; depth < 11; depth += 1) {
+            lines.push(`${"  ".repeat(depth)}- item ${depth}`);
+        }
+        await writeFile(input, `# Deep\n\n${lines.join("\n")}\n`, "utf8");
 
         const result = runPanduck([
             "convert",
