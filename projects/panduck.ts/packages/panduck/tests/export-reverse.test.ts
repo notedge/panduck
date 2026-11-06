@@ -110,8 +110,12 @@ document.title = "rendered";
     });
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", () => resolve()));
     const port = (server.address() as { port: number }).port;
-    const browser = await chromium.launch();
+    // Launching Chromium can throw when the runner has no browser installed.
+    // Keep it inside `try` so `finally` still closes the local server; a
+    // listening handle would otherwise keep the test process alive forever.
+    let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
     try {
+        browser = await chromium.launch();
         const page = await browser.newPage({ viewport: { width: 1000, height: 1400 } });
         await page.goto(`http://127.0.0.1:${port}/verify.html`);
         await page.waitForFunction(() => document.title === "rendered", null, { timeout: 30_000 });
@@ -123,7 +127,7 @@ document.title = "rendered";
         await page.locator("#page").screenshot({ path: pngPath });
         return { pngPath, ...metrics };
     } finally {
-        await browser.close();
+        await browser?.close();
         await new Promise<void>((resolve) => server.close(() => resolve()));
     }
 }

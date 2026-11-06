@@ -10,6 +10,9 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    # A hanging test must fail the job quickly instead of idling until the
+    # workflow's 6 hour maximum.
+    timeout-minutes: 30
     steps:
       - run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
@@ -22,6 +25,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
       - name: Install workspace dependencies
         run: pnpm install
+      - name: Install Playwright Chromium
+        run: pnpm --filter @notedge/panduck exec playwright install --with-deps chromium
       - name: Build native artifacts
         run: pnpm build:napi
       - name: Run the end-to-end suite
