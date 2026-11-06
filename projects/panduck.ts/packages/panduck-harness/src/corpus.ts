@@ -24,6 +24,12 @@ export function loadConversionCases(): readonly CaseDefinition[] {
     return loaded.cases;
 }
 
+/** Corpus grammars deliberately outside Panduck's format declarations. */
+const EXCLUDED_GRAMMARS: Readonly<Record<string, string>> = {
+    "oak-org-mode":
+        "`oak-org-mode` is excluded by decision: Panduck declares `org` unavailable and exposes no org reader or lexer entry",
+};
+
 /** Loads the manifest driven lexer snapshot cases from `panduck-fixtures`. */
 export function loadSnapshotCases(): readonly SnapshotCaseDefinition[] {
     const loaded = loadNotedownManifest();
@@ -36,6 +42,9 @@ export function loadSnapshotCases(): readonly SnapshotCaseDefinition[] {
         language: grammarFor(entry.language),
         oracle: entry.oracle,
         comparison: entry.comparison,
+        ...(EXCLUDED_GRAMMARS[entry.language] === undefined
+            ? {}
+            : { excluded: EXCLUDED_GRAMMARS[entry.language] }),
         ...(entry.snapshotLag === undefined ? {} : { snapshotLag: entry.snapshotLag }),
     }));
 }

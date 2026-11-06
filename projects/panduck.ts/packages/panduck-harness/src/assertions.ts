@@ -258,9 +258,10 @@ export function evaluateSnapshot(
     if (definition.language === null) {
         assertions.push(
             integrity(
-                { kind: "corpus-integrity", check: "product-grammar" },
-                false,
-                `\`${definition.id}\` uses a grammar that Panduck has no reader for, so it stays a gap instead of getting an invented lexer entry`,
+                { kind: "corpus-integrity", check: "excluded-grammar" },
+                definition.excluded !== undefined,
+                definition.excluded ??
+                    `\`${definition.id}\` uses a grammar that Panduck has no reader for, so it stays a gap instead of getting an invented lexer entry`,
             ),
         );
         return assertions;

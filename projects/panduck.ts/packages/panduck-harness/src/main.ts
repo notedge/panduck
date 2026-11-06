@@ -249,7 +249,7 @@ function describeSnapshot(definition: SnapshotCaseDefinition): CaseRun {
             assertions,
             durationMs: 0,
             oracle: definition.oracle,
-            gap: definition.language === null ? "gap-lexer-grammar" : lex.error?.startsWith("missing-entry:") ? "gap-lexer-entry" : undefined,
+            gap: definition.language === null && definition.excluded === undefined ? "gap-lexer-grammar" : lex.error?.startsWith("missing-entry:") ? "gap-lexer-entry" : undefined,
         },
     };
 }

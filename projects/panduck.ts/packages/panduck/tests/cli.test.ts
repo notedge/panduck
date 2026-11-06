@@ -84,6 +84,51 @@ test("convert refuses a render-only workbook before the native lane", () => {
     assert.equal(report.diagnostics[0].code, "panduck.route.unlisted");
 });
 
+test("org stays unavailable instead of advertising a reader route", () => {
+    const formats = runPanduck(["formats", "--json"]);
+    assert.equal(formats.code, 0, formats.stderr);
+    const payload = JSON.parse(formats.stdout) as {
+        formats: Array<{ format: string; reader: { state: string }; writer: { state: string } }>;
+        conversions: string[];
+    };
+    const org = payload.formats.find((record) => record.format === "org");
+    assert.ok(org, "org stays a known format id");
+    assert.equal(org.reader.state, "unavailable");
+    assert.equal(org.writer.state, "unavailable");
+    assert.equal(
+        payload.conversions.some((route) => route.startsWith("org:") || route.endsWith(":org")),
+        false,
+        "an unavailable org reader must not advertise any conversion",
+    );
+
+    const workdir = mkdtempSync(join(tmpdir(), "panduck-org-"));
+    try {
+        const source = join(workdir, "basic.org");
+        writeFileSync(source, "* Heading\nBody\n");
+        const convert = runPanduck([
+            "convert",
+            source,
+            "--from",
+            "org",
+            "--to",
+            "markdown",
+            "--report",
+            "-",
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(convert.code, 3, convert.stderr);
+        const report = JSON.parse(convert.stdout) as {
+            status: string;
+            diagnostics: Array<{ code: string }>;
+        };
+        assert.equal(report.status, "blocked");
+        assert.equal(report.diagnostics[0].code, "panduck.route.unlisted");
+    } finally {
+        rmSync(workdir, { recursive: true, force: true });
+    }
+});
+
 test("global --log-file installs native console sink without breaking commands", () => {
     const workdir = mkdtempSync(join(tmpdir(), "panduck-log-"));
     const logPath = join(workdir, "events.jsonl");

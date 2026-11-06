@@ -8,31 +8,28 @@
             "kind": "loss-codes",
             "expected": [
                 "import.html.image_dimensions",
-                "import.html.unsupported_style",
-                "import.html.unsupported_form",
-                "import.html.unsupported_input",
-                "import.html.unsupported_input",
-                "import.html.unsupported_input",
-                "import.html.unsupported_select",
-                "import.html.unsupported_textarea",
-                "import.html.unsupported_input",
-                "import.html.unsupported_button",
-                "import.html.unsupported_script",
-                "import.html.partial_coverage"
+                "import.html.partial_coverage",
+                "import.html.raw_form",
+                "import.html.raw_form_control",
+                "import.html.raw_form_control",
+                "import.html.raw_form_control",
+                "import.html.raw_form_control",
+                "import.html.raw_form_control",
+                "import.html.raw_form_control",
+                "import.html.raw_form_control",
+                "import.html.raw_script",
+                "import.html.raw_style"
             ]
         },
         {
             "kind": "diagnostic-codes",
             "expected": [
                 "import.html.image_dimensions",
-                "import.html.unsupported_style",
-                "import.html.unsupported_form",
-                "import.html.unsupported_input",
-                "import.html.unsupported_select",
-                "import.html.unsupported_textarea",
-                "import.html.unsupported_button",
-                "import.html.unsupported_script",
-                "import.html.partial_coverage"
+                "import.html.partial_coverage",
+                "import.html.raw_form",
+                "import.html.raw_form_control",
+                "import.html.raw_script",
+                "import.html.raw_style"
             ]
         },
         { "kind": "contains", "target": "text", "value": "This is a **paragraph** with *emphasis*" }
@@ -49,6 +46,12 @@
             "reason": "The html importer keeps the prose, tables, lists and links it can map and reports one loss per element it cannot represent, so form controls, inline style, script and image dimensions are declared instead of aborting the conversion",
             "semantic": "html input converts to markdown with declared losses for unsupported style, form and script elements",
             "updatedAt": "2026-11-06T00:00:00.000Z"
+        },
+        {
+            "author": "document-harness",
+            "reason": "The latest pinned document.rs reports raw passthrough for form, script and style instead of the former unsupported_* codes, so the expectation follows the renamed loss codes",
+            "semantic": "html input converts to markdown with raw_form, raw_form_control, raw_script and raw_style losses",
+            "updatedAt": "2026-11-06T09:21:00.000Z"
         }
     ]
 }

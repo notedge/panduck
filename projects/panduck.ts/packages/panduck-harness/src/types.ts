@@ -219,6 +219,8 @@ export type SnapshotCaseDefinition = {
     readonly snapshot: string;
     /** Product grammar name accepted by `lexDocument`, or `null` when no reader exists. */
     readonly language: string | null;
+    /** Set when the corpus grammar is explicitly outside Panduck's claimed scope. */
+    readonly excluded?: string;
     readonly oracle: string | null;
     readonly comparison: string;
     /** Set when the recorded snapshot predates a known lexer fix in its source repo. */

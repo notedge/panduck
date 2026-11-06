@@ -92,7 +92,9 @@ export function baseFormatRegistry(): FormatRecord[] {
             ["index", "assets", "report"],
         ),
         textFormat("notedown", "partial", "planned", ["paragraph", "heading", "list", "link"], ["macro", "table"]),
-        textFormat("org", "partial", "partial", ["headline", "paragraph"], ["drawer", "babel"]),
+        // org has a lexer upstream but no semantic parser or public import route,
+        // so Panduck declares it known but unavailable instead of claiming a route.
+        textFormat("org", "unavailable", "unavailable", ["headline", "paragraph"], ["drawer", "babel"]),
         textFormat("rst", "partial", "partial", ["paragraph", "directive"], ["table"]),
         textFormat("tex", "partial", "partial", ["paragraph", "command"], ["environment"]),
         textFormat("typst", "partial", "planned", ["paragraph", "heading", "code_block"], ["math", "table", "environment"]),
