@@ -701,6 +701,71 @@ test("html to html keeps the heading, styled run and link through HTML reopen", 
     }
 });
 
+test("html table headers survive the writer and the markdown reopen", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-html-table-header-"));
+    try {
+        const page = `<!doctype html>
+<html><head><title>Table Page</title></head>
+<body>
+<h1>Table Heading</h1>
+<table>
+<thead><tr><th>Name</th><th>Value</th></tr></thead>
+<tbody><tr><td>Alpha</td><td>1</td></tr><tr><td>Beta</td><td>2</td></tr></tbody>
+</table>
+</body></html>`;
+        const { artifact, markdown, report } = await convertAndReopen({
+            workdir,
+            bytes: Buffer.from(page),
+            label: "route.html",
+            from: "html",
+            to: "html",
+        });
+
+        const text = artifact.toString("utf8");
+        assert.match(text, /<thead>/, "the writer must keep the header section");
+        assert.match(text, /<th[^>]*>Name<\/th>/, "the writer must keep the header cells");
+        assert.match(markdown, /^\| Name \| Value \|$/m, "reopening must recover the header row");
+        assert.match(markdown, /^\| --- \| --- \|$/m, "reopening must emit a Markdown header separator");
+        assert.match(markdown, /^\| Alpha \| 1 \|$/m, "reopening must recover the body row");
+
+        assert.equal(report.status, "success_with_loss", "partial coverage must be declared, not hidden");
+        assert.deepEqual(
+            report.losses.map((loss) => loss.code),
+            ["import.html.partial_coverage"],
+            "a leading header table must not declare a table section loss",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("html header rows outside the leading run are declared as loss", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-html-table-sections-"));
+    try {
+        const page = `<!doctype html>
+<html><body>
+<table><tbody><tr><td>Body</td></tr></tbody><thead><tr><th>Late</th></tr></thead></table>
+</body></html>`;
+        const { markdown, report } = await convertAndReopen({
+            workdir,
+            bytes: Buffer.from(page),
+            label: "route.html",
+            from: "html",
+            to: "markdown",
+        });
+
+        assert.match(markdown, /^\| Body \|$/m, "the leading body row must reopen");
+        assert.match(markdown, /^\| Late \|$/m, "the trailing header row must reopen as a body row");
+        assert.deepEqual(
+            report.losses.map((loss) => loss.code),
+            ["import.html.table_sections", "import.html.partial_coverage"],
+            "a header row after the leading run must be declared instead of silently dropped",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
 for (const to of ["markdown", "docx", "pdf", "epub"] as const) {
     test(`notedown to ${to} keeps the heading, prose and list through ${to} reopen`, async () => {
         const workdir = await mkdtemp(join(tmpdir(), `panduck-notedown-${to}-`));
