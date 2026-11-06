@@ -17,7 +17,7 @@ napi = { workspace = true }
 napi-derive = { workspace = true }
 document-convert = { workspace = true, features = ["logger"] }
 document-diagnostic = { workspace = true }
-document-formats = { workspace = true, features = ["xlsx", "pptx"] }
+document-formats = { workspace = true, features = ["pandoc-json", "xlsx", "pptx"] }
 document-fonts = { workspace = true }
 document-ir = { workspace = true }
 document-layout = { workspace = true }

@@ -20,10 +20,51 @@ pub use convert::{
 
 use std::collections::BTreeSet;
 
-use document_convert::{READERS, WRITERS, supported_routes, supports_markdown_project_source, supports_route};
+use document_convert::{READERS, WRITERS};
+use document_formats::{FormatDirection, FormatStatus, capabilities};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use oak_core::{Lexer, TokenType, lexer::NoLexerCache, source::SourceText};
+
+/// Format wired here through `document-formats` because `document-convert`
+/// keeps no aggregate reader or writer entry for it.
+///
+/// Pandoc JSON is a format-layer exchange codec, so the aggregate route table
+/// cannot advertise it. The binding wires it directly and derives availability
+/// from the same capability table, keeping the advertised route and the served
+/// route in one place.
+const PANDOC_JSON: &str = "pandoc-json";
+
+fn reader_wired(format: &str) -> bool {
+    READERS.contains(&format) || format == PANDOC_JSON
+}
+
+fn writer_wired(format: &str) -> bool {
+    WRITERS.contains(&format) || format == PANDOC_JSON
+}
+
+fn capability_routable(format: &str, direction: FormatDirection) -> bool {
+    capabilities()
+        .into_iter()
+        .find(|capability| capability.id == format && capability.direction == direction)
+        .is_some_and(|capability| matches!(capability.status, FormatStatus::Ready | FormatStatus::Partial))
+}
+
+/// Whether this binding can read `format` and report its gaps per document.
+fn reader_routable(format: &str) -> bool {
+    reader_wired(format) && capability_routable(format, FormatDirection::Import)
+}
+
+/// Whether this binding can write `format`.
+fn writer_routable(format: &str) -> bool {
+    writer_wired(format) && capability_routable(format, FormatDirection::Export)
+}
+
+fn route_supported(from: &str, to: &str) -> bool {
+    let from = from.to_ascii_lowercase();
+    let to = to.to_ascii_lowercase();
+    reader_routable(&from) && writer_routable(&to)
+}
 
 /// Panduck-owned render code for a language with no diagram frontend.
 ///
@@ -73,6 +114,9 @@ pub fn supported_formats() -> Vec<String> {
     for f in WRITERS {
         set.insert(*f);
     }
+    if reader_routable(PANDOC_JSON) || writer_routable(PANDOC_JSON) {
+        set.insert(PANDOC_JSON);
+    }
     set.into_iter().map(|s| s.to_string()).collect()
 }
 
@@ -85,7 +129,7 @@ pub fn is_supported_format(name: String) -> bool {
 /// Returns whether a conversion route is wired in this build.
 #[napi]
 pub fn supports_conversion(from: String, to: String) -> bool {
-    supports_route(&from, &to)
+    route_supported(&from, &to)
 }
 
 /// Lexically analyses source text with the grammar Panduck reads it as.
@@ -679,13 +723,23 @@ pub fn install_logger_log_file(path: String) -> Result<()> {
 /// Lists wired conversion routes as `from:to` strings.
 #[napi]
 pub fn supported_conversions() -> Vec<String> {
-    supported_routes().into_iter().map(|(from, to)| format!("{from}:{to}")).collect()
+    let readers = READERS.iter().copied().chain(std::iter::once(PANDOC_JSON));
+    let writers = WRITERS.iter().copied().chain(std::iter::once(PANDOC_JSON));
+    let mut routes = Vec::new();
+    for from in readers {
+        for to in writers.clone() {
+            if route_supported(from, to) {
+                routes.push(format!("{from}:{to}"));
+            }
+        }
+    }
+    routes
 }
 
 /// Returns whether a source format can be converted into a Markdown project.
 #[napi]
 pub fn supports_markdown_project(from: String) -> bool {
-    supports_markdown_project_source(&from)
+    reader_routable(&from.to_ascii_lowercase())
 }
 
 /// One text run the layout pass reserved space for before PDF painting.

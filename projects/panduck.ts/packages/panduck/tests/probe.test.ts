@@ -23,3 +23,40 @@ test("panduck native bindings expose wired conversion routes", () => {
     assert.ok(routes.includes("markdown:docx"));
     assert.ok(routes.includes("docx:docx"));
 });
+
+test("pandoc-json is advertised and served as a partial route in both directions", () => {
+    const binding = loadPanduckNode();
+    assert.ok(binding.supportedFormats().includes("pandoc-json"));
+    assert.equal(binding.isSupportedFormat("pandoc-json"), true);
+    assert.equal(binding.supportsConversion?.("pandoc-json", "markdown"), true);
+    assert.equal(binding.supportsConversion?.("markdown", "pandoc-json"), true);
+    assert.equal(binding.supportsConversion?.("pandoc-json", "pandoc-json"), true);
+    assert.equal(binding.supportsConversion?.("pandoc-json", "doc"), false);
+
+    const routes = binding.supportedConversions?.() ?? [];
+    assert.ok(routes.includes("pandoc-json:markdown"));
+    assert.ok(routes.includes("markdown:pandoc-json"));
+    assert.ok(!routes.includes("pandoc-json:doc"), "an unavailable writer must not be advertised");
+});
+
+test("a route reported by supportsConversion actually imports and exports", () => {
+    const binding = loadPanduckNode();
+    const source = JSON.stringify({
+        "pandoc-api-version": [1, 23, 1],
+        meta: {},
+        blocks: [{ t: "Para", c: [{ t: "Str", c: "Hello Pandoc" }] }],
+    });
+    const imported = binding.importDocument?.("pandoc-json", "sample.json", Buffer.from(source));
+    assert.ok(imported?.success, imported?.diagnosticsJson);
+    const graphJson = imported?.graphJson;
+    assert.ok(graphJson, "a wired reader must return the serialized graph");
+
+    const exported = binding.exportDocument?.("pandoc-json", graphJson);
+    assert.ok(exported?.success, exported?.diagnosticsJson);
+    const document = JSON.parse(exported?.text ?? "null") as {
+        "pandoc-api-version": number[];
+        blocks: Array<{ t: string; c?: unknown }>;
+    };
+    assert.deepEqual(document["pandoc-api-version"], [1, 23, 1]);
+    assert.match(JSON.stringify(document.blocks), /Hello Pandoc/);
+});

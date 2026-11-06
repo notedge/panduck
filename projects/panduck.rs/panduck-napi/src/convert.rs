@@ -10,14 +10,15 @@ use std::collections::HashMap;
 use document_convert::{
     ConversionBudgets, SCHEMA_REPORT, apply_transform_passes, from_adapter_error, inspect_docx_decode_bytes,
     inspect_docx_index_bytes, read_markdown_bytes, read_notedown_bytes, read_tex_bytes, read_typst_bytes,
-    supports_markdown_project_source, write_document_docx, write_document_epub, write_document_html,
-    write_document_markdown, write_document_pdf, write_markdown_project,
+    write_document_docx, write_document_epub, write_document_html, write_document_markdown, write_document_pdf,
+    write_markdown_project,
 };
 use document_formats::import::{
     doc::import_doc_bytes, docx::import_docx_bytes, epub::import_epub_bytes, html::import_html_bytes_with_assets,
     pdf::import_pdf_bytes,
 };
 use document_formats::import::html::HtmlAssetSource;
+use document_formats::pandoc::{PandocImportOptions, export_pandoc_json, import_pandoc_json_bytes_with};
 use document_formats::{FormatError, from_format_error};
 use document_ir::DocumentGraph;
 use document_types::{AdapterError, Result as AdapterResult};
@@ -389,7 +390,7 @@ pub fn import_document(
     assets: Option<HashMap<String, Buffer>>,
 ) -> ImportResponse {
     let from = from.to_ascii_lowercase();
-    if !supports_markdown_project_source(&from) {
+    if !crate::reader_routable(&from) {
         return import_error(AdapterError::unsupported_format(from.as_str(), "read"), true);
     }
     let budgets = ConversionBudgets::from_json(budgets_json.as_deref());
@@ -550,6 +551,10 @@ fn read_source(
             let text = utf8("typst", bytes)?;
             read_typst_bytes(label, text)
         }
+        // A partial exchange format keeps the document and reports every
+        // unmapped construct as a loss marker instead of failing the route.
+        "pandoc-json" => import_pandoc_json_bytes_with(label, bytes, &PandocImportOptions::allow_loss())
+            .map_err(map_format_error),
         other => fail(AdapterError::unsupported_format(other, "read")),
     }
 }
@@ -578,6 +583,14 @@ fn write_target(to: &str, graph: &mut DocumentGraph) -> AdapterResult<(String, O
             Ok((String::new(), Some(write_document_html(graph, &scenes)?), None))
         }
         "epub" => Ok((String::new(), None, Some(write_document_epub(graph)?))),
+        "pandoc-json" => {
+            let export = export_pandoc_json(graph).map_err(map_format_error)?;
+            let text = export.to_json_text().map_err(map_format_error)?;
+            for loss in export.losses {
+                graph.push_loss(loss);
+            }
+            Ok((text, None, None))
+        }
         other => fail(AdapterError::unsupported_format(other, "write")),
     }
 }

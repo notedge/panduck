@@ -109,7 +109,7 @@ Panduck applies built-in guards; none of them is configurable.
   `panduck.input.remote-fetch-disabled`; nothing is written. Download the document first.
 - **Structural nesting.** HTML element depth, Markdown blockquote runs, and Markdown bracket nesting are capped
   at `96`. Exceeding it exits with code `7` (diagnostic `notedown.format.budget-exhausted`) and writes no output.
-  JSON payloads use their parser's own 128-level recursion limit, and `pandoc-json` is not an input format in v0.
+  JSON payloads use their parser's own 128-level recursion limit, and the CLI does not accept `pandoc-json` as an input format in v0.
 - **No global deadline.** There is no wall-clock timeout, so a pathological input can run for a long time. Wrap
   the CLI in your own process timeout. Container limits (`decompressed_bytes`, `container_entries`) are available
   through `--budget`; other formats still rely on their own decode limits.
