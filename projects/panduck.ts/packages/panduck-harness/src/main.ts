@@ -156,16 +156,7 @@ function corpusResults(): readonly CaseResult[] {
     }));
 }
 
-const CORPUS_GAPS: readonly GapRecord[] = [
-    {
-        id: "gap-markdown-footnotes",
-        repo: "document.rs",
-        capability: "markdown footnote placement in the HTML writer",
-        neededEntry: "an entry that places footnote bodies and reference markers instead of dropping them and reporting two losses",
-        evidence: "fixtures/convert/basic-markdown.md",
-        affectedCases: ["basic-markdown-to-html"],
-    },
-];
+const CORPUS_GAPS: readonly GapRecord[] = [];
 
 type CaseRun = { readonly observation: CaseObservation; readonly result: CaseResult };
 
