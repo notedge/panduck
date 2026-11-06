@@ -5,6 +5,8 @@
 //! discovery, output placement, exit-code mapping, CLI wording and report
 //! assembly live in the TypeScript CLI. Nothing here reads or writes paths.
 
+use std::collections::HashMap;
+
 use document_convert::{
     ConversionBudgets, SCHEMA_REPORT, apply_transform_passes, from_adapter_error, inspect_docx_decode_bytes,
     inspect_docx_index_bytes, read_markdown_bytes, read_notedown_bytes, read_tex_bytes, read_typst_bytes,
@@ -12,8 +14,10 @@ use document_convert::{
     write_document_markdown, write_document_pdf, write_markdown_project,
 };
 use document_formats::import::{
-    doc::import_doc_bytes, docx::import_docx_bytes, epub::import_epub_bytes, html::import_html_bytes, pdf::import_pdf_bytes,
+    doc::import_doc_bytes, docx::import_docx_bytes, epub::import_epub_bytes, html::import_html_bytes_with_assets,
+    pdf::import_pdf_bytes,
 };
+use document_formats::import::html::HtmlAssetSource;
 use document_formats::{FormatError, from_format_error};
 use document_ir::DocumentGraph;
 use document_types::{AdapterError, Result as AdapterResult};
@@ -354,14 +358,36 @@ fn office_error(error: AdapterError) -> OfficeImportResponse {
     }
 }
 
+/// Caller-supplied HTML asset bytes keyed by the authored target string.
+///
+/// The format layer never fetches. Library callers that own the page bytes read
+/// them themselves and pass this map, so HTML images gain a content identity
+/// instead of disappearing from the body.
+struct MapAssetSource<'a> {
+    assets: Option<&'a HashMap<String, Buffer>>,
+}
+
+impl HtmlAssetSource for MapAssetSource<'_> {
+    fn read_asset(&self, target: &str) -> Option<Vec<u8>> {
+        self.assets?.get(target).map(|bytes| bytes.as_ref().to_vec())
+    }
+}
+
 /// Reads bytes of `from` into a serialized `document.ir` graph.
 ///
 /// Applies container budgets before the reader and the built-in structural
 /// nesting guard before any text grammar sees the payload. Failures are
 /// returned through `success: false` plus a structured diagnostic envelope,
-/// never as exit codes or free-form CLI wording.
+/// never as exit codes or free-form CLI wording. `assets` is only consulted by
+/// the HTML reader and only for image targets it authored.
 #[napi]
-pub fn import_document(from: String, label: String, bytes: Buffer, budgets_json: Option<String>) -> ImportResponse {
+pub fn import_document(
+    from: String,
+    label: String,
+    bytes: Buffer,
+    budgets_json: Option<String>,
+    assets: Option<HashMap<String, Buffer>>,
+) -> ImportResponse {
     let from = from.to_ascii_lowercase();
     if !supports_markdown_project_source(&from) {
         return import_error(AdapterError::unsupported_format(from.as_str(), "read"), true);
@@ -371,7 +397,7 @@ pub fn import_document(from: String, label: String, bytes: Buffer, budgets_json:
         // The budget layer already logged the adapter error.
         return import_error(error, false);
     }
-    match read_source(&from, &label, bytes.as_ref()) {
+    match read_source(&from, &label, bytes.as_ref(), assets.as_ref()) {
         Ok(graph) => ImportResponse {
             success: true,
             graph_json: serde_json::to_string(&graph).ok(),
@@ -495,14 +521,19 @@ pub fn export_markdown_project(graph_json: String) -> ProjectResponse {
     }
 }
 
-fn read_source(from: &str, label: &str, bytes: &[u8]) -> AdapterResult<DocumentGraph> {
+fn read_source(
+    from: &str,
+    label: &str,
+    bytes: &[u8],
+    assets: Option<&HashMap<String, Buffer>>,
+) -> AdapterResult<DocumentGraph> {
     structure_guard::enforce(from, bytes)?;
     match from {
         "docx" => import_docx_bytes(label, bytes).map_err(map_format_error),
         "doc" => import_doc_bytes(label, bytes).map_err(map_format_error),
         "pdf" => import_pdf_bytes(label, bytes).map_err(map_format_error),
         "epub" => import_epub_bytes(label, bytes).map_err(map_format_error),
-        "html" => import_html_bytes(label, bytes).map_err(map_format_error),
+        "html" => import_html_bytes_with_assets(label, bytes, &MapAssetSource { assets }).map_err(map_format_error),
         "markdown" => {
             let text = utf8("markdown", bytes)?;
             read_markdown_bytes(label, text)

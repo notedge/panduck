@@ -317,8 +317,14 @@ export type PanduckBindings = {
     probeContainerDecode?: (label: string, bytes: Uint8Array, partPath?: string) => ProbeDecodeResponse;
     /** Parse an EPUB navigation document into its table of contents. */
     probeNavigationToc?: (label: string, bytes: Uint8Array) => ProbeNavigationResponse;
-    /** Read bytes into serialized IR. */
-    importDocument?: (from: string, label: string, bytes: Uint8Array, budgetsJson?: string) => ImportResponse;
+    /** Read bytes into serialized IR. `assets` carries caller-owned HTML image bytes by authored target. */
+    importDocument?: (
+        from: string,
+        label: string,
+        bytes: Uint8Array,
+        budgetsJson?: string,
+        assets?: Record<string, Uint8Array>,
+    ) => ImportResponse;
     /** Read a PPTX or XLSX package through its native model into serialized IR. */
     importOfficeDocument?: (from: string, label: string, bytes: Uint8Array) => OfficeImportResponse;
     /** Run transform passes over serialized IR. */

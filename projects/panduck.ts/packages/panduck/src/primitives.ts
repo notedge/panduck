@@ -23,6 +23,8 @@ export type ConversionStageInput = {
     bytes: Uint8Array;
     transformsJson?: string;
     budgetsJson?: string;
+    /** Caller-owned HTML image bytes keyed by the authored target. */
+    assets?: Record<string, Uint8Array>;
 };
 
 export type ProjectStageInput = {
@@ -31,6 +33,8 @@ export type ProjectStageInput = {
     bytes: Uint8Array;
     transformsJson?: string;
     budgetsJson?: string;
+    /** Caller-owned HTML image bytes keyed by the authored target. */
+    assets?: Record<string, Uint8Array>;
 };
 
 export type StageOutcome = {
@@ -82,7 +86,7 @@ export function convertInMemory(bindings: PanduckBindings, input: ConversionStag
         return failure(missingBindingDiagnostics(input.from));
     }
 
-    const imported = importDocument(input.from, input.label, input.bytes, input.budgetsJson);
+    const imported = importDocument(input.from, input.label, input.bytes, input.budgetsJson, input.assets);
     const importedDiagnostics = parseDiagnosticEnvelope(imported.diagnosticsJson, { component: "convert", stage: "read" });
     if (!imported.success || imported.graphJson === null) {
         return failure(importedDiagnostics.diagnostics);
@@ -166,7 +170,7 @@ export function exportProjectInMemory(bindings: PanduckBindings, input: ProjectS
         return projectFailure(missingBindingDiagnostics(input.from));
     }
 
-    const imported = importDocument(input.from, input.label, input.bytes, input.budgetsJson);
+    const imported = importDocument(input.from, input.label, input.bytes, input.budgetsJson, input.assets);
     const importedDiagnostics = parseDiagnosticEnvelope(imported.diagnosticsJson, { component: "convert", stage: "read" });
     if (!imported.success || imported.graphJson === null) {
         return projectFailure(importedDiagnostics.diagnostics);

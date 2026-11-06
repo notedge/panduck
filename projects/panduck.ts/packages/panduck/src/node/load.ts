@@ -56,6 +56,7 @@ type NativeBinding = {
         label: string,
         bytes: Uint8Array,
         budgetsJson?: string,
+        assets?: Record<string, Uint8Array>,
     ) => {
         success: boolean;
         graphJson: string | null;
@@ -267,8 +268,8 @@ export function loadPanduckNode(): PanduckBindings {
               }
             : undefined,
         importDocument: binding.importDocument
-            ? (from, label, bytes, budgetsJson) => {
-                  const response = binding.importDocument!(from, label, bytes, budgetsJson);
+            ? (from, label, bytes, budgetsJson, assets) => {
+                  const response = binding.importDocument!(from, label, bytes, budgetsJson, assets);
                   return {
                       success: response.success,
                       graphJson: response.graphJson ?? null,

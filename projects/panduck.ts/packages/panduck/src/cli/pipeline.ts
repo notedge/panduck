@@ -1,6 +1,6 @@
 import { mkdir, mkdtemp, readFile, rename, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { basename, dirname, join } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 
 import type { PanduckBindings } from "../types.js";
@@ -514,6 +514,78 @@ function blocked(
     return { exitCode, report };
 }
 
+/**
+ * Collects caller-owned bytes for the images an HTML page references.
+ *
+ * The format layer never fetches. This default loader resolves authored targets
+ * against the input file's own directory and refuses absolute or scheme
+ * targets, so it never reads outside the page folder. Targets it cannot read
+ * stay unresolved and the reader reports `import.html.asset_unresolved` itself.
+ */
+async function localHtmlAssets(
+    bindings: PanduckBindings,
+    input: { from: string; label: string; bytes: Uint8Array; budgetsJson?: string; inputPath: string },
+): Promise<Record<string, Uint8Array> | undefined> {
+    if (input.from !== "html" || isStdinPath(input.inputPath)) {
+        return undefined;
+    }
+    const imported = await bindings.importDocument!(
+        "html",
+        input.label,
+        input.bytes,
+        input.budgetsJson,
+    );
+    if (!imported.success || imported.graphJson === null) {
+        // The real conversion reports the same import failure with full diagnostics.
+        return undefined;
+    }
+    let graph: { assets?: Array<{ kind?: unknown; status?: unknown; source?: unknown }> };
+    try {
+        graph = JSON.parse(imported.graphJson) as typeof graph;
+    } catch {
+        return undefined;
+    }
+    const directory = dirname(input.inputPath);
+    const assets: Record<string, Uint8Array> = {};
+    for (const asset of graph.assets ?? []) {
+        if (asset.kind !== "Image" || asset.status !== "Unresolved" || typeof asset.source !== "string") {
+            continue;
+        }
+        const file = resolveSiblingAsset(directory, asset.source);
+        if (file === undefined) {
+            continue;
+        }
+        try {
+            assets[asset.source] = new Uint8Array(await readFile(file));
+        } catch {
+            // A missing or unreadable sibling stays unresolved and is reported by the reader.
+        }
+    }
+    return Object.keys(assets).length > 0 ? assets : undefined;
+}
+
+function resolveSiblingAsset(directory: string, target: string): string | undefined {
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(target) || target.startsWith("/") || target.startsWith("\\")) {
+        return undefined;
+    }
+    const withoutQuery = target.split(/[?#]/, 1)[0];
+    if (withoutQuery.length === 0) {
+        return undefined;
+    }
+    let decoded = withoutQuery;
+    try {
+        decoded = decodeURIComponent(withoutQuery);
+    } catch {
+        // Keep the authored spelling when it is not valid percent-encoding.
+    }
+    const resolved = resolve(directory, decoded);
+    const inside = relative(directory, resolved);
+    if (inside.length === 0 || inside.startsWith("..") || isAbsolute(inside)) {
+        return undefined;
+    }
+    return resolved;
+}
+
 export async function runMarkdownProjectPipeline(input: {
     ctx: CliContext;
     bindings: PanduckBindings;
@@ -597,7 +669,8 @@ export async function runMarkdownProjectPipeline(input: {
     let outcome: ProjectOutcome | undefined;
     let nativePanic: unknown;
     try {
-        outcome = exportProjectInMemory(bindings, { from, label, bytes: inputBytes, budgetsJson });
+        const assets = await localHtmlAssets(bindings, { from, label, bytes: inputBytes, budgetsJson, inputPath });
+        outcome = exportProjectInMemory(bindings, { from, label, bytes: inputBytes, budgetsJson, assets });
     } catch (error) {
         nativePanic = error;
     }

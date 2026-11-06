@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -433,6 +433,89 @@ test("docx project route materializes the embedded image, matches the plain loss
         assert.notEqual(reopened.status, "failed");
         assert.match(reopened.text, /!\[Logo\]\(assets\/[0-9a-f]{16}\.png\)/, "the asset reference must survive reopen");
         assert.doesNotMatch(reopened.text, /word\/media\/logo\.png/);
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+const siblingPageHtml = `<!doctype html><html><head><title>Local page</title></head><body>
+<h1>Local page</h1>
+<p>Body text next to local images.</p>
+<img src="pic.png" alt="Pic">
+<img src="media/nested.png" alt="Nested">
+<img src="https://example.com/remote.png" alt="Remote">
+<img src="../outside/escape.png" alt="Escape">
+</body></html>`;
+
+test("html project route loads sibling image bytes and refuses escaped or remote targets", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-project-html-assets-"));
+    const pagePath = join(workdir, "page.html");
+    const outputDir = join(workdir, "page");
+    const reportPath = join(workdir, "page.report.json");
+    const picBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x01, 0x02]);
+    const nestedBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x03, 0x04]);
+    try {
+        await writeFile(pagePath, siblingPageHtml, "utf8");
+        await writeFile(join(workdir, "pic.png"), picBytes);
+        await mkdir(join(workdir, "media"));
+        await writeFile(join(workdir, "media", "nested.png"), nestedBytes);
+
+        const published = runPanduck([
+            "convert",
+            pagePath,
+            "--from",
+            "html",
+            "--to",
+            "markdown-project",
+            "--output-dir",
+            outputDir,
+            "--report",
+            reportPath,
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(published.code, 0, published.stderr);
+
+        const index = await readFile(join(outputDir, "index.md"), "utf8");
+        const picRef = index.match(/!\[Pic\]\(assets\/([0-9a-f]{16}\.png)\)/);
+        assert.ok(picRef, `the sibling image must become a content-addressed asset: ${index}`);
+        assert.deepEqual(await readFile(join(outputDir, "assets", picRef[1])), picBytes);
+        const nestedRef = index.match(/!\[Nested\]\(assets\/([0-9a-f]{16}\.png)\)/);
+        assert.ok(nestedRef, `a nested sibling image must become a content-addressed asset: ${index}`);
+        assert.deepEqual(await readFile(join(outputDir, "assets", nestedRef[1])), nestedBytes);
+        assert.doesNotMatch(index, /\(pic\.png\)|\(media\/nested\.png\)/, "materialized sources must be rewritten");
+        assert.match(index, /!\[Remote\]\(https:\/\/example\.com\/remote\.png\)/);
+        assert.match(index, /!\[Escape\]\(\.\.\/outside\/escape\.png\)/);
+
+        const report = JSON.parse(await readFile(reportPath, "utf8"));
+        assert.equal(report.status, "success_with_loss");
+        const losses = report.losses as Array<{ code: string; message: string }>;
+        assert.deepEqual(
+            losses.map((loss) => loss.code).sort(),
+            ["import.html.asset_unresolved", "import.html.asset_unresolved", "import.html.partial_coverage"],
+            "only the targets the loader refuses must stay unresolved",
+        );
+        const unresolvedNames = losses
+            .filter((loss) => loss.code === "import.html.asset_unresolved")
+            .map((loss) => loss.message.match(/`(.+?)`/)?.[1])
+            .sort();
+        assert.deepEqual(unresolvedNames, ["../outside/escape.png", "https://example.com/remote.png"]);
+        const publishedAssets = (report.outputs as Array<{ path: string }>).filter((output) =>
+            output.path.startsWith(join(outputDir, "assets")),
+        );
+        assert.equal(publishedAssets.length, 2, "both sibling images must be published under assets/");
+
+        const reopened = await new Converter().toMarkdown(
+            index,
+            defineConversion({
+                id: "html-assets-project-reopen",
+                input: { format: "markdown", label: "index.md" },
+                output: { format: "markdown" },
+            }),
+        );
+        assert.notEqual(reopened.status, "failed");
+        assert.match(reopened.text, /!\[Pic\]\(assets\/[0-9a-f]{16}\.png\)/, "the asset reference must survive reopen");
+        assert.match(reopened.text, /Body text next to local images\./);
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }
