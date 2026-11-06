@@ -202,9 +202,27 @@
         {
             "id": "markdown-footnote",
             "spec": "footnote extension (not CommonMark)",
-            "semantics": "a footnote reference links to a generated footnote section",
+            "semantics": "a footnote reference renders a `sup.footnote-reference` anchor and a `section.footnotes[role=doc-endnotes]` list whose item carries `li[id=fn-*]` and `a.footnote-backref`",
             "source": "a[^1]\n\n[^1]: n\n",
-            "probe": { "contains": ["footnote-reference"] }
+            "probe": {
+                "contains": [
+                    "<sup class=\"footnote-reference\" data-footnote-label=\"1\">",
+                    "<a id=\"fnref-1\" href=\"#fn-1\">1</a>",
+                    "<section class=\"footnotes\" role=\"doc-endnotes\">",
+                    "<li id=\"fn-1\"",
+                    "<p>n</p>",
+                    "<a class=\"footnote-backref\" href=\"#fnref-1\">↩</a>"
+                ],
+                "count": {
+                    "class=\"footnote-reference\"": 1,
+                    "<li id=\"fn-1\"": 1,
+                    "class=\"footnote-backref\"": 1
+                },
+                "order": [
+                    "<sup class=\"footnote-reference\"",
+                    "<section class=\"footnotes\""
+                ]
+            }
         },
         {
             "id": "markdown-math-inline",
