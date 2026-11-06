@@ -569,6 +569,55 @@ for (const to of ["pdf", "epub"] as const) {
     });
 }
 
+/** Writes a long single-flow HTML seed and returns a multi-page PDF from it. */
+async function seedPagedPdf(workdir: string): Promise<Buffer> {
+    const paragraphs = Array.from(
+        { length: 160 },
+        (_, index) => `Paragraph ${index + 1} keeps the page long enough to spill over.`,
+    ).join("\n\n");
+    const htmlPath = join(workdir, "seed-paged.html");
+    const pdfPath = join(workdir, "seed-paged.pdf");
+    await writeFile(
+        htmlPath,
+        `<!doctype html><html><head><title>Chrome Title</title></head><body><h1>Body Heading</h1><p>${paragraphs}</p></body></html>`,
+    );
+    const converted = runPanduck([
+        "convert",
+        htmlPath,
+        "--from",
+        "html",
+        "--to",
+        "pdf",
+        "-o",
+        pdfPath,
+        "--diagnostics",
+        "silent",
+    ]);
+    assert.equal(converted.code, 0, converted.stderr || converted.stdout);
+    return readFile(pdfPath);
+}
+
+test("pdf to pdf keeps the running chrome out of the reopened body", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-pdf-pdf-chrome-"));
+    try {
+        const { artifact, markdown } = await convertAndReopen({
+            workdir,
+            bytes: await seedPagedPdf(workdir),
+            label: "route.pdf",
+            from: "pdf",
+            to: "pdf",
+        });
+
+        const pages = (artifact.toString("latin1").match(/\/Type \/Page(?!s)/g) ?? []).length;
+        assert.ok(pages >= 2, `the fixture must span pages, got ${pages}`);
+        assert.doesNotMatch(markdown, /Chrome Title/, "the running header must not reopen as body text");
+        assert.doesNotMatch(markdown, /^\s*\d+\s*$/m, "the folio must not reopen as body text");
+        assert.match(markdown, /Paragraph 160/, "the authored body must survive");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
 for (const to of ["pdf", "epub"] as const) {
     test(`epub to ${to} keeps the chapter heading and text through ${to} reopen`, async () => {
         const workdir = await mkdtemp(join(tmpdir(), `panduck-epub-${to}-`));
@@ -624,6 +673,16 @@ test("html to html keeps the heading, styled run and link through HTML reopen", 
         });
 
         assert.match(artifact.toString("utf8"), /<h1>Route Heading<\/h1>/, "the page must reach the writer");
+        assert.match(
+            artifact.toString("utf8"),
+            /data-document-title="Route Page"/,
+            "the head title must stay in document metadata instead of the body",
+        );
+        assert.doesNotMatch(
+            markdown,
+            /Route Page/,
+            "reopening must not turn the head title into a body paragraph",
+        );
         assert.match(markdown, /^# Route Heading$/m, "reopening must recover the heading level");
         assert.match(
             markdown,
@@ -690,6 +749,47 @@ for (const to of ["markdown", "docx", "pdf", "epub"] as const) {
     });
 }
 
+test("notedown to epub keeps the authored chapter order through epub reopen", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-notedown-epub-order-"));
+    try {
+        const { markdown, report } = await convertAndReopen({
+            workdir,
+            bytes: Buffer.from(
+                "Prelude line.\n\n# Alpha\n\nFirst body.\n\n# Beta\n\nSecond body.\n",
+            ),
+            label: "route.nd",
+            from: "notedown",
+            to: "epub",
+        });
+
+        const positions = [
+            "Prelude line.",
+            "# Alpha",
+            "First body.",
+            "# Beta",
+            "Second body.",
+        ].map((text) => markdown.indexOf(text));
+        assert.ok(
+            positions.every((position) => position >= 0),
+            "every authored block must reopen from the EPUB spine",
+        );
+        assert.ok(positions[0] < positions[1], "the leading prelude must stay before the first heading");
+        assert.ok(
+            positions[1] < positions[2] && positions[2] < positions[3] && positions[3] < positions[4],
+            "each heading must open the chapter that owns the following body",
+        );
+
+        assert.equal(report.status, "success_with_loss", "partial coverage must be declared, not hidden");
+        assert.deepEqual(
+            report.losses.map((loss) => loss.code),
+            ["import.notedown.partial_coverage"],
+            "the only declared loss must be the notedown import partial coverage marker",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
 for (const from of ["tex", "typst"] as const) {
     for (const to of ["markdown", "docx", "pdf", "epub"] as const) {
         test(`${from} to ${to} keeps the authored text through ${to} reopen`, async () => {
@@ -732,3 +832,26 @@ for (const from of ["tex", "typst"] as const) {
         });
     }
 }
+
+test("tex to pdf keeps the three authored heading levels through pdf reopen", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-tex-pdf-levels-"));
+    try {
+        const { markdown, report } = await convertAndReopen({
+            workdir,
+            bytes: await readFile(sourceFixtures.tex),
+            label: "route.tex",
+            from: "tex",
+            to: "pdf",
+        });
+
+        assert.match(markdown, /^# 1 One$/m, "the section must reopen at heading level one");
+        assert.match(markdown, /^## 1\.1 Two$/m, "the subsection must reopen at heading level two");
+        assert.match(markdown, /^### 1\.1\.1 Three$/m, "the subsubsection must reopen at heading level three");
+        assert.match(markdown, /^Body\.$/m, "the section body must stay ahead of the subsection");
+
+        assert.equal(report.status, "success", "these routes declare no partial coverage");
+        assert.deepEqual(report.losses, [], "these routes declare no loss entries");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
