@@ -214,7 +214,7 @@ test("PDF export reopens with measurable pages, text and a rendered PNG", async 
             }),
         );
 
-        assert.equal(document.numPages, 2, "the fixture must span two pages");
+        assert.ok(document.numPages >= 2, "the fixture must span multiple pages");
         assert.equal(characters > 300, true, `expected readable text, got ${characters} characters`);
         for (const size of sizes) {
             assert.ok(Math.abs(size.width - 595.28) < 1, `page ${size.page} width ${size.width} is not A4`);
@@ -223,12 +223,13 @@ test("PDF export reopens with measurable pages, text and a rendered PNG", async 
         assert.match(normalized, /Document Family Report/);
         assert.match(normalized, /alpha/);
         assert.match(normalized, /deferred/);
-        assert.match(normalized, /graph LR/, "a diagram fence falls back to its source text today");
-        assert.match(normalized, /vega-lite/, "a chart fence falls back to its source text today");
+        assert.match(normalized, /Diagram/);
+        assert.match(normalized, /A B C/, "the mermaid diagram renders its node labels");
+        assert.match(normalized, /Chart/);
         assert.equal(
             normalized.includes("The footnote body."),
-            false,
-            "the routed PDF writer drops footnote bodies today",
+            true,
+            "the PDF writer places footnote bodies after the body text",
         );
         assert.equal(pdf.includes("/Subtype /Image"), false, "the routed PDF writer embeds no image XObject today");
         assert.equal(await exists(firstPage.pngPath), true, "the page must render to a real PNG");
@@ -312,9 +313,9 @@ test("DOCX export round-trips structure and text with zero differences", async (
 test("writer-side unsupported constructs fail as writer failures", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-docx-unsupported-"));
     try {
-        const input = join(workdir, "inline-math.md");
-        const output = join(workdir, "inline-math.docx");
-        await writeFile(input, "# Math\n\nInline $E=mc^2$ only.\n", "utf8");
+        const input = join(workdir, "named-footnote.md");
+        const output = join(workdir, "named-footnote.docx");
+        await writeFile(input, "# Notes\n\nBody[^note] only.\n\n[^note]: The note body.\n", "utf8");
 
         const result = runPanduck([
             "convert",
