@@ -15,6 +15,7 @@ import { containerBudgetsJson } from "./options.js";
 import type { SharedCliOptions } from "./options.js";
 import { createReport, type PanduckReport } from "./report.js";
 import { emitReport } from "./diagnostics.js";
+import { inputReadFailure } from "./context.js";
 import type { CliContext } from "./context.js";
 import type { ResolvedFormats } from "./context.js";
 import { routeCoverage } from "./format-registry.js";
@@ -299,16 +300,16 @@ export async function runConversionPipeline(input: {
         try {
             inputBytes = await readFile(inputPath);
         } catch (error) {
-            const notReadable = inputReadError(inputPath, error);
+            const failure = inputReadFailure(inputPath, error);
             return blocked(
                 ctx,
                 operation,
                 inputPath,
                 resolved,
                 shared,
-                "input is not readable",
-                [notReadable.diagnostic],
-                notReadable.exitCode,
+                failure.reason,
+                [failure.diagnostic],
+                failure.exitCode,
             );
         }
     }
@@ -465,27 +466,6 @@ export async function runConversionPipeline(input: {
     return { exitCode, report };
 }
 
-function inputReadError(
-    inputPath: string,
-    error: unknown,
-): { diagnostic: DiagnosticRecord; exitCode: number } {
-    const errno = (error as NodeJS.ErrnoException).code;
-    const notReadable = errno === "ENOENT" || errno === "EACCES" || errno === "EPERM" || errno === "EISDIR";
-    return {
-        diagnostic: createDiagnostic({
-            code: notReadable ? PANDUCK_DIAGNOSTIC_CODES.readNotReadable : PANDUCK_DIAGNOSTIC_CODES.readIoFailed,
-            component: "read",
-            severity: "error",
-            fallback: notReadable ? "input is not readable" : "input could not be read",
-            args: [
-                ["path", textArg(inputPath)],
-                ["message", textArg(error instanceof Error ? error.message : String(error))],
-            ],
-        }),
-        exitCode: notReadable ? ExitCode.InputUnsupported : ExitCode.IrOrWriterFailure,
-    };
-}
-
 async function publishBinary(path: string, content: Uint8Array): Promise<void> {
     const dir = dirname(path);
     await mkdir(dir, { recursive: true });
@@ -583,16 +563,16 @@ export async function runMarkdownProjectPipeline(input: {
         try {
             inputBytes = await readFile(inputPath);
         } catch (error) {
-            const notReadable = inputReadError(inputPath, error);
+            const failure = inputReadFailure(inputPath, error);
             return blocked(
                 ctx,
                 "convert",
                 inputPath,
                 resolved,
                 shared,
-                "input is not readable",
-                [notReadable.diagnostic],
-                notReadable.exitCode,
+                failure.reason,
+                [failure.diagnostic],
+                failure.exitCode,
             );
         }
     }

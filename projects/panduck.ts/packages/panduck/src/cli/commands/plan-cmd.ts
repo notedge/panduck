@@ -5,16 +5,12 @@ import {
     buildBlockedReport,
     buildUnlistedRouteReport,
     createContext,
+    inputReadFailure,
     resolveFormats,
     validateIoPaths,
 } from "../context.js";
 import { createDiagnostic, textArg } from "../../diagnostic.js";
 import { PANDUCK_DIAGNOSTIC_CODES } from "../../diagnostic-codes.js";
-import {
-    inputReadFailureReason,
-    isRemoteUri,
-    REMOTE_INPUT_DIAGNOSTIC,
-} from "../paths.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { findFormat, isOperationReady, routeCoverage, routeListed } from "../format-registry.js";
@@ -82,29 +78,20 @@ async function runPlan(options: ParsedOptions): Promise<number> {
 
         try {
             await assertReadableInput(inputPath);
-        } catch {
-            const reason = inputReadFailureReason(inputPath);
+        } catch (error) {
+            const failure = inputReadFailure(inputPath, error);
             const report = buildBlockedReport(
                 ctx,
                 "plan",
                 inputPath,
                 resolved,
-                reason,
-                ExitCode.InputUnsupported,
+                failure.reason,
+                failure.exitCode,
                 shared,
-                isRemoteUri(inputPath)
-                    ? [
-                          createDiagnostic({
-                              code: REMOTE_INPUT_DIAGNOSTIC,
-                              component: "input",
-                              severity: "error",
-                              fallback: reason,
-                          }),
-                      ]
-                    : undefined,
+                [failure.diagnostic],
             );
             emitReport(report, shared.diagnostics, shared.json);
-            return ExitCode.InputUnsupported;
+            return failure.exitCode;
         }
 
         const source = resolved.from ? findFormat(ctx.registry, resolved.from) : undefined;
@@ -145,7 +132,7 @@ async function runPlan(options: ParsedOptions): Promise<number> {
                         stages: ["detect", "read", "ir", "write", "publish"],
                         blocked_reason: `reader state is ${source.reader.state}`,
                     },
-                    coverage: target.coverage,
+                    coverage: routeCoverage(ctx.registry, resolved.from, resolved.to),
                     diagnostics: [
                         createDiagnostic({
                             code: PANDUCK_DIAGNOSTIC_CODES.readerNotReady,
@@ -175,7 +162,7 @@ async function runPlan(options: ParsedOptions): Promise<number> {
                         stages: ["detect", "read", "ir", "write", "publish"],
                         blocked_reason: `writer state is ${target.writer.state}`,
                     },
-                    coverage: target.coverage,
+                    coverage: routeCoverage(ctx.registry, resolved.from, resolved.to),
                     diagnostics: [
                         createDiagnostic({
                             code: PANDUCK_DIAGNOSTIC_CODES.writerNotReady,

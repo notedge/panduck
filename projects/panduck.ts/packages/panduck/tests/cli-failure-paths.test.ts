@@ -659,3 +659,130 @@ test("cli refuses --output-dir unless the target is a markdown project", async (
         await rm(workdir, { recursive: true, force: true });
     }
 });
+
+test("one unreadable input reports the same diagnostic code through every command", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-read-code-"));
+    const missing = join(workdir, "absent.md");
+    const present = join(workdir, "present.md");
+    await writeFile(present, "# Present\n\nBody.\n", "utf8");
+
+    try {
+        const runs: Array<{ label: string; args: string[] }> = [
+            { label: "plan", args: ["plan", missing, "--from", "markdown", "--to", "html", "--json"] },
+            { label: "check", args: ["check", missing, "--from", "markdown", "--format", "html", "--json"] },
+            {
+                label: "convert",
+                args: [
+                    "convert",
+                    missing,
+                    "--from",
+                    "markdown",
+                    "--to",
+                    "html",
+                    "-o",
+                    join(workdir, "absent.html"),
+                    "--report",
+                    "-",
+                    "--diagnostics",
+                    "silent",
+                ],
+            },
+            { label: "inspect", args: ["inspect", missing, "--from", "markdown", "--json"] },
+            {
+                label: "convert-batch",
+                args: [
+                    "convert",
+                    missing,
+                    present,
+                    "--from",
+                    "markdown",
+                    "--to",
+                    "html",
+                    "--output-dir",
+                    join(workdir, "batch"),
+                    "--diagnostics",
+                    "json",
+                ],
+            },
+        ];
+        const codes = new Set<string>();
+        for (const entry of runs) {
+            const run = runPanduck(entry.args);
+            assert.equal(run.code, 3, `${entry.label}: an unreadable input is an unsupported input: ${run.stderr}`);
+            const report = parseReport(run.stdout);
+            const code = report.diagnostics?.[0]?.code;
+            assert.equal(code, "panduck.read.not-readable", `${entry.label}: ${run.stdout}`);
+            codes.add(code ?? "");
+        }
+        assert.equal(codes.size, 1, "all commands must agree on one code for one failure");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("one unlisted route reports the same diagnostic code through the route-aware commands", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-route-code-"));
+    const input = join(workdir, "book.xlsx");
+    const second = join(workdir, "second.xlsx");
+    await writeFile(input, "not a workbook", "utf8");
+    await writeFile(second, "not a workbook either", "utf8");
+
+    try {
+        const runs: Array<{ label: string; args: string[] }> = [
+            { label: "plan", args: ["plan", input, "--from", "xlsx", "--to", "markdown", "--json"] },
+            { label: "check", args: ["check", input, "--from", "xlsx", "--format", "markdown", "--json"] },
+            {
+                label: "convert",
+                args: [
+                    "convert",
+                    input,
+                    "--from",
+                    "xlsx",
+                    "--to",
+                    "markdown",
+                    "-o",
+                    join(workdir, "book.md"),
+                    "--report",
+                    "-",
+                    "--diagnostics",
+                    "silent",
+                ],
+            },
+            {
+                label: "convert-batch",
+                args: [
+                    "convert",
+                    input,
+                    second,
+                    "--from",
+                    "xlsx",
+                    "--to",
+                    "markdown",
+                    "--output-dir",
+                    join(workdir, "batch"),
+                    "--diagnostics",
+                    "json",
+                ],
+            },
+        ];
+        const codes = new Set<string>();
+        for (const entry of runs) {
+            const run = runPanduck(entry.args);
+            assert.equal(run.code, 3, `${entry.label}: an unlisted route is an unsupported input: ${run.stderr}`);
+            const report = parseReport(run.stdout);
+            const code = report.diagnostics?.[0]?.code;
+            assert.equal(code, "panduck.route.unlisted", `${entry.label}: ${run.stdout}`);
+            codes.add(code ?? "");
+        }
+        assert.equal(codes.size, 1, "all route-aware commands must agree on one code for one failure");
+
+        const inspect = runPanduck(["inspect", input, "--from", "xlsx", "--json"]);
+        assert.equal(
+            inspect.code === 3 && parseReport(inspect.stdout).diagnostics?.[0]?.code === "panduck.route.unlisted",
+            false,
+            "inspect probes containers instead of gating conversion routes, so it must not fake a route failure",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});

@@ -6,6 +6,7 @@ import {
     assertReadableInput,
     buildBlockedReport,
     createContext,
+    inputReadFailure,
     resolveFormats,
 } from "../context.js";
 import { createDiagnostic, parseDiagnosticEnvelope, textArg } from "../../diagnostic.js";
@@ -16,10 +17,7 @@ import { CliOptionError, parseInspectStage, readSharedOptions, readString } from
 import { configureConsoleBackend } from "../console-backend.js";
 import { createReport } from "../report.js";
 import {
-    inputReadFailureReason,
-    isRemoteUri,
     isStdinPath,
-    REMOTE_INPUT_DIAGNOSTIC,
 } from "../paths.js";
 
 export function registerInspectCommand(cli: Cli): void {
@@ -61,29 +59,20 @@ async function runInspect(options: ParsedOptions): Promise<number> {
 
         try {
             await assertReadableInput(inputPath);
-        } catch {
-            const reason = inputReadFailureReason(inputPath);
+        } catch (error) {
+            const failure = inputReadFailure(inputPath, error);
             const report = buildBlockedReport(
                 ctx,
                 "inspect",
                 inputPath,
                 resolved,
-                reason,
-                ExitCode.InputUnsupported,
+                failure.reason,
+                failure.exitCode,
                 shared,
-                isRemoteUri(inputPath)
-                    ? [
-                          createDiagnostic({
-                              code: REMOTE_INPUT_DIAGNOSTIC,
-                              component: "input",
-                              severity: "error",
-                              fallback: reason,
-                          }),
-                      ]
-                    : undefined,
+                [failure.diagnostic],
             );
             emitReport(report, shared.diagnostics, shared.json);
-            return ExitCode.InputUnsupported;
+            return failure.exitCode;
         }
 
         const size = isStdinPath(inputPath) ? null : (await stat(inputPath)).size;

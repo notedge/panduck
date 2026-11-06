@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -12,7 +12,9 @@ type BatchReport = {
     status: string;
     inputs?: Array<{ path: string; format?: string }>;
     outputs?: Array<{ path: string; published: boolean }>;
+    losses?: Array<{ code: string }>;
     diagnostics?: Array<{ code: string }>;
+    coverage?: { state: string; known?: string[]; unknown?: string[] } | null;
     status_policy?: { exit_code: number };
 };
 
@@ -259,6 +261,111 @@ test("profile flags reject with the v0 behavior instead of a bare flag list", as
         assert.equal(plan.code, 2, plan.stderr);
         assert.match(plan.stderr, /these flags are not supported in v0: --config/);
         assert.match(plan.stderr, /profile selection is not available in v0/);
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("batch aggregates mixed failure classes under the worst exit code and writes nothing for failed entries", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-batch-mixed-"));
+    const outputDir = join(workdir, "out");
+    await mkdir(outputDir, { recursive: true });
+    const good = join(workdir, "good.md");
+    const broken = join(workdir, "broken.docx");
+    const unknown = join(workdir, "book.xlsx");
+    await writeFile(good, "# Good\n\nBody.\n", "utf8");
+    await writeFile(broken, "this is not a zip container", "utf8");
+    await writeFile(unknown, "not a workbook", "utf8");
+
+    try {
+        const run = runPanduck([
+            "convert",
+            good,
+            broken,
+            unknown,
+            "--to",
+            "html",
+            "--output-dir",
+            outputDir,
+            "--diagnostics",
+            "json",
+        ]);
+        assert.equal(run.code, 4, `a parse failure outranks an unlisted route: ${run.stderr}`);
+        const report = JSON.parse(run.stdout) as BatchReport;
+        assert.equal(report.operation, "convert-batch");
+        assert.equal(report.status, "blocked", "any failed entry blocks the aggregate status");
+        assert.deepEqual(
+            report.inputs?.map((input) => input.format ?? null),
+            ["markdown", "docx", null],
+            "the aggregate must keep every input once, in order",
+        );
+        assert.deepEqual(
+            report.outputs?.map((output) => output.path),
+            [join(outputDir, "good.html")],
+            "only the readable entry publishes",
+        );
+        assert.deepEqual(
+            report.diagnostics?.map((diagnostic) => diagnostic.code).sort(),
+            ["notedown.format.invalid-input", "panduck.route.unlisted"],
+            "failures aggregate into one flat diagnostic list",
+        );
+        assert.deepEqual(
+            report.coverage,
+            { state: "unavailable" },
+            "one unavailable entry makes the batch route unavailable",
+        );
+        assert.equal(await exists(join(outputDir, "broken.html")), false, "the failed entry publishes nothing");
+        assert.deepEqual(
+            (await readdir(outputDir)).filter((name) => name.endsWith(".tmp")),
+            [],
+            "a failed entry must not leave a temp file behind",
+        );
+        assert.equal(await exists(join(outputDir, "book.html")), false, "the unlisted entry publishes nothing");
+        assert.equal(report.status_policy?.exit_code, 4);
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("batch aggregates declared loss and still publishes every entry under the deny policy", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-batch-loss-"));
+    const outputDir = join(workdir, "out");
+    const inputs = [join(workdir, "first.html"), join(workdir, "second.html")];
+    for (const path of inputs) {
+        await writeFile(path, "<!doctype html><html><body><h1>Doc</h1><p>Body.</p></body></html>", "utf8");
+    }
+
+    try {
+        const run = runPanduck([
+            "convert",
+            ...inputs,
+            "--from",
+            "html",
+            "--to",
+            "markdown",
+            "--output-dir",
+            outputDir,
+            "--loss",
+            "deny",
+            "--diagnostics",
+            "json",
+        ]);
+        assert.equal(run.code, 1, `the deny policy must win over success: ${run.stderr}`);
+        const report = JSON.parse(run.stdout) as BatchReport;
+        assert.equal(report.status, "success_with_loss");
+        assert.equal(report.outputs?.length, 2, "every entry converts");
+        assert.ok(report.outputs?.every((output) => output.published), "the deny policy still publishes");
+        assert.ok(
+            (report.losses?.length ?? 0) >= 2,
+            "each lossy entry contributes its own declared loss",
+        );
+        assert.ok(
+            report.losses?.some((loss) => loss.code === "import.html.partial_coverage"),
+            "the aggregate must keep the upstream loss code",
+        );
+        assert.equal(report.status_policy?.exit_code, 1);
+        assert.equal(await exists(join(outputDir, "first.md")), true);
+        assert.equal(await exists(join(outputDir, "second.md")), true);
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }

@@ -5,15 +5,11 @@ import {
     buildBlockedReport,
     buildUnlistedRouteReport,
     createContext,
+    inputReadFailure,
     resolveFormats,
 } from "../context.js";
 import { createDiagnostic } from "../../diagnostic.js";
 import { PANDUCK_DIAGNOSTIC_CODES } from "../../diagnostic-codes.js";
-import {
-    inputReadFailureReason,
-    isRemoteUri,
-    REMOTE_INPUT_DIAGNOSTIC,
-} from "../paths.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import { findFormat, routeCoverage, routeListed } from "../format-registry.js";
@@ -71,29 +67,20 @@ async function runCheck(options: ParsedOptions): Promise<number> {
 
         try {
             await assertReadableInput(inputPath);
-        } catch {
-            const reason = inputReadFailureReason(inputPath);
+        } catch (error) {
+            const failure = inputReadFailure(inputPath, error);
             const report = buildBlockedReport(
                 ctx,
                 "check",
                 inputPath,
                 resolved,
-                reason,
-                ExitCode.InputUnsupported,
+                failure.reason,
+                failure.exitCode,
                 shared,
-                isRemoteUri(inputPath)
-                    ? [
-                          createDiagnostic({
-                              code: REMOTE_INPUT_DIAGNOSTIC,
-                              component: "input",
-                              severity: "error",
-                              fallback: reason,
-                          }),
-                      ]
-                    : undefined,
+                [failure.diagnostic],
             );
             emitReport(report, shared.diagnostics, shared.json);
-            return ExitCode.InputUnsupported;
+            return failure.exitCode;
         }
 
         const source = resolved.from ? findFormat(ctx.registry, resolved.from) : undefined;

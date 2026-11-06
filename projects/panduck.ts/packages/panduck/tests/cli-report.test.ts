@@ -256,3 +256,84 @@ test("cli rejects a request that puts both the document and the report on stdout
         await rm(workdir, { recursive: true, force: true });
     }
 });
+
+test("plan, check, convert and convert-batch derive coverage from the same route record", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-report-coverage-parity-"));
+    const first = join(workdir, "first.md");
+    const second = join(workdir, "second.md");
+    const output = join(workdir, "first.html");
+    const outputDir = join(workdir, "batch");
+    await writeFile(first, SOURCE, "utf8");
+    await writeFile(second, "# Second\n\nBody.\n", "utf8");
+    const expected = {
+        state: "partial",
+        known: ["paragraph", "heading"],
+        unknown: ["script", "style"],
+    };
+
+    try {
+        const runs = [
+            {
+                label: "plan",
+                run: runPanduck(["plan", first, "--from", "markdown", "--to", "html", "--json"]),
+            },
+            {
+                label: "check",
+                run: runPanduck(["check", first, "--from", "markdown", "--format", "html", "--json"]),
+            },
+            {
+                label: "convert",
+                run: runPanduck([
+                    "convert",
+                    first,
+                    "--from",
+                    "markdown",
+                    "--to",
+                    "html",
+                    "--output",
+                    output,
+                    "--report",
+                    "-",
+                    "--diagnostics",
+                    "silent",
+                ]),
+            },
+            {
+                label: "convert-batch",
+                run: runPanduck([
+                    "convert",
+                    first,
+                    second,
+                    "--from",
+                    "markdown",
+                    "--to",
+                    "html",
+                    "--output-dir",
+                    outputDir,
+                    "--diagnostics",
+                    "json",
+                ]),
+            },
+        ];
+        for (const entry of runs) {
+            assert.equal(entry.run.code, 0, `${entry.label}: ${entry.run.stderr}`);
+            const report = JSON.parse(entry.run.stdout) as CliReport;
+            assert.deepEqual(
+                report.coverage,
+                expected,
+                `${entry.label} must report the same route coverage as the other commands`,
+            );
+        }
+
+        const inspect = runPanduck(["inspect", first, "--from", "markdown", "--json"]);
+        assert.equal(inspect.code, 0, inspect.stderr);
+        const inspectReport = JSON.parse(inspect.stdout) as CliReport;
+        assert.equal(
+            inspectReport.coverage,
+            null,
+            "inspect has no conversion route, so it must not fabricate coverage",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});

@@ -9,6 +9,7 @@ import {
     buildBlockedReport,
     buildUnlistedRouteReport,
     createContext,
+    inputReadFailure,
     resolveFormats,
     validateConversionPaths,
 } from "../context.js";
@@ -32,11 +33,8 @@ import {
 } from "../options.js";
 import { createReport, type PanduckReport } from "../report.js";
 import {
-    inputReadFailureReason,
-    isRemoteUri,
     isStdinPath,
     isStdoutPath,
-    REMOTE_INPUT_DIAGNOSTIC,
 } from "../paths.js";
 import { configureConsoleBackend } from "../console-backend.js";
 import {
@@ -259,28 +257,19 @@ async function convertSingleFile(input: {
 
         try {
             await assertReadableInput(inputPath);
-        } catch {
-            const reason = inputReadFailureReason(inputPath);
+        } catch (error) {
+            const failure = inputReadFailure(inputPath, error);
             return {
-                exitCode: ExitCode.InputUnsupported,
+                exitCode: failure.exitCode,
                 report: buildBlockedReport(
                     ctx,
                     "convert",
                     inputPath,
                     resolved,
-                    reason,
-                    ExitCode.InputUnsupported,
+                    failure.reason,
+                    failure.exitCode,
                     shared,
-                    isRemoteUri(inputPath)
-                        ? [
-                              createDiagnostic({
-                                  code: REMOTE_INPUT_DIAGNOSTIC,
-                                  component: "input",
-                                  severity: "error",
-                                  fallback: reason,
-                              }),
-                          ]
-                        : undefined,
+                    [failure.diagnostic],
                 ),
             };
         }
@@ -591,25 +580,29 @@ async function runBatchConvert(input: {
     }
 
     const status: PanduckReport["status"] = blocked ? "blocked" : withLoss ? "success_with_loss" : "success";
-    const sourceStates: CapabilityState[] = inputs.map((inputPath) => {
+    const routeStates = inputs.map((inputPath) => {
         const resolved = resolveFormats(inputPath, undefined, shared);
-        if (!routeListed(ctx.registry, resolved.from, to)) {
-            return "unavailable";
-        }
-        return routeCoverage(ctx.registry, resolved.from, to).state;
+        return routeCoverage(ctx.registry, resolved.from, to);
     });
-    const coverageState: CapabilityState = sourceStates.every((state) => state === "ready")
+    const coverageState: CapabilityState = routeStates.every((route) => route.state === "ready")
         ? "ready"
-        : sourceStates.some((state) => state === "unavailable")
+        : routeStates.some((route) => route.state === "unavailable")
           ? "unavailable"
           : "partial";
+    // Every input shares one target writer, so the declared coverage is the
+    // same record `routeCoverage` reads for `plan`, `check` and single `convert`.
+    const declared = routeStates.find((route) => route.state !== "unavailable");
+    const coverage: PanduckReport["coverage"] =
+        coverageState === "unavailable"
+            ? { state: coverageState }
+            : { state: coverageState, known: declared?.known, unknown: declared?.unknown };
     const report = createReport({
         operation: "convert-batch",
         toolVersion: ctx.toolVersion,
         status,
         inputs: inputsReport,
         pipeline: { writer: to, stages: ["read", "ir", "write", "publish"] },
-        coverage: { state: coverageState },
+        coverage,
         losses,
         diagnostics,
         outputs,

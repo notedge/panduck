@@ -7,7 +7,7 @@ import { createDiagnostic, textArg } from "../diagnostic.js";
 import type { DiagnosticRecord } from "../diagnostic.js";
 import { loadPanduckNode } from "../node/load.js";
 import { getFormatRegistry, findFormat, type FormatRecord } from "./format-registry.js";
-import { extensionHints, inferTargetFromPath, isStdinPath, normalizeFormatId, pathsOverlap } from "./paths.js";
+import { extensionHints, inferTargetFromPath, inputReadFailureReason, isRemoteUri, isStdinPath, normalizeFormatId, pathsOverlap } from "./paths.js";
 import { ExitCode } from "./exit-codes.js";
 import type { SharedCliOptions } from "./options.js";
 import { createReport, type PanduckReport } from "./report.js";
@@ -65,6 +65,50 @@ export async function assertReadableInput(path: string): Promise<void> {
         return;
     }
     await access(path, constants.R_OK);
+}
+
+/**
+ * Classifies a failed input read into one shared diagnostic and exit code.
+ *
+ * Every command runs the same admission read before conversion, and the
+ * pipeline repeats the read after that check. Routing both through this helper
+ * keeps one failure on one code across `plan`, `check`, `convert`, `inspect`
+ * and `convert-batch` instead of falling back to the generic capability-gate
+ * code.
+ */
+export function inputReadFailure(
+    inputPath: string,
+    error: unknown,
+): { diagnostic: DiagnosticRecord; exitCode: number; reason: string } {
+    if (isRemoteUri(inputPath)) {
+        return {
+            diagnostic: createDiagnostic({
+                code: PANDUCK_DIAGNOSTIC_CODES.remoteFetchDisabled,
+                component: "input",
+                severity: "error",
+                fallback: inputReadFailureReason(inputPath),
+            }),
+            exitCode: ExitCode.InputUnsupported,
+            reason: inputReadFailureReason(inputPath),
+        };
+    }
+    const errno = (error as NodeJS.ErrnoException).code;
+    const notReadable = errno === "ENOENT" || errno === "EACCES" || errno === "EPERM" || errno === "EISDIR";
+    const reason = notReadable ? "input is not readable" : "input could not be read";
+    return {
+        diagnostic: createDiagnostic({
+            code: notReadable ? PANDUCK_DIAGNOSTIC_CODES.readNotReadable : PANDUCK_DIAGNOSTIC_CODES.readIoFailed,
+            component: "read",
+            severity: "error",
+            fallback: reason,
+            args: [
+                ["path", textArg(inputPath)],
+                ["message", textArg(error instanceof Error ? error.message : String(error))],
+            ],
+        }),
+        exitCode: notReadable ? ExitCode.InputUnsupported : ExitCode.IrOrWriterFailure,
+        reason,
+    };
 }
 
 export function buildBlockedReport(
