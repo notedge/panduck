@@ -271,6 +271,18 @@ test("doc project route publishes the readable text and declares its partial los
             (report.outputs as Array<{ path: string }>).every((output) => !output.path.includes("assets")),
             "a DOC text project must not claim published assets",
         );
+
+        const reopened = await new Converter().toMarkdown(
+            index,
+            defineConversion({
+                id: "doc-project-reopen",
+                input: { format: "markdown", label: "index.md" },
+                output: { format: "markdown" },
+            }),
+        );
+        assert.notEqual(reopened.status, "failed");
+        assert.match(reopened.text, /Hello legacy DOC/);
+        assert.match(reopened.text, /Second paragraph/);
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }
@@ -338,6 +350,18 @@ test("pdf project route republishes extracted text with the same losses as the p
         const plainLosses = (plainReport.losses as Array<{ code: string }>).map((loss) => loss.code).sort();
         assert.deepEqual(lossCodes, plainLosses, "the project report must declare the same PDF import losses");
         assert.deepEqual(projectReport.coverage, plainReport.coverage);
+
+        const reopened = await converter.toMarkdown(
+            index,
+            defineConversion({
+                id: "pdf-project-reopen",
+                input: { format: "markdown", label: "index.md" },
+                output: { format: "markdown" },
+            }),
+        );
+        assert.notEqual(reopened.status, "failed");
+        assert.match(reopened.text, /# Report/);
+        assert.match(reopened.text, /Hello PDF paragraph\./);
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }
