@@ -322,21 +322,6 @@ async function convertSingleFile(input: {
               )
             : hasPipeline(ctx.bindings, resolved.from, resolved.to);
 
-        if (resolved.from === "doc" && !markdownProjectTarget) {
-            return {
-                exitCode: ExitCode.InputUnsupported,
-                report: buildBlockedReport(
-                    ctx,
-                    "convert",
-                    inputPath,
-                    resolved,
-                    "legacy .doc import requires OLE reader support; convert to .docx first",
-                    ExitCode.InputUnsupported,
-                    shared,
-                ),
-            };
-        }
-
         if (!routeReady) {
             if (source && !isOperationReady(source, "read")) {
                 return {

@@ -1,12 +1,18 @@
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { runPanduck } from "./helpers/cli.js";
 import { storedZip } from "./helpers/stored-zip.js";
 import { minimalDocumentXml } from "./fixtures/docx-xml.js";
+
+const legacyDocPath = join(
+    dirname(fileURLToPath(import.meta.url)),
+    "../../panduck-fixtures/fixtures/acorn/doc/legacy_plain.doc",
+);
 
 const containerXml = `<?xml version="1.0" encoding="UTF-8"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
@@ -426,3 +432,45 @@ test("html to docx keeps the heading, styled run and link through DOCX import", 
         await rm(workdir, { recursive: true, force: true });
     }
 });
+
+const docTargets = [
+    { to: "markdown", prefix: undefined },
+    { to: "html", prefix: "<" },
+    { to: "docx", prefix: "PK" },
+    { to: "pdf", prefix: "%PDF-" },
+    { to: "epub", prefix: "PK" },
+] as const;
+
+for (const { to, prefix } of docTargets) {
+    test(`doc to ${to} keeps both paragraphs through ${to} reopen`, async () => {
+        const workdir = await mkdtemp(join(tmpdir(), `panduck-doc-${to}-`));
+        try {
+            const { artifact, markdown, report } = await convertAndReopen({
+                workdir,
+                bytes: await readFile(legacyDocPath),
+                label: "legacy.doc",
+                from: "doc",
+                to,
+            });
+
+            if (prefix) {
+                assert.ok(
+                    artifact.subarray(0, prefix.length).toString().startsWith(prefix),
+                    `the artifact must be a ${to} file`,
+                );
+            }
+
+            assert.match(markdown, /Hello legacy DOC/, "reopening must recover the first paragraph");
+            assert.match(markdown, /Second paragraph/, "reopening must recover the second paragraph");
+
+            assert.equal(report.status, "success_with_loss", "partial coverage must be declared, not hidden");
+            assert.deepEqual(
+                report.losses.map((loss) => loss.code),
+                ["import.doc.partial_coverage"],
+                "the only declared loss must be the DOC import partial coverage marker",
+            );
+        } finally {
+            await rm(workdir, { recursive: true, force: true });
+        }
+    });
+}
