@@ -312,11 +312,12 @@ test("list numbering, task markers, and quoted nesting survive the markdown roun
     }
 });
 
-test("merged table cells survive the html to markdown to html roundtrip", async () => {
+test("merged table cells flatten into a pipe table instead of inline HTML", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-merged-cells-"));
     const input = join(workdir, "spans.html");
     const markdownPath = join(workdir, "spans.md");
     const backPath = join(workdir, "spans-back.html");
+    const reportPath = join(workdir, "spans-report.json");
     await writeFile(
         input,
         sampleHtml('<table><tr><th colspan="2">Head</th></tr><tr><td rowspan="2">a</td><td>b</td></tr><tr><td>c</td></tr></table>'),
@@ -324,18 +325,42 @@ test("merged table cells survive the html to markdown to html roundtrip", async 
     );
 
     try {
-        const toMarkdown = runPanduck(["convert", input, "--from", "html", "--to", "markdown", "-o", markdownPath, "--diagnostics", "json"]);
+        const toMarkdown = runPanduck([
+            "convert",
+            input,
+            "--from",
+            "html",
+            "--to",
+            "markdown",
+            "-o",
+            markdownPath,
+            "--diagnostics",
+            "silent",
+            "--report",
+            reportPath,
+        ]);
         assert.equal(toMarkdown.code, 0, toMarkdown.stderr);
         const markdown = await readFile(markdownPath, "utf8");
-        assert.match(markdown, /<table>/, "a spanning table must be written as an HTML table rather than flattened");
-        assert.match(markdown, /colspan="2"/, "the column span must be written back");
-        assert.match(markdown, /rowspan="2"/, "the row span must be written back");
+        assert.ok(!markdown.includes("<table>"), `merged cells must not be written as inline HTML: ${markdown}`);
+        assert.ok(!/colspan|rowspan/.test(markdown), `the spans must be flattened away: ${markdown}`);
+        assert.match(markdown, /\| Head \|/, "the header text must survive the flatten");
+        assert.match(markdown, /\| a \| b \|/, "the body text must survive the flatten");
+        const report = JSON.parse(await readFile(reportPath, "utf8")) as {
+            losses: Array<{ code: string; status: string }>;
+        };
+        assert.ok(
+            report.losses.some((loss) => loss.code === "import.html.table_spans" && loss.status === "Partial"),
+            `the flatten downgrade must be reported: ${JSON.stringify(report.losses)}`,
+        );
 
-        const back = runPanduck(["convert", markdownPath, "--from", "markdown", "--to", "html", "-o", backPath, "--diagnostics", "json"]);
+        const back = runPanduck(["convert", markdownPath, "--from", "markdown", "--to", "html", "-o", backPath, "--diagnostics", "silent"]);
         assert.equal(back.code, 0, back.stderr);
         const html = await readFile(backPath, "utf8");
-        assert.match(html, /<th colspan="2">Head<\/th>/, "the reopened table keeps the column span: " + html);
-        assert.match(html, /<td rowspan="2">a<\/td>/, "the reopened table keeps the row span: " + html);
+        assert.match(html, /<table>/, "the table must reopen as a table");
+        assert.ok(!/colspan|rowspan/.test(html), `the reopened table must stay unmerged: ${html}`);
+        for (const text of ["Head", "a", "b", "c"]) {
+            assert.match(html, new RegExp(`<t[hd][^>]*>${text}</t[hd]>`), `the cell text ${text} must survive: ${html}`);
+        }
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }
