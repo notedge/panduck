@@ -100,7 +100,7 @@
         {
             "id": "html-inline-attributes-rejection",
             "kind": "rejection",
-            "title": "HTML inline id and class attributes are refused instead of dropped",
+            "title": "HTML keeps the prose it can map and declares each unsupported form element as a loss",
             "input": "notedown/basic.html",
             "from": "html",
             "to": "markdown",

@@ -2,10 +2,40 @@
     "schema": "panduck.harness.expectation",
     "caseId": "html-inline-attributes-rejection",
     "assertions": [
-        { "kind": "exit-code", "expected": 1 },
-        { "kind": "report-status", "expected": "failed" },
-        { "kind": "loss-codes", "expected": [] },
-        { "kind": "diagnostic-codes", "expected": ["notedown.format.unsupported"] }
+        { "kind": "exit-code", "expected": 0 },
+        { "kind": "report-status", "expected": "success_with_loss" },
+        {
+            "kind": "loss-codes",
+            "expected": [
+                "import.html.image_dimensions",
+                "import.html.unsupported_style",
+                "import.html.unsupported_form",
+                "import.html.unsupported_input",
+                "import.html.unsupported_input",
+                "import.html.unsupported_input",
+                "import.html.unsupported_select",
+                "import.html.unsupported_textarea",
+                "import.html.unsupported_input",
+                "import.html.unsupported_button",
+                "import.html.unsupported_script",
+                "import.html.partial_coverage"
+            ]
+        },
+        {
+            "kind": "diagnostic-codes",
+            "expected": [
+                "import.html.image_dimensions",
+                "import.html.unsupported_style",
+                "import.html.unsupported_form",
+                "import.html.unsupported_input",
+                "import.html.unsupported_select",
+                "import.html.unsupported_textarea",
+                "import.html.unsupported_button",
+                "import.html.unsupported_script",
+                "import.html.partial_coverage"
+            ]
+        },
+        { "kind": "contains", "target": "text", "value": "This is a **paragraph** with *emphasis*" }
     ],
     "provenance": [
         {
@@ -13,6 +43,12 @@
             "reason": "The migrated html corpus carries inline `id` and `class` attributes that Markdown cannot represent, so the declared behavior is a visible refusal rather than a silent drop",
             "semantic": "html inline attributes are refused with notedown.format.unsupported",
             "updatedAt": "2026-11-04T00:00:00.000Z"
+        },
+        {
+            "author": "document-harness",
+            "reason": "The html importer keeps the prose, tables, lists and links it can map and reports one loss per element it cannot represent, so form controls, inline style, script and image dimensions are declared instead of aborting the conversion",
+            "semantic": "html input converts to markdown with declared losses for unsupported style, form and script elements",
+            "updatedAt": "2026-11-06T00:00:00.000Z"
         }
     ]
 }
