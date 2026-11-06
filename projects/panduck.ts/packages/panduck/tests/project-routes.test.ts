@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -66,6 +66,22 @@ const projectBookChapterTwo = `<?xml version="1.0" encoding="UTF-8"?>
 
 const coverBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x00, 0x01, 0x02, 0x03]);
 
+async function collectTree(directory: string): Promise<Array<[string, string]>> {
+    const entries = await readdir(directory, { withFileTypes: true });
+    const tree: Array<[string, string]> = [];
+    for (const entry of entries) {
+        const full = join(directory, entry.name);
+        if (entry.isDirectory()) {
+            for (const [relative, digest] of await collectTree(full)) {
+                tree.push([join(entry.name, relative), digest]);
+            }
+        } else {
+            tree.push([entry.name, (await readFile(full)).toString("base64")]);
+        }
+    }
+    return tree.sort(([left], [right]) => left.localeCompare(right));
+}
+
 /** A two-chapter EPUB whose second chapter names an image the package lacks. */
 function projectBookEpub(): Buffer {
     return storedZip([
@@ -124,6 +140,11 @@ test("epub project keeps spine order, materializes package assets and reports mi
         const lossCodes = (report.losses as Array<{ code: string }>).map((loss) => loss.code).sort();
         assert.deepEqual(lossCodes, ["import.epub.asset_unresolved", "import.epub.partial_coverage"]);
         assert.deepEqual(report.unresolved_assets, ["OEBPS/images/missing.png"]);
+        assert.equal(
+            lossCodes.filter((code) => code === "import.epub.asset_unresolved").length,
+            report.unresolved_assets.length,
+            "every unresolved asset must be counted by the matching IR loss",
+        );
         const unresolved = result.diagnostics.find((entry) => entry.code === "import.epub.asset_unresolved");
         assert.equal(
             unresolved?.severity,
@@ -144,6 +165,22 @@ test("epub project keeps spine order, materializes package assets and reports mi
         assert.notEqual(reopened.status, "failed");
         assert.match(reopened.text, /# Chapter One/);
         assert.match(reopened.text, /First \*\*chapter\*\* body\./);
+
+        const again = await converter.toMarkdown(
+            projectBookEpub(),
+            defineConversion({
+                id: "epub-project-again",
+                input: { format: "epub", label: "project-book.epub" },
+                output: { format: "markdown" },
+                publish: { kind: "markdown-project", directory: join(workdir, "book-again") },
+            }),
+        );
+        assert.equal(again.status, "success_with_loss");
+        assert.deepEqual(
+            await collectTree(join(workdir, "book-again")),
+            await collectTree(outputDir),
+            "the same EPUB input must publish a byte-identical project tree",
+        );
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }
