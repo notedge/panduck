@@ -706,6 +706,26 @@ fn issue_record(issue: &document_ir::ValidationIssue) -> IrValidationIssue {
                 table.0, row_index, cell_index, found, total_rows
             ),
         ),
+        Issue::EmptyMetadataKey { path } => (
+            "EmptyMetadataKey",
+            format!("metadata:{path}"),
+            format!("metadata entry at `{path}` has an empty key"),
+        ),
+        Issue::DuplicateMetadataKey { key, first, repeated } => (
+            "DuplicateMetadataKey",
+            format!("metadata:{key}"),
+            format!("metadata key `{key}` repeats at index {repeated}, first seen at index {first}"),
+        ),
+        Issue::ReservedMetadataKey { key } => (
+            "ReservedMetadataKey",
+            format!("metadata:{key}"),
+            format!("metadata key `{key}` is owned by a fixed document metadata field"),
+        ),
+        Issue::NonFiniteMetadataFloat { path } => (
+            "NonFiniteMetadataFloat",
+            format!("metadata:{path}"),
+            format!("metadata value at `{path}` is a non-finite float"),
+        ),
     };
     IrValidationIssue {
         code: code.to_string(),
