@@ -287,7 +287,7 @@ export class Converter {
         }
 
         reportRustLoss(diagnostics, outcome.losses, label, urlHint);
-        const status = deriveStatus(diagnostics, {
+        const status = deriveStatus({
             lossCount: outcome.losses.length,
             ok: true,
             requireNoLoss,
@@ -377,7 +377,7 @@ export class Converter {
         }
 
         reportRustLoss(diagnostics, outcome.losses, label, urlHint);
-        const status = deriveStatus(diagnostics, {
+        const status = deriveStatus({
             lossCount: outcome.losses.length,
             ok: true,
             requireNoLoss,
@@ -512,19 +512,20 @@ function makeResult(
 /**
  * Derive ConverterStatus from real run data only:
  *   1. Primitive success → false means hard failure.
- *   2. Error-severity diagnostics → failed.
- *   3. `requireNoLoss` (ConversionPlan deny) → any IR loss is failed.
- *   4. Real IR loss markers → success_with_loss.
- *   5. Otherwise → success.
+ *   2. `requireNoLoss` (ConversionPlan deny) → any IR loss is failed.
+ *   3. Real IR loss markers → success_with_loss.
+ *   4. Otherwise → success.
  *
- * Diagnostic code names are never inspected to guess loss.
+ * Diagnostic severity and diagnostic code names are never inspected to guess
+ * loss or failure, so an `unresolved` loss marker stays a declared loss exactly
+ * as the CLI report and harness classify it.
  */
-function deriveStatus(
-    diags: DiagnosticRecord[],
-    ctx: { lossCount: number; ok: boolean; requireNoLoss: boolean },
-): ConverterStatus {
+function deriveStatus(ctx: {
+    lossCount: number;
+    ok: boolean;
+    requireNoLoss: boolean;
+}): ConverterStatus {
     if (!ctx.ok) return "failed";
-    if (diags.some((d) => d.severity === "error")) return "failed";
     if (ctx.lossCount > 0) {
         if (ctx.requireNoLoss) return "failed";
         return "success_with_loss";
