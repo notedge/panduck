@@ -2,7 +2,7 @@ import type { Cli, ParsedOptions } from "@vmz/commander";
 
 import { createContext } from "../context.js";
 import { emitJson } from "../diagnostics.js";
-import { findFormat, type FormatRecord, type OperationKind } from "../format-registry.js";
+import { findFormat, routeListed, type FormatRecord, type OperationKind } from "../format-registry.js";
 import { readSharedOptions, readString } from "../options.js";
 
 export function registerFormatsCommand(cli: Cli): void {
@@ -55,19 +55,11 @@ function runFormats(options: ParsedOptions): number {
  * such as `xlsx` and `pptx` must not advertise conversions they cannot export.
  */
 function listedConversions(registry: readonly FormatRecord[], routes: readonly string[]): string[] {
-    const byFormat = new Map(registry.map((record) => [record.format, record]));
     return routes.filter((route) => {
         const separator = route.indexOf(":");
         if (separator <= 0) {
             return false;
         }
-        const source = byFormat.get(route.slice(0, separator));
-        const target = byFormat.get(route.slice(separator + 1));
-        return Boolean(
-            source &&
-                target &&
-                source.reader.state !== "unavailable" &&
-                target.writer.state !== "unavailable",
-        );
+        return routeListed(registry, route.slice(0, separator), route.slice(separator + 1));
     });
 }

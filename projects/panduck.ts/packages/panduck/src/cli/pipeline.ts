@@ -17,6 +17,7 @@ import { createReport, type PanduckReport } from "./report.js";
 import { emitReport } from "./diagnostics.js";
 import type { CliContext } from "./context.js";
 import type { ResolvedFormats } from "./context.js";
+import { routeCoverage } from "./format-registry.js";
 import { isStdinPath, isStdoutPath } from "./paths.js";
 
 export type PipelineResult = {
@@ -450,6 +451,7 @@ export async function runConversionPipeline(input: {
             writer: to,
             stages: operation === "check" ? ["read", "ir", "write", "validate"] : ["read", "ir", "write", "publish"],
         },
+        coverage: routeCoverage(ctx.registry, from, to),
         losses: outcome.losses,
         diagnostics: outcome.diagnostics,
         outputs: outputPath
@@ -705,6 +707,7 @@ export async function runMarkdownProjectPipeline(input: {
             writer: "markdown-project",
             stages: ["read", "ir", "write", "materialize", "publish"],
         },
+        coverage: routeCoverage(ctx.registry, from, "markdown-project"),
         losses: outcome.losses,
         diagnostics: outcome.diagnostics,
         outputs: [

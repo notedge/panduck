@@ -160,7 +160,10 @@ function bumpRegistered(state: CapabilityState): CapabilityState {
     return state;
 }
 
-export function findFormat(registry: FormatRecord[], id: string): FormatRecord | undefined {
+export function findFormat(
+    registry: readonly FormatRecord[],
+    id: string,
+): FormatRecord | undefined {
     const needle = id.toLowerCase();
     return registry.find(
         (record) =>
@@ -171,6 +174,54 @@ export function findFormat(registry: FormatRecord[], id: string): FormatRecord |
 export function isOperationReady(record: FormatRecord, operation: OperationKind): boolean {
     const capability = operation === "read" ? record.reader : record.writer;
     return capability.state === "ready";
+}
+
+/**
+ * Whether the static registry advertises `from` → `to` as a conversion route.
+ *
+ * `formats` lists routes with this predicate and `convert`/`plan` gate on the
+ * same predicate, so the advertised matrix and the executable matrix cannot
+ * drift. A format registered only for rendering (for example `xlsx`) is absent
+ * here even when the native layer can import it.
+ */
+export function routeListed(
+    registry: readonly FormatRecord[],
+    from: string | undefined,
+    to: string | undefined,
+): boolean {
+    if (!from || !to) {
+        return false;
+    }
+    const source = findFormat(registry, from);
+    const target = findFormat(registry, to);
+    return Boolean(
+        source &&
+            target &&
+            source.reader.state !== "unavailable" &&
+            target.writer.state !== "unavailable",
+    );
+}
+
+/** Route-level capability state derived from the same records as the formats report. */
+export function routeCoverage(
+    registry: readonly FormatRecord[],
+    from: string | undefined,
+    to: string | undefined,
+): { state: CapabilityState; known?: string[]; unknown?: string[] } {
+    const source = from ? findFormat(registry, from) : undefined;
+    const target = to ? findFormat(registry, to) : undefined;
+    if (!source || !target) {
+        return { state: "unavailable" };
+    }
+    if (source.reader.state === "unavailable" || target.writer.state === "unavailable") {
+        return { state: "unavailable" };
+    }
+    return {
+        state: source.reader.state === "ready" && target.writer.state === "ready" ? "ready" : "partial",
+        // The target writer's declared coverage is what the route cannot express.
+        known: target.coverage.known,
+        unknown: target.coverage.unknown,
+    };
 }
 
 export function ebookAliasTarget(): string {

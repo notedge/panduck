@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { runPanduck } from "./helpers/cli.js";
+
+const fixtures = join(dirname(fileURLToPath(import.meta.url)), "../../panduck-fixtures/fixtures/formats");
 
 test("formats emits markdown capability json", () => {
     const formats = runPanduck(["formats", "markdown", "--json"]);
@@ -44,6 +47,41 @@ test("plan blocks unsupported ready pipeline with report schema", () => {
     const plan = runPanduck(["plan", "package.json", "--from", "markdown", "--to", "typst", "--json"]);
     assert.equal(plan.code, 3);
     assert.match(plan.stdout, /panduck\.report\/v0/);
+});
+
+test("plan reports partial coverage for a listed partial route", () => {
+    const plan = runPanduck(["plan", "package.json", "--from", "markdown", "--to", "html", "--json"]);
+    assert.equal(plan.code, 0, plan.stderr);
+    const report = JSON.parse(plan.stdout) as {
+        status: string;
+        coverage: { state: string; unknown: string[] };
+    };
+    assert.equal(report.status, "partial", "a partial reader must not be reported as success");
+    assert.equal(report.coverage.state, "partial");
+    assert.deepEqual(report.coverage.unknown, ["script", "style"]);
+});
+
+test("plan refuses a route the capability registry does not list", () => {
+    const plan = runPanduck(["plan", "package.json", "--from", "xlsx", "--to", "markdown", "--json"]);
+    assert.equal(plan.code, 3, plan.stderr);
+    const report = JSON.parse(plan.stdout) as {
+        status: string;
+        diagnostics: Array<{ code: string }>;
+    };
+    assert.equal(report.status, "blocked");
+    assert.equal(report.diagnostics[0].code, "panduck.route.unlisted");
+});
+
+test("convert refuses a render-only workbook before the native lane", () => {
+    const workbook = join(fixtures, "xlsx", "multi-sheet.xlsx");
+    const convert = runPanduck(["convert", workbook, "--from", "xlsx", "--to", "markdown", "--report", "-", "--diagnostics", "silent"]);
+    assert.equal(convert.code, 3, convert.stderr);
+    const report = JSON.parse(convert.stdout) as {
+        status: string;
+        diagnostics: Array<{ code: string }>;
+    };
+    assert.equal(report.status, "blocked");
+    assert.equal(report.diagnostics[0].code, "panduck.route.unlisted");
 });
 
 test("global --log-file installs native console sink without breaking commands", () => {

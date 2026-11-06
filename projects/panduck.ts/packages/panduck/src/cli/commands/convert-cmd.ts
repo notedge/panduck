@@ -7,6 +7,7 @@ import type { Cli, ParsedOptions } from "@vmz/commander";
 import {
     assertReadableInput,
     buildBlockedReport,
+    buildUnlistedRouteReport,
     createContext,
     resolveFormats,
     validateConversionPaths,
@@ -15,7 +16,13 @@ import { createDiagnostic } from "../../diagnostic.js";
 import { PANDUCK_DIAGNOSTIC_CODES } from "../../diagnostic-codes.js";
 import { emitJson, emitReport, writeReportFile } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
-import { findFormat, isOperationReady } from "../format-registry.js";
+import {
+    findFormat,
+    isOperationReady,
+    routeCoverage,
+    routeListed,
+    type CapabilityState,
+} from "../format-registry.js";
 import {
     CliOptionError,
     describeUnsupportedFlags,
@@ -322,6 +329,13 @@ async function convertSingleFile(input: {
               )
             : hasPipeline(ctx.bindings, resolved.from, resolved.to);
 
+        if (!routeListed(ctx.registry, resolved.from, resolved.to)) {
+            return {
+                exitCode: ExitCode.InputUnsupported,
+                report: buildUnlistedRouteReport(ctx, "convert", inputPath, resolved, shared),
+            };
+        }
+
         if (!routeReady) {
             if (source && !isOperationReady(source, "read")) {
                 return {
@@ -368,6 +382,7 @@ async function convertSingleFile(input: {
                         writer: target.format,
                         stages: ["detect", "read", "ir", "write", "publish"],
                     },
+                    coverage: routeCoverage(ctx.registry, resolved.from, resolved.to),
                     outputs: outputPath ? [{ path: outputPath, published: false }] : [],
                     budgets: shared.budgets,
                     determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
@@ -573,12 +588,25 @@ async function runBatchConvert(input: {
     }
 
     const status: PanduckReport["status"] = blocked ? "blocked" : withLoss ? "success_with_loss" : "success";
+    const sourceStates: CapabilityState[] = inputs.map((inputPath) => {
+        const resolved = resolveFormats(inputPath, undefined, shared);
+        if (!routeListed(ctx.registry, resolved.from, to)) {
+            return "unavailable";
+        }
+        return routeCoverage(ctx.registry, resolved.from, to).state;
+    });
+    const coverageState: CapabilityState = sourceStates.every((state) => state === "ready")
+        ? "ready"
+        : sourceStates.some((state) => state === "unavailable")
+          ? "unavailable"
+          : "partial";
     const report = createReport({
         operation: "convert-batch",
         toolVersion: ctx.toolVersion,
         status,
         inputs: inputsReport,
         pipeline: { writer: to, stages: ["read", "ir", "write", "publish"] },
+        coverage: { state: coverageState },
         losses,
         diagnostics,
         outputs,

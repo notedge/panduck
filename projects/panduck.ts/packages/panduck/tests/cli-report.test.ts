@@ -12,6 +12,7 @@ type CliReport = {
     operation: string;
     status: string;
     pipeline?: { blocked_reason?: string };
+    coverage?: { state: string; known?: string[]; unknown?: string[] } | null;
     outputs?: Array<{ path: string; published: boolean }>;
 };
 
@@ -25,6 +26,39 @@ async function exists(path: string): Promise<boolean> {
 }
 
 const SOURCE = "# Report Title\n\nBody paragraph.\n";
+
+test("cli convert report carries the route coverage from the capability registry", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-report-coverage-"));
+    const input = join(workdir, "source.md");
+    const output = join(workdir, "source.html");
+    await writeFile(input, SOURCE, "utf8");
+
+    try {
+        const run = runPanduck([
+            "convert",
+            input,
+            "--from",
+            "markdown",
+            "--to",
+            "html",
+            "--output",
+            output,
+            "--report",
+            "-",
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(run.code, 0, run.stderr);
+        const report = JSON.parse(run.stdout) as CliReport;
+        assert.deepEqual(report.coverage, {
+            state: "partial",
+            known: ["paragraph", "heading"],
+            unknown: ["script", "style"],
+        }, "the report must name what the target writer cannot express");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
 
 test("cli writes the report to the requested file on a successful convert", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-report-file-"));

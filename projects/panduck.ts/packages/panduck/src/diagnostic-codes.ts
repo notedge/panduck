@@ -21,6 +21,7 @@ export const PANDUCK_DIAGNOSTIC_CODES = {
     // Plan stage: capability and route gates.
     readerNotReady: "panduck.reader.not_ready",
     writerNotReady: "panduck.writer.not_ready",
+    routeUnlisted: "panduck.route.unlisted",
     inspectNotImplemented: "panduck.inspect.not_implemented",
     cliBlocked: "panduck.cli.blocked",
     conversionPlanActive: "panduck.convert.conversion-plan-active",

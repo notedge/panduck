@@ -49,6 +49,10 @@ export type PanduckReport = {
         state: CapabilityState;
         read?: number;
         write?: number;
+        /** Constructs the target writer declares as covered. */
+        known?: string[];
+        /** Constructs the route is known to drop, reinterpret or refuse. */
+        unknown?: string[];
     } | null;
     /**
      * Content losses recorded by the IR.

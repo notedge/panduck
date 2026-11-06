@@ -3,6 +3,7 @@ import type { Cli, ParsedOptions } from "@vmz/commander";
 import {
     assertReadableInput,
     buildBlockedReport,
+    buildUnlistedRouteReport,
     createContext,
     resolveFormats,
     validateIoPaths,
@@ -16,7 +17,7 @@ import {
 } from "../paths.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
-import { findFormat, isOperationReady } from "../format-registry.js";
+import { findFormat, isOperationReady, routeCoverage, routeListed } from "../format-registry.js";
 import { CliOptionError, describeUnsupportedFlags, readSharedOptions, readString } from "../options.js";
 import { hasPipeline } from "../pipeline.js";
 import { configureConsoleBackend } from "../console-backend.js";
@@ -124,6 +125,12 @@ async function runPlan(options: ParsedOptions): Promise<number> {
 
         const routeReady = hasPipeline(ctx.bindings, resolved.from, resolved.to);
 
+        if (!routeListed(ctx.registry, resolved.from, resolved.to)) {
+            const report = buildUnlistedRouteReport(ctx, "plan", inputPath, resolved, shared);
+            emitReport(report, shared.diagnostics, shared.json);
+            return ExitCode.InputUnsupported;
+        }
+
         if (!routeReady) {
             if (source && !isOperationReady(source, "read")) {
                 const report = createReport({
@@ -186,10 +193,11 @@ async function runPlan(options: ParsedOptions): Promise<number> {
             }
         }
 
+        const route = routeCoverage(ctx.registry, resolved.from, resolved.to);
         const report = createReport({
             operation: "plan",
             toolVersion: ctx.toolVersion,
-            status: routeReady ? "success" : "partial",
+            status: routeReady && route.state === "ready" ? "success" : "partial",
             inputs: [{ path: inputPath, format: resolved.from }],
             detection: { format: resolved.from, confidence: resolved.from ? "hint" : undefined, hints: resolved.hints },
             pipeline: {
@@ -197,7 +205,7 @@ async function runPlan(options: ParsedOptions): Promise<number> {
                 writer: target.format,
                 stages: ["detect", "read", "ir", "write", "publish"],
             },
-            coverage: source?.coverage ?? target.coverage,
+            coverage: route,
             budgets: shared.budgets,
             determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
             statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.Success },

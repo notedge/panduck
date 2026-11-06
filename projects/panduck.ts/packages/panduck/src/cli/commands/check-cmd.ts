@@ -3,6 +3,7 @@ import type { Cli, ParsedOptions } from "@vmz/commander";
 import {
     assertReadableInput,
     buildBlockedReport,
+    buildUnlistedRouteReport,
     createContext,
     resolveFormats,
 } from "../context.js";
@@ -15,7 +16,7 @@ import {
 } from "../paths.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
-import { findFormat } from "../format-registry.js";
+import { findFormat, routeCoverage, routeListed } from "../format-registry.js";
 import { CliOptionError, readSharedOptions, readString } from "../options.js";
 import { createReport } from "../report.js";
 import { configureConsoleBackend } from "../console-backend.js";
@@ -119,6 +120,12 @@ async function runCheck(options: ParsedOptions): Promise<number> {
 
         const routeReady = hasPipeline(ctx.bindings, resolved.from, targetFormat);
 
+        if (!routeListed(ctx.registry, resolved.from, targetFormat)) {
+            const report = buildUnlistedRouteReport(ctx, "check", inputPath, checkResolved, shared);
+            emitReport(report, shared.diagnostics, shared.json);
+            return ExitCode.InputUnsupported;
+        }
+
         if (routeReady && ctx.bindings) {
             try {
                 const result = await runCheckPipeline({
@@ -159,7 +166,7 @@ async function runCheck(options: ParsedOptions): Promise<number> {
                     ? "native bindings are unavailable"
                     : "conversion route is not wired yet",
             },
-            coverage: source?.coverage ?? target?.coverage,
+            coverage: routeCoverage(ctx.registry, resolved.from, targetFormat),
             diagnostics: [
                 createDiagnostic({
                     code: PANDUCK_DIAGNOSTIC_CODES.checkPartial,

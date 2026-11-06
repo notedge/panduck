@@ -3,7 +3,7 @@ import { constants } from "node:fs";
 
 import type { PanduckBindings } from "../types.js";
 import { PANDUCK_DIAGNOSTIC_CODES } from "../diagnostic-codes.js";
-import { createDiagnostic } from "../diagnostic.js";
+import { createDiagnostic, textArg } from "../diagnostic.js";
 import type { DiagnosticRecord } from "../diagnostic.js";
 import { loadPanduckNode } from "../node/load.js";
 import { getFormatRegistry, findFormat, type FormatRecord } from "./format-registry.js";
@@ -99,6 +99,38 @@ export function buildBlockedReport(
         determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
         statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: exitCode },
     });
+}
+
+/**
+ * Blocks a route that the static capability registry does not list.
+ *
+ * This covers an unresolved source format, a read-only format such as `xlsx`,
+ * and a target whose writer is unavailable. The native layer may still advertise
+ * the pair; the registry is the product contract, so the CLI refuses before
+ * spending a native conversion on it.
+ */
+export function buildUnlistedRouteReport(
+    ctx: CliContext,
+    operation: string,
+    inputPath: string,
+    resolved: ResolvedFormats,
+    shared: SharedCliOptions,
+): PanduckReport {
+    const reason = resolved.from
+        ? `route ${resolved.from} -> ${resolved.to} is not listed in the capability registry`
+        : "source format is required for a listed conversion route";
+    return buildBlockedReport(ctx, operation, inputPath, resolved, reason, ExitCode.InputUnsupported, shared, [
+        createDiagnostic({
+            code: PANDUCK_DIAGNOSTIC_CODES.routeUnlisted,
+            component: operation,
+            severity: "error",
+            fallback: reason,
+            args: [
+                ["source", textArg(resolved.from ?? "")],
+                ["target", textArg(resolved.to ?? "")],
+            ],
+        }),
+    ]);
 }
 
 export function validateIoPaths(inputPath: string, outputPath: string | undefined): number | null {
