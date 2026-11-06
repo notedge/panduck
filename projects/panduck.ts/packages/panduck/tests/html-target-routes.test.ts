@@ -78,9 +78,51 @@ function headingDocx(): Buffer {
 }
 
 type RouteReport = {
+    operation: string;
     status: string;
+    inputs: Array<{ path: string; format?: string }>;
+    outputs: Array<{ path: string; published: boolean }>;
     losses: Array<{ code: string; status: string }>;
+    diagnostics?: Array<{ code: string; severity: string }>;
+    coverage: { state: string } | null;
 };
+
+/**
+ * Locks the report contract every route must satisfy, independent of how much
+ * of a particular target format is implemented.
+ */
+function assertReportInvariants(report: RouteReport, from: string, to: string): void {
+    const label = `${from}->${to}`;
+    assert.equal(report.operation, "convert", `${label}: operation`);
+    assert.equal(report.inputs.length, 1, `${label}: one input`);
+    assert.equal(report.inputs[0]?.format, from, `${label}: input format`);
+    assert.ok(report.outputs.length > 0, `${label}: at least one output`);
+    assert.ok(
+        report.outputs.every((output) => output.published),
+        `${label}: every listed output is published`,
+    );
+    assert.ok(report.coverage, `${label}: a conversion report must carry coverage`);
+    assert.ok(
+        ["ready", "partial"].includes(report.coverage?.state ?? ""),
+        `${label}: an executed route cannot report unavailable coverage`,
+    );
+    assert.ok(
+        ["success", "success_with_loss"].includes(report.status),
+        `${label}: an executed route cannot report blocked`,
+    );
+    if (report.status === "success") {
+        assert.equal(report.losses.length, 0, `${label}: success cannot carry losses`);
+    } else {
+        assert.ok(report.losses.length > 0, `${label}: success_with_loss must declare its losses`);
+    }
+    for (const loss of report.losses) {
+        assert.ok(loss.code.length > 0, `${label}: every loss must carry a stable code`);
+    }
+    for (const diagnostic of report.diagnostics ?? []) {
+        assert.ok(diagnostic.code.length > 0, `${label}: every diagnostic must carry a stable code`);
+        assert.ok(diagnostic.severity.length > 0, `${label}: every diagnostic must carry a severity`);
+    }
+}
 
 /**
  * Converts one input to the target format and reopens the written artifact
@@ -134,10 +176,13 @@ async function convertAndReopen(input: {
     ]);
     assert.equal(reopen.code, 0, reopen.stderr || reopen.stdout);
 
+    const parsedReport = JSON.parse(await readFile(reportPath, "utf8")) as RouteReport;
+    assertReportInvariants(parsedReport, from, to);
+
     return {
         artifact: await readFile(artifactPath),
         markdown: await readFile(backPath, "utf8"),
-        report: JSON.parse(await readFile(reportPath, "utf8")) as RouteReport,
+        report: parsedReport,
     };
 }
 
