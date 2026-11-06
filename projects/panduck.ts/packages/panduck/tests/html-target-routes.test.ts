@@ -37,6 +37,18 @@ const bookChapter = `<?xml version="1.0" encoding="UTF-8"?>
   </body>
 </html>`;
 
+const pageParagraphHtml =
+    'Text with <strong>weight</strong> and a <a href="https://example.com/doc">link</a>.';
+
+const routePage = `<!doctype html>
+<html>
+  <head><title>Route Page</title></head>
+  <body>
+    <h1>Route Heading</h1>
+    <p>${pageParagraphHtml}</p>
+  </body>
+</html>`;
+
 /** A one-chapter EPUB that exercises heading, styled inline text and a link. */
 function bookEpub(): Buffer {
     return storedZip([
@@ -57,53 +69,60 @@ type RouteReport = {
     losses: Array<{ code: string; status: string }>;
 };
 
-/** Converts one input to HTML and reopens the written page through HTML import. */
-async function convertToHtmlAndReopen(input: {
+/**
+ * Converts one input to the target format and reopens the written artifact
+ * through that format's own import path back to Markdown.
+ *
+ * Reopening the artifact rather than trusting writer success is the point of
+ * these route probes: a route may report `published` while losing a heading,
+ * an inline style or a link target.
+ */
+async function convertAndReopen(input: {
     workdir: string;
     bytes: Buffer;
     label: string;
     from: string;
-}): Promise<{ html: string; markdown: string; report: RouteReport }> {
-    const { workdir, bytes, label, from } = input;
+    to: string;
+}): Promise<{ artifact: Buffer; markdown: string; report: RouteReport }> {
+    const { workdir, bytes, label, from, to } = input;
     const sourcePath = join(workdir, label);
-    const htmlPath = join(workdir, `${from}.html`);
-    const reportPath = join(workdir, `${from}.report.json`);
-    const backPath = join(workdir, `${from}.md`);
+    const artifactPath = join(workdir, `${from}-to-${to}.${to}`);
+    const reportPath = join(workdir, `${from}-to-${to}.report.json`);
+    const backPath = join(workdir, `${from}-to-${to}.md`);
     await writeFile(sourcePath, bytes);
 
-    const toHtml = runPanduck([
+    const convert = runPanduck([
         "convert",
         sourcePath,
         "--from",
         from,
         "--to",
-        "html",
+        to,
         "-o",
-        htmlPath,
+        artifactPath,
         "--report",
         reportPath,
         "--diagnostics",
         "silent",
     ]);
-    assert.equal(toHtml.code, 0, toHtml.stderr || toHtml.stdout);
+    assert.equal(convert.code, 0, convert.stderr || convert.stdout);
 
-    const toMarkdown = runPanduck([
+    const reopen = runPanduck([
         "convert",
-        htmlPath,
+        artifactPath,
         "--from",
-        "html",
+        to,
         "--to",
         "markdown",
         "-o",
         backPath,
-        "--overwrite",
         "--diagnostics",
         "silent",
     ]);
-    assert.equal(toMarkdown.code, 0, toMarkdown.stderr || toMarkdown.stdout);
+    assert.equal(reopen.code, 0, reopen.stderr || reopen.stdout);
 
     return {
-        html: await readFile(htmlPath, "utf8"),
+        artifact: await readFile(artifactPath),
         markdown: await readFile(backPath, "utf8"),
         report: JSON.parse(await readFile(reportPath, "utf8")) as RouteReport,
     };
@@ -112,12 +131,14 @@ async function convertToHtmlAndReopen(input: {
 test("epub to html writes page blocks and reopens as the same heading and link", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-epub-html-"));
     try {
-        const { html, markdown, report } = await convertToHtmlAndReopen({
+        const { artifact, markdown, report } = await convertAndReopen({
             workdir,
             bytes: bookEpub(),
             label: "route-book.epub",
             from: "epub",
+            to: "html",
         });
+        const html = artifact.toString("utf8");
 
         assert.match(html, /<h1[^>]*>Chapter Body<\/h1>/, "the chapter heading must reach the page");
         assert.match(html, /<strong>weight<\/strong>/, "the styled run must stay strong");
@@ -140,12 +161,14 @@ test("epub to html writes page blocks and reopens as the same heading and link",
 test("docx to html writes headings and paragraphs and reopens with the same structure", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-docx-html-"));
     try {
-        const { html, markdown, report } = await convertToHtmlAndReopen({
+        const { artifact, markdown, report } = await convertAndReopen({
             workdir,
             bytes: headingDocx(),
             label: "route.docx",
             from: "docx",
+            to: "html",
         });
+        const html = artifact.toString("utf8");
 
         assert.match(html, /<p[^>]*>Hello DOCX<\/p>/, "the plain paragraph must reach the page");
         assert.match(html, /<h1[^>]*>Title<\/h1>/, "the heading paragraph must keep its level");
@@ -158,6 +181,246 @@ test("docx to html writes headings and paragraphs and reopens with the same stru
             report.losses.map((loss) => loss.code),
             ["import.docx.partial_coverage"],
             "the only declared loss must be the DOCX import partial coverage marker",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("pdf to html writes the inferred heading and text layer and reopens as the same outline", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-pdf-html-"));
+    try {
+        const markdownPath = join(workdir, "route.md");
+        const pdfPath = join(workdir, "route.pdf");
+        await writeFile(markdownPath, "# Route Doc\n\nBody with weight and a link.\n");
+        const toPdf = runPanduck([
+            "convert",
+            markdownPath,
+            "--from",
+            "markdown",
+            "--to",
+            "pdf",
+            "-o",
+            pdfPath,
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(toPdf.code, 0, toPdf.stderr || toPdf.stdout);
+
+        const { artifact, markdown, report } = await convertAndReopen({
+            workdir,
+            bytes: await readFile(pdfPath),
+            label: "route.pdf",
+            from: "pdf",
+            to: "html",
+        });
+        const html = artifact.toString("utf8");
+
+        assert.match(html, /<h1[^>]*>Route Doc<\/h1>/, "the inferred heading must reach the page");
+        assert.match(html, /<p[^>]*>Body with weight and a link\.<\/p>/, "the text layer must reach the page");
+
+        assert.match(markdown, /^# Route Doc$/m, "reopening must recover the inferred heading level");
+        assert.match(markdown, /^Body with weight and a link\.$/m, "reopening must recover the text layer");
+
+        assert.equal(report.status, "success_with_loss", "partial coverage must be declared, not hidden");
+        assert.deepEqual(
+            report.losses.map((loss) => loss.code),
+            [
+                "import.pdf.text_spacing",
+                "import.pdf.heading_level_inferred",
+                "import.pdf.footnote_semantics",
+                "import.pdf.partial_coverage",
+            ],
+            "PDF import must keep declaring the same partial-coverage facts",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("html to epub keeps the heading, styled run and link through EPUB import", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-html-epub-"));
+    try {
+        const { markdown, report } = await convertAndReopen({
+            workdir,
+            bytes: Buffer.from(routePage),
+            label: "route.html",
+            from: "html",
+            to: "epub",
+        });
+
+        assert.match(markdown, /^# Route Heading$/m, "reopening must recover the heading level");
+        assert.match(markdown, /Text with \*\*weight\*\* and a \[link\]\(https:\/\/example\.com\/doc\)\./);
+
+        assert.equal(report.status, "success_with_loss", "partial coverage must be declared, not hidden");
+        assert.deepEqual(
+            report.losses.map((loss) => loss.code),
+            ["import.html.partial_coverage"],
+            "the only declared loss must be the HTML import partial coverage marker",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("notedown to html writes the heading, inline style, link and list then reopens them", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-notedown-html-"));
+    try {
+        const { artifact, markdown, report } = await convertAndReopen({
+            workdir,
+            bytes: Buffer.from(
+                "# Note Title\n\nBody with **bold** and a [link](https://example.com/doc).\n\n- one\n- two\n",
+            ),
+            label: "route.nd",
+            from: "notedown",
+            to: "html",
+        });
+        const html = artifact.toString("utf8");
+
+        assert.match(html, /<h1>Note Title<\/h1>/, "the heading must reach the page");
+        assert.match(html, /<strong>bold<\/strong>/, "the styled run must stay strong");
+        assert.match(html, /<a href="https:\/\/example\.com\/doc">link<\/a>/, "the link must keep its target");
+        assert.match(html, /<ul><li>one<\/li><li>two<\/li><\/ul>/, "the list must keep both items");
+
+        assert.match(markdown, /^# Note Title$/m, "reopening must recover the heading level");
+        assert.match(markdown, /Body with \*\*bold\*\* and a \[link\]\(https:\/\/example\.com\/doc\)\./);
+        assert.match(markdown, /^- one$/m, "reopening must recover the list item");
+        assert.match(markdown, /^- two$/m, "reopening must recover the list item");
+
+        assert.equal(report.status, "success_with_loss", "partial coverage must be declared, not hidden");
+        assert.deepEqual(
+            report.losses.map((loss) => loss.code),
+            ["import.notedown.partial_coverage"],
+            "the only declared loss must be the notedown import partial coverage marker",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("html to pdf writes the heading and text layer and reopens as the same outline", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-html-pdf-"));
+    try {
+        const { artifact, markdown, report } = await convertAndReopen({
+            workdir,
+            bytes: Buffer.from(routePage),
+            label: "route.html",
+            from: "html",
+            to: "pdf",
+        });
+
+        assert.match(artifact.subarray(0, 5).toString(), /^%PDF-/, "the artifact must be a PDF file");
+        assert.match(markdown, /^# Route Heading$/m, "reopening must recover the heading level");
+        assert.match(
+            markdown,
+            /^Text with weight and a link\.$/m,
+            "reopening must recover the text layer",
+        );
+
+        assert.equal(report.status, "success_with_loss", "partial coverage must be declared, not hidden");
+        assert.deepEqual(
+            report.losses.map((loss) => loss.code),
+            ["import.html.partial_coverage"],
+            "the only declared loss must be the HTML import partial coverage marker",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("docx to pdf writes the heading and paragraph and reopens as the same structure", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-docx-pdf-"));
+    try {
+        const { artifact, markdown, report } = await convertAndReopen({
+            workdir,
+            bytes: headingDocx(),
+            label: "route.docx",
+            from: "docx",
+            to: "pdf",
+        });
+
+        assert.match(artifact.subarray(0, 5).toString(), /^%PDF-/, "the artifact must be a PDF file");
+        assert.match(markdown, /^Hello DOCX$/m, "reopening must recover the plain paragraph");
+        assert.match(markdown, /^# Title$/m, "reopening must recover the heading level");
+
+        assert.equal(report.status, "success_with_loss", "partial coverage must be declared, not hidden");
+        assert.deepEqual(
+            report.losses.map((loss) => loss.code),
+            ["import.docx.partial_coverage"],
+            "the only declared loss must be the DOCX import partial coverage marker",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("pdf to docx writes the inferred heading and text layer and reopens as the same outline", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-pdf-docx-"));
+    try {
+        const markdownPath = join(workdir, "route.md");
+        const pdfPath = join(workdir, "route.pdf");
+        await writeFile(markdownPath, "# Route Doc\n\nBody with weight and a link.\n");
+        const toPdf = runPanduck([
+            "convert",
+            markdownPath,
+            "--from",
+            "markdown",
+            "--to",
+            "pdf",
+            "-o",
+            pdfPath,
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(toPdf.code, 0, toPdf.stderr || toPdf.stdout);
+
+        const { artifact, markdown, report } = await convertAndReopen({
+            workdir,
+            bytes: await readFile(pdfPath),
+            label: "route.pdf",
+            from: "pdf",
+            to: "docx",
+        });
+
+        assert.match(artifact.subarray(0, 2).toString(), /^PK/, "the artifact must be a DOCX package");
+        assert.match(markdown, /^# Route Doc$/m, "reopening must recover the inferred heading level");
+        assert.match(markdown, /^Body with weight and a link\.$/m, "reopening must recover the text layer");
+
+        assert.equal(report.status, "success_with_loss", "partial coverage must be declared, not hidden");
+        assert.deepEqual(
+            report.losses.map((loss) => loss.code),
+            [
+                "import.pdf.text_spacing",
+                "import.pdf.heading_level_inferred",
+                "import.pdf.footnote_semantics",
+                "import.pdf.partial_coverage",
+            ],
+            "PDF import must keep declaring the same partial-coverage facts",
+        );
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("html to docx keeps the heading, styled run and link through DOCX import", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-html-docx-"));
+    try {
+        const { markdown, report } = await convertAndReopen({
+            workdir,
+            bytes: Buffer.from(routePage),
+            label: "route.html",
+            from: "html",
+            to: "docx",
+        });
+
+        assert.match(markdown, /^# Route Heading$/m, "reopening must recover the heading level");
+        assert.match(markdown, /Text with \*\*weight\*\* and a \[link\]\(https:\/\/example\.com\/doc\)\./);
+
+        assert.equal(report.status, "success_with_loss", "partial coverage must be declared, not hidden");
+        assert.deepEqual(
+            report.losses.map((loss) => loss.code),
+            ["import.html.partial_coverage"],
+            "the only declared loss must be the HTML import partial coverage marker",
         );
     } finally {
         await rm(workdir, { recursive: true, force: true });
