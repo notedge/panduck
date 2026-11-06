@@ -14,6 +14,13 @@ const legacyDocPath = join(
     "../../panduck-fixtures/fixtures/acorn/doc/legacy_plain.doc",
 );
 
+const fixturesRoot = join(dirname(fileURLToPath(import.meta.url)), "../../panduck-fixtures/fixtures");
+
+const sourceFixtures: Record<string, string> = {
+    tex: join(fixturesRoot, "formats/tex/sections.tex"),
+    typst: join(fixturesRoot, "formats/typst/heading.typ"),
+};
+
 const containerXml = `<?xml version="1.0" encoding="UTF-8"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
   <rootfiles>
@@ -635,7 +642,7 @@ test("html to html keeps the heading, styled run and link through HTML reopen", 
     }
 });
 
-for (const to of ["docx", "pdf", "epub"] as const) {
+for (const to of ["markdown", "docx", "pdf", "epub"] as const) {
     test(`notedown to ${to} keeps the heading, prose and list through ${to} reopen`, async () => {
         const workdir = await mkdtemp(join(tmpdir(), `panduck-notedown-${to}-`));
         try {
@@ -650,7 +657,12 @@ for (const to of ["docx", "pdf", "epub"] as const) {
             });
 
             assert.ok(
-                artifact.subarray(0, to === "pdf" ? 5 : 2).toString().startsWith(to === "pdf" ? "%PDF-" : "PK"),
+                to === "markdown"
+                    ? true
+                    : artifact
+                          .subarray(0, to === "pdf" ? 5 : 2)
+                          .toString()
+                          .startsWith(to === "pdf" ? "%PDF-" : "PK"),
                 `the artifact must be a ${to} file`,
             );
             assert.match(markdown, /^# Note Title$/m, "reopening must recover the heading level");
@@ -676,4 +688,47 @@ for (const to of ["docx", "pdf", "epub"] as const) {
             await rm(workdir, { recursive: true, force: true });
         }
     });
+}
+
+for (const from of ["tex", "typst"] as const) {
+    for (const to of ["markdown", "docx", "pdf", "epub"] as const) {
+        test(`${from} to ${to} keeps the authored text through ${to} reopen`, async () => {
+            const workdir = await mkdtemp(join(tmpdir(), `panduck-${from}-${to}-`));
+            try {
+                const { artifact, markdown, report } = await convertAndReopen({
+                    workdir,
+                    bytes: await readFile(sourceFixtures[from]),
+                    label: `route.${from}`,
+                    from,
+                    to,
+                });
+
+                if (to !== "markdown") {
+                    assert.ok(
+                        artifact
+                            .subarray(0, to === "pdf" ? 5 : 2)
+                            .toString()
+                            .startsWith(to === "pdf" ? "%PDF-" : "PK"),
+                        `the artifact must be a ${to} file`,
+                    );
+                }
+
+                if (from === "tex") {
+                    assert.match(markdown, /One/, "reopening must recover the section title");
+                    assert.match(markdown, /Two/, "reopening must recover the subsection title");
+                    assert.match(markdown, /Three/, "reopening must recover the subsubsection title");
+                    assert.match(markdown, /Body\./, "reopening must recover the section body");
+                } else {
+                    assert.match(markdown, /^# Title$/m, "reopening must recover the heading level");
+                    assert.match(markdown, /Intro text\./, "reopening must recover the first paragraph");
+                    assert.match(markdown, /Second paragraph\./, "reopening must recover the second paragraph");
+                }
+
+                assert.equal(report.status, "success", "these routes declare no partial coverage");
+                assert.deepEqual(report.losses, [], "these routes declare no loss entries");
+            } finally {
+                await rm(workdir, { recursive: true, force: true });
+            }
+        });
+    }
 }
