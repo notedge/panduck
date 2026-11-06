@@ -552,7 +552,10 @@ async function runBatchConvert(input: {
         seen.add(plan.outputPath);
     }
 
-    await mkdir(outputDir, { recursive: true });
+    // Dry runs only plan: they report unpublished outputs and must not create the site root.
+    if (!dryRun) {
+        await mkdir(outputDir, { recursive: true });
+    }
 
     let exitCode: number = ExitCode.Success;
     let blocked = false;

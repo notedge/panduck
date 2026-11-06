@@ -168,6 +168,7 @@ test("batch dry-run reports every output as unpublished and writes nothing", asy
         assert.equal(run.code, 0, run.stderr || run.stdout);
         const report = JSON.parse(run.stdout) as BatchReport;
         assert.ok(report.outputs?.every((output) => output.published === false));
+        assert.equal(await exists(outputDir), false, "a dry run must not create the batch output directory");
         assert.equal(await exists(join(outputDir, "a.html")), false, "a dry run must not write a batch output");
         assert.equal(await exists(join(outputDir, "b.html")), false, "a dry run must not write a batch output");
     } finally {
