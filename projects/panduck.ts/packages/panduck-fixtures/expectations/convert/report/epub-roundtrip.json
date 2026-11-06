@@ -8,7 +8,11 @@
         {
             "kind": "loss-codes",
             "leg": 1,
-            "expected": ["import.epub.navigation_unresolved", "import.epub.partial_coverage"]
+            "expected": [
+                "import.epub.metadata_unmapped",
+                "import.epub.navigation_unresolved",
+                "import.epub.partial_coverage"
+            ]
         },
         { "kind": "contains", "leg": 1, "target": "text", "value": "Roundtrip" },
         { "kind": "contains", "leg": 1, "target": "text", "value": "Hello roundtrip paragraph." },
@@ -17,9 +21,9 @@
     "provenance": [
         {
             "author": "document-harness",
-            "reason": "The epub path is expected to keep text while losing the diagram and unresolved navigation, and both losses are reported",
-            "semantic": "markdown to epub to markdown keeps prose and declares diagram and navigation losses",
-            "updatedAt": "2026-11-04T00:00:00.000Z"
+            "reason": "The epub path keeps text while losing the diagram, the unresolved navigation and the OPF identifier metadata that the reader cannot carry into the IR, and every loss is reported",
+            "semantic": "markdown to epub to markdown keeps prose and declares diagram, navigation and unmapped-metadata losses",
+            "updatedAt": "2026-11-06T00:00:00.000Z"
         }
     ]
 }
