@@ -288,6 +288,133 @@ test("convert serves pandoc-json as a writer and as a reader", () => {
     }
 });
 
+test("markdown footnotes keep their precise pandoc-json reasons and survive a real roundtrip", () => {
+    const workdir = mkdtempSync(join(tmpdir(), "panduck-pandoc-note-"));
+    try {
+        type PandocBlock = { t: string; c?: unknown };
+        type Report = { status: string; losses: Array<{ code: string }> };
+
+        const cases: Array<{ name: string; markdown: string; status: string; codes: string[] }> = [
+            {
+                name: "safe",
+                markdown: "Text with a note.[^a]\n\n[^a]: body with *emphasis* and `code`\n",
+                status: "success",
+                codes: [],
+            },
+            {
+                name: "missing",
+                markdown: "Text with a note.[^a]\n",
+                status: "success_with_loss",
+                codes: ["export.pandoc-json.note_definition_missing"],
+            },
+            {
+                name: "empty",
+                markdown: "Text with a note.[^a]\n\n[^a]:\n",
+                status: "success_with_loss",
+                codes: ["export.pandoc-json.note_definition_empty", "export.pandoc-json.opaque_raw"],
+            },
+            {
+                name: "multiblock",
+                markdown: "Text with a note.[^a]\n\n[^a]: first line\n    second line\n",
+                status: "success_with_loss",
+                codes: ["export.pandoc-json.note_definition_multiblock", "export.pandoc-json.opaque_raw"],
+            },
+            {
+                name: "nested",
+                markdown: "Text with a note.[^a]\n\n[^a]: body with [^b]\n",
+                status: "success_with_loss",
+                codes: ["export.pandoc-json.note_definition_nested", "export.pandoc-json.opaque_raw"],
+            },
+            {
+                name: "block-level",
+                markdown: "Text with a note.[^a]\n\n[^a]: - list item\n",
+                status: "success_with_loss",
+                codes: ["export.pandoc-json.note_definition_block_level", "export.pandoc-json.opaque_raw"],
+            },
+            {
+                name: "image",
+                markdown: "Text with a note.[^a]\n\n[^a]: see ![alt](pic.png)\n",
+                status: "success_with_loss",
+                codes: ["export.pandoc-json.note_definition_unrepresentable", "export.pandoc-json.opaque_raw"],
+            },
+        ];
+
+        for (const entry of cases) {
+            const source = join(workdir, `${entry.name}.md`);
+            const artifact = join(workdir, `${entry.name}.json`);
+            writeFileSync(source, entry.markdown, "utf8");
+            const run = runPanduck([
+                "convert",
+                source,
+                "--from",
+                "markdown",
+                "--to",
+                "pandoc-json",
+                "-o",
+                artifact,
+                "--report",
+                "-",
+                "--diagnostics",
+                "silent",
+            ]);
+            assert.equal(run.code, 0, `${entry.name}: ${run.stderr}`);
+            const report = JSON.parse(run.stdout) as Report;
+            assert.equal(report.status, entry.status, entry.name);
+            const codes = [...report.losses.map((loss) => loss.code)].sort();
+            assert.deepEqual(codes, [...entry.codes].sort(), `${entry.name} loss codes`);
+
+            const ast = JSON.parse(readFileSync(artifact, "utf8")) as { blocks: PandocBlock[] };
+            const notes = ast.blocks.flatMap((block) =>
+                block.t === "Para" ? (block.c as PandocBlock[]).filter((inline) => inline.t === "Note") : [],
+            );
+            assert.equal(notes.length, 1, `${entry.name} must keep one Note reference`);
+            const raw = ast.blocks.filter(
+                (block) =>
+                    block.t === "RawBlock" &&
+                    Array.isArray(block.c) &&
+                    (block.c as string[])[0] === "notedown.footnote_definition",
+            );
+            if (entry.name === "safe") {
+                assert.deepEqual(raw, [], "a rebuilt definition must not linger as a raw block");
+                assert.match(JSON.stringify(notes[0]), /body with /, "the rebuilt Note carries the body");
+            } else {
+                assert.deepEqual(notes[0].c, [], "an opaque definition leaves an empty Note");
+            }
+            if (entry.name === "missing") {
+                assert.deepEqual(raw, [], "a missing definition has nothing to keep opaque");
+            } else if (entry.name !== "safe") {
+                assert.equal(raw.length, 1, `${entry.name} keeps exactly one raw definition`);
+            }
+        }
+
+        const artifact = join(workdir, "safe.json");
+        const back = join(workdir, "safe-back.md");
+        const reverse = runPanduck([
+            "convert",
+            artifact,
+            "--from",
+            "pandoc-json",
+            "--to",
+            "markdown",
+            "-o",
+            back,
+            "--report",
+            "-",
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(reverse.code, 0, reverse.stderr);
+        const reverseReport = JSON.parse(reverse.stdout) as Report;
+        assert.equal(reverseReport.status, "success");
+        assert.deepEqual(reverseReport.losses, []);
+        const roundtripped = readFileSync(back, "utf8");
+        assert.match(roundtripped, /\[\^pandoc-note-1\]/);
+        assert.match(roundtripped, /\[\^pandoc-note-1\]: body with \*emphasis\* and `code`/);
+    } finally {
+        rmSync(workdir, { recursive: true, force: true });
+    }
+});
+
 test("convert keeps blocking a pandoc-json route the native table rejects", () => {
     const workdir = mkdtempSync(join(tmpdir(), "panduck-pandoc-blocked-"));
     try {
