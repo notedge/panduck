@@ -90,11 +90,11 @@
         {
             "id": "html-nested-table",
             "spec": "HTML Standard §13.2.6.4.9 in table insertion mode",
-            "semantics": "a nested table is flattened into its parent cell inline run and reported as `import.html.table_nested`",
+            "semantics": "a nested table stays a cell child block, so the outer table keeps one row and the inner table keeps its rows inside the cell",
             "source": "<table><tr><td><table><tr><td>i</td></tr></table></td></tr></table>",
             "probe": {
-                "unsupported": true,
-                "count": { "<table>": 1 }
+                "contains": ["<td><table>"],
+                "count": { "<table>": 2 }
             }
         },
         {

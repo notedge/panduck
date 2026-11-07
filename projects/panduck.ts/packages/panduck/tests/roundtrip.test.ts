@@ -167,7 +167,7 @@ test("tables keep their cell semantics across html and report alignment as the o
     }
 });
 
-test("html table cells authored as block layout report a flattened-cell loss", async () => {
+test("html table cells authored as block layout keep every paragraph block", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-table-cells-"));
     const input = join(workdir, "cells.html");
     const output = join(workdir, "cells.md");
@@ -184,11 +184,81 @@ test("html table cells authored as block layout report a flattened-cell loss", a
         const report = JSON.parse(await readFile(reportPath, "utf8")) as {
             losses: Array<{ code: string; status: string }>;
         };
-        assert.ok(
-            report.losses.some((loss) => loss.code === "import.html.table_cell_blocks" && loss.status === "Partial"),
-            `flattened cell blocks must be reported: ${JSON.stringify(report.losses)}`,
+        assert.equal(
+            report.losses.some((loss) => loss.code === "import.html.table_cell_blocks"),
+            false,
+            `cell blocks must no longer be reported as flattened: ${JSON.stringify(report.losses)}`,
         );
-        assert.match(await readFile(output, "utf8"), /onetwo/, "the authored text must survive as one inline run");
+        const markdown = await readFile(output, "utf8");
+        assert.match(markdown, /one<br>two/, "both paragraphs survive as a GFM cell inline run");
+        assert.doesNotMatch(markdown, /<table>/, "a paragraph-only cell stays a pipe table");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("a nested table stays a cell child block instead of leaking rows into the outer table", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-nested-table-"));
+    const input = join(workdir, "nested.html");
+    const markdown = join(workdir, "nested.md");
+    const reopened = join(workdir, "nested-back.html");
+    const reportPath = join(workdir, "nested-report.json");
+    await writeFile(
+        input,
+        sampleHtml("<table><tr><td>outer<table><tr><td>inner-one</td></tr><tr><td>inner-two</td></tr></table></td></tr></table>"),
+        "utf8",
+    );
+
+    try {
+        const run = runPanduck(["convert", input, "--from", "html", "--to", "markdown", "-o", markdown, "--diagnostics", "json", "--report", reportPath]);
+        assert.equal(run.code, 0, run.stderr);
+        const report = JSON.parse(await readFile(reportPath, "utf8")) as {
+            losses: Array<{ code: string }>;
+        };
+        const codes = report.losses.map((loss) => loss.code);
+        assert.equal(codes.includes("import.html.table_nested"), false, "the nested table is preserved: " + JSON.stringify(codes));
+        assert.equal(codes.includes("import.html.table_cell_blocks"), false, JSON.stringify(codes));
+
+        // A GFM pipe table cannot hold a nested table, so the writer falls
+        // back to an inline HTML table. The outer cell keeps its paragraph
+        // and the nested table as separate child blocks.
+        const text = await readFile(markdown, "utf8");
+        assert.match(text, /<td><p>outer<\/p><table>/, `the nested table stays inside the cell: ${text}`);
+        assert.equal(text.match(/<table>/g)?.length, 2, "one outer table plus one cell-child table");
+        assert.match(text, /inner-one/);
+        assert.match(text, /inner-two/);
+
+        const back = runPanduck(["convert", markdown, "--from", "markdown", "--to", "html", "-o", reopened, "--diagnostics", "json"]);
+        assert.equal(back.code, 0, back.stderr);
+        const html = await readFile(reopened, "utf8");
+        assert.equal(html.match(/<table/g)?.length, 2, `the outer and inner tables survive: ${html}`);
+        assert.equal(html.match(/<tr/g)?.length, 3, `the outer row and both inner rows survive: ${html}`);
+        assert.equal(html.match(/inner-one/g)?.length, 1, `nested content must not be copied twice: ${html}`);
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
+test("a list inside a table cell survives a block-shaped inline HTML fallback", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-list-cell-"));
+    const input = join(workdir, "list-cell.html");
+    const output = join(workdir, "list-cell.md");
+    const reportPath = join(workdir, "list-cell-report.json");
+    await writeFile(input, sampleHtml("<table><tr><td><ul><li>a</li><li>b</li></ul></td></tr></table>"), "utf8");
+
+    try {
+        const run = runPanduck(["convert", input, "--from", "html", "--to", "markdown", "-o", output, "--diagnostics", "json", "--report", reportPath]);
+        assert.equal(run.code, 0, run.stderr);
+        const report = JSON.parse(await readFile(reportPath, "utf8")) as {
+            losses: Array<{ code: string }>;
+        };
+        assert.equal(
+            report.losses.some((loss) => loss.code === "import.html.table_cell_blocks"),
+            false,
+            JSON.stringify(report.losses),
+        );
+        const text = await readFile(output, "utf8");
+        assert.match(text, /<td><ul><li>a<\/li><li>b<\/li><\/ul><\/td>/, `the list stays a cell block: ${text}`);
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }

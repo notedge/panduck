@@ -332,8 +332,18 @@ test("markdown footnotes keep their precise pandoc-json reasons and survive a re
                 codes: ["export.pandoc-json.note_definition_block_level", "export.pandoc-json.opaque_raw"],
             },
             {
+                // The body image keeps its source URL, so the definition is
+                // rebuilt as a native Note instead of staying opaque.
                 name: "image",
                 markdown: "Text with a note.[^a]\n\n[^a]: see ![alt](pic.png)\n",
+                status: "success",
+                codes: [],
+            },
+            {
+                // A body whose reference cannot be resolved has no inline
+                // shape, so it still stays opaque with a precise reason.
+                name: "lossy",
+                markdown: "Text with a note.[^a]\n\n[^a]: [text][missing]\n",
                 status: "success_with_loss",
                 codes: ["export.pandoc-json.note_definition_unrepresentable", "export.pandoc-json.opaque_raw"],
             },
@@ -374,16 +384,22 @@ test("markdown footnotes keep their precise pandoc-json reasons and survive a re
                     Array.isArray(block.c) &&
                     (block.c as string[])[0] === "notedown.footnote_definition",
             );
-            if (entry.name === "safe") {
+            const rebuilt = entry.name === "safe" || entry.name === "image";
+            if (rebuilt) {
                 assert.deepEqual(raw, [], "a rebuilt definition must not linger as a raw block");
-                assert.match(JSON.stringify(notes[0]), /body with /, "the rebuilt Note carries the body");
             } else {
                 assert.deepEqual(notes[0].c, [], "an opaque definition leaves an empty Note");
             }
-            if (entry.name === "missing") {
-                assert.deepEqual(raw, [], "a missing definition has nothing to keep opaque");
-            } else if (entry.name !== "safe") {
+            if (entry.name === "missing" || rebuilt) {
+                assert.deepEqual(raw, [], "a rebuilt or missing definition keeps no raw block");
+            } else {
                 assert.equal(raw.length, 1, `${entry.name} keeps exactly one raw definition`);
+            }
+            if (entry.name === "safe") {
+                assert.match(JSON.stringify(notes[0]), /body with /, "the rebuilt Note carries the body");
+            }
+            if (entry.name === "image") {
+                assert.match(JSON.stringify(notes[0]), /pic\.png/, "the rebuilt Note keeps the body image");
             }
         }
 
@@ -410,6 +426,52 @@ test("markdown footnotes keep their precise pandoc-json reasons and survive a re
         const roundtripped = readFileSync(back, "utf8");
         assert.match(roundtripped, /\[\^pandoc-note-1\]/);
         assert.match(roundtripped, /\[\^pandoc-note-1\]: body with \*emphasis\* and `code`/);
+
+        // The image body is a native Note in both directions, so a second
+        // forward pass must rebuild it again instead of falling back to raw.
+        const imageBack = join(workdir, "image-back.md");
+        const imageForward = runPanduck([
+            "convert",
+            join(workdir, "image.json"),
+            "--from",
+            "pandoc-json",
+            "--to",
+            "markdown",
+            "-o",
+            imageBack,
+            "--report",
+            "-",
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(imageForward.code, 0, imageForward.stderr);
+        const imageForwardReport = JSON.parse(imageForward.stdout) as Report;
+        assert.deepEqual(
+            imageForwardReport.losses.map((loss) => loss.code),
+            ["import.pandoc-json.asset_unresolved"],
+            "the body image keeps its URL and only the missing media bytes are unresolved",
+        );
+        assert.match(readFileSync(imageBack, "utf8"), /\[\^pandoc-note-1\]: see \!\[alt\]\(pic\.png\)/);
+        const imageReopened = join(workdir, "image-reopened.json");
+        const imageReturn = runPanduck([
+            "convert",
+            imageBack,
+            "--from",
+            "markdown",
+            "--to",
+            "pandoc-json",
+            "-o",
+            imageReopened,
+            "--report",
+            "-",
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(imageReturn.code, 0, imageReturn.stderr);
+        const imageReturnReport = JSON.parse(imageReturn.stdout) as Report;
+        assert.deepEqual(imageReturnReport.losses, [], "a rebuilt image note round-trips without a note loss");
+        assert.match(readFileSync(imageReopened, "utf8"), /"t":"Note"/);
+        assert.match(readFileSync(imageReopened, "utf8"), /pic\.png/);
     } finally {
         rmSync(workdir, { recursive: true, force: true });
     }

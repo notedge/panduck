@@ -252,3 +252,114 @@ test("pandoc-json keeps table bands and cell child blocks across a roundtrip", (
         assert.match(text, new RegExp(value), `the ${value} cell text must survive`);
     }
 });
+
+test("a pandoc-json cell with several blocks keeps them as equal child blocks", () => {
+    const binding = loadPanduckNode();
+    const cell = [
+        ["", [], []],
+        "AlignDefault",
+        1,
+        1,
+        [
+            { t: "Para", c: [{ t: "Str", c: "one" }] },
+            { t: "Para", c: [{ t: "Str", c: "two" }] },
+        ],
+    ];
+    const row = [["", [], []], [cell]];
+    const source = JSON.stringify({
+        "pandoc-api-version": [1, 23, 1],
+        meta: {},
+        blocks: [
+            {
+                t: "Table",
+                c: [
+                    ["", [], []],
+                    [null, []],
+                    [["AlignDefault", 0]],
+                    [["", [], []], []],
+                    [[["", [], []], 0, [], [row]]],
+                    [["", [], []], []],
+                ],
+            },
+        ],
+    });
+
+    const imported = binding.importDocument?.("pandoc-json", "cell-blocks.json", Buffer.from(source));
+    assert.ok(imported?.success, imported?.diagnosticsJson);
+    const graphJson = imported?.graphJson;
+    assert.ok(graphJson, "a wired reader must return the serialized graph");
+    assert.equal(
+        (JSON.parse(imported?.lossesJson ?? "[]") as Array<{ code: string }>).some(
+            (loss) => loss.code === "import.pandoc-json.table_cell_blocks",
+        ),
+        false,
+        "a multi-block cell is no longer flattened",
+    );
+
+    const graph = JSON.parse(graphJson) as {
+        blocks: Array<{ id: number; block: Record<string, unknown> }>;
+    };
+    const tableNode = graph.blocks.find((node) => "Table" in node.block);
+    const table = tableNode?.block.Table as {
+        body: Array<{ cells: Array<{ children: number[] }> }>;
+    };
+    assert.ok(table, "the table must survive import");
+    const children = table.body[0].cells[0].children;
+    assert.equal(children.length, 2, "both authored paragraphs stay cell children");
+    const childBlocks = children.map((id) => {
+        const node = graph.blocks.find((entry) => entry.id === id);
+        assert.ok(node, "the cell child must exist in `blocks`");
+        return Object.keys(node.block)[0];
+    });
+    assert.deepEqual(childBlocks, ["Paragraph", "Paragraph"]);
+
+    const exported = binding.exportDocument?.("pandoc-json", graphJson);
+    assert.ok(exported?.success, exported?.diagnosticsJson);
+    const document = JSON.parse(exported?.text ?? "null") as {
+        blocks: Array<{ t: string; c: any[] }>;
+    };
+    const exportedCell = document.blocks[0].c[4][0][3][0][1][0][4] as Array<{ t: string }>;
+    assert.deepEqual(exportedCell.map((block) => block.t), ["Para", "Para"]);
+});
+
+test("an image nested in a link or a note still registers its asset", () => {
+    const binding = loadPanduckNode();
+    const image = (source: string) => ({
+        t: "Image",
+        c: [["", [], []], [{ t: "Str", c: "alt" }], [source, ""]],
+    });
+    const source = JSON.stringify({
+        "pandoc-api-version": [1, 23, 1],
+        meta: {},
+        blocks: [
+            {
+                t: "Para",
+                c: [
+                    {
+                        t: "Link",
+                        c: [["", [], []], [image("linked.png")], ["https://example.com", ""]],
+                    },
+                    { t: "Note", c: [{ t: "Para", c: [image("note.png")] }] },
+                ],
+            },
+        ],
+    });
+
+    const imported = binding.importDocument?.("pandoc-json", "nested-image.json", Buffer.from(source));
+    assert.ok(imported?.success, imported?.diagnosticsJson);
+    const losses = JSON.parse(imported?.lossesJson ?? "[]") as Array<{ code: string }>;
+    assert.equal(
+        losses.filter((loss) => loss.code === "import.pandoc-json.asset_unresolved").length,
+        2,
+        `the link display and the note body must each register an asset: ${JSON.stringify(losses)}`,
+    );
+
+    const graphJson = imported?.graphJson;
+    assert.ok(graphJson, "a wired reader must return the serialized graph");
+    const exported = binding.exportDocument?.("pandoc-json", graphJson);
+    assert.ok(exported?.success, exported?.diagnosticsJson);
+    const text = exported?.text ?? "";
+    assert.match(text, /linked\.png/);
+    assert.match(text, /note\.png/);
+    assert.match(text, /"t":"Note"/);
+});
