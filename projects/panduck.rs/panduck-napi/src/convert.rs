@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 use document_convert::{
     ConversionBudgets, SCHEMA_REPORT, apply_transform_passes, from_adapter_error, inspect_docx_decode_bytes,
-    inspect_docx_index_bytes, read_markdown_bytes, read_notedown_bytes, read_tex_bytes, read_typst_bytes,
+    inspect_docx_index_bytes, read_markdown_bytes_with_assets, read_notedown_bytes, read_tex_bytes, read_typst_bytes,
     write_document_docx, write_document_epub, write_document_html, write_document_markdown, write_document_pdf,
     write_markdown_project,
 };
@@ -379,8 +379,9 @@ impl HtmlAssetSource for MapAssetSource<'_> {
 /// Applies container budgets before the reader and the built-in structural
 /// nesting guard before any text grammar sees the payload. Failures are
 /// returned through `success: false` plus a structured diagnostic envelope,
-/// never as exit codes or free-form CLI wording. `assets` is only consulted by
-/// the HTML reader and only for image targets it authored.
+/// never as exit codes or free-form CLI wording. `assets` is consulted by the
+/// HTML and Markdown readers and only for image targets those documents
+/// authored.
 #[napi]
 pub fn import_document(
     from: String,
@@ -537,7 +538,7 @@ fn read_source(
         "html" => import_html_bytes_with_assets(label, bytes, &MapAssetSource { assets }).map_err(map_format_error),
         "markdown" => {
             let text = utf8("markdown", bytes)?;
-            read_markdown_bytes(label, text)
+            read_markdown_bytes_with_assets(label, text, &MapAssetSource { assets })
         }
         "notedown" => {
             let text = utf8("notedown", bytes)?;

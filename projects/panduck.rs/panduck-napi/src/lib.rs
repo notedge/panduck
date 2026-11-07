@@ -861,7 +861,7 @@ pub fn pdf_layout_probe(label: String, bytes: Buffer) -> PdfLayoutProbeResponse 
         Ok(text) => text.to_string(),
         Err(error) => return pdf_probe_error(format!("input `{label}` is not UTF-8 Markdown: {error}")),
     };
-    let graph = match document_convert::read_markdown_bytes(&label, text) {
+    let mut graph = match document_convert::read_markdown_bytes(&label, text) {
         Ok(graph) => graph,
         Err(error) => return pdf_probe_error(error.to_string()),
     };
@@ -871,7 +871,7 @@ pub fn pdf_layout_probe(label: String, bytes: Buffer) -> PdfLayoutProbeResponse 
         &document_layout::Diagrams::default(),
         crate::assets::body_metrics(),
     );
-    let pdf = match document_convert::write_document_pdf(&graph, &crate::assets::body_set()) {
+    let pdf = match document_convert::write_document_pdf(&mut graph, &crate::assets::body_set()) {
         Ok(pdf) => pdf,
         Err(error) => return pdf_probe_error(error.to_string()),
     };
