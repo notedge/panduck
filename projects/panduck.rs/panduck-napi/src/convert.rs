@@ -20,7 +20,7 @@ use document_formats::import::{
 use document_formats::import::html::HtmlAssetSource;
 use document_formats::pandoc::{PandocImportOptions, export_pandoc_json, import_pandoc_json_bytes_with};
 use document_formats::{FormatError, from_format_error};
-use document_ir::DocumentGraph;
+use document_ir::{DocumentGraph, LossMarker, SemanticStatus};
 use document_types::{AdapterError, Result as AdapterResult};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
@@ -590,7 +590,16 @@ fn write_target(to: &str, graph: &mut DocumentGraph) -> AdapterResult<(String, O
     match to {
         "markdown" => Ok((write_document_markdown(graph)?, None, None)),
         "docx" => Ok((String::new(), None, Some(write_document_docx(graph)?))),
-        "pdf" => Ok((String::new(), None, Some(write_document_pdf(graph, &crate::assets::body_set())?))),
+        "pdf" => {
+            if graph.page_setup.is_some_and(|page| page.columns.is_some_and(|columns| columns > 1)) {
+                graph.push_loss(LossMarker {
+                    code: "export.pdf.columns_unsupported".into(),
+                    message: "the document declares multiple columns but the PDF writer lays text out in one column".into(),
+                    status: SemanticStatus::Partial,
+                });
+            }
+            Ok((String::new(), None, Some(write_document_pdf(graph, &crate::assets::body_set())?)))
+        }
         "html" => {
             let diagrams = document_convert::diagram::render_diagrams(graph);
             for (loss, span) in diagrams.losses.into_iter().zip(diagrams.loss_spans) {
