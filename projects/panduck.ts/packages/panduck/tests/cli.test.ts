@@ -28,6 +28,13 @@ test("formats lists only conversions whose source and target can do their direct
     assert.equal(payload.conversions.includes("pptx:markdown"), false, "a render-only deck must not advertise export");
     assert.ok(payload.conversions.includes("doc:html"), "the legacy doc reader is a listed source");
     assert.ok(payload.conversions.includes("typst:html"), "typst keeps its registered HTML target");
+    assert.ok(payload.conversions.includes("markdown:pandoc-json"), "pandoc-json is a native writer");
+    assert.ok(payload.conversions.includes("pandoc-json:markdown"), "pandoc-json is a native reader");
+    assert.equal(
+        payload.formats.some((record) => record.format === "pandoc-json"),
+        true,
+        "a natively routed format joins the registry without a hand-written record",
+    );
 
     assert.equal(
         payload.formats.some((record) => record.format === "xlsx"),
@@ -211,4 +218,133 @@ test("convert infers typst from the .typ extension without --from", () => {
     const report = JSON.parse(run.stdout) as { detection: { format?: string } };
     assert.equal(report.detection.format, "typst");
     rmSync(workdir, { recursive: true, force: true });
+});
+
+test("convert serves pandoc-json as a writer and as a reader", () => {
+    const workdir = mkdtempSync(join(tmpdir(), "panduck-pandoc-route-"));
+    try {
+        const source = join(workdir, "route.md");
+        const artifact = join(workdir, "route.json");
+        const back = join(workdir, "route-back.md");
+        writeFileSync(source, "# Route\n\nBody with **bold**.\n", "utf8");
+
+        const forward = runPanduck([
+            "convert",
+            source,
+            "--from",
+            "markdown",
+            "--to",
+            "pandoc-json",
+            "-o",
+            artifact,
+            "--report",
+            "-",
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(forward.code, 0, forward.stderr);
+        const forwardReport = JSON.parse(forward.stdout) as {
+            status: string;
+            pipeline: { reader: string; writer: string };
+            outputs: Array<{ published: boolean }>;
+        };
+        assert.equal(forwardReport.status, "success");
+        assert.equal(forwardReport.pipeline.reader, "markdown");
+        assert.equal(forwardReport.pipeline.writer, "pandoc-json");
+        assert.equal(forwardReport.outputs[0]?.published, true);
+
+        const ast = JSON.parse(readFileSync(artifact, "utf8")) as {
+            "pandoc-api-version": unknown;
+            blocks: unknown[];
+        };
+        assert.deepEqual(ast["pandoc-api-version"], [1, 23, 1]);
+        assert.ok(ast.blocks.length > 0, "the pandoc writer emits blocks");
+
+        const reverse = runPanduck([
+            "convert",
+            artifact,
+            "--from",
+            "pandoc-json",
+            "--to",
+            "markdown",
+            "-o",
+            back,
+            "--report",
+            "-",
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(reverse.code, 0, reverse.stderr);
+        const reverseReport = JSON.parse(reverse.stdout) as {
+            status: string;
+            pipeline: { reader: string; writer: string };
+        };
+        assert.equal(reverseReport.status, "success");
+        assert.equal(reverseReport.pipeline.reader, "pandoc-json");
+        assert.equal(reverseReport.pipeline.writer, "markdown");
+        assert.match(readFileSync(back, "utf8"), /Body with \*\*bold\*\*/);
+    } finally {
+        rmSync(workdir, { recursive: true, force: true });
+    }
+});
+
+test("convert keeps blocking a pandoc-json route the native table rejects", () => {
+    const workdir = mkdtempSync(join(tmpdir(), "panduck-pandoc-blocked-"));
+    try {
+        const source = join(workdir, "route.json");
+        writeFileSync(
+            source,
+            JSON.stringify({
+                "pandoc-api-version": [1, 23, 1],
+                meta: {},
+                blocks: [{ t: "Para", c: [{ t: "Str", c: "Route" }] }],
+            }),
+            "utf8",
+        );
+        const convert = runPanduck([
+            "convert",
+            source,
+            "--from",
+            "pandoc-json",
+            "--to",
+            "typst",
+            "--report",
+            "-",
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(convert.code, 3, convert.stderr);
+        const report = JSON.parse(convert.stdout) as {
+            status: string;
+            diagnostics: Array<{ code: string }>;
+        };
+        assert.equal(report.status, "blocked");
+        assert.equal(report.diagnostics[0].code, "panduck.route.unlisted");
+    } finally {
+        rmSync(workdir, { recursive: true, force: true });
+    }
+});
+
+test("convert names an unknown target format instead of guessing a route", () => {
+    const workdir = mkdtempSync(join(tmpdir(), "panduck-unknown-target-"));
+    try {
+        const source = join(workdir, "route.md");
+        writeFileSync(source, "# Route\n", "utf8");
+        const convert = runPanduck([
+            "convert",
+            source,
+            "--from",
+            "markdown",
+            "--to",
+            "nonsense",
+            "--report",
+            "-",
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(convert.code, 3, convert.stderr);
+        assert.match(convert.stdout, /unknown target format nonsense/);
+    } finally {
+        rmSync(workdir, { recursive: true, force: true });
+    }
 });

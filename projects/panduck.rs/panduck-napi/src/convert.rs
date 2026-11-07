@@ -564,6 +564,27 @@ fn utf8(from: &str, bytes: &[u8]) -> AdapterResult<String> {
         .map_err(|error| AdapterError::invalid_input(format!("{from} input is not valid UTF-8: {error}")))
 }
 
+/// Whether `read_source` serves `from` as a `DocumentGraph` import.
+///
+/// The aggregate reader table also carries formats that only the office
+/// rendering entry point serves, so route advertisement must ask this
+/// adapter-level predicate instead of the aggregate table alone.
+pub(crate) fn serves_read(from: &str) -> bool {
+    matches!(
+        from,
+        "docx" | "doc" | "pdf" | "epub" | "html" | "markdown" | "notedown" | "tex" | "typst"
+            | "pandoc-json"
+    )
+}
+
+/// Whether `write_target` serves `to` as a `DocumentGraph` export.
+pub(crate) fn serves_write(to: &str) -> bool {
+    matches!(
+        to,
+        "markdown" | "html" | "docx" | "pdf" | "epub" | "pandoc-json"
+    )
+}
+
 fn write_target(to: &str, graph: &mut DocumentGraph) -> AdapterResult<(String, Option<String>, Option<Vec<u8>>)> {
     match to {
         "markdown" => Ok((write_document_markdown(graph)?, None, None)),

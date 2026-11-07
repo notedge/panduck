@@ -52,12 +52,16 @@ fn capability_routable(format: &str, direction: FormatDirection) -> bool {
 
 /// Whether this binding can read `format` and report its gaps per document.
 fn reader_routable(format: &str) -> bool {
-    reader_wired(format) && capability_routable(format, FormatDirection::Import)
+    reader_wired(format)
+        && capability_routable(format, FormatDirection::Import)
+        && crate::convert::serves_read(format)
 }
 
 /// Whether this binding can write `format`.
 fn writer_routable(format: &str) -> bool {
-    writer_wired(format) && capability_routable(format, FormatDirection::Export)
+    writer_wired(format)
+        && capability_routable(format, FormatDirection::Export)
+        && crate::convert::serves_write(format)
 }
 
 fn route_supported(from: &str, to: &str) -> bool {

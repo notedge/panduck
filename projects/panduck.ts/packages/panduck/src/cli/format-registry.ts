@@ -138,10 +138,20 @@ export function baseFormatRegistry(): FormatRecord[] {
     ];
 }
 
-/** Merges N-API `supportedFormats()` names into the static registry as `registered` floors. */
+/**
+ * Merges N-API `supportedFormats()` names into the static registry as
+ * `registered` floors, and derives a record for every format the native route
+ * table reaches but the static matrix never declared.
+ *
+ * The route table is the only source for those records: a format is a reader
+ * when some route starts with it and a writer when some route ends with it,
+ * so no format name needs a hand-written entry here.
+ */
 export function getFormatRegistry(bindings?: PanduckBindings | null): FormatRecord[] {
     const registered = new Set((bindings?.supportedFormats() ?? []).map((name) => name.toLowerCase()));
-    return baseFormatRegistry().map((record) => {
+    const routes = (bindings?.supportedConversions?.() ?? []).map((route) => route.toLowerCase());
+    const declared = baseFormatRegistry();
+    return [...declared, ...derivedFormatRecords(routes, declared)].map((record) => {
         if (!registered.has(record.format)) {
             return record;
         }
@@ -153,6 +163,34 @@ export function getFormatRegistry(bindings?: PanduckBindings | null): FormatReco
             writer: { ...record.writer, state: writerState },
         };
     });
+}
+
+function derivedFormatRecords(
+    routes: readonly string[],
+    declared: readonly FormatRecord[],
+): FormatRecord[] {
+    const declaredNames = new Set(declared.map((record) => record.format));
+    const reached = new Set<string>();
+    for (const route of routes) {
+        const separator = route.indexOf(":");
+        if (separator <= 0) {
+            continue;
+        }
+        reached.add(route.slice(0, separator));
+        reached.add(route.slice(separator + 1));
+    }
+    return [...reached]
+        .filter((format) => !declaredNames.has(format))
+        .sort()
+        .map((format) =>
+            textFormat(
+                format,
+                routes.some((route) => route.startsWith(`${format}:`)) ? "registered" : "unavailable",
+                routes.some((route) => route.endsWith(`:${format}`)) ? "registered" : "unavailable",
+                [],
+                [],
+            ),
+        );
 }
 
 function bumpRegistered(state: CapabilityState): CapabilityState {
@@ -170,37 +208,6 @@ export function findFormat(
     return registry.find(
         (record) =>
             record.format === needle || record.aliases?.some((alias) => alias.toLowerCase() === needle),
-    );
-}
-
-export function isOperationReady(record: FormatRecord, operation: OperationKind): boolean {
-    const capability = operation === "read" ? record.reader : record.writer;
-    return capability.state === "ready";
-}
-
-/**
- * Whether the static registry advertises `from` → `to` as a conversion route.
- *
- * `formats` lists routes with this predicate and `convert`/`plan` gate on the
- * same predicate, so the advertised matrix and the executable matrix cannot
- * drift. A format registered only for rendering (for example `xlsx`) is absent
- * here even when the native layer can import it.
- */
-export function routeListed(
-    registry: readonly FormatRecord[],
-    from: string | undefined,
-    to: string | undefined,
-): boolean {
-    if (!from || !to) {
-        return false;
-    }
-    const source = findFormat(registry, from);
-    const target = findFormat(registry, to);
-    return Boolean(
-        source &&
-            target &&
-            source.reader.state !== "unavailable" &&
-            target.writer.state !== "unavailable",
     );
 }
 

@@ -9,11 +9,10 @@ import {
     resolveFormats,
     validateIoPaths,
 } from "../context.js";
-import { createDiagnostic, textArg } from "../../diagnostic.js";
-import { PANDUCK_DIAGNOSTIC_CODES } from "../../diagnostic-codes.js";
+
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
-import { findFormat, isOperationReady, routeCoverage, routeListed } from "../format-registry.js";
+import { findFormat, routeCoverage } from "../format-registry.js";
 import { CliOptionError, describeUnsupportedFlags, readSharedOptions, readString } from "../options.js";
 import { hasPipeline } from "../pipeline.js";
 import { configureConsoleBackend } from "../console-backend.js";
@@ -112,72 +111,10 @@ async function runPlan(options: ParsedOptions): Promise<number> {
 
         const routeReady = hasPipeline(ctx.bindings, resolved.from, resolved.to);
 
-        if (!routeListed(ctx.registry, resolved.from, resolved.to)) {
+        if (!routeReady) {
             const report = buildUnlistedRouteReport(ctx, "plan", inputPath, resolved, shared);
             emitReport(report, shared.diagnostics, shared.json);
             return ExitCode.InputUnsupported;
-        }
-
-        if (!routeReady) {
-            if (source && !isOperationReady(source, "read")) {
-                const report = createReport({
-                    operation: "plan",
-                    toolVersion: ctx.toolVersion,
-                    status: "blocked",
-                    inputs: [{ path: inputPath, format: source.format }],
-                    detection: { format: source.format, confidence: "hint", hints: resolved.hints },
-                    pipeline: {
-                        reader: source.format,
-                        writer: target.format,
-                        stages: ["detect", "read", "ir", "write", "publish"],
-                        blocked_reason: `reader state is ${source.reader.state}`,
-                    },
-                    coverage: routeCoverage(ctx.registry, resolved.from, resolved.to),
-                    diagnostics: [
-                        createDiagnostic({
-                            code: PANDUCK_DIAGNOSTIC_CODES.readerNotReady,
-                            component: "plan",
-                            severity: "error",
-                            fallback: `source format ${source.format} is not ready for read`,
-                            args: [["format", textArg(source.format)]],
-                        }),
-                    ],
-                    determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
-                    statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.InputUnsupported },
-                });
-                emitReport(report, shared.diagnostics, shared.json);
-                return ExitCode.InputUnsupported;
-            }
-
-            if (!isOperationReady(target, "write")) {
-                const report = createReport({
-                    operation: "plan",
-                    toolVersion: ctx.toolVersion,
-                    status: "blocked",
-                    inputs: [{ path: inputPath, format: resolved.from }],
-                    detection: { format: resolved.from, confidence: "hint", hints: resolved.hints },
-                    pipeline: {
-                        reader: source?.format,
-                        writer: target.format,
-                        stages: ["detect", "read", "ir", "write", "publish"],
-                        blocked_reason: `writer state is ${target.writer.state}`,
-                    },
-                    coverage: routeCoverage(ctx.registry, resolved.from, resolved.to),
-                    diagnostics: [
-                        createDiagnostic({
-                            code: PANDUCK_DIAGNOSTIC_CODES.writerNotReady,
-                            component: "plan",
-                            severity: "error",
-                            fallback: `target format ${target.format} is not ready for write`,
-                            args: [["format", textArg(target.format)]],
-                        }),
-                    ],
-                    determinism: { profile: shared.profile ?? "default", config: shared.config ?? null },
-                    statusPolicy: { loss: shared.loss, strict: shared.strict, exit_code: ExitCode.InputUnsupported },
-                });
-                emitReport(report, shared.diagnostics, shared.json);
-                return ExitCode.InputUnsupported;
-            }
         }
 
         const route = routeCoverage(ctx.registry, resolved.from, resolved.to);

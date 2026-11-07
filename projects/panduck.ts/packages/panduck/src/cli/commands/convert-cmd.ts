@@ -19,9 +19,7 @@ import { emitJson, emitReport, writeReportFile } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
 import {
     findFormat,
-    isOperationReady,
     routeCoverage,
-    routeListed,
     type CapabilityState,
 } from "../format-registry.js";
 import {
@@ -318,43 +316,11 @@ async function convertSingleFile(input: {
               )
             : hasPipeline(ctx.bindings, resolved.from, resolved.to);
 
-        if (!routeListed(ctx.registry, resolved.from, resolved.to)) {
+        if (!routeReady) {
             return {
                 exitCode: ExitCode.InputUnsupported,
                 report: buildUnlistedRouteReport(ctx, "convert", inputPath, resolved, shared),
             };
-        }
-
-        if (!routeReady) {
-            if (source && !isOperationReady(source, "read")) {
-                return {
-                    exitCode: ExitCode.InputUnsupported,
-                    report: buildBlockedReport(
-                        ctx,
-                        "convert",
-                        inputPath,
-                        resolved,
-                        `source format ${source.format} is not ready for read`,
-                        ExitCode.InputUnsupported,
-                        shared,
-                    ),
-                };
-            }
-
-            if (!isOperationReady(target, "write")) {
-                return {
-                    exitCode: ExitCode.InputUnsupported,
-                    report: buildBlockedReport(
-                        ctx,
-                        "convert",
-                        inputPath,
-                        resolved,
-                        `target format ${target.format} is not ready for write`,
-                        ExitCode.InputUnsupported,
-                        shared,
-                    ),
-                };
-            }
         }
 
         if (dryRun) {

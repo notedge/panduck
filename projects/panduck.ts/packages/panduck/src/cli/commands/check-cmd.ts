@@ -12,7 +12,7 @@ import { createDiagnostic } from "../../diagnostic.js";
 import { PANDUCK_DIAGNOSTIC_CODES } from "../../diagnostic-codes.js";
 import { emitReport } from "../diagnostics.js";
 import { ExitCode } from "../exit-codes.js";
-import { findFormat, routeCoverage, routeListed } from "../format-registry.js";
+import { findFormat, routeCoverage } from "../format-registry.js";
 import { CliOptionError, readSharedOptions, readString } from "../options.js";
 import { createReport } from "../report.js";
 import { configureConsoleBackend } from "../console-backend.js";
@@ -107,7 +107,7 @@ async function runCheck(options: ParsedOptions): Promise<number> {
 
         const routeReady = hasPipeline(ctx.bindings, resolved.from, targetFormat);
 
-        if (!routeListed(ctx.registry, resolved.from, targetFormat)) {
+        if (!routeReady && ctx.bindings) {
             const report = buildUnlistedRouteReport(ctx, "check", inputPath, checkResolved, shared);
             emitReport(report, shared.diagnostics, shared.json);
             return ExitCode.InputUnsupported;

@@ -2,7 +2,7 @@ import type { Cli, ParsedOptions } from "@vmz/commander";
 
 import { createContext } from "../context.js";
 import { emitJson } from "../diagnostics.js";
-import { findFormat, routeListed, type FormatRecord, type OperationKind } from "../format-registry.js";
+import { findFormat, type FormatRecord, type OperationKind } from "../format-registry.js";
 import { readSharedOptions, readString } from "../options.js";
 
 export function registerFormatsCommand(cli: Cli): void {
@@ -38,7 +38,7 @@ function runFormats(options: ParsedOptions): number {
         emitJson({
             schema_version: "panduck.formats/v0",
             formats: payload,
-            conversions: listedConversions(ctx.registry, ctx.bindings?.supportedConversions?.() ?? []),
+            conversions: ctx.bindings?.supportedConversions?.() ?? [],
         });
         return 0;
     }
@@ -49,17 +49,3 @@ function runFormats(options: ParsedOptions): number {
     return 0;
 }
 
-/**
- * Keeps the route list aligned with the capability registry: a route is listed
- * only when its source can read and its target can write. Read-only formats
- * such as `xlsx` and `pptx` must not advertise conversions they cannot export.
- */
-function listedConversions(registry: readonly FormatRecord[], routes: readonly string[]): string[] {
-    return routes.filter((route) => {
-        const separator = route.indexOf(":");
-        if (separator <= 0) {
-            return false;
-        }
-        return routeListed(registry, route.slice(0, separator), route.slice(separator + 1));
-    });
-}
