@@ -207,7 +207,7 @@ dependencies = [
 [[package]]
 name = "document-compose"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "serde",
 ]
@@ -215,7 +215,7 @@ dependencies = [
 [[package]]
 name = "document-convert"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "blake3",
  "boost-diagnostic",
@@ -241,7 +241,7 @@ dependencies = [
 [[package]]
 name = "document-diagnostic"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "boost-diagnostic",
  "boost-log",
@@ -252,7 +252,7 @@ dependencies = [
 [[package]]
 name = "document-fonts"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "acorn-ttf",
  "document-compose",
@@ -262,7 +262,7 @@ dependencies = [
 [[package]]
 name = "document-formats"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "acorn-codec",
  "acorn-core",
@@ -285,7 +285,7 @@ dependencies = [
 [[package]]
 name = "document-ir"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "serde",
 ]
@@ -293,7 +293,7 @@ dependencies = [
 [[package]]
 name = "document-layout"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "document-compose",
  "document-fonts",
@@ -307,7 +307,7 @@ dependencies = [
 [[package]]
 name = "document-presentation"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "document-compose",
  "document-ir",
@@ -319,7 +319,7 @@ dependencies = [
 [[package]]
 name = "document-renderer"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "document-compose",
  "document-presentation",
@@ -328,7 +328,7 @@ dependencies = [
 [[package]]
 name = "document-renderer-pdf"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "acorn-codec",
  "document-compose",
@@ -342,7 +342,7 @@ dependencies = [
 [[package]]
 name = "document-text"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "acorn-ttf",
  "document-compose",
@@ -351,7 +351,7 @@ dependencies = [
 [[package]]
 name = "document-types"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "boost-diagnostic",
  "byteorder",
@@ -934,7 +934,7 @@ checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 [[package]]
 name = "plotter-chart"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "plotter-scene",
  "plotter-types",
@@ -944,7 +944,7 @@ dependencies = [
 [[package]]
 name = "plotter-diagram"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "plotter-scene",
  "plotter-types",
@@ -953,7 +953,7 @@ dependencies = [
 [[package]]
 name = "plotter-input-dot"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
  "oak-dot",
@@ -965,7 +965,7 @@ dependencies = [
 [[package]]
 name = "plotter-input-mermaid"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
  "oak-mermaid",
@@ -978,7 +978,7 @@ dependencies = [
 [[package]]
 name = "plotter-input-plantuml"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
  "oak-plantuml",
@@ -990,7 +990,7 @@ dependencies = [
 [[package]]
 name = "plotter-input-tikz"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "plotter-diagram",
  "plotter-scene",
@@ -999,7 +999,7 @@ dependencies = [
 [[package]]
 name = "plotter-runtime"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "plotter-scene",
  "plotter-types",
@@ -1008,7 +1008,7 @@ dependencies = [
 [[package]]
 name = "plotter-scene"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "plotter-types",
 ]
@@ -1016,7 +1016,7 @@ dependencies = [
 [[package]]
 name = "plotter-types"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=42c0bf6abd00c05ba88df706470005b0efb632f5#42c0bf6abd00c05ba88df706470005b0efb632f5"
+source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
 dependencies = [
  "boost-diagnostic",
  "serde",
