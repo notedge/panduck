@@ -768,7 +768,7 @@ test("html table headers survive the writer and the markdown reopen", async () =
 
         const text = artifact.toString("utf8");
         assert.match(text, /<thead>/, "the writer must keep the header section");
-        assert.match(text, /<th[^>]*>Name<\/th>/, "the writer must keep the header cells");
+        assert.match(text, /<th[^>]*><p>Name<\/p><\/th>/, "the writer must keep the header cells as paragraph children");
         assert.match(markdown, /^\| Name \| Value \|$/m, "reopening must recover the header row");
         assert.match(markdown, /^\| --- \| --- \|$/m, "reopening must emit a Markdown header separator");
         assert.match(markdown, /^\| Alpha \| 1 \|$/m, "reopening must recover the body row");
@@ -784,7 +784,7 @@ test("html table headers survive the writer and the markdown reopen", async () =
     }
 });
 
-test("html header rows outside the leading run are declared as loss", async () => {
+test("html header rows outside the leading run move into the head band", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-html-table-sections-"));
     try {
         const page = `<!doctype html>
@@ -800,11 +800,14 @@ test("html header rows outside the leading run are declared as loss", async () =
         });
 
         assert.match(markdown, /^\| Body \|$/m, "the leading body row must reopen");
-        assert.match(markdown, /^\| Late \|$/m, "the trailing header row must reopen as a body row");
+        assert.match(markdown, /^\| Late \|$/m, "the trailing header row must reopen");
+        const late = markdown.indexOf("| Late |");
+        const body = markdown.indexOf("| Body |");
+        assert.ok(late >= 0 && late < body, "the explicit header band must reopen before the body band");
         assert.deepEqual(
             report.losses.map((loss) => loss.code),
-            ["import.html.table_sections", "import.html.partial_coverage"],
-            "a header row after the leading run must be declared instead of silently dropped",
+            ["import.html.partial_coverage"],
+            "an explicit header band is representable and must not be reported as a section loss",
         );
     } finally {
         await rm(workdir, { recursive: true, force: true });

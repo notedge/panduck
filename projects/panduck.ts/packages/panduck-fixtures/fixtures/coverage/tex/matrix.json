@@ -36,7 +36,7 @@
             "spec": "LaTeX2e reference manual, Tabular",
             "semantics": "`tabular` rows and `&` cell separators become a table",
             "source": "\\begin{tabular}{ll}\na & b \\\\\n\\end{tabular}\n",
-            "probe": { "contains": ["<table>", "<td>a</td>", "<td>b</td>"] }
+            "probe": { "contains": ["<table>", "<td><p>a</p></td>", "<td><p>b</p></td>"] }
         },
         {
             "id": "tex-inline-math",

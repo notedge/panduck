@@ -176,7 +176,7 @@
             "spec": "GFM §4.10 Tables extension",
             "semantics": "a pipe table renders header cells as th",
             "source": "|a|b|\n|-|-|\n|1|2|\n",
-            "probe": { "contains": ["<table>", "<th>a</th>"] }
+            "probe": { "contains": ["<table>", "<th><p>a</p></th>"] }
         },
         {
             "id": "markdown-task-list",

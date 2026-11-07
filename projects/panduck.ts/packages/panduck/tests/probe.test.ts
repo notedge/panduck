@@ -177,3 +177,78 @@ test("pandoc-json keeps quote paragraphs as child blocks across a roundtrip", ()
     assert.match(inlines, /quoted/);
     assert.match(inlines, /text/);
 });
+
+test("pandoc-json keeps table bands and cell child blocks across a roundtrip", () => {
+    const binding = loadPanduckNode();
+    const cell = (text: string) => [
+        ["", [], []],
+        "AlignDefault",
+        1,
+        1,
+        [{ t: "Para", c: [{ t: "Str", c: text }] }],
+    ];
+    const row = (text: string) => [["", [], []], [cell(text)]];
+    const source = JSON.stringify({
+        "pandoc-api-version": [1, 23, 1],
+        meta: {},
+        blocks: [
+            {
+                t: "Table",
+                c: [
+                    ["", [], []],
+                    [null, [{ t: "Plain", c: [{ t: "Str", c: "Captioned" }] }]],
+                    [["AlignDefault", 0]],
+                    [["", [], []], [row("Head")]],
+                    [[["", [], []], 0, [], [row("Body")]]],
+                    [["", [], []], [row("Foot")]],
+                ],
+            },
+        ],
+    });
+
+    const imported = binding.importDocument?.("pandoc-json", "table.json", Buffer.from(source));
+    assert.ok(imported?.success, imported?.diagnosticsJson);
+    const graphJson = imported?.graphJson;
+    assert.ok(graphJson, "a wired reader must return the serialized graph");
+
+    const graph = JSON.parse(graphJson) as {
+        blocks: Array<{
+            id: number;
+            block: {
+                Table?: {
+                    head: Array<{ cells: Array<{ children: number[] }> }>;
+                    body: Array<{ cells: Array<{ children: number[] }> }>;
+                    foot: Array<{ cells: Array<{ children: number[] }> }>;
+                };
+            };
+        }>;
+    };
+    const tableNode = graph.blocks.find((node) => "Table" in node.block);
+    assert.ok(tableNode?.block.Table, "the table must survive import");
+    const table = tableNode.block.Table;
+    assert.deepEqual([table.head.length, table.body.length, table.foot.length], [1, 1, 1], "all three bands must survive");
+    for (const band of [table.head, table.body, table.foot]) {
+        for (const cellEntry of band[0].cells) {
+            assert.equal(cellEntry.children.length, 1, "each cell must own one paragraph child");
+            const child = graph.blocks.find((node) => node.id === cellEntry.children[0]);
+            assert.ok(child, "the cell child must exist in `blocks`");
+        }
+    }
+
+    const exported = binding.exportDocument?.("pandoc-json", graphJson);
+    assert.ok(exported?.success, exported?.diagnosticsJson);
+    const document = JSON.parse(exported?.text ?? "null") as {
+        blocks: Array<{ t: string; c: unknown[] }>;
+    };
+    const exportedTable = document.blocks[0].c;
+    const headRows = exportedTable[3] as [unknown, unknown[]];
+    const bodyRows = exportedTable[4] as Array<[unknown, number, unknown[], unknown[]]>;
+    const footRows = exportedTable[5] as [unknown, unknown[]];
+    assert.equal(headRows[1].length, 1, "the header band must export one row");
+    assert.equal(bodyRows[0][3].length, 1, "the body band must export one row");
+    assert.equal(footRows[1].length, 1, "the footer band must export one row");
+    const text = JSON.stringify(exportedTable);
+    for (const value of ["Head", "Body", "Foot"]) {
+        assert.match(text, new RegExp(value), `the ${value} cell text must survive`);
+    }
+});

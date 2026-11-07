@@ -11,8 +11,8 @@
         { "kind": "contains", "leg": 0, "target": "html", "value": "<li>inner</li><li>second</li>" },
         { "kind": "contains", "leg": 0, "target": "html", "value": "class=\"task-list-item\"" },
         { "kind": "contains", "leg": 0, "target": "html", "value": "<input type=\"checkbox\" disabled checked>" },
-        { "kind": "contains", "leg": 0, "target": "html", "value": "<th>left</th><th>right</th>" },
-        { "kind": "contains", "leg": 0, "target": "html", "value": "<td>a</td><td>b</td>" }
+        { "kind": "contains", "leg": 0, "target": "html", "value": "<th><p>left</p></th><th><p>right</p></th>" },
+        { "kind": "contains", "leg": 0, "target": "html", "value": "<td><p>a</p></td><td><p>b</p></td>" }
     ],
     "provenance": [
         {
@@ -26,6 +26,13 @@
             "author": "document.rs 迁移",
             "reason": "`document.rs` 把引用的首段从 `Quote.content` 提升为子块，HTML 端因此在引用内渲染 `<div data-node-id><p>`，原先的整串 `<blockquote>quoted text</blockquote>` 不再成立",
             "semantic": "引用块仍包住引用文字，文字位于一个段落子块内",
+            "updatedAt": "2026-11-07T00:00:00.000Z",
+            "observedStatus": "success_with_loss"
+        },
+        {
+            "author": "document.rs 迁移",
+            "reason": "`document.rs` 把表格单元格改为子块容器，HTML 端因此在每个 `th` / `td` 内渲染段落，原先的 `<th>left</th>` 与 `<td>a</td>` 不再成立",
+            "semantic": "表头与表体单元格仍是两个，文字 `left` / `right` / `a` / `b` 各在自己的段落子块内",
             "updatedAt": "2026-11-07T00:00:00.000Z",
             "observedStatus": "success_with_loss"
         }

@@ -632,6 +632,14 @@ fn issue_record(issue: &document_ir::ValidationIssue) -> IrValidationIssue {
             format!("node:{}", quote.0),
             format!("quote {} names child {} which is absent from `blocks`", quote.0, child.0),
         ),
+        Issue::UnknownTableCellChild { table, row_index, cell_index, child } => (
+            "UnknownTableCellChild",
+            format!("node:{}[{}][{}]", table.0, row_index, cell_index),
+            format!(
+                "table {} cell ({}, {}) names child {} which is absent from `blocks`",
+                table.0, row_index, cell_index, child.0
+            ),
+        ),
         Issue::UnknownInlineReference { from, target } => (
             "UnknownInlineReference",
             format!("node:{}", from.0),

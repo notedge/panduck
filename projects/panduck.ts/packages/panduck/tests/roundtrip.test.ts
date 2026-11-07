@@ -359,7 +359,11 @@ test("merged table cells flatten into a pipe table instead of inline HTML", asyn
         assert.match(html, /<table>/, "the table must reopen as a table");
         assert.ok(!/colspan|rowspan/.test(html), `the reopened table must stay unmerged: ${html}`);
         for (const text of ["Head", "a", "b", "c"]) {
-            assert.match(html, new RegExp(`<t[hd][^>]*>${text}</t[hd]>`), `the cell text ${text} must survive: ${html}`);
+            assert.match(
+                html,
+                new RegExp(`<t[hd][^>]*><p>${text}</p></t[hd]>`),
+                `the cell text ${text} must survive as a paragraph child: ${html}`,
+            );
         }
     } finally {
         await rm(workdir, { recursive: true, force: true });

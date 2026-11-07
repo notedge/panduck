@@ -85,7 +85,7 @@
             "spec": "HTML Standard §13.2.6.4.9 in table insertion mode",
             "semantics": "rows inside a table without tbody are still table rows",
             "source": "<table><tr><td>x</td></tr></table>",
-            "probe": { "contains": ["<td>x</td>"] }
+            "probe": { "contains": ["<td><p>x</p></td>"] }
         },
         {
             "id": "html-nested-table",
@@ -158,7 +158,7 @@
             "spec": "HTML Standard §13.2.6.4.9 in table insertion mode (thead and tbody)",
             "semantics": "thead cells stay header cells and tbody cells stay data cells",
             "source": "<table><caption>c</caption><colgroup><col span=2></colgroup><thead><tr><th>h</th></tr></thead><tbody><tr><td>b</td></tr></tbody></table>",
-            "probe": { "contains": ["<th>h</th>", "<td>b</td>"] }
+            "probe": { "contains": ["<th><p>h</p></th>", "<td><p>b</p></td>"] }
         }
     ]
 }
