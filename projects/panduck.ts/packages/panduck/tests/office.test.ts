@@ -71,8 +71,11 @@ type OfficeBindings = {
     probeSlideTextWrap(label: string, bytes: Buffer): WrapProbe[];
 };
 
+// The platform packages follow `@notedge/panduck-<platform>-<arch>`, so the
+// suite resolves its own binding instead of assuming the developer's host.
 const platformRequire = createRequire(import.meta.url);
-const platformModule = platformRequire("@notedge/panduck-win32-x64") as OfficeBindings & { default?: OfficeBindings };
+const platformPackage = `@notedge/panduck-${process.platform}-${process.arch}`;
+const platformModule = platformRequire(platformPackage) as OfficeBindings & { default?: OfficeBindings };
 const native: OfficeBindings = platformModule.default ?? platformModule;
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), "../../panduck-fixtures/fixtures/formats");
 
