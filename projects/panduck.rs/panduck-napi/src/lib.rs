@@ -660,6 +660,29 @@ fn issue_record(issue: &document_ir::ValidationIssue) -> IrValidationIssue {
             format!("node:{}", from.0),
             format!("inline {kind} on node {} carries an empty label", from.0),
         ),
+        Issue::EmptyInlineImageSource { from } => (
+            "EmptyInlineImageSource",
+            format!("node:{}", from.0),
+            format!(
+                "image on node {} has neither a source location nor a bound asset",
+                from.0
+            ),
+        ),
+        Issue::EmptyInlineAttributes { from } => (
+            "EmptyInlineAttributes",
+            format!("node:{}", from.0),
+            format!("attributed inline on node {} carries no attribute", from.0),
+        ),
+        Issue::EmptyInlineAttributeName { from, slot } => (
+            "EmptyInlineAttributeName",
+            format!("node:{}", from.0),
+            format!("inline attribute {slot} on node {} is empty", from.0),
+        ),
+        Issue::EmptyInlineStyle { from } => (
+            "EmptyInlineStyle",
+            format!("node:{}", from.0),
+            format!("styled inline on node {} carries an empty style name", from.0),
+        ),
         Issue::UnknownRelationEndpoint { link } => (
             "UnknownRelationEndpoint",
             format!("relation:{}", link.0),
