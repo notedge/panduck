@@ -784,7 +784,7 @@ test("html table headers survive the writer and the markdown reopen", async () =
     }
 });
 
-test("html header rows outside the leading run move into the head band", async () => {
+test("html header rows outside the leading run are marked as head after body", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-html-table-sections-"));
     try {
         const page = `<!doctype html>
@@ -801,13 +801,14 @@ test("html header rows outside the leading run move into the head band", async (
 
         assert.match(markdown, /^\| Body \|$/m, "the leading body row must reopen");
         assert.match(markdown, /^\| Late \|$/m, "the trailing header row must reopen");
-        const late = markdown.indexOf("| Late |");
-        const body = markdown.indexOf("| Body |");
-        assert.ok(late >= 0 && late < body, "the explicit header band must reopen before the body band");
-        assert.deepEqual(
-            report.losses.map((loss) => loss.code),
-            ["import.html.partial_coverage"],
-            "an explicit header band is representable and must not be reported as a section loss",
+        const codes = report.losses.map((loss) => loss.code);
+        assert.ok(
+            codes.includes("import.html.head_after_body"),
+            "a head section authored after body rows must be declared",
+        );
+        assert.ok(
+            !codes.includes("import.html.table_sections"),
+            "the head band is representable and must not be reported as a table section loss",
         );
     } finally {
         await rm(workdir, { recursive: true, force: true });
