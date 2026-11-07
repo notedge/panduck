@@ -938,8 +938,30 @@ for (const from of ["tex", "typst"] as const) {
                     assert.match(markdown, /Second paragraph\./, "reopening must recover the second paragraph");
                 }
 
-                assert.equal(report.status, "success", "these routes declare no partial coverage");
-                assert.deepEqual(report.losses, [], "these routes declare no loss entries");
+                // TeX carries its section numbers and labels as inline attributes.
+                // DOCX and PDF have no slot for inline attribute identity, and the
+                // writers name that drop instead of hiding it, so the text survives
+                // while the authored attributes are reported as lost.
+                const expectedLosses =
+                    from === "tex" && to === "docx"
+                        ? ["export.docx.inline_attributes_dropped"]
+                        : from === "tex" && to === "pdf"
+                          ? [
+                                "export.pdf.inline_attributes_dropped",
+                                "export.pdf.inline_attributes_dropped",
+                                "export.pdf.inline_attributes_dropped",
+                            ]
+                          : [];
+                assert.deepEqual(
+                    report.losses.map((loss) => loss.code),
+                    expectedLosses,
+                    "the declared losses must match the slots the target really has",
+                );
+                assert.equal(
+                    report.status,
+                    expectedLosses.length === 0 ? "success" : "success_with_loss",
+                    "the status must follow the declared losses",
+                );
             } finally {
                 await rm(workdir, { recursive: true, force: true });
             }
@@ -963,8 +985,18 @@ test("tex to pdf keeps the three authored heading levels through pdf reopen", as
         assert.match(markdown, /^### 1\.1\.1 Three$/m, "the subsubsection must reopen at heading level three");
         assert.match(markdown, /^Body\.$/m, "the section body must stay ahead of the subsection");
 
-        assert.equal(report.status, "success", "these routes declare no partial coverage");
-        assert.deepEqual(report.losses, [], "these routes declare no loss entries");
+        // The heading levels reopen from the PDF outline, but the TeX number and
+        // label attributes have no PDF slot, so the writer names them as dropped.
+        assert.equal(report.status, "success_with_loss", "the named attribute drops must surface in the status");
+        assert.deepEqual(
+            report.losses.map((loss) => loss.code),
+            [
+                "export.pdf.inline_attributes_dropped",
+                "export.pdf.inline_attributes_dropped",
+                "export.pdf.inline_attributes_dropped",
+            ],
+            "the only declared losses must be the inline attribute drops",
+        );
     } finally {
         await rm(workdir, { recursive: true, force: true });
     }

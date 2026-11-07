@@ -5,84 +5,68 @@ version = 4
 [[package]]
 name = "acorn-cfb"
 version = "0.0.1"
-source = "git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996#fbed2df1626ec3800cb2e54b7b9c730bf8a2f996"
 dependencies = [
- "acorn-core 0.0.1 (git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996)",
+ "acorn-core",
 ]
 
 [[package]]
 name = "acorn-codec"
 version = "0.0.1"
-source = "git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996#fbed2df1626ec3800cb2e54b7b9c730bf8a2f996"
 
 [[package]]
 name = "acorn-core"
 version = "0.0.1"
-source = "git+https://github.com/yggdrasil-language/acorn.rs.git?rev=6798c29abede61043893796b8191aa9acdb8f4fa#6798c29abede61043893796b8191aa9acdb8f4fa"
 dependencies = [
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86)",
-]
-
-[[package]]
-name = "acorn-core"
-version = "0.0.1"
-source = "git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996#fbed2df1626ec3800cb2e54b7b9c730bf8a2f996"
-dependencies = [
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=2218a644af335aa4cef9f3e9e6b37475a829cfe2)",
+ "boost-diagnostic",
 ]
 
 [[package]]
 name = "acorn-doc"
 version = "0.0.1"
-source = "git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996#fbed2df1626ec3800cb2e54b7b9c730bf8a2f996"
 dependencies = [
  "acorn-cfb",
- "acorn-core 0.0.1 (git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996)",
+ "acorn-core",
 ]
 
 [[package]]
 name = "acorn-docx"
 version = "0.0.1"
-source = "git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996#fbed2df1626ec3800cb2e54b7b9c730bf8a2f996"
 dependencies = [
- "acorn-core 0.0.1 (git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996)",
+ "acorn-core",
  "acorn-source",
  "acorn-zip",
- "oak-xml 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=5ad929047783b8750191b3d8dc25a94bd88681e4)",
+ "oak-xml 0.0.12",
 ]
 
 [[package]]
 name = "acorn-epub"
 version = "0.0.1"
-source = "git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996#fbed2df1626ec3800cb2e54b7b9c730bf8a2f996"
 dependencies = [
- "acorn-core 0.0.1 (git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996)",
+ "acorn-core",
  "acorn-source",
  "acorn-zip",
- "oak-xml 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=5ad929047783b8750191b3d8dc25a94bd88681e4)",
+ "oak-xml 0.0.12",
 ]
 
 [[package]]
 name = "acorn-source"
 version = "0.0.1"
-source = "git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996#fbed2df1626ec3800cb2e54b7b9c730bf8a2f996"
 
 [[package]]
 name = "acorn-ttf"
 version = "0.0.1"
 source = "git+https://github.com/yggdrasil-language/acorn.rs.git?rev=6798c29abede61043893796b8191aa9acdb8f4fa#6798c29abede61043893796b8191aa9acdb8f4fa"
 dependencies = [
- "acorn-core 0.0.1 (git+https://github.com/yggdrasil-language/acorn.rs.git?rev=6798c29abede61043893796b8191aa9acdb8f4fa)",
+ "acorn-core",
  "ttf-parser",
 ]
 
 [[package]]
 name = "acorn-zip"
 version = "0.0.1"
-source = "git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996#fbed2df1626ec3800cb2e54b7b9c730bf8a2f996"
 dependencies = [
  "acorn-codec",
- "acorn-core 0.0.1 (git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996)",
+ "acorn-core",
  "acorn-source",
 ]
 
@@ -114,39 +98,19 @@ dependencies = [
 [[package]]
 name = "boost-diagnostic"
 version = "0.1.0"
-source = "git+https://github.com/oovm/rust-boost?rev=2218a644af335aa4cef9f3e9e6b37475a829cfe2#2218a644af335aa4cef9f3e9e6b37475a829cfe2"
-dependencies = [
- "boost-source 0.1.0 (git+https://github.com/oovm/rust-boost?rev=2218a644af335aa4cef9f3e9e6b37475a829cfe2)",
- "serde",
-]
-
-[[package]]
-name = "boost-diagnostic"
-version = "0.1.0"
-source = "git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86#9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86"
 dependencies = [
  "boost-log",
- "boost-source 0.1.0 (git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86)",
+ "boost-source",
  "serde",
 ]
 
 [[package]]
 name = "boost-log"
 version = "0.1.0"
-source = "git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86#9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86"
 
 [[package]]
 name = "boost-source"
 version = "0.1.0"
-source = "git+https://github.com/oovm/rust-boost?rev=2218a644af335aa4cef9f3e9e6b37475a829cfe2#2218a644af335aa4cef9f3e9e6b37475a829cfe2"
-dependencies = [
- "serde",
-]
-
-[[package]]
-name = "boost-source"
-version = "0.1.0"
-source = "git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86#9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86"
 dependencies = [
  "serde",
 ]
@@ -178,17 +142,6 @@ name = "cfg-if"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600"
-
-[[package]]
-name = "chacha20"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65c35e4b699c7e15ccbe7ee35c005e4fc0a278d22238a2857e6ce2dadeda1b06"
-dependencies = [
- "cfg-if",
- "cpufeatures",
- "rand_core",
-]
 
 [[package]]
 name = "constant_time_eq"
@@ -265,7 +218,7 @@ version = "0.1.0"
 source = "git+https://github.com/notedge/document.rs?rev=38770d76f6cb172b0415f3186305a136ff3c2755#38770d76f6cb172b0415f3186305a136ff3c2755"
 dependencies = [
  "blake3",
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86)",
+ "boost-diagnostic",
  "document-compose",
  "document-diagnostic",
  "document-fonts",
@@ -290,7 +243,7 @@ name = "document-diagnostic"
 version = "0.1.0"
 source = "git+https://github.com/notedge/document.rs?rev=38770d76f6cb172b0415f3186305a136ff3c2755#38770d76f6cb172b0415f3186305a136ff3c2755"
 dependencies = [
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86)",
+ "boost-diagnostic",
  "boost-log",
  "document-ir",
  "document-types",
@@ -312,12 +265,12 @@ version = "0.1.0"
 source = "git+https://github.com/notedge/document.rs?rev=38770d76f6cb172b0415f3186305a136ff3c2755#38770d76f6cb172b0415f3186305a136ff3c2755"
 dependencies = [
  "acorn-codec",
- "acorn-core 0.0.1 (git+https://github.com/yggdrasil-language/acorn.rs.git?rev=fbed2df1626ec3800cb2e54b7b9c730bf8a2f996)",
+ "acorn-core",
  "acorn-doc",
  "acorn-docx",
  "acorn-epub",
  "blake3",
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86)",
+ "boost-diagnostic",
  "document-ir",
  "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "oak-html 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
@@ -400,7 +353,7 @@ name = "document-types"
 version = "0.1.0"
 source = "git+https://github.com/notedge/document.rs?rev=38770d76f6cb172b0415f3186305a136ff3c2755#38770d76f6cb172b0415f3186305a136ff3c2755"
 dependencies = [
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86)",
+ "boost-diagnostic",
  "byteorder",
  "document-ir",
  "serde",
@@ -508,18 +461,6 @@ dependencies = [
  "memchr",
  "pin-project-lite",
  "slab",
-]
-
-[[package]]
-name = "getrandom"
-version = "0.4.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "300e883d756b2e4ec94e02791f39b04b522276138852cfc41d9fb7e904106099"
-dependencies = [
- "cfg-if",
- "libc",
- "r-efi",
- "rand_core",
 ]
 
 [[package]]
@@ -748,7 +689,6 @@ checksum = "2bf50223579dc7cdcfb3bfcacf7069ff68243f8c363f62ffa99cf000a6b9c451"
 [[package]]
 name = "oak-core"
 version = "0.0.12"
-source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=5ad929047783b8750191b3d8dc25a94bd88681e4#5ad929047783b8750191b3d8dc25a94bd88681e4"
 dependencies = [
  "serde",
  "smallvec",
@@ -783,7 +723,7 @@ name = "oak-css-selector"
 version = "0.0.12"
 source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4#9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4"
 dependencies = [
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86)",
+ "boost-diagnostic",
  "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
  "serde",
 ]
@@ -793,7 +733,7 @@ name = "oak-css-selector"
 version = "0.0.12"
 source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
 dependencies = [
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86)",
+ "boost-diagnostic",
  "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "serde",
 ]
@@ -932,10 +872,9 @@ dependencies = [
 [[package]]
 name = "oak-xml"
 version = "0.0.12"
-source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=5ad929047783b8750191b3d8dc25a94bd88681e4#5ad929047783b8750191b3d8dc25a94bd88681e4"
 dependencies = [
- "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=5ad929047783b8750191b3d8dc25a94bd88681e4)",
- "oak-xpath 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=5ad929047783b8750191b3d8dc25a94bd88681e4)",
+ "oak-core 0.0.12",
+ "oak-xpath 0.0.12",
  "serde",
 ]
 
@@ -962,10 +901,9 @@ dependencies = [
 [[package]]
 name = "oak-xpath"
 version = "0.0.12"
-source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=5ad929047783b8750191b3d8dc25a94bd88681e4#5ad929047783b8750191b3d8dc25a94bd88681e4"
 dependencies = [
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=2218a644af335aa4cef9f3e9e6b37475a829cfe2)",
- "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=5ad929047783b8750191b3d8dc25a94bd88681e4)",
+ "boost-diagnostic",
+ "oak-core 0.0.12",
  "serde",
 ]
 
@@ -974,7 +912,7 @@ name = "oak-xpath"
 version = "0.0.12"
 source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4#9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4"
 dependencies = [
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86)",
+ "boost-diagnostic",
  "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
  "serde",
 ]
@@ -984,7 +922,7 @@ name = "oak-xpath"
 version = "0.0.12"
 source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
 dependencies = [
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86)",
+ "boost-diagnostic",
  "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "serde",
 ]
@@ -1000,7 +938,7 @@ name = "panduck-napi"
 version = "0.0.19"
 dependencies = [
  "blake3",
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86)",
+ "boost-diagnostic",
  "boost-log",
  "document-convert",
  "document-diagnostic",
@@ -1159,7 +1097,7 @@ name = "plotter-types"
 version = "0.1.0"
 source = "git+https://github.com/notedge/document.rs?rev=38770d76f6cb172b0415f3186305a136ff3c2755#38770d76f6cb172b0415f3186305a136ff3c2755"
 dependencies = [
- "boost-diagnostic 0.1.0 (git+https://github.com/oovm/rust-boost?rev=9aa52745d6eae2d7748c76e4e3e6555e1f6e4b86)",
+ "boost-diagnostic",
  "serde",
  "serde_json",
 ]
@@ -1190,29 +1128,6 @@ checksum = "1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001"
 dependencies = [
  "proc-macro2",
 ]
-
-[[package]]
-name = "r-efi"
-version = "6.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
-
-[[package]]
-name = "rand"
-version = "0.10.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65c9fb96cbc91e3478eaae79a69fcd3f1ae4ad052e471fe6732fff548984b4af"
-dependencies = [
- "chacha20",
- "getrandom",
- "rand_core",
-]
-
-[[package]]
-name = "rand_core"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
 
 [[package]]
 name = "redox_syscall"
@@ -1402,9 +1317,6 @@ name = "twox-hash"
 version = "2.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "86a801b3cea342a06d468c8710662aa29e5e05e4f5c0d62f00bbb7f2ad7941c2"
-dependencies = [
- "rand",
-]
 
 [[package]]
 name = "unicode-ident"

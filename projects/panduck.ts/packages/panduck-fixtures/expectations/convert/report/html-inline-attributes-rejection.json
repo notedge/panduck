@@ -14,7 +14,6 @@
             "kind": "loss-codes",
             "expected": [
                 "import.html.asset_unresolved",
-                "import.html.image_dimensions",
                 "import.html.partial_coverage",
                 "import.html.raw_form",
                 "import.html.raw_form_control",
@@ -31,7 +30,7 @@
         {
             "kind": "diagnostic-codes",
             "expected": [
-                "import.html.image_dimensions",
+                "import.html.asset_unresolved",
                 "import.html.partial_coverage",
                 "import.html.raw_form",
                 "import.html.raw_form_control",
@@ -70,6 +69,22 @@
             "semantic": "html input converts to markdown with declared losses for unresolved image assets and raw style, form and script elements",
             "updatedAt": "2026-11-06T14:31:45.833Z",
             "assertionDiff": "~ {\"kind\":\"loss-codes\",\"expected\":[\"import.html.asset_unresolved\",\"import.html.image_dimensions\",\"import.html.partial_coverage\",\"import.html.raw_form\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_script\",\"import.html.raw_style\"]}",
+            "observedStatus": "pass"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 74366e949afa48bd898ab08b75e0ec4a4ff0a5e1",
+            "reason": "Image width and height now survive the HTML import and the markdown writer keeps them on the img tag, so the image_dimensions loss retires and the expectation names only the remaining losses",
+            "semantic": "html input converts to markdown with dimensions preserved on the img tag and losses only for unresolved assets, raw style, form and script elements",
+            "updatedAt": "2026-11-07T21:14:20.393Z",
+            "assertionDiff": "~ {\"kind\":\"loss-codes\",\"expected\":[\"import.html.asset_unresolved\",\"import.html.partial_coverage\",\"import.html.raw_form\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_form_control\",\"import.html.raw_script\",\"import.html.raw_style\"]}",
+            "observedStatus": "pass"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 74366e949afa48bd898ab08b75e0ec4a4ff0a5e1",
+            "reason": "The importer now warns about the unresolved image asset as well, so the diagnostic set follows the observed codes and drops the retired image_dimensions entry",
+            "semantic": "html input converts to markdown with diagnostics for unresolved assets, raw style, form and script elements",
+            "updatedAt": "2026-11-07T21:14:25.396Z",
+            "assertionDiff": "~ {\"kind\":\"diagnostic-codes\",\"expected\":[\"import.html.asset_unresolved\",\"import.html.partial_coverage\",\"import.html.raw_form\",\"import.html.raw_form_control\",\"import.html.raw_script\",\"import.html.raw_style\"]}",
             "observedStatus": "pass"
         }
     ]

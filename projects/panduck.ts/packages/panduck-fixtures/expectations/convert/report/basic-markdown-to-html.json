@@ -13,10 +13,13 @@
         {
             "kind": "loss-codes",
             "expected": [
+                "export.html.image_asset_unresolved",
+                "export.html.image_asset_unresolved",
+                "import.markdown.asset_unresolved",
+                "import.markdown.asset_unresolved",
                 "import.markdown.definition_list",
                 "import.markdown.definition_list",
                 "import.markdown.definition_list",
-                "import.markdown.unresolved_reference_link",
                 "import.markdown.table_alignment"
             ]
         },
@@ -60,9 +63,10 @@
                 "<table"
             ],
             "losses": [
+                "export.html.image_asset_unresolved",
+                "import.markdown.asset_unresolved",
                 "import.markdown.definition_list",
-                "import.markdown.table_alignment",
-                "import.markdown.unresolved_reference_link"
+                "import.markdown.table_alignment"
             ]
         },
         {
@@ -166,6 +170,22 @@
             "semantic": "loss-codes 与 honest-success 移除 `import.markdown.footnote_body_unplaced` 与 `import.markdown.footnote_reference_marker`，其余三条定义列表与两处保真损失不变",
             "updatedAt": "2026-11-05T00:00:00.000Z",
             "assertionDiff": "~ {\"kind\":\"loss-codes\",\"expected\":[\"import.markdown.definition_list\",\"import.markdown.definition_list\",\"import.markdown.definition_list\",\"import.markdown.unresolved_reference_link\",\"import.markdown.table_alignment\"]}"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 74366e949afa48bd898ab08b75e0ec4a4ff0a5e1",
+            "reason": "The new pin resolves reference links and names unresolved image assets on both sides, so the retired unresolved_reference_link code leaves and two asset_unresolved pairs plus two html export codes enter",
+            "semantic": "markdown input converts to html with named unresolved image assets and no unresolved reference link loss",
+            "updatedAt": "2026-11-07T21:14:15.603Z",
+            "assertionDiff": "~ {\"kind\":\"loss-codes\",\"expected\":[\"export.html.image_asset_unresolved\",\"export.html.image_asset_unresolved\",\"import.markdown.asset_unresolved\",\"import.markdown.asset_unresolved\",\"import.markdown.definition_list\",\"import.markdown.definition_list\",\"import.markdown.definition_list\",\"import.markdown.table_alignment\"]}",
+            "observedStatus": "pass"
+        },
+        {
+            "author": "aster <aster@vers.site> @ 74366e949afa48bd898ab08b75e0ec4a4ff0a5e1",
+            "reason": "Reference links now resolve, so the honest-success loss claim must name the loss classes the report really declares instead of the retired code",
+            "semantic": "success_with_loss names unresolved image assets on both sides plus definition lists and table alignment",
+            "updatedAt": "2026-11-07T21:14:37.096Z",
+            "assertionDiff": "~ {\"kind\":\"honest-success\",\"target\":\"html\",\"required\":[\"<h2>Lists</h2>\",\"<h2>Tables</h2>\",\"<table\"],\"losses\":[\"export.html.image_asset_unresolved\",\"import.markdown.asset_unresolved\",\"import.markdown.definition_list\",\"import.markdown.table_alignment\"]}",
+            "observedStatus": "pass"
         }
     ]
 }
