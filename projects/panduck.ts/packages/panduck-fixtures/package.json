@@ -1,6 +1,6 @@
 {
     "name": "@notedge/panduck-fixtures",
-    "version": "0.0.19",
+    "version": "0.0.20",
     "private": true,
     "type": "module",
     "description": "Corpus home for downstream Panduck conformance fixtures",

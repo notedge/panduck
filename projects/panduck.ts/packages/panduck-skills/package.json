@@ -1,6 +1,6 @@
 {
     "name": "@notedge/panduck-skills",
-    "version": "0.0.19",
+    "version": "0.0.20",
     "type": "module",
     "description": "Agent skills for Panduck users. Document conversion with @notedge/panduck. Install with npx @notedge/panduck-skills.",
     "repository": {
