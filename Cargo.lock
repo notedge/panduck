@@ -207,7 +207,7 @@ dependencies = [
 [[package]]
 name = "document-compose"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "serde",
 ]
@@ -215,7 +215,7 @@ dependencies = [
 [[package]]
 name = "document-convert"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "blake3",
  "boost-diagnostic",
@@ -241,7 +241,7 @@ dependencies = [
 [[package]]
 name = "document-diagnostic"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "boost-diagnostic",
  "boost-log",
@@ -252,7 +252,7 @@ dependencies = [
 [[package]]
 name = "document-fonts"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "acorn-ttf",
  "document-compose",
@@ -262,7 +262,7 @@ dependencies = [
 [[package]]
 name = "document-formats"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "acorn-codec",
  "acorn-core",
@@ -272,20 +272,20 @@ dependencies = [
  "blake3",
  "boost-diagnostic",
  "document-ir",
- "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
- "oak-html",
- "oak-markdown",
- "oak-notedown",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
+ "oak-html 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
+ "oak-markdown 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
+ "oak-notedown 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "oak-tex",
  "oak-typst",
- "oak-xml 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "oak-xml 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "serde_json",
 ]
 
 [[package]]
 name = "document-ir"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "serde",
 ]
@@ -293,7 +293,7 @@ dependencies = [
 [[package]]
 name = "document-layout"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "document-compose",
  "document-fonts",
@@ -307,7 +307,7 @@ dependencies = [
 [[package]]
 name = "document-presentation"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "document-compose",
  "document-ir",
@@ -319,7 +319,7 @@ dependencies = [
 [[package]]
 name = "document-renderer"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "document-compose",
  "document-presentation",
@@ -328,7 +328,7 @@ dependencies = [
 [[package]]
 name = "document-renderer-pdf"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "acorn-codec",
  "document-compose",
@@ -342,7 +342,7 @@ dependencies = [
 [[package]]
 name = "document-text"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "acorn-ttf",
  "document-compose",
@@ -351,7 +351,7 @@ dependencies = [
 [[package]]
 name = "document-types"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "boost-diagnostic",
  "byteorder",
@@ -708,6 +708,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "oak-core"
+version = "0.0.12"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
+dependencies = [
+ "serde",
+ "smallvec",
+ "triomphe",
+ "twox-hash",
+]
+
+[[package]]
 name = "oak-css-selector"
 version = "0.0.12"
 source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4#9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4"
@@ -718,11 +729,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "oak-css-selector"
+version = "0.0.12"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
+dependencies = [
+ "boost-diagnostic",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
+ "serde",
+]
+
+[[package]]
 name = "oak-dot"
 version = "0.0.12"
-source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4#9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
 dependencies = [
- "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "serde",
 ]
 
@@ -732,7 +753,17 @@ version = "0.0.12"
 source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4#9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4"
 dependencies = [
  "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
- "oak-css-selector",
+ "oak-css-selector 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "serde",
+]
+
+[[package]]
+name = "oak-html"
+version = "0.0.12"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
+dependencies = [
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
+ "oak-css-selector 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "serde",
 ]
 
@@ -743,16 +774,27 @@ source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6
 dependencies = [
  "dashmap",
  "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
- "oak-navigation",
+ "oak-navigation 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "serde",
+]
+
+[[package]]
+name = "oak-markdown"
+version = "0.0.12"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
+dependencies = [
+ "dashmap",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
+ "oak-navigation 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "serde",
 ]
 
 [[package]]
 name = "oak-mermaid"
 version = "0.0.12"
-source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4#9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
 dependencies = [
- "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "oak-uml",
  "serde",
 ]
@@ -766,6 +808,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "oak-navigation"
+version = "0.0.12"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
+dependencies = [
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
+]
+
+[[package]]
 name = "oak-notedown"
 version = "0.0.12"
 source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4#9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4"
@@ -775,38 +825,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "oak-notedown"
+version = "0.0.12"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
+dependencies = [
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
+ "serde",
+]
+
+[[package]]
 name = "oak-plantuml"
 version = "0.0.12"
-source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4#9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
 dependencies = [
- "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "serde",
 ]
 
 [[package]]
 name = "oak-tex"
 version = "0.0.12"
-source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4#9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
 dependencies = [
- "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "serde",
 ]
 
 [[package]]
 name = "oak-typst"
 version = "0.0.12"
-source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4#9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
 dependencies = [
- "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "serde",
 ]
 
 [[package]]
 name = "oak-uml"
 version = "0.0.12"
-source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4#9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
 dependencies = [
- "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "serde",
 ]
 
@@ -830,6 +889,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "oak-xml"
+version = "0.0.12"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
+dependencies = [
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
+ "oak-xpath 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
+ "serde",
+]
+
+[[package]]
 name = "oak-xpath"
 version = "0.0.12"
 dependencies = [
@@ -845,6 +914,16 @@ source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6
 dependencies = [
  "boost-diagnostic",
  "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "serde",
+]
+
+[[package]]
+name = "oak-xpath"
+version = "0.0.12"
+source = "git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366#913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366"
+dependencies = [
+ "boost-diagnostic",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "serde",
 ]
 
@@ -872,9 +951,9 @@ dependencies = [
  "napi-build",
  "napi-derive",
  "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
- "oak-html",
- "oak-markdown",
- "oak-notedown",
+ "oak-html 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "oak-markdown 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "oak-notedown 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
  "oak-xml 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
  "plotter-chart",
  "plotter-diagram",
@@ -934,7 +1013,7 @@ checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 [[package]]
 name = "plotter-chart"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "plotter-scene",
  "plotter-types",
@@ -944,7 +1023,7 @@ dependencies = [
 [[package]]
 name = "plotter-diagram"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "plotter-scene",
  "plotter-types",
@@ -953,9 +1032,9 @@ dependencies = [
 [[package]]
 name = "plotter-input-dot"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
- "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "oak-dot",
  "plotter-diagram",
  "plotter-scene",
@@ -965,9 +1044,9 @@ dependencies = [
 [[package]]
 name = "plotter-input-mermaid"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
- "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "oak-mermaid",
  "oak-uml",
  "plotter-diagram",
@@ -978,9 +1057,9 @@ dependencies = [
 [[package]]
 name = "plotter-input-plantuml"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
- "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4)",
+ "oak-core 0.0.12 (git+https://github.com/yggdrasil-language/oak.rs.git?rev=913678aa1b36fd2cc9e4c3fdd46eeda2ee0dc366)",
  "oak-plantuml",
  "plotter-diagram",
  "plotter-scene",
@@ -990,7 +1069,7 @@ dependencies = [
 [[package]]
 name = "plotter-input-tikz"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "plotter-diagram",
  "plotter-scene",
@@ -999,7 +1078,7 @@ dependencies = [
 [[package]]
 name = "plotter-runtime"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "plotter-scene",
  "plotter-types",
@@ -1008,7 +1087,7 @@ dependencies = [
 [[package]]
 name = "plotter-scene"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "plotter-types",
 ]
@@ -1016,7 +1095,7 @@ dependencies = [
 [[package]]
 name = "plotter-types"
 version = "0.1.0"
-source = "git+https://github.com/notedge/document.rs?rev=e8dbd2b83ef20fb554194f0dce294aa90357d150#e8dbd2b83ef20fb554194f0dce294aa90357d150"
+source = "git+https://github.com/notedge/document.rs?rev=d459c4eddf9c32152e22c000d19f8686241320d1#d459c4eddf9c32152e22c000d19f8686241320d1"
 dependencies = [
  "boost-diagnostic",
  "serde",
