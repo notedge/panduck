@@ -367,6 +367,10 @@ export async function runConversionPipeline(input: {
         );
     }
 
+    if (operation === "convert") {
+        attachNoAssetEntryHelp(outcome.diagnostics);
+    }
+
     const overdue = deadlineStop(elapsedMs);
     if (overdue) {
         return blocked(
@@ -480,6 +484,35 @@ async function publishText(path: string, content: string): Promise<void> {
     const temp = join(dir, `.${basename(path)}.${randomBytes(4).toString("hex")}.tmp`);
     await writeFile(temp, content, "utf8");
     await rename(temp, path);
+}
+
+/**
+ * Matches diagnostics that mean the document authored an image but no bytes
+ * reached the reader.
+ */
+const UNRESOLVED_IMAGE_CODE = /\.(asset_unresolved|image_unresolved)$/;
+
+/**
+ * Actionable replacement for the missing asset entry.
+ *
+ * Single-file `convert` never reads image files, so an unresolved image needs a
+ * route change rather than a retry. The help names both routes that can carry
+ * bytes and the limits of each, instead of repeating the loss code.
+ */
+const NO_ASSET_ENTRY_HELP =
+    "`convert` has no asset entry, so no image bytes reached the writer. To keep images, pass their bytes to `importDocument` through the `assets` argument keyed by the authored image target (the HTML and Markdown readers resolve them), or convert HTML with `--to markdown-project`, which resolves sibling files next to the input. Remote image URLs are never fetched.";
+
+/** Attach the route help once, to the first unresolved-image diagnostic. */
+function attachNoAssetEntryHelp(diagnostics: DiagnosticRecord[]): void {
+    const target = diagnostics.find((item) => UNRESOLVED_IMAGE_CODE.test(item.code));
+    if (!target || target.helps.some((help) => help.key === "panduck.asset.no-input-bytes")) {
+        return;
+    }
+    target.helps.push({
+        key: "panduck.asset.no-input-bytes",
+        args: [],
+        fallback: NO_ASSET_ENTRY_HELP,
+    });
 }
 
 function blocked(

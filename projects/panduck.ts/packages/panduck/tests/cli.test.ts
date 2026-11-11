@@ -200,6 +200,49 @@ test("convert detection does not claim a zip container for markdown", () => {
     rmSync(workdir, { recursive: true, force: true });
 });
 
+test("convert points unresolved images at the routes that can carry bytes", () => {
+    const workdir = mkdtempSync(join(tmpdir(), "panduck-asset-help-"));
+    const input = join(workdir, "image.md");
+    writeFileSync(input, "![alt](pic.png)\n", "utf8");
+    const jsonRun = runPanduck([
+        "convert",
+        input,
+        "--from",
+        "markdown",
+        "--to",
+        "docx",
+        "-o",
+        join(workdir, "image.docx"),
+        "--report",
+        "-",
+        "--diagnostics",
+        "silent",
+    ]);
+    assert.equal(jsonRun.code, 0, jsonRun.stderr);
+    const report = JSON.parse(jsonRun.stdout) as {
+        diagnostics: Array<{ code: string; helps: Array<{ key: string; fallback: string }> }>;
+    };
+    const unresolved = report.diagnostics.find((item) => item.code === "import.markdown.asset_unresolved");
+    assert.ok(unresolved, "a markdown image without bytes stays unresolved");
+    assert.equal(unresolved.helps[0]?.key, "panduck.asset.no-input-bytes");
+    assert.match(unresolved.helps[0].fallback, /importDocument/);
+    assert.match(unresolved.helps[0].fallback, /markdown-project/);
+
+    const humanRun = runPanduck([
+        "convert",
+        input,
+        "--from",
+        "markdown",
+        "--to",
+        "docx",
+        "-o",
+        join(workdir, "image-2.docx"),
+    ]);
+    assert.equal(humanRun.code, 0, humanRun.stderr);
+    assert.match(humanRun.stderr, /help: .*no asset entry/);
+    rmSync(workdir, { recursive: true, force: true });
+});
+
 test("convert infers typst from the .typ extension without --from", () => {
     const workdir = mkdtempSync(join(tmpdir(), "panduck-typst-detection-"));
     const input = join(workdir, "source.typ");

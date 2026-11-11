@@ -87,7 +87,7 @@ const UNSUPPORTED_FLAG_FAMILIES = [
     },
     {
         keys: ["assets-dir", "asset-policy", "link-policy"] as const,
-        detail: "asset and link policy flags are not available in v0: assets stay inline and links stay verbatim",
+        detail: "asset and link policy flags are not available in v0: single-file conversion has no image-byte input, so images stay unresolved and links stay verbatim",
     },
     {
         keys: ["allow-partial"] as const,

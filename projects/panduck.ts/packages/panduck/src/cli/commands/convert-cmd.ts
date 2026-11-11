@@ -33,6 +33,7 @@ import { createReport, type PanduckReport } from "../report.js";
 import {
     isStdinPath,
     isStdoutPath,
+    pathsOverlap,
 } from "../paths.js";
 import { configureConsoleBackend } from "../console-backend.js";
 import {
@@ -480,8 +481,12 @@ async function runBatchConvert(input: {
 
     const seen = new Set<string>();
     for (const plan of plans) {
-        if (seen.has(plan.outputPath)) {
-            console.error(`two batch inputs map to the same output: ${plan.outputPath}`);
+        const overwritesInput = inputs.some((path) => pathsOverlap(path, plan.outputPath));
+        if (seen.has(plan.outputPath) || overwritesInput) {
+            const reason = overwritesInput
+                ? `batch output would overwrite an input: ${plan.outputPath}`
+                : `two batch inputs map to the same output: ${plan.outputPath}`;
+            console.error(reason);
             return {
                 exitCode: ExitCode.InvalidArgs,
                 report: createReport({
@@ -489,13 +494,13 @@ async function runBatchConvert(input: {
                     toolVersion: ctx.toolVersion,
                     status: "blocked",
                     inputs: inputs.map((path) => ({ path })),
-                    pipeline: { blocked_reason: `two batch inputs map to the same output: ${plan.outputPath}` },
+                    pipeline: { blocked_reason: reason },
                     diagnostics: [
                         createDiagnostic({
                             code: PANDUCK_DIAGNOSTIC_CODES.cliBlocked,
                             component: "cli",
                             severity: "error",
-                            fallback: `two batch inputs map to the same output: ${plan.outputPath}`,
+                            fallback: reason,
                         }),
                     ],
                     budgets: shared.budgets,

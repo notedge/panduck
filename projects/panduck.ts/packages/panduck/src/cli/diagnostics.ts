@@ -34,5 +34,8 @@ export function emitReport(report: PanduckReport, mode: DiagnosticsMode, jsonReq
         const { namespace, component } = item.origin;
         const text = item.message.fallback ?? item.message.key;
         emitHuman(`[${namespace}/${component}] ${item.severity}: ${text}`);
+        for (const help of item.helps ?? []) {
+            emitHuman(`  help: ${help.fallback ?? help.key}`);
+        }
     }
 }

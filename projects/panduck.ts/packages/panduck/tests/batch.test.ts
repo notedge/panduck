@@ -145,6 +145,37 @@ test("batch refuses two inputs that map to the same output", async () => {
     }
 });
 
+test("batch refuses an output that would overwrite an input", async () => {
+    const workdir = await mkdtemp(join(tmpdir(), "panduck-batch-overwrite-"));
+    const outputDir = join(workdir, "out");
+    await mkdir(outputDir, { recursive: true });
+    const input = join(outputDir, "same.md");
+    const other = join(outputDir, "other.md");
+    await writeFile(input, "# Keep me\n", "utf8");
+    await writeFile(other, "# Keep me too\n", "utf8");
+
+    try {
+        const run = runPanduck([
+            "convert",
+            input,
+            other,
+            "--to",
+            "markdown",
+            "--output-dir",
+            outputDir,
+            "--overwrite",
+            "--diagnostics",
+            "silent",
+        ]);
+        assert.equal(run.code, 2, `an output equal to an input must be an argument error: ${run.stderr}`);
+        assert.match(run.stderr, /batch output would overwrite an input/);
+        assert.equal(await readFile(input, "utf8"), "# Keep me\n");
+        assert.equal(await readFile(other, "utf8"), "# Keep me too\n");
+    } finally {
+        await rm(workdir, { recursive: true, force: true });
+    }
+});
+
 test("batch dry-run reports every output as unpublished and writes nothing", async () => {
     const workdir = await mkdtemp(join(tmpdir(), "panduck-batch-dry-"));
     const outputDir = join(workdir, "out");
