@@ -1,0 +1,49 @@
+[package]
+name = "panduck-tests"
+description = "document.* 功能验收套件：从 rust-boost 迁出的转换/格式集成测试，消费 document-harness"
+version = "0.0.1"
+edition = "2024"
+publish = false
+
+[dependencies]
+
+[dev-dependencies]
+boost-harness = { git = "https://github.com/oovm/rust-boost", rev = "a3c3db8369a79c1a884d74623b3f95d8d908b08f" }
+document-convert = { git = "https://github.com/oovm/rust-boost", rev = "a3c3db8369a79c1a884d74623b3f95d8d908b08f" }
+document-fonts = { git = "https://github.com/oovm/rust-boost", rev = "a3c3db8369a79c1a884d74623b3f95d8d908b08f" }
+document-formats = { git = "https://github.com/oovm/rust-boost", rev = "a3c3db8369a79c1a884d74623b3f95d8d908b08f", features = ["markdown", "notedown", "docx", "doc", "html", "pdf", "epub", "tex", "typst", "xlsx", "pptx", "pandoc-json"] }
+document-harness = { git = "https://github.com/oovm/rust-boost", rev = "a3c3db8369a79c1a884d74623b3f95d8d908b08f" }
+document-ir = { git = "https://github.com/oovm/rust-boost", rev = "a3c3db8369a79c1a884d74623b3f95d8d908b08f" }
+document-layout = { git = "https://github.com/oovm/rust-boost", rev = "a3c3db8369a79c1a884d74623b3f95d8d908b08f" }
+document-types = { git = "https://github.com/oovm/rust-boost", rev = "a3c3db8369a79c1a884d74623b3f95d8d908b08f" }
+plotter-input-dot = { git = "https://github.com/oovm/rust-boost", rev = "a3c3db8369a79c1a884d74623b3f95d8d908b08f" }
+plotter-input-mermaid = { git = "https://github.com/oovm/rust-boost", rev = "a3c3db8369a79c1a884d74623b3f95d8d908b08f" }
+plotter-input-plantuml = { git = "https://github.com/oovm/rust-boost", rev = "a3c3db8369a79c1a884d74623b3f95d8d908b08f" }
+plotter-types = { git = "https://github.com/oovm/rust-boost", rev = "a3c3db8369a79c1a884d74623b3f95d8d908b08f" }
+acorn-core = { git = "https://github.com/yggdrasil-language/acorn.rs", rev = "2033ca05fcdc74d8484b1426beb4c204ef2fc613" }
+blake3 = "1.8.2"
+acorn-codec = { git = "https://github.com/yggdrasil-language/acorn.rs", rev = "2033ca05fcdc74d8484b1426beb4c204ef2fc613", features = ["compression"] }
+acorn-epub = { git = "https://github.com/yggdrasil-language/acorn.rs", rev = "2033ca05fcdc74d8484b1426beb4c204ef2fc613" }
+oak-core = { git = "https://github.com/yggdrasil-language/oak.rs", rev = "a0416cb1cba9a348df175d3ca230f794ec562484" }
+oak-html = { git = "https://github.com/yggdrasil-language/oak.rs", rev = "a0416cb1cba9a348df175d3ca230f794ec562484" }
+oak-xml = { git = "https://github.com/yggdrasil-language/oak.rs", rev = "a0416cb1cba9a348df175d3ca230f794ec562484" }
+serde_json = "1.0.154"
+serial_test = "3.2.0"
+
+[features]
+default = ["logger", "markdown", "notedown", "docx", "doc", "html", "pdf", "epub", "tex", "typst", "xlsx", "pptx", "pandoc-json"]
+# 转换管线的日志面（document-convert 侧 feature 转发）。
+logger = ["document-convert/logger"]
+# 与 document-formats 的 feature 同名开关：套件里的 cfg 门按本 crate feature 判定。
+markdown = ["document-formats/markdown"]
+notedown = ["document-formats/notedown"]
+docx = ["document-formats/docx"]
+doc = ["document-formats/doc"]
+html = ["document-formats/html"]
+pdf = ["document-formats/pdf"]
+epub = ["document-formats/epub"]
+tex = ["document-formats/tex"]
+typst = ["document-formats/typst"]
+xlsx = ["document-formats/xlsx"]
+pptx = ["document-formats/pptx"]
+pandoc-json = ["document-formats/pandoc-json"]

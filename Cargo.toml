@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "projects/panduck.rs/panduck-napi",
+    "projects/panduck.rs/panduck-tests",
     "projects/panduck.rs/panduck-wasm",
 ]
 default-members = [
@@ -26,16 +27,24 @@ oak-notedown = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev =
 oak-markdown = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4", default-features = false, features = ["serde"] }
 oak-html = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4", default-features = false, features = ["serde"] }
 oak-xml = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4", default-features = false, features = ["serde"] }
+oak-abc = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4", default-features = false, features = ["serde"] }
+oak-smiles = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4", default-features = false, features = ["serde"] }
+oak-mdl = { git = "https://github.com/yggdrasil-language/oak.rs.git", rev = "9058d71dc97f6fdd23d2b4c9325ebac15f4ba8c4", default-features = false, features = ["serde"] }
 
 # Document family implementation. Pinned to `document.rs` so the local tree keeps only the Node-API adapter.
 document-convert = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
 document-formats = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
 plotter-diagram = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
 plotter-chart = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16", features = ["vega-lite"] }
+plotter-engraving = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
+plotter-depiction = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
 plotter-input-dot = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
 plotter-input-tikz = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
 plotter-input-mermaid = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
 plotter-input-plantuml = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
+plotter-input-abc = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
+plotter-input-smiles = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
+plotter-input-mdl = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
 plotter-runtime = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
 plotter-scene = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
 plotter-types = { git = "https://github.com/notedge/document.rs", rev = "c0da639639cd0b8618675c791c86487cbf86aa16" }
